@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import {
   Upload, FolderOpen, X, Shield, ShieldCheck, AlertTriangle,
   FileKey, ChevronRight, Info, Eye, EyeOff, RefreshCw, Archive,
-  FileText, Lock
+  FileText, Lock, ExternalLink
 } from 'lucide-react';
 import { parseTrustStoreFile } from './utils/trustStoreParser';
 import type { ParsedTrustStore, TrustStoreEntry, ParsedCertificate } from './utils/trustStoreParser';
@@ -68,6 +68,18 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
 
         <div className="details-label">SHA-256</div>
         <div className="details-value" style={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.85em' }}>{cert.fingerprintSha256}</div>
+
+        <div className="details-label">CT Log Lookup</div>
+        <div className="details-value">
+          <a
+            href={`https://crt.sh/?q=${cert.fingerprintSha256.replace(/:/g, '').toLowerCase()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--text-accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+          >
+            Search on crt.sh <ExternalLink size={13} />
+          </a>
+        </div>
 
         <div className="details-label">Purposes</div>
         <div className="details-value">{cert.purposes.join(', ')}</div>

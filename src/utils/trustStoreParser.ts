@@ -198,7 +198,7 @@ function parsePkcs7(bytes: Uint8Array, isPem: boolean): { entries: TrustStoreEnt
       const text = new TextDecoder().decode(bytes);
       msg = forge.pkcs7.messageFromPem(text);
     } else {
-      const derStr = forge.util.createBuffer(bytes).getBytes();
+      const derStr = forge.util.createBuffer(bytes as any).getBytes();
       const asn1 = forge.asn1.fromDer(derStr);
       msg = forge.pkcs7.messageFromAsn1(asn1);
     }
@@ -225,7 +225,7 @@ function parsePkcs12(bytes: Uint8Array, password: string): { entries: TrustStore
   const warnings: string[] = [];
   const entries: TrustStoreEntry[] = [];
   try {
-    const derStr = forge.util.createBuffer(bytes).getBytes();
+    const derStr = forge.util.createBuffer(bytes as any).getBytes();
     const asn1 = forge.asn1.fromDer(derStr);
     const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, password);
     const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });

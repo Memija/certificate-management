@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { parseEfiSignatureLists, parseRawX509 } from './utils/efiParser';
 import type { ParsedCertificate, EfiSignatureList } from './utils/efiParser';
-import { Shield, ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, FolderOpen, Sun, Moon } from 'lucide-react';
+import { Shield, ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, FolderOpen, Sun, Moon, FileKey, Monitor, ShieldAlert, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { TrustStoreInspector } from './TrustStoreInspector';
+import { CsrInspector } from './CsrInspector';
+import { WinCertStoreInspector } from './WinCertStoreInspector';
+import { CrlInspector } from './CrlInspector';
+import { ChainValidator } from './ChainValidator';
 import './index.css';
 
-type AppMode = 'secure-boot' | 'trust-store';
+type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator';
 type Theme = 'dark' | 'light';
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.3.0';
 
 function App() {
   const [mode, setMode] = useState<AppMode>(() => {
@@ -120,12 +124,52 @@ function App() {
     parseAndSet(varName, variablesCache[varName]);
   };
 
-  // ── Trust Store mode: bypass all loading/elevation logic ──────────────
+  // ── Client-side only modes: bypass all loading/elevation logic ──────────
   if (mode === 'trust-store') {
     return (
       <>
         <AppHeader mode={mode} theme={theme} onModeChange={switchMode} onToggleTheme={toggleTheme} />
         <TrustStoreInspector />
+        <Footer />
+      </>
+    );
+  }
+
+  if (mode === 'csr-inspector') {
+    return (
+      <>
+        <AppHeader mode={mode} theme={theme} onModeChange={switchMode} onToggleTheme={toggleTheme} />
+        <CsrInspector />
+        <Footer />
+      </>
+    );
+  }
+
+  if (mode === 'win-cert-store') {
+    return (
+      <>
+        <AppHeader mode={mode} theme={theme} onModeChange={switchMode} onToggleTheme={toggleTheme} />
+        <WinCertStoreInspector />
+        <Footer />
+      </>
+    );
+  }
+
+  if (mode === 'crl-inspector') {
+    return (
+      <>
+        <AppHeader mode={mode} theme={theme} onModeChange={switchMode} onToggleTheme={toggleTheme} />
+        <CrlInspector />
+        <Footer />
+      </>
+    );
+  }
+
+  if (mode === 'chain-validator') {
+    return (
+      <>
+        <AppHeader mode={mode} theme={theme} onModeChange={switchMode} onToggleTheme={toggleTheme} />
+        <ChainValidator />
         <Footer />
       </>
     );
@@ -508,6 +552,18 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
         <div className="details-label">SHA-256 Fingerprint</div>
         <div className="details-value" style={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.9em' }}>{cert.fingerprintSha256}</div>
         
+        <div className="details-label">CT Log Lookup</div>
+        <div className="details-value">
+          <a
+            href={`https://crt.sh/?q=${cert.fingerprintSha256.replace(/:/g, '').toLowerCase()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--text-accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+          >
+            Search on crt.sh <ExternalLink size={13} />
+          </a>
+        </div>
+
         <div className="details-label">Purposes</div>
         <div className="details-value">{cert.purposes.join(', ')}</div>
       </div>
@@ -556,7 +612,12 @@ function AppHeader({
           <div className="app-header-title-block">
             <h1>Certificate Manager</h1>
             <span className="app-header-subtitle">
-              {mode === 'secure-boot' ? 'Live UEFI Secure Boot Inspector' : 'Trust Store & Certificate File Inspector'}
+              {mode === 'secure-boot'    ? 'Live UEFI Secure Boot Inspector'
+              : mode === 'trust-store'   ? 'Trust Store & Certificate File Inspector'
+              : mode === 'csr-inspector' ? 'Certificate Signing Request Inspector'
+              : mode === 'win-cert-store'? 'Windows Certificate Store Inspector'
+              : mode === 'crl-inspector' ? 'Certificate Revocation List Inspector'
+              :                           'Certificate Chain Validator'}
             </span>
           </div>
         </div>
@@ -584,6 +645,38 @@ function AppHeader({
               <FolderOpen size={14} />
               Trust Store
             </button>
+            <button
+              className={`mode-btn${mode === 'csr-inspector' ? ' active' : ''}`}
+              onClick={() => onModeChange('csr-inspector')}
+              title="CSR Inspector"
+            >
+              <FileKey size={14} />
+              CSR
+            </button>
+            <button
+              className={`mode-btn${mode === 'win-cert-store' ? ' active' : ''}`}
+              onClick={() => onModeChange('win-cert-store')}
+              title="Windows Certificate Store"
+            >
+              <Monitor size={14} />
+              Win Cert Store
+            </button>
+            <button
+              className={`mode-btn${mode === 'crl-inspector' ? ' active' : ''}`}
+              onClick={() => onModeChange('crl-inspector')}
+              title="Certificate Revocation List (CRL) Inspector"
+            >
+              <ShieldAlert size={14} />
+              CRL Inspector
+            </button>
+            <button
+              className={`mode-btn${mode === 'chain-validator' ? ' active' : ''}`}
+              onClick={() => onModeChange('chain-validator')}
+              title="Certificate Chain Validator"
+            >
+              <LinkIcon size={14} />
+              Chain Validator
+            </button>
           </div>
 
           {/* Theme toggle */}
@@ -609,7 +702,7 @@ function Footer() {
           <img src="/logo.png" alt="" style={{ width: 18, height: 18, opacity: 0.6, borderRadius: 4 }} />
           <span>Certificate Manager</span>
           <div className="app-footer-dot" />
-          <span>Secure Boot &amp; Trust Store Inspector</span>
+          <span>Secure Boot · Trust Store · CSR · Win Cert Store · CRL · Chain Validator</span>
         </div>
         <div className="app-footer-right">
           <span className="app-footer-version">v{APP_VERSION}</span>

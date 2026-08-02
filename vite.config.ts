@@ -145,7 +145,206 @@ try {
   }
 }
 
+// ─── Windows Certificate Store API ───────────────────────────────────────────
+function certStoreApiPlugin() {
+  return {
+    name: 'cert-store-api',
+    configureServer(server: any) {
+      server.middlewares.use('/api/certstore', async (req: any, res: any) => {
+        const url = new URL(req.url || '', `http://${req.headers.host}`);
+        const storeName   = url.searchParams.get('store')    || 'Root';
+        const storeLocation = url.searchParams.get('location') || 'CurrentUser';
+        const elevate     = url.searchParams.get('elevate')  === 'true';
+
+        // Allowlist to prevent injection
+        const VALID_STORES    = ['Root', 'CA', 'My', 'TrustedPublisher', 'Disallowed'];
+        const VALID_LOCATIONS = ['CurrentUser', 'LocalMachine'];
+        if (!VALID_STORES.includes(storeName) || !VALID_LOCATIONS.includes(storeLocation)) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ error: 'Invalid store or location parameter' }));
+          return;
+        }
+
+        const tmpdir    = os.tmpdir();
+        const outPath   = path.join(tmpdir, `certstore_out_${Date.now()}.json`);
+        const scriptPath = path.join(tmpdir, `certstore_get_${Date.now()}.ps1`);
+
+        // PowerShell script — enumerates the store, exports each cert to temp DER,
+        // builds a JSON array, then cleans up the temp cert files.
+        const psScript = `
+$ErrorActionPreference = 'Stop'
+$results = @()
+try {
+    $storePath = "Cert:\\\\${storeLocation}\\\\${storeName}"
+    $certs = Get-ChildItem -Path $storePath -ErrorAction Stop
+    foreach ($cert in $certs) {
+        try {
+            $tempCer = [System.IO.Path]::GetTempFileName() + ".cer"
+            Export-Certificate -Cert $cert -FilePath $tempCer -Type CERT -Force | Out-Null
+            $certBytes = [System.IO.File]::ReadAllBytes($tempCer)
+            Remove-Item $tempCer -Force -ErrorAction SilentlyContinue
+
+            $b64 = [Convert]::ToBase64String($certBytes)
+
+            # Extract EKU/Key Usage from extensions
+            $purposes = @()
+            $ku = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -eq "Key Usage" }
+            if ($ku) { $purposes += $ku.Format(0) }
+            $eku = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -eq "Enhanced Key Usage" }
+            if ($eku) { foreach ($u in $eku.EnhancedKeyUsages) { $purposes += $u.FriendlyName } }
+            if ($purposes.Count -eq 0) { $purposes += "General Purpose" }
+
+            # Collect all extensions
+            $exts = @()
+            foreach ($ext in $cert.Extensions) {
+                try {
+                    $exts += [PSCustomObject]@{
+                        name     = if ($ext.Oid.FriendlyName) { $ext.Oid.FriendlyName } else { $ext.Oid.Value }
+                        oid      = $ext.Oid.Value
+                        critical = $ext.Critical
+                        value    = try { $ext.Format(0) } catch { "" }
+                    }
+                } catch {}
+            }
+
+            $pubKeyAlg = ""
+            $pubKeySize = $null
+            try {
+                $pubKeyAlg = $cert.PublicKey.Oid.FriendlyName
+                if ($cert.PublicKey.Key) {
+                    $pubKeySize = $cert.PublicKey.Key.KeySize
+                }
+            } catch {}
+
+            $now = Get-Date
+            $thirtyDays = $now.AddDays(30)
+            $isExpired     = $cert.NotAfter -lt $now
+            $expiringSoon  = (-not $isExpired) -and ($cert.NotAfter -lt $thirtyDays)
+
+            $results += [PSCustomObject]@{
+                thumbprint        = $cert.Thumbprint
+                subject           = $cert.Subject
+                issuer            = $cert.Issuer
+                notBefore         = $cert.NotBefore.ToString("o")
+                notAfter          = $cert.NotAfter.ToString("o")
+                serialNumber      = $cert.SerialNumber
+                signatureAlgorithm = $cert.SignatureAlgorithm.FriendlyName
+                publicKeyAlgorithm = $pubKeyAlg
+                publicKeySize      = $pubKeySize
+                friendlyName      = $cert.FriendlyName
+                purposes          = $purposes
+                isExpired         = $isExpired
+                isExpiringSoon    = $expiringSoon
+                certB64           = $b64
+                extensions        = $exts
+            }
+        } catch {
+            # Skip certs that fail individual export
+        }
+    }
+    $results | ConvertTo-Json -Depth 5 | Out-File -FilePath '${outPath}' -Encoding utf8
+} catch {
+    [PSCustomObject]@{ error = $_.Exception.Message } | ConvertTo-Json | Out-File -FilePath '${outPath}' -Encoding utf8
+}
+`;
+
+        try {
+          try { await fs.unlink(outPath); } catch {}
+          await fs.writeFile(scriptPath, psScript, 'utf8');
+
+          let command: string;
+          if (elevate) {
+            command = `powershell.exe -NoProfile -WindowStyle Hidden -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \\"${scriptPath}\\"' -Verb RunAs -Wait"`;
+          } else {
+            command = `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
+          }
+
+          await execAsync(command, { timeout: 30000 });
+
+          const raw = await fs.readFile(outPath, 'utf8');
+          const clean = raw.replace(/^\uFEFF/, '').trim();
+
+          try { await fs.unlink(outPath); } catch {}
+          try { await fs.unlink(scriptPath); } catch {}
+
+          let parsed: any;
+          try { parsed = JSON.parse(clean); } catch {
+            throw new Error(`Could not parse PowerShell output: ${clean.substring(0, 200)}`);
+          }
+
+          // PowerShell may return an error object instead of array
+          if (parsed && !Array.isArray(parsed) && parsed.error) {
+            const msg: string = parsed.error;
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: msg }));
+            return;
+          }
+
+          // PowerShell returns a single object (not array) when there's only 1 cert
+          const certsArray: any[] = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []);
+
+          // Parse DER bytes with node-forge to get isRoot/isIntermediate and PEM
+          const forge = await import('node-forge');
+          const enriched = certsArray.map((entry: any) => {
+            let isRoot = false;
+            let isIntermediate = false;
+            let pem = '';
+            let extensions: any[] = entry.extensions || [];
+
+            try {
+              const derStr = forge.default.util.createBuffer(
+                Buffer.from(entry.certB64, 'base64')
+              ).getBytes();
+              const asn1 = forge.default.asn1.fromDer(derStr);
+              const cert = forge.default.pki.certificateFromAsn1(asn1);
+              const bc = cert.getExtension('basicConstraints') as any;
+              const isCA = bc ? bc.cA : false;
+              isRoot = isCA && cert.issuer.attributes.map((a: any) => `${a.shortName}=${a.value}`).join(',')
+                === cert.subject.attributes.map((a: any) => `${a.shortName}=${a.value}`).join(',');
+              isIntermediate = isCA && !isRoot;
+              pem = forge.default.pki.certificateToPem(cert);
+            } catch { /* skip forge enrichment */ }
+
+            return {
+              thumbprint:         entry.thumbprint || '',
+              subject:            entry.subject || '',
+              issuer:             entry.issuer || '',
+              notBefore:          entry.notBefore || '',
+              notAfter:           entry.notAfter || '',
+              serialNumber:       entry.serialNumber || '',
+              signatureAlgorithm: entry.signatureAlgorithm || '',
+              publicKeyAlgorithm: entry.publicKeyAlgorithm || '',
+              publicKeySize:      entry.publicKeySize ?? null,
+              friendlyName:       entry.friendlyName || '',
+              purposes:           entry.purposes || [],
+              isRoot,
+              isIntermediate,
+              isExpired:          entry.isExpired || false,
+              isExpiringSoon:     entry.isExpiringSoon || false,
+              pem,
+              certB64:            entry.certB64 || '',
+              extensions,
+            };
+          });
+
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ data: enriched }));
+        } catch (error: any) {
+          try { await fs.unlink(outPath); } catch {}
+          try { await fs.unlink(scriptPath); } catch {}
+
+          const msg: string = error.message || String(error);
+          console.error('[certstore]', msg);
+
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: msg }));
+        }
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), secureBootApiPlugin()],
+  plugins: [react(), secureBootApiPlugin(), certStoreApiPlugin()],
 })
