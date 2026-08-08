@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Manajemen Sertifikat",
+    "categories": {
+      "systemCheck": "Pemeriksaan Sistem",
+      "inspectionValidation": "Inspeksi & Validasi",
+      "keyManagement": "Manajemen Kunci",
+      "networkStatus": "Jaringan & Status"
+    },
+    "nav": {
+      "secure-boot": "Secure Boot NVRAM",
+      "win-cert-store": "Penyimpanan Sertifikat Windows",
+      "expiry-dashboard": "Dasbor Kedaluwarsa",
+      "trust-store": "Penyimpanan Kepercayaan",
+      "crl-inspector": "Inspektur CRL",
+      "chain-validator": "Validator Rantai",
+      "csr-inspector": "Inspektur CSR",
+      "key-matcher": "Pencocok Pasangan Kunci",
+      "key-generator": "Pembuat Kunci",
+      "format-converter": "Pengonversi Format",
+      "tls-scanner": "Pemindai TLS Jarak Jauh",
+      "ocsp-checker": "Pemeriksa OCSP",
+      "ct-log-search": "Pencarian Log CT"
+    },
+    "aria": {
+      "closeSidebar": "Tutup bilah sisi",
+      "openSidebar": "Buka bilah sisi",
+      "toggleTheme": "Alihkan tema"
+    },
+    "language": {
+      "switch": "Ganti Bahasa"
+    }
+  }
+}

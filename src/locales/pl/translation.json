@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Zarządzanie Certyfikatami",
+    "categories": {
+      "systemCheck": "Sprawdzanie Systemu",
+      "inspectionValidation": "Inspekcja i Walidacja",
+      "keyManagement": "Zarządzanie Kluczami",
+      "networkStatus": "Sieć i Status"
+    },
+    "nav": {
+      "secure-boot": "Secure Boot NVRAM",
+      "win-cert-store": "Magazyn Certyfikatów Windows",
+      "expiry-dashboard": "Panel Wygasania",
+      "trust-store": "Magazyn Zaufania",
+      "crl-inspector": "Inspektor CRL",
+      "chain-validator": "Walidator Łańcucha",
+      "csr-inspector": "Inspektor CSR",
+      "key-matcher": "Dopasowywanie Par Kluczy",
+      "key-generator": "Generator Kluczy",
+      "format-converter": "Konwerter Formatów",
+      "tls-scanner": "Zdalny Skaner TLS",
+      "ocsp-checker": "Sprawdzanie OCSP",
+      "ct-log-search": "Wyszukiwanie Logów CT"
+    },
+    "aria": {
+      "closeSidebar": "Zamknij pasek boczny",
+      "openSidebar": "Otwórz pasek boczny",
+      "toggleTheme": "Zmień motyw"
+    },
+    "language": {
+      "switch": "Zmień Język"
+    }
+  }
+}

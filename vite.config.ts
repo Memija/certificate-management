@@ -344,7 +344,208 @@ try {
   };
 }
 
+// ─── TLS Scanner API ──────────────────────────────────────────────────────────
+function tlsScannerApiPlugin() {
+  return {
+    name: 'tls-scanner-api',
+    configureServer(server: any) {
+      server.middlewares.use('/api/tlsscanner', async (req: any, res: any) => {
+        const url = new URL(req.url || '', `http://${req.headers.host}`);
+        const host = url.searchParams.get('host');
+        const portStr = url.searchParams.get('port') || '443';
+        
+        if (!host) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ error: 'Missing "host" query parameter' }));
+          return;
+        }
+
+        const port = parseInt(portStr, 10);
+
+        try {
+          const tls = await import('tls');
+          
+          const options = {
+            host,
+            port,
+            servername: host,
+            rejectUnauthorized: false,
+          };
+
+          const socket = tls.connect(options, () => {
+             try {
+                const peerCert = socket.getPeerCertificate(true);
+                
+                const processCert = (cert: any): any => {
+                   if (!cert || !cert.raw) return null;
+                   
+                   const seen = new Set<string>();
+                   
+                   const getChain = (c: any): any[] => {
+                      if (!c || !c.raw) return [];
+                      if (seen.has(c.fingerprint256)) return [];
+                      seen.add(c.fingerprint256);
+                      
+                      const current = {
+                         subject: c.subject,
+                         issuer: c.issuer,
+                         valid_from: c.valid_from,
+                         valid_to: c.valid_to,
+                         fingerprint: c.fingerprint,
+                         fingerprint256: c.fingerprint256,
+                         serialNumber: c.serialNumber,
+                         rawB64: c.raw.toString('base64')
+                      };
+                      
+                      if (c.issuerCertificate && c.issuerCertificate !== c) {
+                          return [current, ...getChain(c.issuerCertificate)];
+                      }
+                      
+                      return [current];
+                   };
+                   
+                   return getChain(cert);
+                };
+
+                const chain = processCert(peerCert);
+                const protocol = socket.getProtocol();
+                const cipher = socket.getCipher();
+                
+                socket.end();
+
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ 
+                   data: {
+                      chain,
+                      protocol,
+                      cipher
+                   }
+                }));
+
+             } catch (e: any) {
+                socket.end();
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: `Failed to process certificate: ${e.message}` }));
+             }
+          });
+
+          socket.on('error', (err: any) => {
+             res.statusCode = 500;
+             res.end(JSON.stringify({ error: `Connection failed: ${err.message}` }));
+          });
+          
+          socket.setTimeout(10000, () => {
+             socket.destroy();
+             res.statusCode = 504;
+             res.end(JSON.stringify({ error: 'Connection timed out' }));
+          });
+
+        } catch (error: any) {
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: `Failed to scan TLS. ${error.message}` }));
+        }
+      });
+    }
+  }
+}
+
+// ─── OCSP API ─────────────────────────────────────────────────────────────────
+function ocspApiPlugin() {
+  return {
+    name: 'ocsp-api',
+    configureServer(server: any) {
+      server.middlewares.use('/api/ocsp', async (req: any, res: any) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+          return;
+        }
+        
+        let body = '';
+        req.on('data', (chunk: Buffer) => {
+           body += chunk.toString();
+        });
+        
+        req.on('end', async () => {
+           try {
+              const data = JSON.parse(body);
+              const b64 = data.certB64;
+              if (!b64) throw new Error('certB64 is required');
+              
+              const tmpdir = os.tmpdir();
+              const certPath = path.join(tmpdir, `ocsp_check_${Date.now()}.cer`);
+              
+              await fs.writeFile(certPath, Buffer.from(b64, 'base64'));
+              
+              const command = `certutil -verify -urlfetch "${certPath}"`;
+              let output = '';
+              try {
+                 const { stdout } = await execAsync(command, { timeout: 30000 });
+                 output = stdout;
+              } catch (e: any) {
+                 output = e.stdout || e.message;
+              }
+              
+              try { await fs.unlink(certPath); } catch {}
+              
+              const isRevoked = output.includes('REVOKED') || output.includes('Revoked');
+              const isOk = output.includes('Leaf certificate revocation check passed') || output.includes('certificate revocation check passed');
+              const status = isRevoked ? 'revoked' : (isOk ? 'good' : 'unknown');
+              
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ 
+                 data: {
+                    status,
+                    output
+                 }
+              }));
+           } catch (e: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: e.message }));
+           }
+        });
+      });
+    }
+  }
+}
+
+// ─── CT SEARCH API ──────────────────────────────────────────────────────────────
+function ctSearchApiPlugin() {
+  return {
+    name: 'ct-search-api',
+    configureServer(server: any) {
+      server.middlewares.use('/api/ctsearch', async (req: any, res: any) => {
+        const url = new URL(req.url || '', `http://${req.headers.host}`);
+        const domain = url.searchParams.get('domain');
+        
+        if (!domain) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ error: 'Missing "domain" query parameter' }));
+          return;
+        }
+        
+        try {
+          const fetchUrl = `https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`;
+          const response = await fetch(fetchUrl);
+          
+          if (!response.ok) {
+            throw new Error(`crt.sh returned ${response.status} ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ data }));
+        } catch (error: any) {
+          console.error(`CT Search failed:`, error.message);
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: error.message }));
+        }
+      });
+    }
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), secureBootApiPlugin(), certStoreApiPlugin()],
+  plugins: [react(), secureBootApiPlugin(), certStoreApiPlugin(), tlsScannerApiPlugin(), ocspApiPlugin(), ctSearchApiPlugin()],
 })

@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Certificate Management",
+    "categories": {
+      "systemCheck": "System Check",
+      "inspectionValidation": "Inspection & Validation",
+      "keyManagement": "Key Management",
+      "networkStatus": "Network & Status"
+    },
+    "nav": {
+      "secure-boot": "Secure Boot NVRAM",
+      "win-cert-store": "Win Cert Store",
+      "expiry-dashboard": "Expiry Dashboard",
+      "trust-store": "Trust Store",
+      "crl-inspector": "CRL Inspector",
+      "chain-validator": "Chain Validator",
+      "csr-inspector": "CSR Inspector",
+      "key-matcher": "Key Pair Matcher",
+      "key-generator": "Key Generator",
+      "format-converter": "Format Converter",
+      "tls-scanner": "Remote TLS Scanner",
+      "ocsp-checker": "OCSP Checker",
+      "ct-log-search": "CT Log Search"
+    },
+    "aria": {
+      "closeSidebar": "Close sidebar",
+      "openSidebar": "Open sidebar",
+      "toggleTheme": "Toggle theme"
+    },
+    "language": {
+      "switch": "Switch Language"
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Upravljanje Certifikatima",
+    "categories": {
+      "systemCheck": "Sistemska Provjera",
+      "inspectionValidation": "Inspekcija i Validacija",
+      "keyManagement": "Upravljanje Ključevima",
+      "networkStatus": "Mreža i Status"
+    },
+    "nav": {
+      "secure-boot": "Secure Boot NVRAM",
+      "win-cert-store": "Windows Prodavnica Certifikata",
+      "expiry-dashboard": "Nadzorna Ploča Isteka",
+      "trust-store": "Prodavnica Povjerenja",
+      "crl-inspector": "CRL Inspektor",
+      "chain-validator": "Validator Lanca",
+      "csr-inspector": "CSR Inspektor",
+      "key-matcher": "Upoređivač Parova Ključeva",
+      "key-generator": "Generator Ključeva",
+      "format-converter": "Konverter Formata",
+      "tls-scanner": "Udaljeni TLS Skener",
+      "ocsp-checker": "OCSP Provjera",
+      "ct-log-search": "Pretraga CT Dnevnika"
+    },
+    "aria": {
+      "closeSidebar": "Zatvori bočnu traku",
+      "openSidebar": "Otvori bočnu traku",
+      "toggleTheme": "Promijeni temu"
+    },
+    "language": {
+      "switch": "Promijeni jezik"
+    }
+  }
+}

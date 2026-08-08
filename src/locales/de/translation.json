@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Zertifikatsverwaltung",
+    "categories": {
+      "systemCheck": "Systemprüfung",
+      "inspectionValidation": "Inspektion & Validierung",
+      "keyManagement": "Schlüsselverwaltung",
+      "networkStatus": "Netzwerk & Status"
+    },
+    "nav": {
+      "secure-boot": "Secure Boot NVRAM",
+      "win-cert-store": "Windows-Zertifikatsspeicher",
+      "expiry-dashboard": "Ablauf-Dashboard",
+      "trust-store": "Vertrauensspeicher",
+      "crl-inspector": "CRL-Inspektor",
+      "chain-validator": "Ketten-Validierer",
+      "csr-inspector": "CSR-Inspektor",
+      "key-matcher": "Schlüsselpaar-Zuordner",
+      "key-generator": "Schlüsselgenerator",
+      "format-converter": "Formatkonverter",
+      "tls-scanner": "Remote-TLS-Scanner",
+      "ocsp-checker": "OCSP-Prüfer",
+      "ct-log-search": "CT-Protokollsuche"
+    },
+    "aria": {
+      "closeSidebar": "Seitenleiste schließen",
+      "openSidebar": "Seitenleiste öffnen",
+      "toggleTheme": "Design umschalten"
+    },
+    "language": {
+      "switch": "Sprache wechseln"
+    }
+  }
+}
