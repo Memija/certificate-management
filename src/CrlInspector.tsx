@@ -1,10 +1,12 @@
 import { useState, useCallback, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Upload, AlertTriangle, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, Copy, Download, FileText, X, Search, ShieldAlert, Calendar
+  ChevronDown, ChevronUp, Copy, Download, X, Search, ShieldAlert, Calendar, Eye, EyeOff
 } from 'lucide-react';
 import { parseCrlFile } from './utils/crlParser';
 import type { ParsedCRL } from './utils/crlParser';
+import { LearningTerm } from './LearningTerm';
 
 function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -37,6 +39,7 @@ interface LoadedCRL {
 }
 
 function CRLDetails({ crl }: { crl: ParsedCRL }) {
+  const { t } = useTranslation();
   const [showPem, setShowPem] = useState(false);
   const [showExts, setShowExts] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,7 +95,7 @@ function CRLDetails({ crl }: { crl: ParsedCRL }) {
             background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444',
             border: '1px solid rgba(239, 68, 68, 0.3)',
           }}>
-            <XCircle size={13} /> Expired CRL
+            <XCircle size={13} /> {t('app.crl.expiredBadge', 'Expired CRL')}
           </span>
         ) : (
           <span style={{
@@ -101,7 +104,7 @@ function CRLDetails({ crl }: { crl: ParsedCRL }) {
             background: 'rgba(16, 185, 129, 0.15)', color: '#10b981',
             border: '1px solid rgba(16, 185, 129, 0.3)',
           }}>
-            <CheckCircle size={13} /> Active CRL
+            <CheckCircle size={13} /> {t('app.crl.activeBadge', 'Active CRL')}
           </span>
         )}
         <span style={{
@@ -110,37 +113,37 @@ function CRLDetails({ crl }: { crl: ParsedCRL }) {
           background: 'rgba(56, 189, 248, 0.12)', color: 'var(--text-accent)',
           border: '1px solid rgba(56, 189, 248, 0.25)',
         }}>
-          <ShieldAlert size={13} /> {crl.revokedCertificates.length} Revoked Certificates
+          <ShieldAlert size={13} /> {t('app.crl.revokedCount', { count: crl.revokedCertificates.length, defaultValue: `${crl.revokedCertificates.length} Revoked Certificates` })}
         </span>
       </div>
 
       {/* Overview Card */}
       <div className="glass-card" style={{ padding: '1.25rem' }}>
-        <h4 style={{ margin: '0 0 0.85rem 0', color: 'var(--text-accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          CRL Overview &amp; Issuer
+        <h4 style={{ margin: '0 0 0.85rem 0', color: 'var(--text-accent)', fontSize: '0.92rem', fontWeight: 600 }}>
+          {t('app.crl.overviewTitle', 'CRL Overview & Issuer')}
         </h4>
-        <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', rowGap: '0.75rem', fontSize: '0.88rem' }}>
-          <div style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Issuer DN</div>
-          <div style={{ wordBreak: 'break-word', fontFamily: 'monospace', fontSize: '0.85rem' }}>{crl.issuer || 'Unknown Issuer'}</div>
+        <div className="details-grid">
+          <div className="details-label">{t('app.crl.issuerDn', 'Issuer DN')}</div>
+          <div className="details-value" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{crl.issuer || 'Unknown Issuer'}</div>
 
-          <div style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Version</div>
-          <div>v{crl.version}</div>
+          <div className="details-label">{t('app.crl.version', 'Version')}</div>
+          <div className="details-value">v{crl.version}</div>
 
-          <div style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>This Update</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div className="details-label">{t('app.crl.thisUpdate', 'This Update')}</div>
+          <div className="details-value" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <Calendar size={14} style={{ color: 'var(--text-secondary)' }} />
             <span>{formatDate(crl.thisUpdate)}</span>
           </div>
 
-          <div style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Next Update</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div className="details-label">{t('app.crl.nextUpdate', 'Next Update')}</div>
+          <div className="details-value" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <Calendar size={14} style={{ color: crl.isExpired ? '#ef4444' : 'var(--text-secondary)' }} />
             <span style={{ color: crl.isExpired ? '#ef4444' : 'inherit', fontWeight: crl.isExpired ? 600 : 400 }}>
-              {formatDate(crl.nextUpdate)} {crl.isExpired ? '(Expired)' : ''}
+              {formatDate(crl.nextUpdate)} {crl.isExpired ? `(${t('app.certDetails.expired', 'Expired')})` : ''}
             </span>
           </div>
 
-          <div style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>SHA-256 Fingerprint</div>
+          <div style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{t('app.crl.sha256', 'SHA-256 Fingerprint')}</div>
           <div style={{ fontFamily: 'monospace', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem', wordBreak: 'break-all' }}>
             {crl.fingerprintSha256}
             <CopyButton value={crl.fingerprintSha256} />
@@ -151,8 +154,8 @@ function CRLDetails({ crl }: { crl: ParsedCRL }) {
       {/* Revoked Certificates Table */}
       <div className="glass-card" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
-          <h4 style={{ margin: 0, color: 'var(--text-accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ShieldAlert size={16} /> Revoked Certificate Entries ({filteredRevoked.length})
+          <h4 style={{ margin: 0, color: 'var(--text-accent)', fontSize: '0.92rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <ShieldAlert size={16} /> {t('app.crl.revokedEntriesTitle', 'Revoked Certificate Entries')} ({filteredRevoked.length})
           </h4>
           {crl.revokedCertificates.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', background: 'var(--input-bg, rgba(255,255,255,0.05))', borderRadius: '6px', padding: '0.35rem 0.6rem', border: '1px solid var(--border-color)', minWidth: '240px' }}>
@@ -244,7 +247,7 @@ function CRLDetails({ crl }: { crl: ParsedCRL }) {
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
             onClick={() => setShowExts(!showExts)}
           >
-            <h4 style={{ margin: 0, color: 'var(--text-accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h4 style={{ margin: 0, color: 'var(--text-accent)', fontSize: '0.92rem', fontWeight: 600 }}>
               CRL Extensions ({crl.extensions.length})
             </h4>
             {showExts ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -252,13 +255,14 @@ function CRLDetails({ crl }: { crl: ParsedCRL }) {
           {showExts && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '1rem' }}>
               {crl.extensions.map((ext, idx) => (
-                <div key={idx} style={{ padding: '0.65rem 0.85rem', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid var(--border-color)', display: 'grid', gridTemplateColumns: '160px 1fr', rowGap: '0.3rem', fontSize: '0.85rem' }}>
-                  <div style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{ext.name}</div>
-                  <div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                    OID: {ext.oid} {ext.critical && <span style={{ color: '#f59e0b', marginLeft: '0.5rem', fontWeight: 600 }}>[CRITICAL]</span>}
+                <div key={idx} className="details-grid" style={{ padding: '0.65rem 0.85rem', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid var(--glass-border)' }}>
+                  <div className="details-label">{ext.name}</div>
+                  <div className="details-value">
+                    <div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                      OID: {ext.oid} {ext.critical && <span style={{ color: '#f59e0b', marginLeft: '0.5rem', fontWeight: 600 }}>[CRITICAL]</span>}
+                    </div>
+                    {ext.value && <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', wordBreak: 'break-all', marginTop: '0.25rem' }}>{ext.value}</div>}
                   </div>
-                  <div />
-                  <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', wordBreak: 'break-all' }}>{ext.value || 'None'}</div>
                 </div>
               ))}
             </div>
@@ -271,21 +275,23 @@ function CRLDetails({ crl }: { crl: ParsedCRL }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
           <button
             onClick={() => setShowPem(!showPem)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '0.5rem 1rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}
+            className="btn btn-secondary btn-sm"
           >
-            <FileText size={15} />
-            {showPem ? 'Hide Raw PEM' : 'View Raw PEM'}
+            {showPem ? <EyeOff size={14} /> : <Eye size={14} />}
+            <span>{showPem ? 'Hide Raw PEM' : 'View Raw PEM'}</span>
           </button>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
               onClick={downloadPem}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', color: 'var(--text-accent)', padding: '0.5rem 0.9rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500 }}
+              title={t('app.winCertStore.certCard.pemTooltip', 'Privacy Enhanced Mail (Base64 Text). Standard for Linux and web servers.')}
+              className="btn btn-download-pem"
             >
               <Download size={14} /> Download PEM
             </button>
             <button
               onClick={downloadDer}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#10b981', padding: '0.5rem 0.9rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500 }}
+              title={t('app.winCertStore.certCard.derTooltip', 'Distinguished Encoding Rules (Raw Binary). Standard for Windows and Java.')}
+              className="btn btn-download-der"
             >
               <Download size={14} /> Download DER
             </button>
@@ -314,7 +320,7 @@ export function CrlInspector() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const processFiles = async (fileList: FileList | File[]) => {
+  const processFiles = useCallback(async (fileList: FileList | File[]) => {
     setError(null);
     const files = Array.from(fileList);
     for (const file of files) {
@@ -335,7 +341,7 @@ export function CrlInspector() {
         setError(`Failed to parse "${file.name}": ${err.message || 'Unknown structure'}. Ensure it is a valid PEM or DER CRL file.`);
       }
     }
-  };
+  }, [selectedId]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -343,7 +349,7 @@ export function CrlInspector() {
     if (e.dataTransfer.files.length > 0) {
       processFiles(e.dataTransfer.files);
     }
-  }, [selectedId]);
+  }, [processFiles]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -360,10 +366,10 @@ export function CrlInspector() {
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
       <div style={{ marginBottom: '2rem' }}>
         <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-          Certificate Revocation List (CRL) Inspector
+          <LearningTerm termId="crl">Certificate Revocation List (CRL)</LearningTerm> Inspector
         </h2>
         <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
-          Inspect X.509 CRL files (.crl, .pem, .der). Check issuer metadata, next update validity dates, and search through revoked certificate entries and reason codes.
+          Inspect <LearningTerm termId="x509">X.509</LearningTerm> CRL files (<LearningTerm termId="crl">.crl</LearningTerm>, <LearningTerm termId="pem">.pem</LearningTerm>, <LearningTerm termId="der">.der</LearningTerm>). Check issuer metadata, next update validity dates, and search through revoked certificate entries and reason codes.
         </p>
       </div>
 
@@ -411,7 +417,7 @@ export function CrlInspector() {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '1.5rem', alignItems: 'start' }}>
+        <div className="crl-layout">
           {/* Sidebar file list */}
           <div className="glass-card" style={{ padding: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>

@@ -69,64 +69,47 @@ export function KeyPairMatcher() {
   return (
      <div className="main-content">
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Paste a Certificate (or CSR) and a Private Key in PEM format to verify if they are a mathematically matched pair.
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            Key Pair Modulus Matcher
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
+            Paste a Certificate (or CSR) and a Private Key in PEM format to mathematically verify if their RSA public key moduli match.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <div className="glass-panel" style={{ flex: '1 1 400px' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <Shield size={20} /> Certificate or CSR (PEM)
+        <div className="responsive-grid-2" style={{ gap: '1.5rem' }}>
+          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 1rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+              <Shield size={18} style={{ color: 'var(--accent-color)' }} /> Certificate or CSR (PEM)
             </h3>
             <textarea
+              className="form-textarea mono"
               value={certInput}
               onChange={e => setCertInput(e.target.value)}
-              placeholder="-----BEGIN CERTIFICATE-----..."
-              style={{
-                width: '100%',
-                height: '250px',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '8px',
-                padding: '1rem',
-                color: 'var(--text-primary)',
-                fontFamily: 'monospace',
-                resize: 'vertical',
-                outline: 'none'
-              }}
+              placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
+              style={{ height: '240px', fontSize: '0.82rem' }}
             />
             {certStatus && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: certStatus.startsWith('Error') ? 'var(--danger-color)' : 'var(--success-color)' }}>
+              <div style={{ marginTop: '0.6rem', fontSize: '0.82rem', fontWeight: 500, color: certStatus.startsWith('Error') ? 'var(--danger-color)' : 'var(--success-color)' }}>
                 {certStatus}
               </div>
             )}
           </div>
 
-          <div className="glass-panel" style={{ flex: '1 1 400px' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <FileKey size={20} /> Private Key (PEM)
+          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 1rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+              <FileKey size={18} style={{ color: 'var(--warning-color)' }} /> Private Key (PEM)
             </h3>
             <textarea
+              className="form-textarea mono"
               value={keyInput}
               onChange={e => setKeyInput(e.target.value)}
-              placeholder="-----BEGIN PRIVATE KEY-----..."
-              style={{
-                width: '100%',
-                height: '250px',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '8px',
-                padding: '1rem',
-                color: 'var(--text-primary)',
-                fontFamily: 'monospace',
-                resize: 'vertical',
-                outline: 'none'
-              }}
+              placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;...&#10;-----END RSA PRIVATE KEY-----"
+              style={{ height: '240px', fontSize: '0.82rem' }}
             />
             {keyStatus && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: keyStatus.startsWith('Error') ? 'var(--danger-color)' : 'var(--success-color)' }}>
+              <div style={{ marginTop: '0.6rem', fontSize: '0.82rem', fontWeight: 500, color: keyStatus.startsWith('Error') ? 'var(--danger-color)' : 'var(--success-color)' }}>
                 {keyStatus}
               </div>
             )}
@@ -134,26 +117,34 @@ export function KeyPairMatcher() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-          <button className="btn" onClick={handleMatch} disabled={!certInput || !keyInput}>
-            <Key size={18} /> Verify Match
+          <button className="btn" onClick={handleMatch} disabled={!certInput || !keyInput} style={{ height: '44px', padding: '0 2rem' }}>
+            <Key size={18} /> Verify Modulus Match
           </button>
         </div>
 
         {matchResult !== null && (
-          <div className="glass-panel" style={{ 
+          <div className="glass-panel animate-fade-in" style={{ 
             marginTop: '2rem', 
             textAlign: 'center',
+            padding: '2.5rem 1.5rem',
             background: matchResult ? 'var(--success-bg)' : 'var(--danger-bg)',
-            borderColor: matchResult ? 'var(--success-color)' : 'var(--danger-color)'
+            borderColor: matchResult ? 'var(--success-border)' : 'var(--danger-border)'
           }}>
-            {matchResult ? (
-              <CheckCircle size={48} color="var(--success-color)" style={{ margin: '0 auto 1rem' }} />
-            ) : (
-              <XCircle size={48} color="var(--danger-color)" style={{ margin: '0 auto 1rem' }} />
-            )}
-            <h2 style={{ color: matchResult ? 'var(--success-color)' : 'var(--danger-color)' }}>
+            <div className={`metric-icon-wrap ${matchResult ? 'success' : 'danger'}`} style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 1.25rem' }}>
+              {matchResult ? (
+                <CheckCircle size={32} />
+              ) : (
+                <XCircle size={32} />
+              )}
+            </div>
+            <h3 style={{ color: matchResult ? 'var(--success-color)' : 'var(--danger-color)', fontSize: '1.3rem', margin: '0 0 0.5rem 0' }}>
               {matchMessage}
-            </h2>
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>
+              {matchResult
+                ? 'Both the public key modulus in the certificate/CSR and the private key modulus match bit-for-bit.'
+                : 'The cryptographic modulus differs. This private key cannot be used with this certificate.'}
+            </p>
           </div>
         )}
       </div>

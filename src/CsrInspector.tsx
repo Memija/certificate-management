@@ -1,14 +1,18 @@
 import { useState, useCallback, useRef } from 'react';
 import {
   Upload, FileKey, AlertTriangle, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, Copy, Download, RefreshCw, FileText, X,
+  ChevronDown, ChevronUp, Copy, Download, RefreshCw, X, Eye, EyeOff
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { parseCSRFile } from './utils/csrParser';
+import { LearningTerm } from './LearningTerm';
 import type { ParsedCSR } from './utils/csrParser';
+import { formatPurposesList } from './utils/purposeFormatter';
 
 // ─── Small reusable pieces ────────────────────────────────────────────────────
 
 function CopyButton({ value }: { value: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
     navigator.clipboard.writeText(value).then(() => {
@@ -19,7 +23,7 @@ function CopyButton({ value }: { value: string }) {
   return (
     <button
       onClick={handleCopy}
-      title="Copy to clipboard"
+      title={t('common.copyToClipboard', 'Copy to clipboard')}
       style={{
         background: 'none', border: 'none', cursor: 'pointer',
         color: copied ? 'var(--success-color)' : 'var(--text-secondary)',
@@ -43,6 +47,7 @@ interface LoadedCSR {
 // ─── Details panel ────────────────────────────────────────────────────────────
 
 function CSRDetails({ csr }: { csr: ParsedCSR }) {
+  const { t } = useTranslation();
   const [showPem, setShowPem] = useState(false);
   const [showExts, setShowExts] = useState(true);
 
@@ -73,7 +78,7 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
             background: 'rgba(16, 185, 129, 0.15)', color: '#10b981',
             border: '1px solid rgba(16, 185, 129, 0.3)',
           }}>
-            <CheckCircle size={13} /> Self-Signature Valid
+            <CheckCircle size={13} /> {t('app.csr.validSignature', 'Self-Signature Valid')}
           </span>
         ) : (
           <span style={{
@@ -82,7 +87,7 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
             background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444',
             border: '1px solid rgba(239, 68, 68, 0.3)',
           }}>
-            <XCircle size={13} /> Self-Signature Invalid
+            <XCircle size={13} /> {t('app.csr.invalidSignature', 'Self-Signature Invalid')}
           </span>
         )}
         <span style={{
@@ -97,8 +102,8 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
 
       {/* Subject fields */}
       <div className="glass-card" style={{ padding: '1.25rem' }}>
-        <h4 style={{ margin: '0 0 0.85rem 0', color: 'var(--text-accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Subject
+        <h4 style={{ margin: '0 0 0.85rem 0', color: 'var(--text-accent)', fontSize: '0.92rem', fontWeight: 600 }}>
+          {t('app.csr.subjectTitle', 'Subject')}
         </h4>
         <div className="details-grid">
           {csr.subjectFields.length > 0 ? csr.subjectFields.map((f, i) => (
@@ -108,7 +113,7 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
             </div>
           )) : (
             <>
-              <div className="details-label">Full DN</div>
+              <div className="details-label">{t('app.csr.fullDn', 'Full DN')}</div>
               <div className="details-value">{csr.subject || '(empty subject)'}</div>
             </>
           )}
@@ -117,26 +122,26 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
 
       {/* Key & Signature */}
       <div className="glass-card" style={{ padding: '1.25rem' }}>
-        <h4 style={{ margin: '0 0 0.85rem 0', color: 'var(--text-accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Cryptographic Details
+        <h4 style={{ margin: '0 0 0.85rem 0', color: 'var(--text-accent)', fontSize: '0.92rem', fontWeight: 600 }}>
+          {t('app.csr.cryptoDetailsTitle', 'Cryptographic Details')}
         </h4>
         <div className="details-grid">
-          <div className="details-label">Public Key</div>
+          <div className="details-label">{t('app.csr.publicKey', 'Public Key')}</div>
           <div className="details-value">
             {csr.publicKeyAlgorithm}
-            {csr.publicKeySize ? ` (${csr.publicKeySize} bits)` : ''}
+            {csr.publicKeySize ? ` (${csr.publicKeySize} ${t('app.certDetails.bits', 'bits')})` : ''}
           </div>
 
-          <div className="details-label">Signature Algorithm</div>
+          <div className="details-label">{t('app.csr.signatureAlgorithm', 'Signature Algorithm')}</div>
           <div className="details-value">{csr.signatureAlgorithm}</div>
 
-          <div className="details-label">Signature OID</div>
+          <div className="details-label">{t('app.csr.signatureOid', 'Signature OID')}</div>
           <div className="details-value" style={{ fontFamily: 'monospace', fontSize: '0.9em' }}>{csr.signatureOid}</div>
 
-          <div className="details-label">Requested Purposes</div>
-          <div className="details-value">{csr.requestedPurposes.join(', ')}</div>
+          <div className="details-label">{t('app.csr.requestedPurposes', 'Requested Purposes')}</div>
+          <div className="details-value">{formatPurposesList(csr.requestedPurposes, t) || t('app.chain.noneSpecified', 'None specified')}</div>
 
-          <div className="details-label">SHA-256 Fingerprint</div>
+          <div className="details-label">{t('app.csr.sha256Fingerprint', 'SHA-256 Fingerprint')}</div>
           <div className="details-value" style={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.85em' }}>
             {csr.fingerprintSha256}
             <CopyButton value={csr.fingerprintSha256} />
@@ -151,7 +156,7 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: showExts ? '0.85rem' : 0 }}
             onClick={() => setShowExts(e => !e)}
           >
-            <h4 style={{ margin: 0, color: 'var(--text-accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h4 style={{ margin: 0, color: 'var(--text-accent)', fontSize: '0.92rem', fontWeight: 600 }}>
               Requested Extensions ({csr.requestedExtensions.length})
             </h4>
             {showExts ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
@@ -184,16 +189,16 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
             onClick={() => setShowPem(p => !p)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-accent)', fontSize: '0.88rem', padding: 0 }}
           >
-            <FileText size={14} />
-            {showPem ? 'Hide PEM' : 'View PEM'}
+            {showPem ? <EyeOff size={14} /> : <Eye size={14} />}
+            <span>{showPem ? t('app.chain.hidePem', 'Hide PEM') : t('app.chain.viewPem', 'View PEM')}</span>
             {showPem ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button className="btn btn-secondary" style={{ padding: '0.3rem 0.75rem', fontSize: '0.82rem' }} onClick={downloadPem}>
-              <Download size={13} /> .csr
+            <button className="btn btn-download-pem" onClick={downloadPem}>
+              <Download size={13} /> Download .csr
             </button>
-            <button className="btn btn-secondary" style={{ padding: '0.3rem 0.75rem', fontSize: '0.82rem' }} onClick={downloadDer}>
-              <Download size={13} /> .der
+            <button className="btn btn-download-der" onClick={downloadDer}>
+              <Download size={13} /> Download .der
             </button>
           </div>
         </div>
@@ -372,7 +377,7 @@ export function CsrInspector() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
             <FileKey size={18} color="var(--text-accent-2)" style={{ flexShrink: 0, marginTop: 1 }} />
             <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              <strong style={{ color: 'var(--text-primary)' }}>CSR Inspector</strong> — Inspect Certificate Signing Requests before submitting them to a CA.
+              <strong style={{ color: 'var(--text-primary)' }}><LearningTerm termId="csr">CSR</LearningTerm> Inspector</strong> - Inspect Certificate Signing Requests before submitting them to a CA.
               Verifies the self-signature, shows all requested extensions and subject fields.
               &nbsp;<strong style={{ color: 'var(--text-primary)' }}>100% offline</strong> · no data leaves your machine.
             </div>

@@ -140,97 +140,121 @@ export function FormatConverter() {
   return (
     <div className="main-content">
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <p style={{ color: 'var(--text-secondary)' }}>
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            Certificate Format Converter &amp; PFX Builder
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
             Convert between PEM and DER formats, or package a Certificate and Private Key into a PFX (PKCS#12) archive.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
-          <button className={`btn ${mode === 'pem-der' ? '' : 'btn-secondary'}`} onClick={() => { setMode('pem-der'); setError(''); setMessage(''); }}>
+        <div style={{ display: 'flex', gap: '0.65rem', marginBottom: '2rem', justifyContent: 'center' }}>
+          <button 
+            data-mode="pem-der"
+            className={`format-tab-btn ${mode === 'pem-der' ? 'active' : ''}`} 
+            onClick={() => { setMode('pem-der'); setError(''); setMessage(''); }}
+          >
             <FileArchive size={16} /> PEM ↔ DER Converter
           </button>
-          <button className={`btn ${mode === 'pfx' ? '' : 'btn-secondary'}`} onClick={() => { setMode('pfx'); setError(''); setMessage(''); }}>
+          <button 
+            data-mode="pfx"
+            className={`format-tab-btn ${mode === 'pfx' ? 'active' : ''}`} 
+            onClick={() => { setMode('pfx'); setError(''); setMessage(''); }}
+          >
             <Shield size={16} /> Build PFX (PKCS#12)
           </button>
         </div>
 
         {mode === 'pem-der' && (
-          <div className="glass-panel animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto' }}>
-             <h3 style={{ margin: '0 0 1.5rem 0' }}>PEM ↔ DER File Converter</h3>
+          <div className="glass-panel animate-fade-in" style={{ maxWidth: '650px', margin: '0 auto', padding: '1.75rem' }}>
+             <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.15rem', color: 'var(--text-primary)' }}>PEM ↔ DER File Converter</h3>
              
-             <div className="details-grid">
-                <label className="details-label">Select File</label>
-                <div>
-                   <input type="file" ref={file1InputRef} onChange={handleFile1Upload} style={{ display: 'none' }} />
-                   <button className="btn btn-secondary" onClick={() => file1InputRef.current?.click()}>
-                      <Upload size={16} /> {file1 ? file1.name : 'Choose File...'}
-                   </button>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                   <label className="form-label">Select Source File</label>
+                   <div>
+                      <input type="file" ref={file1InputRef} onChange={handleFile1Upload} style={{ display: 'none' }} />
+                      <button className="btn btn-secondary" onClick={() => file1InputRef.current?.click()} style={{ width: '100%', justifyContent: 'center' }}>
+                         <Upload size={16} /> {file1 ? file1.name : 'Choose PEM or DER File...'}
+                      </button>
+                   </div>
                 </div>
 
-                <label className="details-label">Content Type</label>
-                <select className="details-value" value={convertType} onChange={e => setConvertType(e.target.value as any)} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '4px', padding: '0.5rem', color: '#fff' }}>
-                  <option value="cert">Certificate (X.509)</option>
-                  <option value="key">Private Key (RSA)</option>
-                </select>
+                <div className="format-converter-row">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Content Type</label>
+                    <select className="form-select" value={convertType} onChange={e => setConvertType(e.target.value as any)}>
+                      <option value="cert">Certificate (X.509)</option>
+                      <option value="key">Private Key (RSA)</option>
+                    </select>
+                  </div>
 
-                <label className="details-label">Output Format</label>
-                <select className="details-value" value={outputFormat} onChange={e => setOutputFormat(e.target.value as any)} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '4px', padding: '0.5rem', color: '#fff' }}>
-                  <option value="der">DER (Binary)</option>
-                  <option value="pem">PEM (Base64 Text)</option>
-                </select>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Target Output Format</label>
+                    <select className="form-select" value={outputFormat} onChange={e => setOutputFormat(e.target.value as any)}>
+                      <option value="der">DER (Raw Binary)</option>
+                      <option value="pem">PEM (Base64 ASCII)</option>
+                    </select>
+                  </div>
+                </div>
              </div>
 
              <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-                <button className="btn" onClick={handlePemDerConvert} disabled={!file1}>
-                   <Download size={18} /> Convert & Download
+                <button className="btn" onClick={handlePemDerConvert} disabled={!file1} style={{ width: '100%', justifyContent: 'center', height: '44px' }}>
+                   <Download size={18} /> Convert &amp; Download
                 </button>
              </div>
           </div>
         )}
 
         {mode === 'pfx' && (
-          <div className="glass-panel animate-fade-in">
-             <h3 style={{ margin: '0 0 1.5rem 0' }}>Package PFX Archive</h3>
-             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                Combine a PEM Certificate and a PEM Private Key into a secure PFX (PKCS#12) file suitable for importing into Windows Certificate Store or IIS.
+          <div className="glass-panel animate-fade-in" style={{ padding: '1.75rem' }}>
+             <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.15rem', color: 'var(--text-primary)' }}>Package PFX Archive</h3>
+             <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
+                Combine a PEM Certificate and a PEM Private Key into a secure PFX (PKCS#12) container suitable for Windows Certificate Store, IIS, or Azure Key Vault.
              </p>
 
-             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                <div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}><Shield size={16} /> Certificate (PEM)</label>
+             <div className="responsive-grid-2" style={{ gap: '1.25rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Shield size={15} style={{ color: 'var(--accent-color)' }} /> Certificate (PEM)</label>
                   <textarea
+                    className="form-textarea mono"
                     value={certInput}
                     onChange={e => setCertInput(e.target.value)}
-                    placeholder="-----BEGIN CERTIFICATE-----..."
-                    style={{ width: '100%', height: '200px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '1rem', color: 'var(--text-primary)', fontFamily: 'monospace', resize: 'vertical', outline: 'none' }}
+                    placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
+                    style={{ height: '220px', fontSize: '0.82rem' }}
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}><Key size={16} /> Private Key (PEM)</label>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Key size={15} style={{ color: 'var(--warning-color)' }} /> Private Key (PEM)</label>
                   <textarea
+                    className="form-textarea mono"
                     value={keyInput}
                     onChange={e => setKeyInput(e.target.value)}
-                    placeholder="-----BEGIN PRIVATE KEY-----..."
-                    style={{ width: '100%', height: '200px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '1rem', color: 'var(--text-primary)', fontFamily: 'monospace', resize: 'vertical', outline: 'none' }}
+                    placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
+                    style={{ height: '220px', fontSize: '0.82rem' }}
                   />
                 </div>
              </div>
 
-             <div style={{ marginTop: '1.5rem', maxWidth: '400px', margin: '1.5rem auto 0 auto' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)', textAlign: 'center' }}>PFX Password</label>
-                <input 
-                  type="password" 
-                  value={pfxPassword} 
-                  onChange={e => setPfxPassword(e.target.value)} 
-                  placeholder="Enter secure password..."
-                  style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '4px', padding: '0.75rem', color: '#fff', textAlign: 'center' }} 
-                />
+             <div style={{ maxWidth: '420px', margin: '1.5rem auto 0 auto' }}>
+                <div className="form-group" style={{ textAlign: 'center', marginBottom: 0 }}>
+                  <label className="form-label">PFX Archive Password</label>
+                  <input 
+                    type="password" 
+                    className="form-input"
+                    value={pfxPassword} 
+                    onChange={e => setPfxPassword(e.target.value)} 
+                    placeholder="Enter secure export password..."
+                    style={{ textAlign: 'center' }} 
+                  />
+                </div>
              </div>
 
              <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-                <button className="btn" onClick={handlePfxBuild} disabled={!certInput || !keyInput || !pfxPassword}>
-                   <Download size={18} /> Download PFX
+                <button className="btn" onClick={handlePfxBuild} disabled={!certInput || !keyInput || !pfxPassword} style={{ height: '44px', padding: '0 2rem' }}>
+                   <Download size={18} /> Download PFX Archive
                 </button>
              </div>
           </div>
@@ -240,10 +264,14 @@ export function FormatConverter() {
            <div className="glass-panel" style={{ 
               marginTop: '1.5rem', 
               textAlign: 'center',
+              padding: '1rem 1.25rem',
               background: error ? 'var(--danger-bg)' : 'var(--success-bg)',
-              borderColor: error ? 'var(--danger-color)' : 'var(--success-color)'
+              borderColor: error ? 'var(--danger-border)' : 'var(--success-border)',
+              color: error ? 'var(--danger-color)' : 'var(--success-color)',
+              fontWeight: 500,
+              fontSize: '0.9rem'
            }}>
-              <span style={{ color: error ? 'var(--danger-color)' : 'var(--success-color)' }}>{error || message}</span>
+              <span>{error || message}</span>
            </div>
         )}
 

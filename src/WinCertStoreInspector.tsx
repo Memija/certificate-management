@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import {
   Shield, ShieldCheck, AlertTriangle, RefreshCw, Search,
-  CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, Server, User,
-  FileText, Copy, Download, ExternalLink,
+  CheckCircle, XCircle, ChevronDown, ChevronUp, Server, User,
+  Copy, Download, Loader2, Eye, EyeOff, Check
 } from 'lucide-react';
+import { useToast } from './ToastContext';
+import { splitPurposes, translatePurpose, formatKeyUsageValue } from './utils/purposeFormatter';
+import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,20 +45,27 @@ interface CertStoreEntry {
 
 const STORES: { name: StoreName; label: string; desc: string; icon: any; color: string }[] = [
   { name: 'Root',             label: 'Trusted Root CAs',   desc: 'Self-signed root certificate authorities',        icon: Shield,          color: '#10b981' },
-  { name: 'CA',               label: 'Intermediate CAs',   desc: 'Intermediate certificate authorities',            icon: ShieldCheck,     color: '#38bdf8' },
-  { name: 'My',               label: 'Personal',            desc: 'Your personal certificates with private keys',    icon: User,            color: '#a78bfa' },
+  { name: 'CA',               label: 'Intermediate CAs',   desc: 'Intermediate certificate authorities',            icon: ShieldCheck,     color: '#06b6d4' },
+  { name: 'My',               label: 'Personal',            desc: 'Your personal certificates with private keys',    icon: User,            color: '#a855f7' },
   { name: 'TrustedPublisher', label: 'Trusted Publishers', desc: 'Trusted code-signing publishers',                 icon: CheckCircle,     color: '#f59e0b' },
-  { name: 'Disallowed',       label: 'Untrusted',          desc: 'Explicitly distrusted / revoked certificates',   icon: XCircle,         color: '#ef4444' },
+  { name: 'Disallowed',       label: 'Untrusted',          desc: 'Explicitly distrusted / revoked certificates',   icon: XCircle,         color: '#f43f5e' },
 ];
 
 // ─── Copy button ──────────────────────────────────────────────────────────────
 
-function CopyButton({ value }: { value: string }) {
+function CopyButton({ text }: { text: string }) {
+  const { t } = useTranslation();
+  const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
   return (
     <button
-      onClick={() => { navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-      title="Copy"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        showToast(t('common.copiedToClipboard', 'Copied to clipboard'), 'success');
+        setTimeout(() => setCopied(false), 1500);
+      }}
+      title={t('common.copyToClipboard', 'Copy')}
       style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? 'var(--success-color)' : 'var(--text-secondary)', padding: '2px 4px', borderRadius: 4, display: 'inline-flex', alignItems: 'center' }}
     >
       <Copy size={12} />
@@ -64,10 +75,55 @@ function CopyButton({ value }: { value: string }) {
 
 // ─── Certificate detail panel ─────────────────────────────────────────────────
 
-function CertEntryCard({ entry }: { entry: CertStoreEntry }) {
+function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEntry; search?: string; activeStore?: StoreName }) {
+  const { t, i18n } = useTranslation();
+  const { showToast } = useToast();
   const [expanded, setExpanded] = useState(false);
   const [showPem, setShowPem] = useState(false);
-  const [showExts, setShowExts] = useState(false);
+  const [copiedPem, setCopiedPem] = useState(false);
+
+  const downloadPemFile = () => {
+    if (!entry.pem) return;
+    const blob = new Blob([entry.pem], { type: 'application/x-pem-file' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const filename = (entry.subject.match(/CN=([^,]+)/)?.[1]?.trim() || entry.serialNumber || entry.thumbprint.slice(0, 10)).replace(/[^a-zA-Z0-9_-]/g, '_');
+    a.download = `${filename}.pem`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`Downloaded ${filename}.pem`, 'success');
+  };
+
+  const downloadDerFile = () => {
+    if (!entry.certB64 && !entry.pem) return;
+    try {
+      const b64 = entry.certB64 || entry.pem.replace(/-----[^\n]+-----/g, '').replace(/\s+/g, '');
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: 'application/x-x509-ca-cert' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const filename = (entry.subject.match(/CN=([^,]+)/)?.[1]?.trim() || entry.serialNumber || entry.thumbprint.slice(0, 10)).replace(/[^a-zA-Z0-9_-]/g, '_');
+      a.download = `${filename}.der`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Downloaded ${filename}.der`, 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('Failed to export DER', 'error');
+    }
+  };
+
+  const copyPemText = () => {
+    if (!entry.pem) return;
+    navigator.clipboard.writeText(entry.pem);
+    setCopiedPem(true);
+    showToast(t('app.winCertStore.certCard.copiedToast', 'PEM certificate copied to clipboard'), 'success');
+    setTimeout(() => setCopiedPem(false), 2000);
+  };
 
   const cn = entry.subject.match(/CN=([^,]+)/)?.[1]?.trim()
     || entry.subject.match(/O=([^,]+)/)?.[1]?.trim()
@@ -76,12 +132,18 @@ function CertEntryCard({ entry }: { entry: CertStoreEntry }) {
   const isExpired = entry.isExpired;
   const expiringSoon = entry.isExpiringSoon;
 
+  // Show issuer hint when cert matched via issuer, not own name
+  const q = search.toLowerCase();
+  const matchesOwnName = !q || cn.toLowerCase().includes(q) || entry.subject.toLowerCase().includes(q) || entry.friendlyName.toLowerCase().includes(q) || entry.thumbprint.toLowerCase().includes(q);
+  const issuerCn = entry.issuer.match(/CN=([^,]+)/)?.[1]?.trim() || entry.issuer.match(/O=([^,]+)/)?.[1]?.trim() || '';
+  const showIssuerHint = q && !matchesOwnName && entry.issuer.toLowerCase().includes(q);
+
   return (
     <div
       className="glass-card"
       style={{
         marginBottom: '0.75rem',
-        borderLeft: `3px solid ${isExpired ? '#ef4444' : expiringSoon ? '#f59e0b' : 'var(--glass-border)'}`,
+        borderLeft: `3px solid ${isExpired ? 'var(--danger-color)' : expiringSoon ? 'var(--warning-color)' : 'var(--glass-border)'}`,
       }}
     >
       {/* Header row */}
@@ -90,181 +152,215 @@ function CertEntryCard({ entry }: { entry: CertStoreEntry }) {
         onClick={() => setExpanded(e => !e)}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
-          <Shield size={18} color={isExpired ? '#ef4444' : 'var(--text-accent)'} style={{ flexShrink: 0 }} />
+          <Shield size={18} color={isExpired ? 'var(--danger-color)' : 'var(--text-accent)'} style={{ flexShrink: 0 }} />
           <div style={{ overflow: 'hidden' }}>
             <div style={{
               fontWeight: 600, color: 'var(--text-primary)',
-              fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              fontSize: '0.92rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               {cn}
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-              Expires: {new Date(entry.notAfter).toLocaleDateString()}
-            </div>
+            {showIssuerHint ? (
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-accent)', marginTop: 2 }}>
+                ↳ {t('app.winCertStore.certCard.issuedBy', 'Issued by')}: {issuerCn}
+              </div>
+            ) : (
+              <div
+                style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}
+                title={formatExpiryTooltip(entry.notAfter, t, i18n.language)}
+              >
+                {t('app.winCertStore.certCard.expires', 'Expires')}: {new Date(entry.notAfter).toLocaleDateString()}{' '}
+                <span style={{ color: isExpired ? 'var(--danger-color)' : expiringSoon ? 'var(--warning-color)' : 'var(--text-secondary)' }}>
+                  ({formatExpiry(entry.notAfter, t, i18n.language)})
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0, marginLeft: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0, marginLeft: '0.5rem', flexWrap: 'wrap' }}>
           {isExpired && (
-            <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
-              Expired
+            <span className="badge badge-danger">
+              <span className="badge-dot pulse" />
+              {t('app.winCertStore.certCard.expired', 'Expired')}
             </span>
           )}
           {!isExpired && expiringSoon && (
-            <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
-              Expiring Soon
+            <span className="badge badge-warning">
+              <span className="badge-dot" />
+              {t('app.winCertStore.certCard.expiringSoon', 'Expiring Soon')}
             </span>
           )}
           {entry.isRoot && (
-            <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
-              Root CA
+            <span className="badge badge-success">
+              {t('app.winCertStore.certCard.rootCA', 'Root CA')}
             </span>
           )}
           {entry.isIntermediate && (
-            <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 10, background: 'rgba(56,189,248,0.12)', color: '#38bdf8' }}>
-              Intermediate
+            <span className="badge badge-warning">
+              {t('app.winCertStore.certCard.intermediate', 'Intermediate')}
             </span>
           )}
-          {expanded ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+          {!entry.isRoot && !entry.isIntermediate && (
+            <span className="badge badge-purple">
+              {t('app.certDetails.leafCert', 'Leaf')}
+            </span>
+          )}
+          {activeStore === 'CA' && entry.isRoot && (
+            <span
+              className="badge badge-danger"
+              title={t('app.winCertStore.certCard.misplacedRootDesc', 'This self-signed root certificate is physically installed in the Intermediate CAs store.')}
+            >
+              <AlertTriangle size={12} />
+              {t('app.winCertStore.certCard.misplacedRoot', 'Misplaced Root')}
+            </span>
+          )}
+          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </div>
       </div>
 
-      {/* Expanded details */}
+      {/* Expanded detail */}
       {expanded && (
-        <div style={{ marginTop: '1rem', animation: 'fadeIn 0.2s ease' }}>
+        <div style={{ marginTop: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1rem' }}>
           <div className="details-grid">
-            <div className="details-label">Subject</div>
-            <div className="details-value" style={{ fontSize: '0.88em' }}>{entry.subject}</div>
+            <div className="details-label">{t('app.winCertStore.certCard.subject', 'Subject')}</div>
+            <div className="details-value">{entry.subject}</div>
 
-            <div className="details-label">Issuer</div>
-            <div className="details-value" style={{ fontSize: '0.88em' }}>{entry.issuer}</div>
+            <div className="details-label">{t('app.winCertStore.certCard.issuer', 'Issuer')}</div>
+            <div className="details-value">{entry.issuer}</div>
 
-            <div className="details-label">Valid From</div>
-            <div className="details-value">{new Date(entry.notBefore).toLocaleString()}</div>
+            <div className="details-label">{t('app.winCertStore.certCard.validFrom', 'Valid From')}</div>
+            <div className="details-value">{new Date(entry.notBefore).toLocaleDateString()}</div>
 
-            <div className="details-label">Valid To</div>
-            <div className="details-value" style={{ color: isExpired ? 'var(--danger-color)' : undefined }}>
-              {new Date(entry.notAfter).toLocaleString()}
-              {isExpired && <span style={{ marginLeft: '0.5rem', fontSize: '0.8em', color: 'var(--danger-color)' }}>(Expired)</span>}
-            </div>
-
-            <div className="details-label">Serial Number</div>
-            <div className="details-value" style={{ fontFamily: 'monospace', fontSize: '0.85em', wordBreak: 'break-all' }}>
-              {entry.serialNumber} <CopyButton value={entry.serialNumber} />
-            </div>
-
-            <div className="details-label">Thumbprint</div>
-            <div className="details-value" style={{ fontFamily: 'monospace', fontSize: '0.85em', wordBreak: 'break-all' }}>
-              {entry.thumbprint} <CopyButton value={entry.thumbprint} />
-            </div>
-
-            <div className="details-label">CT Log Lookup</div>
+            <div className="details-label">{t('app.winCertStore.certCard.validTo', 'Valid To')}</div>
             <div className="details-value">
-              <a
-                href={`https://crt.sh/?q=${entry.thumbprint.replace(/:/g, '').toLowerCase()}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: 'var(--text-accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              {new Date(entry.notAfter).toLocaleDateString()}{' '}
+              <span
+                style={{
+                  fontSize: '0.8rem',
+                  color: isExpired ? 'var(--danger-color)' : expiringSoon ? 'var(--warning-color)' : 'var(--text-secondary)',
+                  marginLeft: '0.4rem',
+                  cursor: 'help'
+                }}
+                title={formatExpiryTooltip(entry.notAfter, t, i18n.language)}
               >
-                Search on crt.sh <ExternalLink size={13} />
-              </a>
+                ({formatExpiry(entry.notAfter, t, i18n.language)})
+              </span>
             </div>
 
-            <div className="details-label">Signature Alg.</div>
+            <div className="details-label">{t('app.winCertStore.certCard.serialNumber', 'Serial Number')}</div>
+            <div className="details-value mono">
+              {entry.serialNumber} <CopyButton text={entry.serialNumber} />
+            </div>
+
+            <div className="details-label">{t('app.winCertStore.certCard.thumbprint', 'Thumbprint')}</div>
+            <div className="details-value mono">
+              {entry.thumbprint} <CopyButton text={entry.thumbprint} />
+            </div>
+
+            <div className="details-label">{t('app.winCertStore.certCard.signatureAlg', 'Signature Alg.')}</div>
             <div className="details-value">{entry.signatureAlgorithm}</div>
 
-            <div className="details-label">Public Key</div>
+            <div className="details-label">{t('app.winCertStore.certCard.publicKey', 'Public Key')}</div>
             <div className="details-value">
-              {entry.publicKeyAlgorithm}{entry.publicKeySize ? ` (${entry.publicKeySize} bits)` : ''}
+              {entry.publicKeyAlgorithm} {entry.publicKeySize ? `(${entry.publicKeySize} ${t('app.certDetails.bits', 'bits')})` : ''}
             </div>
 
             {entry.friendlyName && (
               <>
-                <div className="details-label">Friendly Name</div>
+                <div className="details-label">{t('app.winCertStore.certCard.friendlyName', 'Friendly Name')}</div>
                 <div className="details-value">{entry.friendlyName}</div>
               </>
             )}
 
-            <div className="details-label">Purposes</div>
-            <div className="details-value">{entry.purposes.join(', ')}</div>
+            <div className="details-label">{t('app.winCertStore.certCard.purposes', 'Purposes')}</div>
+            <div className="details-value">
+              {splitPurposes(entry.purposes).map((p, idx) => {
+                const translated = translatePurpose(p, t);
+                return (
+                  <span key={idx} className="badge badge-purple" style={{ marginRight: 4, marginBottom: 2 }}>
+                    {translated}
+                  </span>
+                );
+              })}
+            </div>
           </div>
 
           {/* Extensions */}
-          {entry.extensions.length > 0 && (
-            <details style={{ marginTop: '0.75rem' }}>
-              <summary
-                style={{ cursor: 'pointer', color: 'var(--text-accent)', fontSize: '0.88rem', marginBottom: '0.5rem' }}
-                onClick={e => { e.preventDefault(); setShowExts(v => !v); }}
-              >
-                {showExts ? '▾' : '▸'} Extensions ({entry.extensions.length})
+          {entry.extensions && entry.extensions.length > 0 && (
+            <details style={{ marginTop: '1rem' }}>
+              <summary style={{ cursor: 'pointer', color: 'var(--text-accent)', fontWeight: 600, fontSize: '0.85rem' }}>
+                {t('app.winCertStore.certCard.extensions', 'Extensions')} ({entry.extensions.length})
               </summary>
-              {showExts && (
-                <div className="details-grid" style={{ background: 'rgba(0,0,0,0.1)', padding: '0.75rem', borderRadius: 6, marginTop: '0.5rem' }}>
-                  {entry.extensions.map((ext, i) => (
-                    <div key={i} style={{ display: 'contents' }}>
-                      <div className="details-label">
-                        {ext.name}
-                        {ext.critical && <span style={{ marginLeft: 4, fontSize: '0.72em', color: 'var(--danger-color)' }}>Critical</span>}
-                      </div>
-                      <div className="details-value" style={{ fontFamily: 'monospace', fontSize: '0.82em', wordBreak: 'break-all' }}>
-                        {ext.value || '—'}
-                        {ext.oid && <div style={{ fontSize: '0.78em', color: 'var(--text-muted)', marginTop: 2 }}>OID: {ext.oid}</div>}
-                      </div>
+              <div className="details-grid" style={{ marginTop: '0.5rem', background: 'var(--card-bg)', padding: '0.75rem', borderRadius: 8 }}>
+                {entry.extensions.map((ext, idx) => (
+                  <div key={idx} style={{ display: 'contents' }}>
+                    <div className="details-label">
+                      {t([`app.winCertStore.extensions.${ext.name.replace(/\s+/g, '')}`, `app.winCertStore.extensions.${ext.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`] as any, ext.name) as string}
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="details-value mono" style={{ fontSize: '0.78rem' }}>
+                      OID: {ext.oid}
+                      {ext.critical && (
+                        <span className="badge badge-danger" style={{ marginLeft: '0.4rem', fontSize: '0.65rem' }}>
+                          {t('app.certDetails.critical', '(Critical)')}
+                        </span>
+                      )}
+                      {ext.value && (
+                        <div style={{ color: 'var(--text-muted)', marginTop: 2 }}>
+                          {ext.name === 'Key Usage' || ext.oid === '2.5.29.15'
+                            ? formatKeyUsageValue(ext.value, t)
+                            : ext.value}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </details>
           )}
 
-          {/* PEM & Export */}
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
             {entry.pem && (
-              <>
-                <button
-                  onClick={() => setShowPem(p => !p)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-accent)', fontSize: '0.85rem', padding: 0 }}
-                >
-                  <FileText size={13} />
-                  {showPem ? 'Hide PEM' : 'View PEM'}
-                  {showPem ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                </button>
-                <button
-                  onClick={() => {
-                    const blob = new Blob([entry.pem], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${entry.thumbprint.slice(0, 10)}.pem`;
-                    a.click();
-                  }}
-                  style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: 'var(--text-accent)', padding: '0.35rem 0.7rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: 'auto' }}
-                >
-                  <Download size={13} /> Download PEM
-                </button>
-              </>
-            )}
-            {entry.certB64 && (
               <button
-                onClick={() => {
-                  const binary = atob(entry.certB64!);
-                  const bytes = new Uint8Array(binary.length);
-                  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-                  const blob = new Blob([bytes], { type: 'application/x-x509-ca-cert' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${entry.thumbprint.slice(0, 10)}.der`;
-                  a.click();
-                }}
-                style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#10b981', padding: '0.35rem 0.7rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                className="btn btn-download-pem"
+                onClick={downloadPemFile}
+                title={t('app.winCertStore.certCard.downloadPem', 'Download PEM')}
               >
-                <Download size={13} /> Download DER
+                <Download size={13} /> {t('app.winCertStore.certCard.downloadPem', 'Download PEM')}
+              </button>
+            )}
+            {(entry.certB64 || entry.pem) && (
+              <button
+                className="btn btn-download-der"
+                onClick={downloadDerFile}
+                title={t('app.winCertStore.certCard.downloadDer', 'Download DER')}
+              >
+                <Download size={13} /> {t('app.winCertStore.certCard.downloadDer', 'Download DER')}
+              </button>
+            )}
+            {entry.pem && (
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={copyPemText}
+                title={t('app.winCertStore.certCard.copyPem', 'Copy PEM')}
+              >
+                {copiedPem ? <Check size={13} style={{ color: 'var(--success-color)' }} /> : <Copy size={13} />}
+                <span>{copiedPem ? t('app.winCertStore.certCard.copied', 'Copied') : t('app.winCertStore.certCard.copyPem', 'Copy PEM')}</span>
+              </button>
+            )}
+            {entry.pem && (
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => setShowPem(v => !v)}
+              >
+                {showPem ? <EyeOff size={13} /> : <Eye size={13} />}
+                <span>{showPem ? t('app.winCertStore.certCard.hidePem', 'Hide PEM') : t('app.winCertStore.certCard.viewPem', 'View PEM')}</span>
               </button>
             )}
           </div>
           {showPem && entry.pem && (
-            <pre style={{ fontSize: '0.75rem', whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: 'var(--text-secondary)', marginTop: '0.75rem' }}>
+            <pre className="code-block" style={{ fontSize: '0.78rem', marginTop: '0.75rem' }}>
               {entry.pem}
             </pre>
           )}
@@ -276,24 +372,49 @@ function CertEntryCard({ entry }: { entry: CertStoreEntry }) {
 
 // ─── Summary stats bar ────────────────────────────────────────────────────────
 
-function StatsBar({ certs }: { certs: CertStoreEntry[] }) {
+type TimelineFilterType = 'all' | 'valid' | '30days' | 'expired';
+
+function StatsBar({ certs, filter, setFilter }: { certs: CertStoreEntry[], filter: TimelineFilterType, setFilter: (f: TimelineFilterType) => void }) {
+  const { t } = useTranslation();
   const expired = certs.filter(c => c.isExpired).length;
   const expiringSoon = certs.filter(c => !c.isExpired && c.isExpiringSoon).length;
   const valid = certs.length - expired;
 
+  const isFilterDisabled = certs.length <= 1;
+
   return (
-    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+    <div className="stat-grid metric-cards-grid" style={{ marginBottom: '1.25rem' }}>
       {[
-        { label: 'Total', value: certs.length, color: 'var(--text-accent)', bg: 'rgba(56,189,248,0.08)' },
-        { label: 'Valid', value: valid, color: '#10b981', bg: 'rgba(16,185,129,0.08)' },
-        { label: 'Expired', value: expired, color: expired > 0 ? '#ef4444' : 'var(--text-muted)', bg: expired > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.03)' },
-        { label: 'Expiring Soon', value: expiringSoon, color: expiringSoon > 0 ? '#f59e0b' : 'var(--text-muted)', bg: expiringSoon > 0 ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.03)' },
-      ].map(s => (
-        <div key={s.label} style={{ flex: '1 1 100px', background: s.bg, borderRadius: 10, padding: '0.6rem 1rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>{s.label}</div>
-        </div>
-      ))}
+        { id: 'all', label: t('app.winCertStore.stats.total', 'Total In Store'), value: certs.length, icon: Shield, type: 'info' },
+        { id: 'valid', label: t('app.winCertStore.stats.valid', 'Valid Certificates'), value: valid, icon: CheckCircle, type: 'success' },
+        { id: '30days', label: t('app.winCertStore.stats.expiringSoon', 'Expiring Soon (<30d)'), value: expiringSoon, icon: AlertTriangle, type: 'warning' },
+        { id: 'expired', label: t('app.winCertStore.stats.expired', 'Expired Certificates'), value: expired, icon: XCircle, type: 'danger' },
+      ].map(s => {
+        const Icon = s.icon;
+        const active = !isFilterDisabled && filter === s.id;
+        return (
+          <div
+            key={s.id}
+            onClick={isFilterDisabled ? undefined : () => setFilter(s.id as TimelineFilterType)}
+            className="metric-card"
+            style={{
+              cursor: isFilterDisabled ? 'default' : 'pointer',
+              opacity: isFilterDisabled ? 0.75 : 1,
+              border: active ? '1px solid var(--accent-color)' : undefined,
+              background: active ? 'var(--card-bg-hover)' : undefined,
+              boxShadow: active ? '0 0 0 2px var(--accent-glow)' : undefined
+            }}
+          >
+            <div className={`metric-icon-wrap ${s.type}`}>
+              <Icon size={22} />
+            </div>
+            <div className="metric-info">
+              <div className="metric-val">{s.value}</div>
+              <div className="metric-label">{s.label}</div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -301,16 +422,17 @@ function StatsBar({ certs }: { certs: CertStoreEntry[] }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function WinCertStoreInspector() {
+  const { t } = useTranslation();
   const [location, setLocation] = useState<StoreLocation>('CurrentUser');
   const [activeStore, setActiveStore] = useState<StoreName>('Root');
   const [certs, setCerts] = useState<CertStoreEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [needsElevation, setNeedsElevation] = useState(false);
-  const [elevating, setElevating] = useState(false);
+  const [isElevating, setElevating] = useState(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'expiry' | 'name'>('default');
-  const [timelineFilter, setTimelineFilter] = useState<'all' | '30days' | 'expired'>('all');
+  const [timelineFilter, setTimelineFilter] = useState<TimelineFilterType>('all');
 
   const fetchStore = useCallback(async (store: StoreName, loc: StoreLocation, elevate = false) => {
     setError('');
@@ -325,7 +447,9 @@ export function WinCertStoreInspector() {
 
       if (!res.ok) {
         const msg: string = json.error || 'Failed to fetch';
-        if (msg.toLowerCase().includes('access') || msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('privilege')) {
+        if (msg.toLowerCase().includes('canceled by the user') || msg.toLowerCase().includes('cancelled by the user')) {
+          setError('userCanceled');
+        } else if (!elevate && (msg.toLowerCase().includes('access') || msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('privilege'))) {
           setNeedsElevation(true);
         } else {
           setError(msg);
@@ -335,7 +459,12 @@ export function WinCertStoreInspector() {
 
       setCerts(json.data || []);
     } catch (err: any) {
-      setError(err.message);
+      const errorMsg = err.message || '';
+      if (errorMsg.toLowerCase().includes('canceled by the user') || errorMsg.toLowerCase().includes('cancelled by the user')) {
+        setError('userCanceled');
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
       setElevating(false);
@@ -351,6 +480,7 @@ export function WinCertStoreInspector() {
 
   const filtered = certs.filter(c => {
     if (timelineFilter === 'expired' && !c.isExpired) return false;
+    if (timelineFilter === 'valid' && c.isExpired) return false;
     if (timelineFilter === '30days' && (!c.isExpiringSoon || c.isExpired)) return false;
     if (!search) return true;
     const q = search.toLowerCase();
@@ -376,48 +506,45 @@ export function WinCertStoreInspector() {
   if (needsElevation) {
     return (
       <div className="main-content">
-        <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <LocationAndStoreTabs
             location={location} activeStore={activeStore}
             onLocationChange={loc => { setLocation(loc); }}
             onStoreChange={s => { setActiveStore(s); }}
           />
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
-            <div className="glass-panel" style={{ textAlign: 'center', maxWidth: 480, padding: '3rem' }}>
-              {elevating ? (
+          <div className="glass-panel" style={{ padding: '2.5rem 1.25rem', textAlign: 'center', marginTop: '2rem' }}>
+              {isElevating ? (
                 <>
-                  <Shield size={56} color="var(--text-accent)" style={{ animation: 'pulse 2s infinite', margin: '0 auto 1rem auto' }} />
-                  <h2 style={{ color: 'var(--text-accent)' }}>Waiting for Administrator Approval…</h2>
-                  <p style={{ color: 'var(--text-secondary)' }}>Check your taskbar for a Windows UAC prompt.</p>
+                  <Loader2 className="animate-spin" size={56} color="var(--accent-color)" style={{ margin: '0 auto 1rem auto' }} />
+                  <h2 style={{ color: 'var(--text-accent)' }}>{t('app.adminAccess.waiting')}</h2>
+                  <p style={{ color: 'var(--text-secondary)' }}>{t('app.adminAccess.checkTaskbar')}</p>
                 </>
               ) : (
                 <>
                   <AlertTriangle size={56} color="var(--danger-color)" style={{ margin: '0 auto 1rem auto' }} />
-                  <h2 style={{ color: 'var(--text-primary)' }}>Administrator Access Required</h2>
+                  <h2 style={{ color: 'var(--text-primary)' }}>{t('app.adminAccess.title')}</h2>
                   <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                    Reading the <strong>LocalMachine</strong> certificate store requires Administrator privileges.
-                    Click below to elevate — you will only be prompted once per session.
+                    <Trans i18nKey="app.adminAccess.localMachineDesc" components={[<strong key="localmachine" />]} />
                   </p>
-                  {error && <p style={{ color: 'var(--danger-color)', marginBottom: '1rem' }}>{error}</p>}
+                  {error && <p style={{ color: 'var(--danger-color)', marginBottom: '1rem' }}>{error === 'userCanceled' ? t('app.adminAccess.userCanceled') : error}</p>}
                   <button
                     className="btn"
                     style={{ background: 'var(--success-color)', width: '100%', justifyContent: 'center' }}
                     onClick={() => fetchStore(activeStore, location, true)}
                   >
-                    <Shield size={16} /> Unlock LocalMachine Store
+                    <Shield size={16} /> {t('app.adminAccess.unlockLocalMachine')}
                   </button>
                 </>
               )}
             </div>
           </div>
         </div>
-      </div>
     );
   }
 
   return (
     <div className="main-content">
-      <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '950px', margin: '0 auto' }}>
 
         <LocationAndStoreTabs
           location={location} activeStore={activeStore}
@@ -426,123 +553,107 @@ export function WinCertStoreInspector() {
         />
 
         {/* Store description */}
-        <div className="glass-panel" style={{ marginBottom: '1.25rem', padding: '0.9rem 1.1rem', background: 'rgba(56,189,248,0.05)', borderColor: 'rgba(56,189,248,0.15)', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <storeInfo.icon size={18} color={storeInfo.color} style={{ flexShrink: 0 }} />
-          <div>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{storeInfo.label}</span>
-            <span style={{ marginLeft: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>— {storeInfo.desc}</span>
+        <div className="glass-panel" style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem', display: 'flex', gap: '0.85rem', alignItems: 'center' }}>
+          <div className="metric-icon-wrap info" style={{ width: 36, height: 36, borderRadius: 8 }}>
+            <storeInfo.icon size={18} color={storeInfo.color} />
+          </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{t(`app.winCertStore.stores.${storeInfo.name}.label`, storeInfo.label)}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: 2 }}>{t(`app.winCertStore.stores.${storeInfo.name}.desc`, storeInfo.desc)}</div>
           </div>
           <button
-            style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.82rem', padding: '0.25rem 0.5rem', borderRadius: 6, transition: 'color 0.15s' }}
+            className="btn btn-secondary btn-sm"
             onClick={() => fetchStore(activeStore, location)}
-            title="Reload"
+            title={t('app.winCertStore.refresh', 'Reload')}
           >
-            <RefreshCw size={14} style={loading ? { animation: 'spin 1s linear infinite' } : undefined} />
-            Refresh
+            <RefreshCw size={13} style={loading ? { animation: 'spin 1s linear infinite' } : undefined} />
+            {t('app.winCertStore.refresh', 'Refresh')}
           </button>
         </div>
 
-        {/* Loading state */}
+        {/* Skeleton Loading state */}
         {loading && (
-          <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-secondary)' }}>
-            <RefreshCw size={40} style={{ animation: 'spin 1s linear infinite', marginBottom: '1rem', color: 'var(--text-accent)' }} />
-            <p>Loading {storeInfo.label}…</p>
+          <div className="animate-fade-in" style={{ marginTop: '1.5rem' }}>
+            <div className="stat-grid metric-cards-grid" style={{ marginBottom: '1.5rem' }}>
+              <div className="skeleton-pulse skeleton-stat" />
+              <div className="skeleton-pulse skeleton-stat" />
+              <div className="skeleton-pulse skeleton-stat" />
+              <div className="skeleton-pulse skeleton-stat" />
+            </div>
+            <div className="skeleton-pulse skeleton-card" style={{ height: '72px' }} />
+            <div className="skeleton-pulse skeleton-card" style={{ height: '72px' }} />
+            <div className="skeleton-pulse skeleton-card" style={{ height: '72px' }} />
+            <div className="skeleton-pulse skeleton-card" style={{ height: '72px' }} />
           </div>
         )}
 
         {/* Error state */}
         {!loading && error && (
-          <div className="glass-panel" style={{ background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.25)', textAlign: 'center', padding: '2rem' }}>
-            <AlertTriangle size={40} color="#ef4444" style={{ marginBottom: '1rem' }} />
-            <h3 style={{ color: '#ef4444', margin: '0 0 0.5rem 0' }}>Error</h3>
-            <p style={{ color: 'var(--text-secondary)', margin: 0 }}>{error}</p>
+          <div className="glass-panel" style={{ background: 'var(--danger-bg)', borderColor: 'var(--danger-border)', textAlign: 'center', padding: '2rem' }}>
+            <AlertTriangle size={40} color="var(--danger-color)" style={{ marginBottom: '1rem' }} />
+            <h3 style={{ color: 'var(--danger-color)', margin: '0 0 0.5rem 0' }}>{t('common.error', 'Error')}</h3>
+            <p style={{ color: 'var(--text-secondary)', margin: 0 }}>{error === 'userCanceled' ? t('app.adminAccess.userCanceled') : error}</p>
           </div>
         )}
 
-        {/* Certs list */}
-        {!loading && !error && certs.length > 0 && (
+        {/* Certs list or Empty state */}
+        {!loading && !error && (
           <>
-            <StatsBar certs={certs} />
+            <StatsBar certs={certs} filter={timelineFilter} setFilter={setTimelineFilter} />
 
-            {/* Expiry timeline and sorting controls */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem', background: 'rgba(255, 255, 255, 0.02)', padding: '0.65rem 0.85rem', borderRadius: 8, border: '1px solid var(--glass-border)' }}>
-              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginRight: 4, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <Clock size={14} /> Timeline:
-                </span>
-                <button
-                  onClick={() => setTimelineFilter('all')}
-                  style={{ background: timelineFilter === 'all' ? 'var(--text-accent)' : 'rgba(255,255,255,0.05)', color: timelineFilter === 'all' ? '#0f172a' : 'var(--text-secondary)', border: '1px solid var(--border-color)', padding: '0.25rem 0.6rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.78rem', fontWeight: 500 }}
-                >
-                  All
-                </button>
-                <button
-                  onClick={() => setTimelineFilter('30days')}
-                  style={{ background: timelineFilter === '30days' ? '#f59e0b' : 'rgba(245, 158, 11, 0.1)', color: timelineFilter === '30days' ? '#0f172a' : '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.25rem 0.6rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.78rem', fontWeight: 500 }}
-                >
-                  Expiring Within 30 Days
-                </button>
-                <button
-                  onClick={() => setTimelineFilter('expired')}
-                  style={{ background: timelineFilter === 'expired' ? '#ef4444' : 'rgba(239, 68, 68, 0.1)', color: timelineFilter === 'expired' ? '#fff' : '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.25rem 0.6rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.78rem', fontWeight: 500 }}
-                >
-                  Expired Only
-                </button>
+            {/* Filter and Search Bar */}
+            <div className="wincert-filter-bar" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="wincert-filter-search" style={{ position: 'relative', flex: '1 1 240px' }}>
+                <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', opacity: certs.length <= 1 ? 0.5 : 1 }} />
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder={t('app.winCertStore.filters.searchPlaceholder', 'Filter by subject, issuer, or thumbprint…')}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  disabled={certs.length <= 1}
+                  style={{ paddingLeft: '2.25rem' }}
+                />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Sort by:</span>
+              <div className="wincert-filter-sort" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 500, whiteSpace: 'nowrap', opacity: (certs.length <= 1 || filtered.length <= 1) ? 0.6 : 1 }}>{t('app.winCertStore.filters.sortBy', 'Sort by:')}</span>
                 <select
+                  className="form-select"
                   value={sortBy}
                   onChange={(e: any) => setSortBy(e.target.value)}
-                  style={{ background: 'var(--input-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '0.25rem 0.5rem', borderRadius: 6, fontSize: '0.8rem', outline: 'none', cursor: 'pointer' }}
+                  disabled={certs.length <= 1 || filtered.length <= 1}
+                  style={{ minWidth: '160px', padding: '0.5rem 2.25rem 0.5rem 0.75rem', fontSize: '0.82rem' }}
                 >
-                  <option value="default">Default Store Order</option>
-                  <option value="expiry">Expiry Date (Soonest first)</option>
-                  <option value="name">Subject Name (Alphabetical)</option>
+                  <option value="default">{t('app.winCertStore.filters.sortDefault', 'Default Store Order')}</option>
+                  <option value="expiry">{t('app.winCertStore.filters.sortExpiry', 'Expiry Date (Soonest first)')}</option>
+                  <option value="name">{t('app.winCertStore.filters.sortName', 'Subject Name (Alphabetical)')}</option>
                 </select>
               </div>
             </div>
 
-            {/* Search */}
-            <div style={{ position: 'relative', marginBottom: '1rem' }}>
-              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-              <input
-                type="text"
-                placeholder="Filter by subject, issuer, or thumbprint…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                style={{
-                  width: '100%', boxSizing: 'border-box',
-                  padding: '0.6rem 0.75rem 0.6rem 2.25rem',
-                  background: 'var(--input-bg)', border: '1px solid var(--glass-border)',
-                  borderRadius: 8, color: 'var(--text-primary)', fontSize: '0.88rem',
-                  outline: 'none',
-                }}
-              />
-            </div>
-
-            {filtered.length === 0 ? (
-              <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem' }}>
-                No certificates match your filter.
+            {certs.length === 0 ? (
+              <div className="glass-panel" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem 2rem' }}>
+                <ShieldCheck size={44} style={{ marginBottom: '1rem', color: 'var(--text-muted)' }} />
+                <h3 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('app.winCertStore.emptyTitle', 'No Certificates Found')}</h3>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                  <Trans i18nKey="app.winCertStore.emptyDesc" values={{ storeLabel: storeInfo.label, location }}>
+                    The <strong>{"{{storeLabel}}"}</strong> store is empty for {"{{location}}"}.
+                  </Trans>
+                </p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="glass-panel" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem 1.5rem' }}>
+                {t('app.winCertStore.filters.noMatch', 'No certificates match your filter.')}
               </div>
             ) : (
               <div>
                 {filtered.map(cert => (
-                  <CertEntryCard key={cert.thumbprint} entry={cert} />
+                  <CertEntryCard key={cert.thumbprint} entry={cert} search={search} activeStore={activeStore} />
                 ))}
               </div>
             )}
           </>
-        )}
-
-        {/* Empty store */}
-        {!loading && !error && certs.length === 0 && (
-          <div className="glass-panel" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2.5rem' }}>
-            <ShieldCheck size={40} style={{ marginBottom: '1rem', opacity: 0.4 }} />
-            <h3>No Certificates Found</h3>
-            <p style={{ margin: 0 }}>The <strong>{storeInfo.label}</strong> store is empty for {location}.</p>
-          </div>
         )}
 
       </div>
@@ -560,44 +671,52 @@ function LocationAndStoreTabs({
   onLocationChange: (l: StoreLocation) => void;
   onStoreChange: (s: StoreName) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
-    <div style={{ marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+    <div className="wincert-top-section">
       {/* Location toggle */}
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginRight: 4 }}>Store:</span>
-        {(['CurrentUser', 'LocalMachine'] as StoreLocation[]).map(loc => (
-          <button
-            key={loc}
-            className={`btn ${location === loc ? '' : 'btn-secondary'}`}
-            style={{ padding: '0.3rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 5 }}
-            onClick={() => onLocationChange(loc)}
-          >
-            {loc === 'CurrentUser' ? <User size={12} /> : <Server size={12} />}
-            {loc}
-          </button>
-        ))}
+      <div className="store-location-bar">
+        <span className="store-location-label">
+          <Shield size={14} style={{ color: 'var(--text-accent)' }} />
+          {t('app.winCertStore.storeLocation', 'Store Location:')}
+        </span>
+        <div className="store-location-segmented">
+          {(['CurrentUser', 'LocalMachine'] as StoreLocation[]).map(loc => {
+            const locLabel = t(`app.winCertStore.locations.${loc}`, loc);
+            return (
+              <button
+                key={loc}
+                className={`store-location-btn ${location === loc ? 'active' : ''}`}
+                onClick={() => onLocationChange(loc)}
+                title={locLabel}
+                aria-label={locLabel}
+              >
+                {loc === 'CurrentUser' ? <User size={13} /> : <Server size={13} />}
+                <span>{locLabel}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Store tabs */}
-      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+      <div className="store-tabs-scroll-container">
         {STORES.map(s => {
           const Icon = s.icon;
           const active = activeStore === s.name;
+          const storeLabel = t(`app.winCertStore.stores.${s.name}.label`, s.label);
           return (
             <button
               key={s.name}
+              data-store={s.name}
               onClick={() => onStoreChange(s.name)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '0.4rem',
-                padding: '0.35rem 0.85rem', borderRadius: 8, fontSize: '0.83rem', fontWeight: active ? 600 : 400,
-                border: `1px solid ${active ? s.color : 'var(--glass-border)'}`,
-                background: active ? `${s.color}18` : 'transparent',
-                color: active ? s.color : 'var(--text-secondary)',
-                cursor: 'pointer', transition: 'all 0.15s ease',
-              }}
+              className={`store-tab-btn ${active ? 'active' : ''}`}
+              title={storeLabel}
+              aria-label={storeLabel}
             >
-              <Icon size={13} />
-              {s.label}
+              <Icon size={16} color={active ? '#ffffff' : s.color} />
+              <span>{storeLabel}</span>
             </button>
           );
         })}

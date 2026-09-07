@@ -166,8 +166,9 @@ function certStoreApiPlugin() {
         }
 
         const tmpdir    = os.tmpdir();
-        const outPath   = path.join(tmpdir, `certstore_out_${Date.now()}.json`);
-        const scriptPath = path.join(tmpdir, `certstore_get_${Date.now()}.ps1`);
+        const runId     = crypto.randomUUID();
+        const outPath   = path.join(tmpdir, `certstore_out_${runId}.json`);
+        const scriptPath = path.join(tmpdir, `certstore_get_${runId}.ps1`);
 
         // PowerShell script — enumerates the store, exports each cert to temp DER,
         // builds a JSON array, then cleans up the temp cert files.
@@ -179,19 +180,26 @@ try {
     $certs = Get-ChildItem -Path $storePath -ErrorAction Stop
     foreach ($cert in $certs) {
         try {
-            $tempCer = [System.IO.Path]::GetTempFileName() + ".cer"
-            Export-Certificate -Cert $cert -FilePath $tempCer -Type CERT -Force | Out-Null
-            $certBytes = [System.IO.File]::ReadAllBytes($tempCer)
-            Remove-Item $tempCer -Force -ErrorAction SilentlyContinue
-
+            $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
             $b64 = [Convert]::ToBase64String($certBytes)
 
             # Extract EKU/Key Usage from extensions
             $purposes = @()
             $ku = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -eq "Key Usage" }
-            if ($ku) { $purposes += $ku.Format(0) }
+            if ($ku) {
+                $kuRaw = $ku.Format(0) -replace '\\s*\\([^)]*\\)', ''
+                foreach ($part in ($kuRaw -split ',')) {
+                    $trimmed = $part.Trim()
+                    if ($trimmed -and -not ($purposes -contains $trimmed)) { $purposes += $trimmed }
+                }
+            }
             $eku = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -eq "Enhanced Key Usage" }
-            if ($eku) { foreach ($u in $eku.EnhancedKeyUsages) { $purposes += $u.FriendlyName } }
+            if ($eku) {
+                foreach ($u in $eku.EnhancedKeyUsages) {
+                    $trimmed = $u.FriendlyName.Trim()
+                    if ($trimmed -and -not ($purposes -contains $trimmed)) { $purposes += $trimmed }
+                }
+            }
             if ($purposes.Count -eq 0) { $purposes += "General Purpose" }
 
             # Collect all extensions
@@ -221,6 +229,20 @@ try {
             $isExpired     = $cert.NotAfter -lt $now
             $expiringSoon  = (-not $isExpired) -and ($cert.NotAfter -lt $thirtyDays)
 
+            $isSelfSigned = ($cert.Subject -eq $cert.Issuer)
+            $bc = $cert.Extensions | Where-Object { $_.Oid.Value -eq "2.5.29.19" -or $_.Oid.Value -eq "2.5.29.10" -or $_.Oid.FriendlyName -eq "Basic Constraints" }
+            $isCA = $false
+            if ($bc -is [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]) {
+                $isCA = [bool]$bc.CertificateAuthority
+            } elseif ($bc) {
+                $formatted = $bc.Format($false)
+                $isCA = ($formatted -match "CA" -or $formatted -match "IsCertificateAuthority=True")
+            } else {
+                $isCA = $isSelfSigned
+            }
+            $isRoot = $isCA -and $isSelfSigned
+            $isIntermediate = $isCA -and (-not $isRoot)
+
             $results += [PSCustomObject]@{
                 thumbprint        = $cert.Thumbprint
                 subject           = $cert.Subject
@@ -233,6 +255,8 @@ try {
                 publicKeySize      = $pubKeySize
                 friendlyName      = $cert.FriendlyName
                 purposes          = $purposes
+                isRoot            = $isRoot
+                isIntermediate    = $isIntermediate
                 isExpired         = $isExpired
                 isExpiringSoon    = $expiringSoon
                 certB64           = $b64
@@ -242,7 +266,7 @@ try {
             # Skip certs that fail individual export
         }
     }
-    $results | ConvertTo-Json -Depth 5 | Out-File -FilePath '${outPath}' -Encoding utf8
+    ConvertTo-Json -InputObject @($results) -Depth 5 | Out-File -FilePath '${outPath}' -Encoding utf8
 } catch {
     [PSCustomObject]@{ error = $_.Exception.Message } | ConvertTo-Json | Out-File -FilePath '${outPath}' -Encoding utf8
 }
@@ -283,27 +307,12 @@ try {
           // PowerShell returns a single object (not array) when there's only 1 cert
           const certsArray: any[] = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []);
 
-          // Parse DER bytes with node-forge to get isRoot/isIntermediate and PEM
-          const forge = await import('node-forge');
+          // Map certificates with native Windows .NET classification and standard RFC 7468 PEM
           const enriched = certsArray.map((entry: any) => {
-            let isRoot = false;
-            let isIntermediate = false;
-            let pem = '';
-            let extensions: any[] = entry.extensions || [];
-
-            try {
-              const derStr = forge.default.util.createBuffer(
-                Buffer.from(entry.certB64, 'base64')
-              ).getBytes();
-              const asn1 = forge.default.asn1.fromDer(derStr);
-              const cert = forge.default.pki.certificateFromAsn1(asn1);
-              const bc = cert.getExtension('basicConstraints') as any;
-              const isCA = bc ? bc.cA : false;
-              isRoot = isCA && cert.issuer.attributes.map((a: any) => `${a.shortName}=${a.value}`).join(',')
-                === cert.subject.attributes.map((a: any) => `${a.shortName}=${a.value}`).join(',');
-              isIntermediate = isCA && !isRoot;
-              pem = forge.default.pki.certificateToPem(cert);
-            } catch { /* skip forge enrichment */ }
+            const b64 = entry.certB64 || '';
+            const pem = b64
+              ? `-----BEGIN CERTIFICATE-----\n${b64.match(/.{1,64}/g)?.join('\n') || b64}\n-----END CERTIFICATE-----\n`
+              : '';
 
             return {
               thumbprint:         entry.thumbprint || '',
@@ -317,13 +326,13 @@ try {
               publicKeySize:      entry.publicKeySize ?? null,
               friendlyName:       entry.friendlyName || '',
               purposes:           entry.purposes || [],
-              isRoot,
-              isIntermediate,
+              isRoot:             Boolean(entry.isRoot),
+              isIntermediate:     Boolean(entry.isIntermediate),
               isExpired:          entry.isExpired || false,
               isExpiringSoon:     entry.isExpiringSoon || false,
               pem,
-              certB64:            entry.certB64 || '',
-              extensions,
+              certB64:            b64,
+              extensions:         entry.extensions || [],
             };
           });
 

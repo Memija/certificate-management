@@ -82,7 +82,7 @@ function parseDerCrl(derBytes: string): ParsedCRL {
   const asn1 = forge.asn1.fromDer(derBytes);
   const crl = (forge.pki as any).certificateRevocationListFromAsn1(asn1);
 
-  const issuer = formatAttributes(crl.issuer.attributes);
+  const issuer = formatAttributes(crl.issuer?.attributes || []);
   const version = (crl.version ?? 0) + 1;
   const thisUpdate = crl.thisUpdate ? new Date(crl.thisUpdate).toISOString() : '';
   const nextUpdateObj = crl.nextUpdate ? new Date(crl.nextUpdate) : null;
@@ -108,7 +108,9 @@ function parseDerCrl(derBytes: string): ParsedCRL {
   });
 
   const extensions = parseExtensions(crl.extensions || []);
-  const pem = (forge.pki as any).certificateRevocationListToPem(crl);
+  const pem = '-----BEGIN X509 CRL-----\r\n' +
+    (forge.util.encode64(derBytes).match(/.{1,64}/g)?.join('\r\n') || '') +
+    '\r\n-----END X509 CRL-----\r\n';
   const fingerprintSha256 = getSha256Fingerprint(derBytes);
   const derBase64 = forge.util.encode64(derBytes);
 
@@ -128,12 +130,10 @@ function parseDerCrl(derBytes: string): ParsedCRL {
 
 export async function parseCrlFile(file: File): Promise<ParsedCRL> {
   const text = await file.text().catch(() => '');
-  if (text.includes('-----BEGIN X509 CRL-----') || text.includes('-----BEGIN CERTIFICATE REVOCATION LIST-----')) {
+  if (text.includes('-----BEGIN X509 CRL-----') || text.includes('-----BEGIN CERTIFICATE REVOCATION LIST-----') || text.includes('-----BEGIN CRL-----')) {
     // PEM format
-    const pemLines = text.trim();
-    const crl = (forge.pki as any).certificateRevocationListFromPem(pemLines);
-    const asn1 = (forge.pki as any).certificateRevocationListToAsn1(crl);
-    const derBytes = forge.asn1.toDer(asn1).getBytes();
+    const b64 = text.replace(/-----[^\n]+-----/g, '').replace(/\s+/g, '');
+    const derBytes = forge.util.decode64(b64);
     return parseDerCrl(derBytes);
   } else {
     // DER format

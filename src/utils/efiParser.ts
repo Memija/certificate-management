@@ -1,5 +1,13 @@
 import forge from 'node-forge';
 
+// Inject custom Microsoft OIDs so they aren't labeled as "Unknown"
+if (!(forge.pki.oids as any)['1.3.6.1.4.1.311.21.1']) {
+  (forge.pki.oids as any)['1.3.6.1.4.1.311.21.1'] = 'msCAVersion';
+}
+if (!(forge.pki.oids as any)['1.3.6.1.4.1.311.20.2']) {
+  (forge.pki.oids as any)['1.3.6.1.4.1.311.20.2'] = 'msCertificateTemplateName';
+}
+
 export interface ParsedCertificate {
   issuer: string;
   subject: string;
@@ -85,12 +93,12 @@ function parseX509Certificate(derBuffer: ArrayBuffer): ParsedCertificate | undef
       .map(a => `${a.shortName || a.name}=${a.value}`)
       .join(', ');
 
-    // Determine if it's a CA
+    const isSelfSigned = issuerStr === subjectStr;
     const basicConstraints = cert.getExtension('basicConstraints') as any;
-    const isCA = basicConstraints ? basicConstraints.cA : false;
+    const isCA = basicConstraints ? basicConstraints.cA : isSelfSigned;
 
     // Determine Root vs Intermediate vs Leaf
-    const isRoot = isCA && (issuerStr === subjectStr);
+    const isRoot = isCA && isSelfSigned;
     const isIntermediate = isCA && !isRoot;
     const isLeaf = !isCA;
 

@@ -1,21 +1,25 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Upload, FolderOpen, X, Shield, ShieldCheck, AlertTriangle,
   FileKey, ChevronRight, Info, Eye, EyeOff, RefreshCw, Archive,
-  FileText, Lock, ExternalLink
+  FileText, Lock, Download, Copy, Check
 } from 'lucide-react';
-import { parseTrustStoreFile } from './utils/trustStoreParser';
+import { parseTrustStoreFile, decryptJKSPrivateKey } from './utils/trustStoreParser';
 import type { ParsedTrustStore, TrustStoreEntry, ParsedCertificate } from './utils/trustStoreParser';
+import { formatPurposesList, formatKeyUsageValue } from './utils/purposeFormatter';
+import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 
 // ─── Format label helpers ────────────────────────────────────────────────────
-const FORMAT_LABELS: Record<string, { label: string; color: string; icon: any }> = {
-  'X509-DER':   { label: 'DER Certificate',  color: '#38bdf8', icon: Shield },
-  'X509-PEM':   { label: 'PEM Certificate',  color: '#38bdf8', icon: FileText },
-  'PEM-Bundle': { label: 'PEM Bundle',        color: '#a78bfa', icon: Archive },
-  'PKCS7':      { label: 'PKCS#7 Chain',      color: '#f59e0b', icon: ShieldCheck },
-  'PKCS12':     { label: 'PKCS#12 / PFX',    color: '#fb923c', icon: Lock },
-  'JKS':        { label: 'Java KeyStore',     color: '#4ade80', icon: FileKey },
-  'Unknown':    { label: 'Unknown Format',    color: '#ef4444', icon: AlertTriangle },
+// ─── Format label helpers ────────────────────────────────────────────────────
+const FORMAT_LABELS: Record<string, { key: string; label: string; color: string; icon: any }> = {
+  'X509-DER':   { key: 'app.trustStore.format.x509Der',   label: 'DER Certificate',  color: '#38bdf8', icon: Shield },
+  'X509-PEM':   { key: 'app.trustStore.format.x509Pem',   label: 'PEM Certificate',  color: '#38bdf8', icon: FileText },
+  'PEM-Bundle': { key: 'app.trustStore.format.pemBundle', label: 'PEM Bundle',        color: '#a78bfa', icon: Archive },
+  'PKCS7':      { key: 'app.trustStore.format.pkcs7',     label: 'PKCS#7 Chain',      color: '#f59e0b', icon: ShieldCheck },
+  'PKCS12':     { key: 'app.trustStore.format.pkcs12',    label: 'PKCS#12 / PFX',    color: '#fb923c', icon: Lock },
+  'JKS':        { key: 'app.trustStore.format.jks',       label: 'Java KeyStore',     color: '#4ade80', icon: FileKey },
+  'Unknown':    { key: 'app.trustStore.format.unknown',   label: 'Unknown Format',    color: '#ef4444', icon: AlertTriangle },
 };
 
 // ─── Loaded file state ────────────────────────────────────────────────────────
@@ -30,73 +34,84 @@ interface LoadedFile {
 }
 
 // ─── CertificateDetails (self-contained, mirrored from App.tsx) ──────────────
-function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
+function CertificateDetails({ cert, privateKeyPem }: { cert: ParsedCertificate; privateKeyPem?: string }) {
+  const { t, i18n } = useTranslation();
   const [showPem, setShowPem] = useState(false);
+  const [showPrivateKey, setShowPrivateKey] = useState(false);
+  const [copiedPem, setCopiedPem] = useState(false);
+
+  const copyPemText = () => {
+    if (!cert.pem) return;
+    navigator.clipboard.writeText(cert.pem);
+    setCopiedPem(true);
+    setTimeout(() => setCopiedPem(false), 2000);
+  };
 
   return (
     <>
       <div className="details-grid" style={{ marginTop: '0.5rem' }}>
-        <div className="details-label">Subject</div>
+        <div className="details-label">{t('app.trustStore.certDetails.subject', 'Subject')}</div>
         <div className="details-value">{cert.subject}</div>
 
-        <div className="details-label">Issuer</div>
+        <div className="details-label">{t('app.trustStore.certDetails.issuer', 'Issuer')}</div>
         <div className="details-value">{cert.issuer}</div>
 
-        <div className="details-label">Valid From</div>
+        <div className="details-label">{t('app.trustStore.certDetails.validFrom', 'Valid From')}</div>
         <div className="details-value">{new Date(cert.validFrom).toLocaleString()}</div>
 
-        <div className="details-label">Valid To</div>
+        <div className="details-label">{t('app.trustStore.certDetails.validTo', 'Valid To')}</div>
         <div className="details-value" style={{ color: cert.isExpired ? 'var(--danger-color)' : 'var(--text-primary)' }}>
-          {new Date(cert.validTo).toLocaleString()}
-          {cert.isExpired && <span style={{ marginLeft: '0.5rem', fontSize: '0.8em', color: 'var(--danger-color)' }}>(Expired)</span>}
+          {new Date(cert.validTo).toLocaleString()}{' '}
+          <span
+            style={{ marginLeft: '0.4rem', fontSize: '0.85em', color: cert.isExpired ? 'var(--danger-color)' : 'var(--text-secondary)', cursor: 'help' }}
+            title={formatExpiryTooltip(cert.validTo, t, i18n.language)}
+          >
+            ({formatExpiry(cert.validTo, t, i18n.language)})
+          </span>
         </div>
 
-        <div className="details-label">Serial</div>
+        <div className="details-label">{t('app.trustStore.certDetails.serial', 'Serial')}</div>
         <div className="details-value" style={{ fontFamily: 'monospace', fontSize: '0.9em' }}>{cert.serialNumber}</div>
 
-        <div className="details-label">Version</div>
+        <div className="details-label">{t('app.trustStore.certDetails.version', 'Version')}</div>
         <div className="details-value">v{cert.version + 1}</div>
 
-        <div className="details-label">Sig. Algorithm</div>
+        <div className="details-label">{t('app.trustStore.certDetails.sigAlgorithm', 'Sig. Algorithm')}</div>
         <div className="details-value">{cert.signatureAlgorithm} ({cert.signatureOid})</div>
 
-        <div className="details-label">Public Key</div>
-        <div className="details-value">{cert.publicKeyAlgorithm}{cert.publicKeySize ? ` (${cert.publicKeySize} bits)` : ''}</div>
+        <div className="details-label">{t('app.trustStore.certDetails.publicKey', 'Public Key')}</div>
+        <div className="details-value">{cert.publicKeyAlgorithm}{cert.publicKeySize ? ` (${cert.publicKeySize} ${t('app.certDetails.bits', 'bits')})` : ''}</div>
 
-        <div className="details-label">SHA-1</div>
+        <div className="details-label">{t('app.trustStore.certDetails.sha1', 'SHA-1')}</div>
         <div className="details-value" style={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.85em' }}>{cert.fingerprintSha1}</div>
 
-        <div className="details-label">SHA-256</div>
+        <div className="details-label">{t('app.trustStore.certDetails.sha256', 'SHA-256')}</div>
         <div className="details-value" style={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.85em' }}>{cert.fingerprintSha256}</div>
 
-        <div className="details-label">CT Log Lookup</div>
-        <div className="details-value">
-          <a
-            href={`https://crt.sh/?q=${cert.fingerprintSha256.replace(/:/g, '').toLowerCase()}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: 'var(--text-accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-          >
-            Search on crt.sh <ExternalLink size={13} />
-          </a>
-        </div>
-
-        <div className="details-label">Purposes</div>
-        <div className="details-value">{cert.purposes.join(', ')}</div>
+        <div className="details-label">{t('app.trustStore.certDetails.purposes', 'Purposes')}</div>
+        <div className="details-value">{formatPurposesList(cert.purposes, t)}</div>
       </div>
 
       {cert.extensions && cert.extensions.length > 0 && (
         <details style={{ marginTop: '1rem' }}>
           <summary style={{ cursor: 'pointer', color: 'var(--text-accent)', marginBottom: '0.5rem' }}>
-            View Extensions ({cert.extensions.length})
+            {t('app.trustStore.certDetails.viewExtensions', 'View Extensions')} ({cert.extensions.length})
           </summary>
           <div className="details-grid" style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px' }}>
             {cert.extensions.map((ext, idx) => (
               <div key={idx} style={{ display: 'contents' }}>
-                <div className="details-label">{ext.name}</div>
+                <div className="details-label">
+                  {t([`app.winCertStore.extensions.${ext.name.replace(/\s+/g, '')}`, `app.winCertStore.extensions.${ext.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`] as any, ext.name)}
+                </div>
                 <div className="details-value">
-                  <div>OID: {ext.oid}{ext.critical && <span style={{ color: 'var(--danger-color)', fontSize: '0.8em', marginLeft: '0.4rem' }}>(Critical)</span>}</div>
-                  {ext.value && <div style={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.82em', marginTop: '0.25rem', color: 'var(--text-secondary)' }}>{ext.value}</div>}
+                  <div>OID: {ext.oid}{ext.critical && <span style={{ color: 'var(--danger-color)', fontSize: '0.8em', marginLeft: '0.4rem' }}>{t('app.certDetails.critical', '(Critical)')}</span>}</div>
+                  {ext.value && (
+                    <div style={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.82em', marginTop: '0.25rem', color: 'var(--text-secondary)' }}>
+                      {ext.name === 'Key Usage' || ext.oid === '2.5.29.15'
+                        ? formatKeyUsageValue(ext.value, t)
+                        : ext.value}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -104,48 +119,133 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
         </details>
       )}
 
-      <div style={{ marginTop: '1rem' }}>
+      <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        {cert.pem && (
+          <button
+            className="btn btn-download-pem"
+            onClick={() => {
+              const blob = new Blob([cert.pem], { type: 'application/x-pem-file' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              const fn = (cert.subject.match(/CN=([^,]+)/)?.[1]?.trim() || cert.serialNumber || 'cert').replace(/[^a-zA-Z0-9_-]/g, '_');
+              a.download = `${fn}.pem`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download size={13} /> {t('app.winCertStore.certCard.downloadPem', 'Download PEM')}
+          </button>
+        )}
+
+        {cert.pem && (
+          <button
+            className="btn btn-download-der"
+            onClick={() => {
+              try {
+                const b64 = cert.pem.replace(/-----[^\n]+-----/g, '').replace(/\s+/g, '');
+                const binary = atob(b64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                const blob = new Blob([bytes], { type: 'application/x-x509-ca-cert' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const fn = (cert.subject.match(/CN=([^,]+)/)?.[1]?.trim() || cert.serialNumber || 'cert').replace(/[^a-zA-Z0-9_-]/g, '_');
+                a.download = `${fn}.der`;
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch (e) {}
+            }}
+          >
+            <Download size={13} /> {t('app.winCertStore.certCard.downloadDer', 'Download DER')}
+          </button>
+        )}
+
+        {cert.pem && (
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={copyPemText}
+            title={t('app.winCertStore.certCard.copyPem', 'Copy PEM')}
+          >
+            {copiedPem ? <Check size={13} style={{ color: 'var(--success-color)' }} /> : <Copy size={13} />}
+            <span>{copiedPem ? t('app.winCertStore.certCard.copied', 'Copied') : t('app.winCertStore.certCard.copyPem', 'Copy PEM')}</span>
+          </button>
+        )}
+
         <button
-          className="btn btn-secondary"
-          style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}
+          className="btn btn-secondary btn-sm"
           onClick={() => setShowPem(v => !v)}
         >
-          {showPem ? <EyeOff size={14} /> : <Eye size={14} />}
-          {showPem ? 'Hide PEM' : 'View PEM'}
+          {showPem ? <EyeOff size={13} /> : <Eye size={13} />}
+          {showPem ? t('app.trustStore.certDetails.hidePem', 'Hide PEM') : t('app.trustStore.certDetails.viewPem', 'View PEM')}
         </button>
-        {showPem && <pre style={{ marginTop: '0.75rem' }}>{cert.pem}</pre>}
+
+        {privateKeyPem && (
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => setShowPrivateKey(v => !v)}
+          >
+            {showPrivateKey ? <EyeOff size={13} /> : <FileKey size={13} />}
+            {showPrivateKey ? t('app.trustStore.certDetails.hidePrivateKey', 'Hide Private Key') : t('app.trustStore.certDetails.viewPrivateKey', 'View Private Key')}
+          </button>
+        )}
       </div>
+
+      {showPem && <pre className="code-block" style={{ marginTop: '0.75rem' }}>{cert.pem}</pre>}
+      {showPrivateKey && privateKeyPem && <pre className="code-block" style={{ marginTop: '0.75rem', borderColor: 'var(--danger-border)' }}>{privateKeyPem}</pre>}
     </>
   );
 }
 
 // ─── Cert type badges ────────────────────────────────────────────────────────
 function CertBadges({ cert }: { cert: ParsedCertificate }) {
+  const { t } = useTranslation();
   return (
     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-      {cert.isRoot && <span className="badge" style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981', margin: 0 }}>Root CA</span>}
-      {cert.isIntermediate && <span className="badge" style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b', margin: 0 }}>Intermediate CA</span>}
-      {cert.isLeaf && <span className="badge" style={{ background: 'rgba(156,163,175,0.2)', color: '#9ca3af', margin: 0 }}>Leaf</span>}
-      {cert.isExpired && <span className="badge" style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444', margin: 0 }}>Expired</span>}
+      {cert.isRoot && <span className="badge badge-success" style={{ margin: 0 }}><span className="badge-dot" />{t('app.certDetails.rootCa', 'Root CA')}</span>}
+      {cert.isIntermediate && <span className="badge badge-warning" style={{ margin: 0 }}><span className="badge-dot" />{t('app.certDetails.intermediateCa', 'Intermediate CA')}</span>}
+      {cert.isLeaf && <span className="badge badge-purple" style={{ margin: 0 }}><span className="badge-dot" />{t('app.certDetails.leafCert', 'Leaf')}</span>}
+      {cert.isExpired && <span className="badge badge-danger" style={{ margin: 0 }}><span className="badge-dot pulse" />{t('app.certDetails.expired', 'Expired')}</span>}
     </div>
   );
 }
 
 // ─── Single loaded file panel ─────────────────────────────────────────────────
+interface FileTrustStoreProps {
+  loadedFile: LoadedFile;
+  onRemove: () => void;
+  onPasswordSubmit: (id: string, password: string) => void;
+  onPasswordChange: (id: string, val: string) => void;
+  onJksUnlockSubmit: (id: string, password: string) => void;
+}
+
 function FileTrustStore({
   loadedFile,
   onRemove,
   onPasswordSubmit,
   onPasswordChange,
-}: {
-  loadedFile: LoadedFile;
-  onRemove: () => void;
-  onPasswordSubmit: (id: string, password: string) => void;
-  onPasswordChange: (id: string, val: string) => void;
-}) {
+  onJksUnlockSubmit,
+}: FileTrustStoreProps) {
+  const { t, i18n } = useTranslation();
+  const [showPassword, setShowPassword] = useState(false);
+
   const [selectedEntry, setSelectedEntry] = useState<TrustStoreEntry | null>(
     loadedFile.store.entries[0] ?? null
   );
+
+  useEffect(() => {
+    if (!selectedEntry && loadedFile.store.entries.length > 0) {
+      setSelectedEntry(loadedFile.store.entries[0]);
+    } else if (
+      selectedEntry &&
+      !loadedFile.store.entries.some(
+        e => e.alias === selectedEntry.alias && e.certificate.serialNumber === selectedEntry.certificate.serialNumber
+      )
+    ) {
+      setSelectedEntry(loadedFile.store.entries[0] ?? null);
+    }
+  }, [loadedFile.store.entries, selectedEntry]);
 
   const { store, name, needsPassword, id } = loadedFile;
   const fmtInfo = FORMAT_LABELS[store.format] ?? FORMAT_LABELS['Unknown'];
@@ -157,38 +257,31 @@ function FileTrustStore({
       <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <Lock size={22} color={fmtInfo.color} />
+            <div className="metric-icon-wrap warning" style={{ width: 40, height: 40 }}>
+              <Lock size={20} />
+            </div>
             <div>
-              <div style={{ fontWeight: 600 }}>{name}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{fmtInfo.label}</div>
+              <div style={{ fontWeight: 700, fontSize: '1rem' }}>{name}</div>
+              <div style={{ fontSize: '0.8rem', color: fmtInfo.color, fontWeight: 500 }}>{t(fmtInfo.key, fmtInfo.label)}</div>
             </div>
           </div>
-          <button onClick={onRemove} className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem' }}>
+          <button onClick={onRemove} className="btn btn-secondary btn-sm" style={{ padding: '0.3rem 0.6rem' }}>
             <X size={14} />
           </button>
         </div>
 
-        <div style={{ marginTop: '1.5rem', maxWidth: '400px' }}>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem' }}>
-            This file is password-protected. Enter the password to decrypt and inspect its certificates.
+        <div style={{ marginTop: '1.5rem', maxWidth: '420px' }}>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.88rem' }}>
+            {t('app.trustStore.inspector.passwordProtectedDesc', 'This file is password-protected. Enter the password to decrypt and inspect its certificates.')}
           </p>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="input-group">
             <input
               type="password"
-              placeholder="Enter keystore password…"
+              className="form-input"
+              placeholder={t('app.trustStore.inspector.passwordPlaceholder', 'Enter keystore password…')}
               value={loadedFile.passwordInput ?? ''}
               onChange={e => onPasswordChange(id, e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') onPasswordSubmit(id, loadedFile.passwordInput ?? ''); }}
-              style={{
-                flex: 1,
-                padding: '0.6rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid var(--glass-border)',
-                background: 'rgba(255,255,255,0.05)',
-                color: 'var(--text-primary)',
-                fontSize: '1rem',
-                outline: 'none',
-              }}
             />
             <button
               className="btn"
@@ -196,11 +289,13 @@ function FileTrustStore({
               disabled={loadedFile.loading}
             >
               {loadedFile.loading ? <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <ChevronRight size={16} />}
-              Unlock
+              {t('app.trustStore.inspector.unlock', 'Unlock')}
             </button>
           </div>
           {store.warnings.filter(w => w.includes('password') || w.includes('Password')).map((w, i) => (
-            <p key={i} style={{ color: 'var(--danger-color)', marginTop: '0.5rem', fontSize: '0.85rem' }}>{w}</p>
+            <p key={i} style={{ color: 'var(--danger-color)', marginTop: '0.5rem', fontSize: '0.85rem' }}>
+              {w === 'Incorrect password.' ? t('app.trustStore.inspector.incorrectPassword', 'Incorrect password.') : w}
+            </p>
           ))}
         </div>
       </div>
@@ -210,35 +305,88 @@ function FileTrustStore({
   return (
     <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
       {/* File header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <FmtIcon size={22} color={fmtInfo.color} />
-          <div>
-            <div style={{ fontWeight: 600 }}>{name}</div>
-            <div style={{ fontSize: '0.8rem', color: fmtInfo.color }}>{fmtInfo.label}</div>
+          <div className="metric-icon-wrap info" style={{ width: 40, height: 40 }}>
+            <FmtIcon size={20} />
           </div>
-          <span className="badge" style={{ background: 'rgba(255,255,255,0.07)', color: 'var(--text-secondary)', margin: 0 }}>
-            {store.entries.length} cert{store.entries.length !== 1 ? 's' : ''}
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{name}</div>
+            <div style={{ fontSize: '0.8rem', color: fmtInfo.color, fontWeight: 500 }}>{t(fmtInfo.key, fmtInfo.label)}</div>
+          </div>
+          <span className="badge" style={{ marginLeft: '0.5rem' }}>
+            {store.entries.length} {store.entries.length === 1 ? t('app.trustStore.inspector.certsCount_one', 'cert') : t('app.trustStore.inspector.certsCount_other', 'certs')}
           </span>
         </div>
-        <button onClick={onRemove} className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem' }}>
+        <button onClick={onRemove} className="btn btn-secondary btn-sm" style={{ padding: '0.35rem 0.65rem' }}>
           <X size={14} />
         </button>
       </div>
 
       {/* Warnings */}
-      {store.warnings.map((w, i) => (
-        <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginBottom: '0.5rem', padding: '0.6rem 0.8rem', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
-          <Info size={14} color="#f59e0b" style={{ flexShrink: 0, marginTop: '0.15rem' }} />
-          <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{w}</span>
+      {store.warnings.map((w, i) => {
+        let localizedW = w;
+        if (w.includes('Private keys are never displayed')) {
+          const match = w.match(/contains (\d+) private key/);
+          if (match) {
+            localizedW = t('app.trustStore.warnings.privateKeyCount', 'This file contains {{count}} private key(s).', { count: parseInt(match[1], 10) });
+          } else {
+            localizedW = t('app.trustStore.warnings.privateKey', 'This file contains a private key entry.');
+          }
+        } else if (w.includes('JKS MAC verification skipped')) {
+          localizedW = t('app.trustStore.warnings.jksMacSkipped', 'JKS MAC verification skipped. Private keys are encrypted and require a password.');
+        } else if (w.includes('private key is encrypted')) {
+          const aliasMatch = w.match(/Alias "([^"]+)"/);
+          if (aliasMatch) {
+            localizedW = t('app.trustStore.warnings.jksPrivKeySkipped', 'Alias "{{alias}}": private key is encrypted.', { alias: aliasMatch[1] });
+          }
+        }
+        
+        return (
+          <div key={i} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', marginBottom: '0.75rem', padding: '0.75rem 1rem', background: 'var(--warning-bg)', borderRadius: '10px', borderLeft: '3px solid var(--warning-color)' }}>
+            <Info size={16} color="var(--warning-color)" style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{localizedW}</span>
+          </div>
+        );
+      })}
+
+      {/* JKS Unlock Private Keys */}
+      {store.entries.some(e => e.isEncryptedJksKey && !e.privateKeyPem) && (
+        <div style={{ padding: '1.25rem', background: 'var(--card-bg)', borderRadius: '10px', marginBottom: '1.5rem', border: '1px solid var(--glass-border-subtle)' }}>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+            <Lock size={16} style={{ verticalAlign: 'text-bottom', marginRight: '0.5rem', color: 'var(--warning-color)' }} />
+            {t("app.trustStore.inspector.unlockJksTitle", "Unlock Private Keys")}
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem', width: '100%', maxWidth: '420px' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-input"
+                placeholder={t("app.trustStore.inspector.passwordPlaceholder", "Enter password...")}
+                value={loadedFile.passwordInput || ''}
+                onChange={e => onPasswordChange(id, e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && onJksUnlockSubmit(id, loadedFile.passwordInput ?? '')}
+                style={{ paddingRight: '2.5rem' }}
+              />
+              <div 
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </div>
+            </div>
+            <button className="btn" onClick={() => onJksUnlockSubmit(id, loadedFile.passwordInput ?? '')}>
+               {t("app.trustStore.inspector.unlock", "Unlock")}
+            </button>
+          </div>
         </div>
-      ))}
+      )}
 
       {/* Empty state */}
       {store.entries.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+        <div style={{ textAlign: 'center', padding: '2.5rem 1.5rem', color: 'var(--text-secondary)' }}>
           <AlertTriangle size={40} color="var(--danger-color)" style={{ margin: '0 auto 0.75rem' }} />
-          <p>No certificates could be extracted from this file.</p>
+          <p>{t('app.trustStore.inspector.noCertsExtracted', 'No certificates could be extracted from this file.')}</p>
         </div>
       )}
 
@@ -256,15 +404,19 @@ function FileTrustStore({
                   onClick={() => setSelectedEntry(entry)}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                    <Shield size={13} color={isSelected ? 'var(--text-accent)' : 'var(--text-secondary)'} />
-                    <span style={{ fontWeight: 500, fontSize: '0.85rem', color: isSelected ? 'var(--text-accent)' : 'var(--text-primary)' }}>
+                    <Shield size={14} color={isSelected ? 'var(--accent-color)' : 'var(--text-secondary)'} />
+                    <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>
                       {entry.alias}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', paddingLeft: '1.2rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', paddingLeft: '1.4rem' }}>
                     {entry.certificate.isExpired
-                      ? <span style={{ color: '#ef4444' }}>Expired</span>
-                      : <span style={{ color: '#10b981' }}>Valid to {new Date(entry.certificate.validTo).toLocaleDateString()}</span>
+                      ? <span style={{ color: 'var(--danger-color)', fontWeight: 600 }}>
+                          {t('app.certDetails.expired', 'Expired')} ({formatExpiry(entry.certificate.validTo, t, i18n.language)})
+                        </span>
+                      : <span>
+                          {t('app.trustStore.inspector.validTo', 'Valid to {{date}}', { date: new Date(entry.certificate.validTo).toLocaleDateString() })} ({formatExpiry(entry.certificate.validTo, t, i18n.language)})
+                        </span>
                     }
                   </div>
                 </button>
@@ -278,15 +430,15 @@ function FileTrustStore({
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                   <div>
-                    <h3 style={{ margin: 0, marginBottom: '0.4rem' }}>{selectedEntry.alias}</h3>
+                    <h3 style={{ margin: 0, marginBottom: '0.4rem', fontSize: '1.1rem' }}>{selectedEntry.alias}</h3>
                     <CertBadges cert={selectedEntry.certificate} />
                   </div>
                 </div>
-                <CertificateDetails cert={selectedEntry.certificate} />
+                <CertificateDetails cert={selectedEntry.certificate} privateKeyPem={selectedEntry.privateKeyPem} />
               </>
             ) : (
-              <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>
-                Select a certificate from the list
+              <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem 1.5rem' }}>
+                {t('app.trustStore.inspector.selectCert', 'Select a certificate from the list')}
               </div>
             )}
           </div>
@@ -298,6 +450,7 @@ function FileTrustStore({
 
 // ─── Drop Zone ────────────────────────────────────────────────────────────────
 function DropZone({ onFiles }: { onFiles: (files: File[]) => void }) {
+  const { t } = useTranslation();
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -331,17 +484,17 @@ function DropZone({ onFiles }: { onFiles: (files: File[]) => void }) {
         onChange={handleChange}
       />
       <div className="drop-zone-icon">
-        <Upload size={48} />
+        <Upload size={44} />
       </div>
-      <h3 style={{ color: 'var(--text-accent)', marginBottom: '0.5rem' }}>
-        Drop certificate files here
+      <h3 style={{ color: 'var(--text-primary)', marginBottom: '0.4rem', fontSize: '1.2rem' }}>
+        {t('app.trustStore.inspector.dropFilesHere', 'Drop certificate files here')}
       </h3>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-        or click to browse
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem', fontSize: '0.88rem' }}>
+        {t('app.trustStore.inspector.orClickToBrowse', 'or click to browse from your computer')}
       </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center' }}>
+      <div className="drop-zone-formats">
         {['.cer', '.crt', '.pem', '.der', '.p7b / .p7c', '.p12 / .pfx', '.jks', '.keystore'].map(ext => (
-          <span key={ext} className="badge" style={{ margin: 0, background: 'rgba(56,189,248,0.1)', color: 'var(--text-accent)' }}>{ext}</span>
+          <span key={ext} className="drop-zone-format-pill">{ext}</span>
         ))}
       </div>
     </div>
@@ -350,8 +503,18 @@ function DropZone({ onFiles }: { onFiles: (files: File[]) => void }) {
 
 // ─── Main TrustStoreInspector ──────────────────────────────────────────────
 export function TrustStoreInspector() {
+  const { t } = useTranslation();
   const [loadedFiles, setLoadedFiles] = useState<LoadedFile[]>([]);
   const [globalLoading, setGlobalLoading] = useState(false);
+  const [activeFileId, setActiveFileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (loadedFiles.length > 0 && (!activeFileId || !loadedFiles.some(f => f.id === activeFileId))) {
+      setActiveFileId(loadedFiles[0].id);
+    } else if (loadedFiles.length === 0) {
+      setActiveFileId(null);
+    }
+  }, [loadedFiles, activeFileId]);
 
   const processFiles = useCallback(async (files: File[]) => {
     setGlobalLoading(true);
@@ -361,6 +524,9 @@ export function TrustStoreInspector() {
       const id = `${file.name}-${Date.now()}-${Math.random()}`;
       try {
         const result = await parseTrustStoreFile(file, '');
+        if (result.needsPassword) {
+          result.warnings = result.warnings.filter(w => w !== 'Incorrect password.');
+        }
         newEntries.push({
           id,
           name: file.name,
@@ -378,12 +544,23 @@ export function TrustStoreInspector() {
       }
     }
 
-    setLoadedFiles(prev => [...prev, ...newEntries]);
+    if (newEntries.length > 0) {
+      setLoadedFiles(prev => [...prev, ...newEntries]);
+      setActiveFileId(newEntries[newEntries.length - 1].id);
+    }
     setGlobalLoading(false);
   }, []);
 
   const removeFile = (id: string) => {
-    setLoadedFiles(prev => prev.filter(f => f.id !== id));
+    setLoadedFiles(prev => {
+      const remaining = prev.filter(f => f.id !== id);
+      if (activeFileId === id) {
+        const removedIndex = prev.findIndex(f => f.id === id);
+        const nextActive = remaining[removedIndex] || remaining[removedIndex - 1] || remaining[0];
+        setActiveFileId(nextActive ? nextActive.id : null);
+      }
+      return remaining;
+    });
   };
 
   const handlePasswordChange = (id: string, val: string) => {
@@ -404,12 +581,46 @@ export function TrustStoreInspector() {
           : f
       ));
     } catch (e: any) {
+      const isIncorrect = e?.message?.includes('password') || e?.message?.includes('MAC') || e?.message === 'Incorrect password.';
+      const warningText = isIncorrect ? 'Incorrect password.' : (e?.message || 'Decryption failed.');
+
       setLoadedFiles(prev => prev.map(f =>
         f.id === id
-          ? { ...f, store: { format: 'PKCS12', entries: [], warnings: [e?.message || 'Decryption failed.'] }, needsPassword: true, loading: false }
+          ? { ...f, store: { format: 'PKCS12', entries: [], warnings: [warningText] }, needsPassword: true, loading: false }
           : f
       ));
     }
+  };
+
+  const onJksUnlockSubmit = (id: string, pwd: string) => {
+    setLoadedFiles(prev => prev.map(f => {
+      if (f.id !== id) return f;
+      const newEntries = [...f.store.entries];
+      let newWarnings = [...f.store.warnings];
+      let errorEncountered = false;
+
+      for (let i = 0; i < newEntries.length; i++) {
+        const e = newEntries[i];
+        if (e.isEncryptedJksKey && e.encryptedJksKeyData && !e.privateKeyPem) {
+          try {
+            const pem = decryptJKSPrivateKey(e.encryptedJksKeyData, pwd);
+            newEntries[i] = { ...e, privateKeyPem: pem };
+          } catch (err: any) {
+            errorEncountered = true;
+          }
+        }
+      }
+
+      if (errorEncountered) {
+        if (!newWarnings.includes('Incorrect password.')) {
+          newWarnings.unshift('Incorrect password.');
+        }
+      } else {
+        newWarnings = newWarnings.filter(w => !w.includes('JKS MAC') && w !== 'Incorrect password.');
+        newWarnings = newWarnings.filter(w => !w.includes('private key is encrypted'));
+      }
+      return { ...f, store: { ...f.store, entries: newEntries, warnings: newWarnings } };
+    }));
   };
 
   return (
@@ -420,9 +631,9 @@ export function TrustStoreInspector() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <FolderOpen size={32} color="var(--text-accent)" />
             <div>
-              <h2 style={{ margin: 0, marginBottom: '0.25rem' }}>Trust Store Inspector</h2>
+              <h2 style={{ margin: 0, marginBottom: '0.25rem' }}>{t('app.trustStore.inspector.title', 'Trust Store Inspector')}</h2>
               <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-                Load any certificate file or keystore to inspect its contents — 100% client-side, nothing leaves your machine.
+                {t('app.trustStore.inspector.subtitle.p1', 'Load any certificate file or keystore to inspect its contents.')} <strong>{t('app.trustStore.inspector.subtitle.p2', '100% client-side, nothing leaves your machine.')}</strong>
               </p>
             </div>
           </div>
@@ -435,7 +646,7 @@ export function TrustStoreInspector() {
         {globalLoading && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 0', color: 'var(--text-secondary)' }}>
             <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
-            Parsing file(s)…
+            {t('app.trustStore.inspector.parsingFiles', 'Parsing file(s)…')}
           </div>
         )}
 
@@ -443,24 +654,60 @@ export function TrustStoreInspector() {
         {loadedFiles.length > 0 && (
           <div style={{ marginTop: '2rem' }} className="animate-fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Loaded Files ({loadedFiles.length})
+              <h3 style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem', letterSpacing: '0.06em' }}>
+                {t('app.trustStore.inspector.loadedFiles', 'Loaded Files')} ({loadedFiles.length})
               </h3>
               <button
                 className="btn btn-secondary"
                 style={{ fontSize: '0.82rem', padding: '0.35rem 0.8rem' }}
                 onClick={() => setLoadedFiles([])}
               >
-                <X size={13} /> Clear All
+                <X size={13} /> {t('app.trustStore.inspector.clearAll', 'Clear All')}
               </button>
             </div>
-            {loadedFiles.map(lf => (
+            
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              {loadedFiles.map(lf => {
+                const isActive = activeFileId === lf.id;
+                return (
+                  <button
+                    key={lf.id}
+                    onClick={() => setActiveFileId(lf.id)}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: isActive ? 'var(--bg-glass)' : 'rgba(255,255,255,0.02)',
+                      border: isActive ? '1px solid var(--text-accent)' : '1px solid var(--glass-border)',
+                      borderRadius: '8px',
+                      color: isActive ? 'var(--text-accent)' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <FileText size={14} />
+                    <span style={{ textTransform: 'none' }}>{lf.name}</span>
+                    <X 
+                      size={14} 
+                      onClick={(e) => { e.stopPropagation(); removeFile(lf.id); }}
+                      style={{ marginLeft: '0.5rem', opacity: 0.6, cursor: 'pointer' }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            {loadedFiles.filter(lf => lf.id === activeFileId).map(lf => (
               <FileTrustStore
                 key={lf.id}
                 loadedFile={lf}
                 onRemove={() => removeFile(lf.id)}
                 onPasswordSubmit={handlePasswordSubmit}
                 onPasswordChange={handlePasswordChange}
+                onJksUnlockSubmit={onJksUnlockSubmit}
               />
             ))}
           </div>

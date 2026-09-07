@@ -32,6 +32,9 @@ export interface ParsedCertificate {
 export interface TrustStoreEntry {
   alias: string;
   certificate: ParsedCertificate;
+  privateKeyPem?: string;
+  isEncryptedJksKey?: boolean;
+  encryptedJksKeyData?: Uint8Array;
 }
 
 export interface ParsedTrustStore {
@@ -50,9 +53,10 @@ export function parseX509FromDer(derBuffer: ArrayBuffer): ParsedCertificate | nu
     const issuerStr = cert.issuer.attributes.map(a => `${a.shortName || a.name}=${a.value}`).join(', ');
     const subjectStr = cert.subject.attributes.map(a => `${a.shortName || a.name}=${a.value}`).join(', ');
 
+    const isSelfSigned = issuerStr === subjectStr;
     const basicConstraints = cert.getExtension('basicConstraints') as any;
-    const isCA = basicConstraints ? basicConstraints.cA : false;
-    const isRoot = isCA && issuerStr === subjectStr;
+    const isCA = basicConstraints ? basicConstraints.cA : isSelfSigned;
+    const isRoot = isCA && isSelfSigned;
     const isIntermediate = isCA && !isRoot;
     const isLeaf = !isCA;
     const isExpired = new Date() > cert.validity.notAfter;
@@ -162,7 +166,27 @@ function detectFormat(bytes: Uint8Array, textContent: string): ParsedTrustStore[
   return 'Unknown';
 }
 
-// ─── PEM parser ──────────────────────────────────────────────────────────────
+export function parsePemToCerts(pem: string): ParsedCertificate[] {
+  const certs: ParsedCertificate[] = [];
+  const regex = /-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(pem)) !== null) {
+    try {
+      const cert = forge.pki.certificateFromPem(match[0]);
+      const derStr = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
+      const derBuffer = new Uint8Array(derStr.length);
+      for (let i = 0; i < derStr.length; i++) derBuffer[i] = derStr.charCodeAt(i);
+      const parsed = parseX509FromDer(derBuffer.buffer);
+      if (parsed) {
+        certs.push(parsed);
+      }
+    } catch {
+      // ignore individual malformed block
+    }
+  }
+  return certs;
+}
+
 function parsePemBundle(pem: string): { entries: TrustStoreEntry[]; warnings: string[] } {
   const warnings: string[] = [];
   const entries: TrustStoreEntry[] = [];
@@ -247,16 +271,22 @@ function parsePkcs12(bytes: Uint8Array, password: string): { entries: TrustStore
 
     // Count private key bags - warn but never expose
     const pkBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
-    const pkCount = (pkBags[forge.pki.oids.pkcs8ShroudedKeyBag] || []).length;
-    if (pkCount > 0) {
-      warnings.push(`This file contains ${pkCount} private key(s). Private keys are never displayed.`);
+    const pks = pkBags[forge.pki.oids.pkcs8ShroudedKeyBag] || [];
+    if (pks.length > 0) {
+      warnings.push(`This file contains ${pks.length} private key(s). Private keys are never displayed.`);
+      try {
+        const pkPem = pks[0].key ? forge.pki.privateKeyToPem(pks[0].key) : undefined;
+        if (pkPem && entries.length > 0) entries[0].privateKeyPem = pkPem;
+      } catch (e) {
+        // ignore
+      }
     }
   } catch (e: any) {
     const msg = e?.message || String(e);
     if (msg.includes('Invalid password') || msg.includes('PKCS#12 MAC could not be verified')) {
       return { entries: [], warnings: ['Incorrect password.'], needsPassword: true };
     }
-    // May be a DER X.509, not PKCS12 — signal to caller
+    // May be a DER X.509, not PKCS12 - signal to caller
     return { entries: [], warnings: [`PKCS#12 parse error: ${msg}`] };
   }
   return { entries, warnings };
@@ -301,23 +331,50 @@ function parseJks(bytes: Uint8Array): { entries: TrustStoreEntry[]; warnings: st
     offset += 8;
 
     if (tag === 1) {
-      // Private key entry — skip it
+      // Private key entry
       // Key: 4-byte encoded key length + data
       if (offset + 4 > bytes.length) break;
       const keyLen = view.getUint32(offset, false); offset += 4;
+      const encryptedKeyData = bytes.slice(offset, offset + keyLen);
       offset += keyLen;
 
       // Cert chain: 4-byte count, then each cert is 2-byte type len + type + 4-byte cert len + cert
       if (offset + 4 > bytes.length) break;
       const chainCount = view.getUint32(offset, false); offset += 4;
+      
+      let firstCertBytes: Uint8Array | null = null;
+
       for (let c = 0; c < chainCount; c++) {
         const typeLen = view.getUint16(offset, false); offset += 2;
         offset += typeLen;
         if (offset + 4 > bytes.length) break;
         const certLen = view.getUint32(offset, false); offset += 4;
+        const certBytes = bytes.slice(offset, offset + certLen);
         offset += certLen;
+        
+        if (c === 0) {
+          firstCertBytes = certBytes;
+        }
       }
-      warnings.push(`Alias "${alias}": private key entry — skipped (keys are never displayed).`);
+      
+      warnings.push(`Alias "${alias}": private key is encrypted.`);
+      
+      if (firstCertBytes) {
+        try {
+          const buffer = firstCertBytes.buffer.slice(firstCertBytes.byteOffset, firstCertBytes.byteOffset + firstCertBytes.byteLength) as ArrayBuffer;
+          const parsed = parseX509FromDer(buffer);
+          if (parsed) {
+            entries.push({
+              alias,
+              certificate: parsed,
+              isEncryptedJksKey: true,
+              encryptedJksKeyData: encryptedKeyData
+            });
+          }
+        } catch(e) {
+          warnings.push(`Alias "${alias}": failed to parse private key's certificate.`);
+        }
+      }
 
     } else if (tag === 2) {
       // Trusted certificate entry
@@ -341,11 +398,9 @@ function parseJks(bytes: Uint8Array): { entries: TrustStoreEntry[]; warnings: st
     }
   }
 
-  if (entries.length === 0 && warnings.filter(w => w.includes('private key')).length === count) {
-    warnings.unshift('This JKS file contains only private key entries. No certificates to display. Try exporting a truststore (.jks with trusted cert entries) instead.');
+  if (entries.some(e => e.isEncryptedJksKey)) {
+    warnings.unshift('JKS MAC verification skipped. Private keys are encrypted and require a password.');
   }
-
-  warnings.unshift('JKS MAC verification skipped — certificates are readable without a password. Private key entries are never displayed.');
 
   return { entries, warnings };
 }
@@ -432,4 +487,79 @@ export async function parseTrustStoreFile(
       'Unrecognized file format. Supported formats: PEM, DER, PKCS#7 (.p7b), PKCS#12 (.p12/.pfx), JKS.',
     ],
   };
+}
+
+// -----------------------------------------------------------------------------
+// JKS SunJCE Private Key Decryption
+// -----------------------------------------------------------------------------
+export function decryptJKSPrivateKey(encryptedKeyData: Uint8Array, passwordStr: string): string {
+  // Parse EncryptedPrivateKeyInfo ASN.1
+  // createBuffer takes binary string or byte array
+  const keyStr = String.fromCharCode.apply(null, Array.from(encryptedKeyData));
+  const asn1 = forge.asn1.fromDer(forge.util.createBuffer(keyStr));
+  // obj.value[1].value is the OctetString containing the protected key block
+  const protectedKeyStr = (asn1.value as any)[1].value;
+  const protectedKey = Uint8Array.from(protectedKeyStr as string, c => c.charCodeAt(0));
+
+  const SALT_LEN = 20;
+  const DIGEST_LEN = 20;
+  
+  if (protectedKey.length < SALT_LEN + DIGEST_LEN) {
+    throw new Error('Invalid protected key block length');
+  }
+
+  const salt = protectedKey.slice(0, SALT_LEN);
+  const encrKeyLen = protectedKey.length - SALT_LEN - DIGEST_LEN;
+  const encrKey = protectedKey.slice(SALT_LEN, SALT_LEN + encrKeyLen);
+
+  const numRounds = Math.ceil(encrKeyLen / DIGEST_LEN);
+  let xorKey = new Uint8Array(numRounds * DIGEST_LEN);
+
+  // Convert password to UTF-16BE bytes
+  const passwdBytes = new Uint8Array(passwordStr.length * 2);
+  for (let i = 0, j = 0; i < passwordStr.length; i++) {
+    const code = passwordStr.charCodeAt(i);
+    passwdBytes[j++] = code >> 8;
+    passwdBytes[j++] = code & 0xff;
+  }
+
+  let digest = salt;
+  let xorOffset = 0;
+
+  for (let i = 0; i < numRounds; i++) {
+    const md = forge.md.sha1.create();
+    md.update(forge.util.createBuffer(passwdBytes).getBytes());
+    md.update(forge.util.createBuffer(digest).getBytes());
+    
+    const digestStr = md.digest().getBytes();
+    digest = Uint8Array.from(digestStr, c => c.charCodeAt(0));
+    
+    xorKey.set(digest, xorOffset);
+    xorOffset += DIGEST_LEN;
+  }
+
+  // XOR to get plain key
+  const plainKey = new Uint8Array(encrKey.length);
+  for (let i = 0; i < plainKey.length; i++) {
+    plainKey[i] = encrKey[i] ^ xorKey[i];
+  }
+
+  // Verify MAC
+  const md = forge.md.sha1.create();
+  md.update(forge.util.createBuffer(passwdBytes).getBytes());
+  md.update(forge.util.createBuffer(plainKey).getBytes());
+  const finalDigestStr = md.digest().getBytes();
+  const finalDigest = Uint8Array.from(finalDigestStr, c => c.charCodeAt(0));
+
+  const expectedDigest = protectedKey.slice(SALT_LEN + encrKeyLen);
+  for (let i = 0; i < DIGEST_LEN; i++) {
+    if (finalDigest[i] !== expectedDigest[i]) {
+      throw new Error('Cannot recover key: Incorrect password');
+    }
+  }
+
+  // Parse plainKey as PKCS#8
+  const plainAsn1 = forge.asn1.fromDer(forge.util.createBuffer(plainKey));
+  const privateKey = forge.pki.privateKeyFromAsn1(plainAsn1);
+  return forge.pki.privateKeyToPem(privateKey);
 }

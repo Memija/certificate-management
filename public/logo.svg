@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Rich Gold Gradients -->
+    <linearGradient id="gold-main" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="25%" stop-color="#F59E0B" />
+      <stop offset="75%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    
+    <linearGradient id="gold-bevel" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D97706" />
+      <stop offset="60%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#FEF08A" />
+    </linearGradient>
+
+    <!-- Rich Emerald Gradients -->
+    <linearGradient id="emerald-main" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7" />
+      <stop offset="30%" stop-color="#10B981" />
+      <stop offset="75%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+    <linearGradient id="emerald-bevel" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#047857" />
+      <stop offset="50%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#A7F3D0" />
+    </linearGradient>
+
+    <linearGradient id="emerald-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064E3B" />
+      <stop offset="100%" stop-color="#022C22" />
+    </linearGradient>
+
+    <!-- Glow & Shadow -->
+    <filter id="subtle-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <g filter="url(#card-shadow)">
+    <!-- ==================== 1. UNIFIED SOLID TOP SHACKLE ==================== -->
+    
+    <!-- LEFT SHACKLE: ONE SMOOTH SOLID GOLD PIECE -->
+    <path d="M 162,208 
+             L 162,185 
+             C 162,136 201,96 250,96 
+             L 257,112 
+             C 217,116 194,146 194,185 
+             L 194,208 
+             Z" 
+          fill="url(#gold-main)" />
+    
+    <!-- Top Gold Bevel Arc Highlight -->
+    <path d="M 162,185 
+             C 162,136 201,96 250,96 
+             L 245,108 
+             C 207,110 178,142 178,185 
+             L 162,185 Z" 
+          fill="url(#gold-bevel)" opacity="0.9" />
+
+    <!-- RIGHT SHACKLE: ONE SMOOTH SOLID EMERALD PIECE -->
+    <path d="M 264,98 
+             C 313,103 338,142 338,185 
+             L 338,198 
+             L 306,172 
+             L 306,185 
+             C 306,155 288,126 256,118 
+             Z" 
+          fill="url(#emerald-main)" />
+    
+    <!-- Top Emerald Bevel Arc Highlight -->
+    <path d="M 264,98 
+             C 305,105 338,140 338,185 
+             L 324,185 
+             C 324,148 298,118 260,110 
+             Z" 
+          fill="url(#emerald-bevel)" opacity="0.85" />
+
+
+    <!-- ==================== 2. LEFT HALF: CLEAN ISOMETRIC EMERALD SHIELD ==================== -->
+    <g>
+      <!-- Outer Solid Shield Frame -->
+      <path d="M 160,220 
+               L 242,220 
+               L 242,365 
+               L 250,395 
+               L 160,310 
+               Z" 
+            fill="url(#emerald-dark)" />
+
+      <!-- Outer Highlight Border -->
+      <path d="M 160,220 
+               L 242,220 
+               L 242,234 
+               L 174,234 
+               L 174,304 
+               L 242,358 
+               L 242,365 
+               L 250,395 
+               L 160,310 
+               Z" 
+            fill="url(#emerald-main)" />
+
+      <!-- Structured Inner Crystal / Geometric Facets (Aligned, not scattered) -->
+      <!-- Top Cell -->
+      <polygon points="174,234 242,234 242,274 174,274" fill="#047857" opacity="0.4" />
+      <!-- Lower Cell -->
+      <polygon points="174,274 242,274 242,358 174,304" fill="#064E3B" opacity="0.6" />
+
+      <!-- Clean Structural Lattice Lines -->
+      <line x1="174" y1="274" x2="242" y2="274" stroke="url(#emerald-bevel)" stroke-width="4" stroke-linecap="round" />
+      <line x1="174" y1="234" x2="242" y2="274" stroke="url(#emerald-bevel)" stroke-width="3.5" stroke-linecap="round" />
+      <line x1="174" y1="274" x2="242" y2="234" stroke="url(#emerald-bevel)" stroke-width="3.5" stroke-linecap="round" />
+      <line x1="174" y1="274" x2="242" y2="340" stroke="url(#emerald-bevel)" stroke-width="3.5" stroke-linecap="round" />
+      <line x1="174" y1="304" x2="242" y2="274" stroke="url(#emerald-bevel)" stroke-width="3.5" stroke-linecap="round" />
+
+      <!-- Center Emerald Dividing Spine -->
+      <line x1="242" y1="220" x2="242" y2="365" stroke="url(#emerald-bevel)" stroke-width="5" stroke-linecap="round" />
+    </g>
+
+
+    <!-- ==================== 3. RIGHT HALF: CLEAN GOLD CERTIFICATE DOCUMENT ==================== -->
+    <g>
+      <!-- Base Document Fill -->
+      <path d="M 258,220 
+               L 302,220 
+               L 340,258 
+               L 340,310 
+               L 250,395 
+               L 258,365 
+               Z" 
+            fill="#78350F" opacity="0.35" />
+
+      <!-- Document Outer Golden Border -->
+      <path d="M 258,220 
+               L 302,220 
+               L 340,258 
+               L 340,310 
+               L 250,395 
+               L 308,340 
+               L 326,306 
+               L 326,264 
+               L 296,234 
+               L 258,234 
+               Z" 
+            fill="url(#gold-main)" />
+
+      <!-- Folded Top-Right Corner Flap -->
+      <polygon points="302,220 340,258 302,258" fill="url(#gold-bevel)" />
+      <polygon points="302,220 302,258 318,258" fill="#B45309" opacity="0.4" />
+
+      <!-- Certificate Document Horizontal Lines (Vibrant Emerald) -->
+      <rect x="270" y="270" width="46" height="7" rx="3.5" fill="#10B981" filter="url(#subtle-glow)" />
+      <rect x="270" y="288" width="46" height="7" rx="3.5" fill="#10B981" filter="url(#subtle-glow)" />
+
+      <!-- Wax Seal Badge & Ribbon -->
+      <g transform="translate(306, 332)">
+        <!-- Ribbon Tails -->
+        <path d="M -5,8 L -5,22 L 2,17 L 9,22 L 9,8 Z" fill="#92400E" />
+        <!-- Seal Rings -->
+        <circle cx="2" cy="2" r="14" fill="url(#gold-bevel)" />
+        <circle cx="2" cy="2" r="10" fill="url(#gold-main)" />
+        <circle cx="2" cy="2" r="5" fill="url(#gold-bevel)" />
+      </g>
+
+      <!-- Center Gold Dividing Spine -->
+      <line x1="258" y1="220" x2="258" y2="365" stroke="url(#gold-bevel)" stroke-width="5" stroke-linecap="round" />
+    </g>
+
+    <!-- Bottom Shield Apex Joint -->
+    <polygon points="242,365 258,365 250,395" fill="url(#gold-bevel)" />
+  </g>
+</svg>

@@ -82,7 +82,7 @@ function parseCSRBytes(bytes: Uint8Array, text: string): ParsedCSR {
   let derBytes: Uint8Array;
 
   if (isPem) {
-    // Normalize — accept both "CERTIFICATE REQUEST" and "NEW CERTIFICATE REQUEST"
+    // Normalize - accept both "CERTIFICATE REQUEST" and "NEW CERTIFICATE REQUEST"
     const pemNorm = text.replace('NEW CERTIFICATE REQUEST', 'CERTIFICATE REQUEST');
     try {
       csr = forge.pki.certificationRequestFromPem(pemNorm);
