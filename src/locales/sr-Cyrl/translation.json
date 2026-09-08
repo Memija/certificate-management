@@ -297,7 +297,12 @@
       "certCount_one": "{{count}} сертификат",
       "certCount_other": "{{count}} сертификата",
       "copyThumbprint": "Кликните за копирање отиска",
-      "copiedThumbprint": "Копиран отисак за {{name}}"
+      "copiedThumbprint": "Копиран отисак за {{name}}",
+      "selectSortField": "Сортирај сертификате",
+      "sortAscending": "Растући редослед",
+      "sortDescending": "Опадајући редослед",
+      "orderAsc": "Растуће",
+      "orderDesc": "Опадајуће"
     },
     "expiry": {
       "year_one": "{{count}} година",
@@ -369,7 +374,9 @@
           "p2": "100% на страни клијента, ништа не напушта ваш рачунар."
         },
         "incorrectPassword": "Нетачна лозинка.",
-        "unlockJksTitle": "Откључај приватне кључеве"
+        "unlockJksTitle": "Откључај приватне кључеве",
+        "showPassword": "Прикажи лозинку",
+        "hidePassword": "Сакриј лозинку"
       },
       "warnings": {
         "privateKey": "Ова датотека садржи унос приватног кључа.",

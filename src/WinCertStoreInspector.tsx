@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import {
   Shield, ShieldCheck, AlertTriangle, RefreshCw, Search,
   CheckCircle, XCircle, ChevronDown, ChevronUp, Server, User,
-  Copy, Download, Loader2, Eye, EyeOff, Check
+  Copy, Download, Loader2, Eye, EyeOff, Check, ArrowUpDown,
+  Clock, Award, Layers, X
 } from 'lucide-react';
 import { useToast } from './ToastContext';
 import { splitPurposes, translatePurpose, formatKeyUsageValue } from './utils/purposeFormatter';
@@ -431,8 +433,36 @@ export function WinCertStoreInspector() {
   const [needsElevation, setNeedsElevation] = useState(false);
   const [isElevating, setElevating] = useState(false);
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'default' | 'expiry' | 'name'>('default');
+  type SortOption = 'default' | 'expiry' | 'name';
+  const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [sortAsc, setSortAsc] = useState(true);
+  const [isSortOpen, setIsSortOpen] = useState(false);
   const [timelineFilter, setTimelineFilter] = useState<TimelineFilterType>('all');
+
+  const SORT_OPTIONS: { id: SortOption; labelKey: string; defaultLabel: string; icon: React.ElementType }[] = [
+    { id: 'default', labelKey: 'app.winCertStore.filters.sortDefault', defaultLabel: 'Default Store Order', icon: Layers },
+    { id: 'expiry', labelKey: 'app.dashboard.colExpiryDate', defaultLabel: 'Expiry Date', icon: Clock },
+    { id: 'name', labelKey: 'app.dashboard.colCertificate', defaultLabel: 'Subject Name', icon: Award },
+  ];
+
+  useEffect(() => {
+    if (!isSortOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSortOpen(false);
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isSortOpen]);
 
   const fetchStore = useCallback(async (store: StoreName, loc: StoreLocation, elevate = false) => {
     setError('');
@@ -478,7 +508,7 @@ export function WinCertStoreInspector() {
     fetchStore(activeStore, location);
   }, [activeStore, location, fetchStore]);
 
-  const filtered = certs.filter(c => {
+  const filtered = certs.map((c, idx) => ({ cert: c, origIdx: idx })).filter(({ cert: c }) => {
     if (timelineFilter === 'expired' && !c.isExpired) return false;
     if (timelineFilter === 'valid' && c.isExpired) return false;
     if (timelineFilter === '30days' && (!c.isExpiringSoon || c.isExpired)) return false;
@@ -492,13 +522,15 @@ export function WinCertStoreInspector() {
     );
   }).sort((a, b) => {
     if (sortBy === 'expiry') {
-      return new Date(a.notAfter).getTime() - new Date(b.notAfter).getTime();
+      const diff = new Date(a.cert.notAfter).getTime() - new Date(b.cert.notAfter).getTime();
+      return sortAsc ? diff : -diff;
     }
     if (sortBy === 'name') {
-      return a.subject.localeCompare(b.subject);
+      const diff = a.cert.subject.localeCompare(b.cert.subject);
+      return sortAsc ? diff : -diff;
     }
-    return 0;
-  });
+    return sortAsc ? (a.origIdx - b.origIdx) : (b.origIdx - a.origIdx);
+  }).map(({ cert }) => cert);
 
   const storeInfo = STORES.find(s => s.name === activeStore)!;
 
@@ -616,12 +648,16 @@ export function WinCertStoreInspector() {
                 />
               </div>
 
-              <div className="wincert-filter-sort" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {/* Standard Select for Desktop View */}
+              <div className="wincert-filter-sort wincert-sort-desktop">
                 <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 500, whiteSpace: 'nowrap', opacity: (certs.length <= 1 || filtered.length <= 1) ? 0.6 : 1 }}>{t('app.winCertStore.filters.sortBy', 'Sort by:')}</span>
                 <select
                   className="form-select"
                   value={sortBy}
-                  onChange={(e: any) => setSortBy(e.target.value)}
+                  onChange={(e: any) => {
+                    setSortBy(e.target.value);
+                    setSortAsc(true);
+                  }}
                   disabled={certs.length <= 1 || filtered.length <= 1}
                   style={{ minWidth: '160px', padding: '0.5rem 2.25rem 0.5rem 0.75rem', fontSize: '0.82rem' }}
                 >
@@ -630,7 +666,156 @@ export function WinCertStoreInspector() {
                   <option value="name">{t('app.winCertStore.filters.sortName', 'Subject Name (Alphabetical)')}</option>
                 </select>
               </div>
+
+              {/* Touch-Friendly Trigger & Bottom Sheet for Mobile View */}
+              <div className="wincert-filter-sort wincert-sort-mobile">
+                <span className="wincert-sort-label" style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 500, whiteSpace: 'nowrap', opacity: (certs.length <= 1 || filtered.length <= 1) ? 0.6 : 1 }}>{t('app.winCertStore.filters.sortBy', 'Sort by:')}</span>
+                <div className="wincert-sort-actions">
+                  <button
+                    type="button"
+                    className={`expiry-sort-trigger ${isSortOpen ? 'active' : ''}`}
+                    onClick={() => setIsSortOpen(prev => !prev)}
+                    disabled={certs.length <= 1 || filtered.length <= 1}
+                    aria-expanded={isSortOpen}
+                    aria-haspopup="dialog"
+                    title={t('app.winCertStore.filters.sortBy', 'Sort by')}
+                  >
+                    {(() => {
+                      const activeOpt = SORT_OPTIONS.find(o => o.id === sortBy) || SORT_OPTIONS[0];
+                      const Icon = activeOpt.icon;
+                      return (
+                        <>
+                          <Icon size={13} style={{ color: 'var(--text-accent)', flexShrink: 0 }} />
+                          <span className="expiry-sort-trigger-text">{t(activeOpt.labelKey, activeOpt.defaultLabel)}</span>
+                          <ChevronDown size={13} className={`expiry-sort-chevron ${isSortOpen ? 'open' : ''}`} />
+                        </>
+                      );
+                    })()}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm expiry-sort-dir-btn"
+                    onClick={() => setSortAsc(prev => !prev)}
+                    disabled={certs.length <= 1 || filtered.length <= 1}
+                    title={sortAsc ? t('app.dashboard.sortAscending', 'Ascending order (tap to flip)') : t('app.dashboard.sortDescending', 'Descending order (tap to flip)')}
+                    aria-label={sortAsc ? 'Ascending' : 'Descending'}
+                  >
+                    {sortAsc ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    <span className="expiry-sort-dir-text">{sortAsc ? 'ASC' : 'DESC'}</span>
+                  </button>
+                </div>
+              </div>
             </div>
+
+            {/* Sort Modal via Portal */}
+            {isSortOpen && typeof document !== 'undefined' && createPortal(
+              <>
+                <div
+                  className="expiry-sort-backdrop"
+                  onClick={() => setIsSortOpen(false)}
+                  aria-hidden="true"
+                />
+                <div
+                  className="expiry-sort-sheet"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={t('app.dashboard.selectSortField', 'Sort Certificates')}
+                >
+                  <div className="expiry-sort-sheet-handle" aria-hidden="true" />
+
+                  <div className="expiry-sort-sheet-header">
+                    <div className="expiry-sort-sheet-title-wrap">
+                      <div className="expiry-sort-sheet-title-icon">
+                        <ArrowUpDown size={15} />
+                      </div>
+                      <span className="expiry-sort-sheet-title">
+                        {t('app.dashboard.selectSortField', 'Sort Certificates')}
+                      </span>
+                    </div>
+
+                    <div className="expiry-sort-sheet-actions">
+                      <button
+                        type="button"
+                        className="expiry-sort-sheet-dir-btn"
+                        onClick={() => setSortAsc(prev => !prev)}
+                        title={sortAsc ? t('app.dashboard.sortAscending', 'Ascending order (tap to flip)') : t('app.dashboard.sortDescending', 'Descending order (tap to flip)')}
+                      >
+                        {sortAsc ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                        <span>{sortAsc ? t('app.dashboard.orderAsc', 'ASC') : t('app.dashboard.orderDesc', 'DESC')}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        className="expiry-sort-sheet-close-btn"
+                        onClick={() => setIsSortOpen(false)}
+                        aria-label={t('app.aria.close', 'Close')}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="expiry-sort-sheet-options" role="listbox">
+                    {SORT_OPTIONS.map(item => {
+                      const Icon = item.icon;
+                      const isActive = sortBy === item.id;
+                      const label = t(item.labelKey, item.defaultLabel);
+                      let hint = '';
+                      if (item.id === 'expiry') {
+                        hint = sortAsc ? t('app.dashboard.orderAsc', 'Ascending') + ' (Soonest first)' : t('app.dashboard.orderDesc', 'Descending') + ' (Latest first)';
+                      } else if (item.id === 'name') {
+                        hint = sortAsc ? t('app.dashboard.orderAsc', 'Ascending') + ' (A to Z)' : t('app.dashboard.orderDesc', 'Descending') + ' (Z to A)';
+                      } else {
+                        hint = sortAsc ? t('app.dashboard.orderAsc', 'Ascending') : t('app.dashboard.orderDesc', 'Descending');
+                      }
+
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          role="option"
+                          aria-selected={isActive}
+                          className={`expiry-sort-sheet-option ${isActive ? 'active' : ''}`}
+                          onClick={() => {
+                            if (isActive) {
+                              setSortAsc(prev => !prev);
+                            } else {
+                              setSortBy(item.id);
+                            }
+                            setIsSortOpen(false);
+                          }}
+                        >
+                          <div className="expiry-sort-sheet-opt-left">
+                            <div className={`expiry-sort-sheet-opt-icon ${isActive ? 'active' : ''}`}>
+                              <Icon size={16} />
+                            </div>
+                            <div className="expiry-sort-sheet-opt-details">
+                              <span className="expiry-sort-sheet-opt-label">{label}</span>
+                              {isActive && (
+                                <span className="expiry-sort-sheet-opt-hint">
+                                  {hint}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="expiry-sort-sheet-opt-right">
+                            {isActive && (
+                              <div className="expiry-sort-sheet-active-pill">
+                                <span className="expiry-sort-sheet-arrow">{sortAsc ? '↑' : '↓'}</span>
+                                <Check size={14} />
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>,
+              document.body
+            )}
 
             {certs.length === 0 ? (
               <div className="glass-panel" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem 2rem' }}>

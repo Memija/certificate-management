@@ -275,14 +275,26 @@ function FileTrustStore({
             {t('app.trustStore.inspector.passwordProtectedDesc', 'This file is password-protected. Enter the password to decrypt and inspect its certificates.')}
           </p>
           <div className="input-group">
-            <input
-              type="password"
-              className="form-input"
-              placeholder={t('app.trustStore.inspector.passwordPlaceholder', 'Enter keystore password…')}
-              value={loadedFile.passwordInput ?? ''}
-              onChange={e => onPasswordChange(id, e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') onPasswordSubmit(id, loadedFile.passwordInput ?? ''); }}
-            />
+            <div style={{ position: 'relative', flex: 1 }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-input"
+                placeholder={t('app.trustStore.inspector.passwordPlaceholder', 'Enter keystore password…')}
+                value={loadedFile.passwordInput ?? ''}
+                onChange={e => onPasswordChange(id, e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') onPasswordSubmit(id, loadedFile.passwordInput ?? ''); }}
+                style={{ paddingRight: '2.5rem', width: '100%' }}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? t('app.trustStore.inspector.hidePassword', 'Hide password') : t('app.trustStore.inspector.showPassword', 'Show password')}
+                aria-label={showPassword ? t('app.trustStore.inspector.hidePassword', 'Hide password') : t('app.trustStore.inspector.showPassword', 'Show password')}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             <button
               className="btn"
               onClick={() => onPasswordSubmit(id, loadedFile.passwordInput ?? '')}
@@ -366,14 +378,17 @@ function FileTrustStore({
                 value={loadedFile.passwordInput || ''}
                 onChange={e => onPasswordChange(id, e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && onJksUnlockSubmit(id, loadedFile.passwordInput ?? '')}
-                style={{ paddingRight: '2.5rem' }}
+                style={{ paddingRight: '2.5rem', width: '100%' }}
               />
-              <div 
+              <button
+                type="button"
+                className="password-toggle-btn"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
+                title={showPassword ? t('app.trustStore.inspector.hidePassword', 'Hide password') : t('app.trustStore.inspector.showPassword', 'Show password')}
+                aria-label={showPassword ? t('app.trustStore.inspector.hidePassword', 'Hide password') : t('app.trustStore.inspector.showPassword', 'Show password')}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </div>
+              </button>
             </div>
             <button className="btn" onClick={() => onJksUnlockSubmit(id, loadedFile.passwordInput ?? '')}>
                {t("app.trustStore.inspector.unlock", "Unlock")}

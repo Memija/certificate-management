@@ -297,7 +297,12 @@
       "certCount_one": "{{count}} sertifikat",
       "certCount_other": "{{count}} sertifikat",
       "copyThumbprint": "Klik untuk menyalin sidik jari",
-      "copiedThumbprint": "Sidik jari disalin untuk {{name}}"
+      "copiedThumbprint": "Sidik jari disalin untuk {{name}}",
+      "selectSortField": "Urutkan Sertifikat",
+      "sortAscending": "Urutan menaik",
+      "sortDescending": "Urutan menurun",
+      "orderAsc": "Menaik",
+      "orderDesc": "Menurun"
     },
     "expiry": {
       "year_one": "{{count}} tahun",
@@ -366,7 +371,9 @@
           "p2": "100% sisi klien, tidak ada yang keluar dari komputer Anda."
         },
         "incorrectPassword": "Kata sandi salah.",
-        "unlockJksTitle": "Buka Kunci Privat"
+        "unlockJksTitle": "Buka Kunci Privat",
+        "showPassword": "Tampilkan kata sandi",
+        "hidePassword": "Sembunyikan kata sandi"
       },
       "warnings": {
         "privateKey": "File ini berisi entri kunci privat.",

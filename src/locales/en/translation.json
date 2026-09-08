@@ -297,7 +297,12 @@
       "certCount_one": "{{count}} certificate",
       "certCount_other": "{{count}} certificates",
       "copyThumbprint": "Click to copy thumbprint",
-      "copiedThumbprint": "Copied thumbprint for {{name}}"
+      "copiedThumbprint": "Copied thumbprint for {{name}}",
+      "selectSortField": "Sort Certificates",
+      "sortAscending": "Ascending order",
+      "sortDescending": "Descending order",
+      "orderAsc": "Ascending",
+      "orderDesc": "Descending"
     },
     "expiry": {
       "year_one": "{{count}} year",
@@ -366,7 +371,9 @@
           "p2": "100% client-side, nothing leaves your machine."
         },
         "incorrectPassword": "Incorrect password.",
-        "unlockJksTitle": "Unlock Private Keys"
+        "unlockJksTitle": "Unlock Private Keys",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password"
       },
       "warnings": {
         "privateKey": "This file contains a private key entry.",

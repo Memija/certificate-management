@@ -297,7 +297,12 @@
       "certCount_one": "{{count}} certyfikat",
       "certCount_other": "{{count}} certyfikatów",
       "copyThumbprint": "Kliknij, aby skopiować odcisk",
-      "copiedThumbprint": "Skopiowano odcisk dla {{name}}"
+      "copiedThumbprint": "Skopiowano odcisk dla {{name}}",
+      "selectSortField": "Sortuj certyfikaty",
+      "sortAscending": "Kolejność rosnąca",
+      "sortDescending": "Kolejność malejąca",
+      "orderAsc": "Rosnąco",
+      "orderDesc": "Malejąco"
     },
     "expiry": {
       "year_one": "{{count}} rok",
@@ -372,7 +377,9 @@
           "p2": "100% po stronie klienta, nic nie opuszcza Twojego komputera."
         },
         "incorrectPassword": "Nieprawidłowe hasło.",
-        "unlockJksTitle": "Odblokuj klucze prywatne"
+        "unlockJksTitle": "Odblokuj klucze prywatne",
+        "showPassword": "Pokaż hasło",
+        "hidePassword": "Ukryj hasło"
       },
       "warnings": {
         "privateKey": "Ten plik zawiera klucz prywatny.",

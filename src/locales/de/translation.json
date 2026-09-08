@@ -297,7 +297,12 @@
       "certCount_one": "{{count}} Zertifikat",
       "certCount_other": "{{count}} Zertifikate",
       "copyThumbprint": "Klicken zum Kopieren des Fingerabdrucks",
-      "copiedThumbprint": "Fingerabdruck für {{name}} kopiert"
+      "copiedThumbprint": "Fingerabdruck für {{name}} kopiert",
+      "selectSortField": "Zertifikate sortieren",
+      "sortAscending": "Aufsteigende Reihenfolge",
+      "sortDescending": "Absteigende Reihenfolge",
+      "orderAsc": "Aufsteigend",
+      "orderDesc": "Absteigend"
     },
     "expiry": {
       "year_one": "{{count}} Jahr",
@@ -366,7 +371,9 @@
           "p2": "100 % clientseitig, nichts verlässt Ihren Computer."
         },
         "incorrectPassword": "Falsches Passwort.",
-        "unlockJksTitle": "Private Schlüssel entsperren"
+        "unlockJksTitle": "Private Schlüssel entsperren",
+        "showPassword": "Passwort anzeigen",
+        "hidePassword": "Passwort verbergen"
       },
       "warnings": {
         "privateKey": "Diese Datei enthält einen privaten Schlüssel.",

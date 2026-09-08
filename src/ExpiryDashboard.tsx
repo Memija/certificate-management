@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { Clock, RefreshCw, Shield, AlertCircle, ChevronUp, ChevronDown, ArrowUpDown, User, Monitor, Folder, Fingerprint, Award, CheckCircle2, Copy, Server, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Clock, RefreshCw, Shield, AlertCircle, ChevronUp, ChevronDown, ArrowUpDown, User, Monitor, Folder, Fingerprint, Award, CheckCircle2, Copy, Server, Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastContext';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
@@ -27,7 +28,6 @@ export function ExpiryDashboard() {
   const [sortCol, setSortCol] = useState<SortColumn>('expiry');
   const [sortAsc, setSortAsc] = useState(true);
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const sortMenuRef = useRef<HTMLDivElement>(null);
 
   const SORT_COLUMNS: { col: SortColumn; labelKey: string; defaultLabel: string; icon: React.ElementType }[] = [
     { col: 'expiry', labelKey: 'app.dashboard.colExpiryDate', defaultLabel: 'Expiry Date', icon: Clock },
@@ -37,18 +37,21 @@ export function ExpiryDashboard() {
   ];
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target as Node)) {
+    if (!isSortOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
         setIsSortOpen(false);
       }
     };
-    if (isSortOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
-    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      document.body.style.overflow = originalOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isSortOpen]);
   
@@ -326,7 +329,7 @@ export function ExpiryDashboard() {
 
                 {/* Mobile Card List View */}
                 <div className="expiry-mobile-card-list">
-                  <div className="expiry-mobile-sort-bar" ref={sortMenuRef}>
+                  <div className="expiry-mobile-sort-bar">
                     <div className="expiry-sort-label-group">
                       <ArrowUpDown size={14} className="expiry-sort-icon" />
                       <span className="expiry-sort-label">{t('app.winCertStore.filters.sortBy', 'Sort by:')}</span>
@@ -338,7 +341,7 @@ export function ExpiryDashboard() {
                         className={`expiry-sort-trigger ${isSortOpen ? 'active' : ''}`}
                         onClick={() => setIsSortOpen(prev => !prev)}
                         aria-expanded={isSortOpen}
-                        aria-haspopup="listbox"
+                        aria-haspopup="dialog"
                         title={t('app.winCertStore.filters.sortBy', 'Sort by')}
                       >
                         {(() => {
@@ -365,58 +368,107 @@ export function ExpiryDashboard() {
                         <span className="expiry-sort-dir-text">{sortAsc ? 'ASC' : 'DESC'}</span>
                       </button>
                     </div>
-
-                    {/* Custom Dropdown Menu */}
-                    {isSortOpen && (
-                      <div className="expiry-sort-dropdown" role="listbox">
-                        <div className="expiry-sort-dropdown-header">
-                          <span>{t('app.dashboard.selectSortField', 'Sort Field')}</span>
-                          <span className="expiry-sort-dropdown-dir-hint">
-                            {sortAsc ? '↑ ASC' : '↓ DESC'}
-                          </span>
-                        </div>
-                        {SORT_COLUMNS.map(item => {
-                          const Icon = item.icon;
-                          const isActive = sortCol === item.col;
-                          const label = t(item.labelKey, item.defaultLabel);
-                          return (
-                            <button
-                              key={item.col}
-                              type="button"
-                              role="option"
-                              aria-selected={isActive}
-                              className={`expiry-sort-option ${isActive ? 'active' : ''}`}
-                              onClick={() => {
-                                if (isActive) {
-                                  setSortAsc(prev => !prev);
-                                } else {
-                                  setSortCol(item.col);
-                                }
-                                setIsSortOpen(false);
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
-                                <div className={`expiry-sort-opt-icon ${isActive ? 'active' : ''}`}>
-                                  <Icon size={14} />
-                                </div>
-                                <span style={{ fontWeight: isActive ? 600 : 500, fontSize: '0.84rem' }}>{label}</span>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                {isActive && (
-                                  <>
-                                    <span style={{ fontSize: '0.72rem', opacity: 0.8, color: 'var(--text-accent)' }}>
-                                      {sortAsc ? '↑' : '↓'}
-                                    </span>
-                                    <Check size={14} style={{ color: 'var(--accent-color)' }} />
-                                  </>
-                                )}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
                   </div>
+
+                  {/* Mobile Sorting Bottom Sheet Modal via Portal */}
+                  {isSortOpen && typeof document !== 'undefined' && createPortal(
+                    <>
+                      <div
+                        className="expiry-sort-backdrop"
+                        onClick={() => setIsSortOpen(false)}
+                        aria-hidden="true"
+                      />
+                      <div
+                        className="expiry-sort-sheet"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={t('app.dashboard.selectSortField', 'Sort Certificates')}
+                      >
+                        <div className="expiry-sort-sheet-handle" aria-hidden="true" />
+
+                        <div className="expiry-sort-sheet-header">
+                          <div className="expiry-sort-sheet-title-wrap">
+                            <div className="expiry-sort-sheet-title-icon">
+                              <ArrowUpDown size={15} />
+                            </div>
+                            <span className="expiry-sort-sheet-title">
+                              {t('app.dashboard.selectSortField', 'Sort Certificates')}
+                            </span>
+                          </div>
+
+                          <div className="expiry-sort-sheet-actions">
+                            <button
+                              type="button"
+                              className="expiry-sort-sheet-dir-btn"
+                              onClick={() => setSortAsc(prev => !prev)}
+                              title={sortAsc ? t('app.dashboard.sortAscending', 'Ascending order (tap to flip)') : t('app.dashboard.sortDescending', 'Descending order (tap to flip)')}
+                            >
+                              {sortAsc ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                              <span>{sortAsc ? t('app.dashboard.orderAsc', 'ASC') : t('app.dashboard.orderDesc', 'DESC')}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className="expiry-sort-sheet-close-btn"
+                              onClick={() => setIsSortOpen(false)}
+                              aria-label={t('app.aria.close', 'Close')}
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="expiry-sort-sheet-options" role="listbox">
+                          {SORT_COLUMNS.map(item => {
+                            const Icon = item.icon;
+                            const isActive = sortCol === item.col;
+                            const label = t(item.labelKey, item.defaultLabel);
+                            return (
+                              <button
+                                key={item.col}
+                                type="button"
+                                role="option"
+                                aria-selected={isActive}
+                                className={`expiry-sort-sheet-option ${isActive ? 'active' : ''}`}
+                                onClick={() => {
+                                  if (isActive) {
+                                    setSortAsc(prev => !prev);
+                                  } else {
+                                    setSortCol(item.col);
+                                  }
+                                  setIsSortOpen(false);
+                                }}
+                              >
+                                <div className="expiry-sort-sheet-opt-left">
+                                  <div className={`expiry-sort-sheet-opt-icon ${isActive ? 'active' : ''}`}>
+                                    <Icon size={16} />
+                                  </div>
+                                  <div className="expiry-sort-sheet-opt-details">
+                                    <span className="expiry-sort-sheet-opt-label">{label}</span>
+                                    {isActive && (
+                                      <span className="expiry-sort-sheet-opt-hint">
+                                        {sortAsc ? t('app.dashboard.orderAsc', 'Ascending') : t('app.dashboard.orderDesc', 'Descending')}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="expiry-sort-sheet-opt-right">
+                                  {isActive && (
+                                    <div className="expiry-sort-sheet-active-pill">
+                                      <span className="expiry-sort-sheet-arrow">{sortAsc ? '↑' : '↓'}</span>
+                                      <Check size={14} />
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>,
+                    document.body
+                  )}
 
                   {sortedCerts.map((c) => {
                    const cn = c.subject.match(/CN=([^,]+)/)?.[1]?.trim() || c.subject.match(/O=([^,]+)/)?.[1]?.trim() || c.subject;
