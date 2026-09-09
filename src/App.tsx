@@ -21,8 +21,8 @@ import { splitPurposes, translatePurpose, formatKeyUsageValue } from './utils/pu
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 import './index.css';
 
-type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
-type Theme = 'dark' | 'light' | 'system';
+export type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
+export type Theme = 'dark' | 'light' | 'system';
 
 const APP_VERSION = '1.4.0';
 
@@ -208,10 +208,10 @@ function App() {
 
   const renderContent = () => {
     switch (mode) {
-      case 'trust-store': return <TrustStoreInspector />;
+      case 'trust-store': return <TrustStoreInspector onNavigate={switchMode} />;
       case 'csr-inspector': return <CsrInspector />;
       case 'win-cert-store': return <WinCertStoreInspector />;
-      case 'crl-inspector': return <CrlInspector />;
+      case 'crl-inspector': return <CrlInspector onNavigate={switchMode} />;
       case 'chain-validator': return <ChainValidator />;
       case 'key-matcher': return <KeyPairMatcher />;
       case 'key-generator': return <KeyGenerator />;

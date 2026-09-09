@@ -1,4 +1,5 @@
 import forge from 'node-forge';
+import { isCrlPem, isDerCrl } from './crlParser';
 
 // ─── Re-export the shared ParsedCertificate type ───────────────────────────
 export interface ParsedCertificate {
@@ -38,7 +39,7 @@ export interface TrustStoreEntry {
 }
 
 export interface ParsedTrustStore {
-  format: 'X509-DER' | 'X509-PEM' | 'PEM-Bundle' | 'PKCS7' | 'PKCS12' | 'JKS' | 'Unknown';
+  format: 'X509-DER' | 'X509-PEM' | 'PEM-Bundle' | 'PKCS7' | 'PKCS12' | 'JKS' | 'CRL' | 'Unknown';
   entries: TrustStoreEntry[];
   warnings: string[];
 }
@@ -148,6 +149,9 @@ function detectFormat(bytes: Uint8Array, textContent: string): ParsedTrustStore[
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (bytes.length >= 4 && view.getUint32(0, false) === JKS_MAGIC) return 'JKS';
 
+  // CRL PEM
+  if (isCrlPem(textContent)) return 'CRL';
+
   // PEM
   if (textContent.includes('-----BEGIN')) {
     if (textContent.includes('BEGIN PKCS7') || textContent.includes('BEGIN PKCS #7')) return 'PKCS7';
@@ -157,6 +161,7 @@ function detectFormat(bytes: Uint8Array, textContent: string): ParsedTrustStore[
 
   // DER: first byte 0x30 (ASN.1 SEQUENCE)
   if (bytes.length >= 4 && bytes[0] === PKCS12_MAGIC_BYTE) {
+    if (isDerCrl(bytes)) return 'CRL';
     // Distinguish PKCS12 (OID 1.2.840.113549.1.12) vs plain DER X.509
     // PKCS12 starts with SEQUENCE { INTEGER 3, ... contentInfo ... }
     // We try X.509 first, if it fails try PKCS12
@@ -417,6 +422,10 @@ export async function parseTrustStoreFile(
 
   const format = detectFormat(bytes, text);
 
+  if (format === 'CRL') {
+    return { format: 'CRL', entries: [], warnings: ['ERR_CRL_FILE'] };
+  }
+
   if (format === 'JKS') {
     const { entries, warnings } = parseJks(bytes);
     return { format: 'JKS', entries, warnings };
@@ -440,10 +449,20 @@ export async function parseTrustStoreFile(
       const r = parsePkcs7(bytes, true);
       return { format: 'PKCS7', ...r };
     }
-    return { format: 'Unknown', entries: [], warnings: ['Could not parse PEM file.'] };
+    if (text.includes('BEGIN CERTIFICATE REQUEST') || text.includes('BEGIN NEW CERTIFICATE REQUEST')) {
+      return { format: 'Unknown', entries: [], warnings: ['ERR_CSR_FILE'] };
+    }
+    if (text.includes('PRIVATE KEY')) {
+      return { format: 'Unknown', entries: [], warnings: ['ERR_PRIVATE_KEY_FILE'] };
+    }
+    return { format: 'Unknown', entries: [], warnings: ['ERR_COULD_NOT_PARSE_PEM'] };
   }
 
   if (format === 'X509-DER') {
+    if (isDerCrl(bytes)) {
+      return { format: 'CRL', entries: [], warnings: ['ERR_CRL_FILE'] };
+    }
+
     // Try plain DER X.509 first
     const cert = parseX509FromDer(buffer);
     if (cert) {
@@ -477,15 +496,13 @@ export async function parseTrustStoreFile(
       }
     }
 
-    return { format: 'Unknown', entries: [], warnings: ['Could not parse this DER file as X.509, PKCS#7, or PKCS#12.'] };
+    return { format: 'Unknown', entries: [], warnings: ['ERR_COULD_NOT_PARSE_DER'] };
   }
 
   return {
     format: 'Unknown',
     entries: [],
-    warnings: [
-      'Unrecognized file format. Supported formats: PEM, DER, PKCS#7 (.p7b), PKCS#12 (.p12/.pfx), JKS.',
-    ],
+    warnings: ['ERR_UNRECOGNIZED_FORMAT'],
   };
 }
 

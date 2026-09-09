@@ -1,16 +1,16 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Upload, FolderOpen, X, Shield, ShieldCheck, AlertTriangle,
-  FileKey, ChevronRight, Info, Eye, EyeOff, RefreshCw, Archive,
+  Upload, FolderOpen, X, Shield, ShieldCheck, AlertTriangle, ShieldAlert,
+  FileKey, Info, Eye, EyeOff, RefreshCw, Archive,
   FileText, Lock, Download, Copy, Check
 } from 'lucide-react';
 import { parseTrustStoreFile, decryptJKSPrivateKey } from './utils/trustStoreParser';
 import type { ParsedTrustStore, TrustStoreEntry, ParsedCertificate } from './utils/trustStoreParser';
 import { formatPurposesList, formatKeyUsageValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
+import type { AppMode } from './App';
 
-// ─── Format label helpers ────────────────────────────────────────────────────
 // ─── Format label helpers ────────────────────────────────────────────────────
 const FORMAT_LABELS: Record<string, { key: string; label: string; color: string; icon: any }> = {
   'X509-DER':   { key: 'app.trustStore.format.x509Der',   label: 'DER Certificate',  color: '#38bdf8', icon: Shield },
@@ -19,6 +19,7 @@ const FORMAT_LABELS: Record<string, { key: string; label: string; color: string;
   'PKCS7':      { key: 'app.trustStore.format.pkcs7',     label: 'PKCS#7 Chain',      color: '#f59e0b', icon: ShieldCheck },
   'PKCS12':     { key: 'app.trustStore.format.pkcs12',    label: 'PKCS#12 / PFX',    color: '#fb923c', icon: Lock },
   'JKS':        { key: 'app.trustStore.format.jks',       label: 'Java KeyStore',     color: '#4ade80', icon: FileKey },
+  'CRL':        { key: 'app.trustStore.format.crl',       label: 'Certificate Revocation List', color: '#f43f5e', icon: AlertTriangle },
   'Unknown':    { key: 'app.trustStore.format.unknown',   label: 'Unknown Format',    color: '#ef4444', icon: AlertTriangle },
 };
 
@@ -218,6 +219,7 @@ interface FileTrustStoreProps {
   onPasswordSubmit: (id: string, password: string) => void;
   onPasswordChange: (id: string, val: string) => void;
   onJksUnlockSubmit: (id: string, password: string) => void;
+  onNavigate?: (mode: AppMode) => void;
 }
 
 function FileTrustStore({
@@ -226,6 +228,7 @@ function FileTrustStore({
   onPasswordSubmit,
   onPasswordChange,
   onJksUnlockSubmit,
+  onNavigate,
 }: FileTrustStoreProps) {
   const { t, i18n } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
@@ -296,11 +299,9 @@ function FileTrustStore({
               </button>
             </div>
             <button
-              className="btn"
+              className="btn btn-primary"
               onClick={() => onPasswordSubmit(id, loadedFile.passwordInput ?? '')}
-              disabled={loadedFile.loading}
             >
-              {loadedFile.loading ? <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <ChevronRight size={16} />}
               {t('app.trustStore.inspector.unlock', 'Unlock')}
             </button>
           </div>
@@ -338,6 +339,9 @@ function FileTrustStore({
       {/* Warnings */}
       {store.warnings.map((w, i) => {
         let localizedW = w;
+        let isCrlWarning = false;
+        let isCsrWarning = false;
+
         if (w.includes('Private keys are never displayed')) {
           const match = w.match(/contains (\d+) private key/);
           if (match) {
@@ -352,12 +356,50 @@ function FileTrustStore({
           if (aliasMatch) {
             localizedW = t('app.trustStore.warnings.jksPrivKeySkipped', 'Alias "{{alias}}": private key is encrypted.', { alias: aliasMatch[1] });
           }
+        } else if (w === 'ERR_CRL_FILE' || store.format === 'CRL' || w.includes('Certificate Revocation List')) {
+          localizedW = t('app.trustStore.warnings.crlFile', 'This file is a Certificate Revocation List (CRL), not a certificate trust store. Please inspect this file in the CRL Inspector.');
+          isCrlWarning = true;
+        } else if (w === 'ERR_CSR_FILE' || w.includes('Certificate Signing Request')) {
+          localizedW = t('app.trustStore.warnings.csrFile', 'This file contains a Certificate Signing Request (CSR), not a certificate trust store. Please inspect this file in the CSR Inspector.');
+          isCsrWarning = true;
+        } else if (w === 'ERR_PRIVATE_KEY_FILE') {
+          localizedW = t('app.trustStore.warnings.privateKeyFile', 'This file contains a Private Key, not a certificate trust store.');
+        } else if (w === 'ERR_COULD_NOT_PARSE_PEM' || w === 'Could not parse PEM file.') {
+          localizedW = t('app.trustStore.warnings.couldNotParsePem', 'Could not parse PEM file. Ensure it contains valid X.509 certificates or PKCS#7 data.');
+        } else if (w === 'ERR_COULD_NOT_PARSE_DER' || w.includes('Could not parse this DER file as X.509')) {
+          localizedW = t('app.trustStore.warnings.couldNotParseDer', 'Could not parse this DER file as X.509, PKCS#7, or PKCS#12.');
+        } else if (w === 'ERR_UNRECOGNIZED_FORMAT' || w.includes('Unrecognized file format')) {
+          localizedW = t('app.trustStore.warnings.unrecognizedFormat', 'Unrecognized file format. Supported formats: PEM, DER, PKCS#7 (.p7b), PKCS#12 (.p12/.pfx), JKS.');
         }
         
         return (
-          <div key={i} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', marginBottom: '0.75rem', padding: '0.75rem 1rem', background: 'var(--warning-bg)', borderRadius: '10px', borderLeft: '3px solid var(--warning-color)' }}>
-            <Info size={16} color="var(--warning-color)" style={{ flexShrink: 0, marginTop: '0.1rem' }} />
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{localizedW}</span>
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem', padding: '0.75rem 1rem', background: 'var(--warning-bg)', borderRadius: '10px', borderLeft: '3px solid var(--warning-color)' }}>
+            <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', flex: 1, minWidth: '240px' }}>
+              <Info size={16} color="var(--warning-color)" style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{localizedW}</span>
+            </div>
+            {isCrlWarning && onNavigate && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => onNavigate('crl-inspector')}
+                style={{ fontSize: '0.82rem', padding: '0.35rem 0.85rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}
+              >
+                <ShieldAlert size={14} />
+                {t('app.trustStore.warnings.goToCrlInspector', 'Open in CRL Inspector')}
+              </button>
+            )}
+            {isCsrWarning && onNavigate && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => onNavigate('csr-inspector')}
+                style={{ fontSize: '0.82rem', padding: '0.35rem 0.85rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}
+              >
+                <FileKey size={14} />
+                {t('app.trustStore.warnings.goToCsrInspector', 'Open in CSR Inspector')}
+              </button>
+            )}
           </div>
         );
       })}
@@ -400,8 +442,28 @@ function FileTrustStore({
       {/* Empty state */}
       {store.entries.length === 0 && (
         <div style={{ textAlign: 'center', padding: '2.5rem 1.5rem', color: 'var(--text-secondary)' }}>
-          <AlertTriangle size={40} color="var(--danger-color)" style={{ margin: '0 auto 0.75rem' }} />
-          <p>{t('app.trustStore.inspector.noCertsExtracted', 'No certificates could be extracted from this file.')}</p>
+          <AlertTriangle size={40} color={store.format === 'CRL' ? 'var(--warning-color)' : 'var(--danger-color)'} style={{ margin: '0 auto 0.75rem' }} />
+          <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem', fontSize: '1rem' }}>
+            {store.format === 'CRL'
+              ? t('app.trustStore.warnings.crlDetectedTitle', 'Certificate Revocation List Detected')
+              : t('app.trustStore.inspector.noCertsExtracted', 'No certificates could be extracted from this file.')}
+          </p>
+          <p style={{ fontSize: '0.88rem', maxWidth: '520px', margin: '0 auto 1.25rem auto' }}>
+            {store.format === 'CRL'
+              ? t('app.trustStore.warnings.crlFile', 'This file is a Certificate Revocation List (CRL), not a certificate trust store. Please inspect this file in the CRL Inspector.')
+              : t('app.trustStore.inspector.noCertsExtractedDesc', 'This file does not contain any valid X.509 certificates.')}
+          </p>
+          {store.format === 'CRL' && onNavigate && (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => onNavigate('crl-inspector')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.45rem 1.1rem' }}
+            >
+              <ShieldAlert size={14} />
+              {t('app.trustStore.warnings.goToCrlInspector', 'Open in CRL Inspector')}
+            </button>
+          )}
         </div>
       )}
 
@@ -517,7 +579,7 @@ function DropZone({ onFiles }: { onFiles: (files: File[]) => void }) {
 }
 
 // ─── Main TrustStoreInspector ──────────────────────────────────────────────
-export function TrustStoreInspector() {
+export function TrustStoreInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => void } = {}) {
   const { t } = useTranslation();
   const [loadedFiles, setLoadedFiles] = useState<LoadedFile[]>([]);
   const [globalLoading, setGlobalLoading] = useState(false);
@@ -723,6 +785,7 @@ export function TrustStoreInspector() {
                 onPasswordSubmit={handlePasswordSubmit}
                 onPasswordChange={handlePasswordChange}
                 onJksUnlockSubmit={onJksUnlockSubmit}
+                onNavigate={onNavigate}
               />
             ))}
           </div>
