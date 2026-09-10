@@ -3,7 +3,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import {
   Upload, AlertTriangle, CheckCircle, XCircle,
   ChevronDown, ChevronUp, Copy, Download, X, Search, ShieldAlert, Calendar, Eye, EyeOff, Sparkles, FileText,
-  FolderOpen, FileKey, Info
+  FolderOpen, FileKey, Info, KeyRound, RefreshCw, Ban, UserX, PauseCircle, ShieldOff, CheckCircle2, HelpCircle
 } from 'lucide-react';
 import { parseCrlFile, parseCrlText, SAMPLE_CRL_PEM } from './utils/crlParser';
 import type { ParsedCRL } from './utils/crlParser';
@@ -55,6 +55,123 @@ const REASON_KEY_MAP: Record<string, string> = {
   'AA Compromise': 'aaCompromise',
 };
 
+const EXTENSION_DISPLAY_NAMES: Record<string, string> = {
+  crlNumber: 'CRL Number',
+  crlReason: 'CRL Reason',
+  deltaCRLIndicator: 'Delta CRL Indicator',
+  issuingDistributionPoint: 'Issuing Distribution Point',
+  authorityKeyIdentifier: 'Authority Key Identifier',
+};
+
+function getReasonKey(reason: string): string {
+  if (REASON_KEY_MAP[reason]) return REASON_KEY_MAP[reason];
+  const normalized = reason.toLowerCase().replace(/[\s_-]+/g, '');
+  if (normalized.includes('keycompromise')) return 'keyCompromise';
+  if (normalized.includes('cacompromise')) return 'caCompromise';
+  if (normalized.includes('aacompromise')) return 'aaCompromise';
+  if (normalized.includes('compromise')) return 'keyCompromise';
+  if (normalized.includes('superseded')) return 'superseded';
+  if (normalized.includes('cessation')) return 'cessationOfOperation';
+  if (normalized.includes('affiliation')) return 'affiliationChanged';
+  if (normalized.includes('hold')) return 'certificateHold';
+  if (normalized.includes('removefromcrl') || normalized.includes('remove')) return 'removeFromCRL';
+  if (normalized.includes('privilege')) return 'privilegeWithdrawn';
+  if (normalized.includes('unspecified')) return 'unspecified';
+  return 'unspecified';
+}
+
+const CYRL_TO_LATIN_MAP: Record<string, string> = {
+  'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'ђ': 'dj', 'е': 'e', 'ж': 'z', 'з': 'z', 'и': 'i',
+  'ј': 'j', 'к': 'k', 'л': 'l', 'љ': 'lj', 'м': 'm', 'н': 'n', 'њ': 'nj', 'о': 'o', 'п': 'p', 'р': 'r',
+  'с': 's', 'т': 't', 'ћ': 'c', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'c', 'ч': 'c', 'џ': 'dz', 'ш': 's',
+};
+
+function normalizeSearchText(text: string): string {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .split('')
+    .map(c => CYRL_TO_LATIN_MAP[c] || c)
+    .join('')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[čć]/g, 'c')
+    .replace(/š/g, 's')
+    .replace(/ž/g, 'z')
+    .replace(/đ/g, 'dj');
+}
+
+interface ReasonConfig {
+  className: string;
+  Icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+}
+
+const REASON_CONFIGS: Record<string, ReasonConfig> = {
+  keyCompromise: {
+    className: 'reason-key-compromise',
+    Icon: KeyRound,
+  },
+  caCompromise: {
+    className: 'reason-ca-compromise',
+    Icon: ShieldAlert,
+  },
+  aaCompromise: {
+    className: 'reason-aa-compromise',
+    Icon: ShieldAlert,
+  },
+  superseded: {
+    className: 'reason-superseded',
+    Icon: RefreshCw,
+  },
+  cessationOfOperation: {
+    className: 'reason-cessation',
+    Icon: Ban,
+  },
+  affiliationChanged: {
+    className: 'reason-affiliation',
+    Icon: UserX,
+  },
+  certificateHold: {
+    className: 'reason-hold',
+    Icon: PauseCircle,
+  },
+  privilegeWithdrawn: {
+    className: 'reason-privilege',
+    Icon: ShieldOff,
+  },
+  removeFromCRL: {
+    className: 'reason-remove',
+    Icon: CheckCircle2,
+  },
+  unspecified: {
+    className: 'reason-unspecified',
+    Icon: HelpCircle,
+  },
+};
+
+function ReasonBadge({ reason, localizedText }: { reason: string; localizedText: string }) {
+  const key = getReasonKey(reason);
+  const config = REASON_CONFIGS[key] || REASON_CONFIGS.unspecified;
+  const IconComponent = config.Icon;
+
+  return (
+    <span className={`crl-reason-badge ${config.className}`}>
+      <IconComponent size={12} />
+      <span>{localizedText}</span>
+    </span>
+  );
+}
+
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return 'N/A';
+  try {
+    return new Date(dateStr).toLocaleString();
+  } catch {
+    return dateStr;
+  }
+}
+
 function CRLDetails({
   crl,
   fileName,
@@ -92,15 +209,31 @@ function CRLDetails({
 
   const filteredRevoked = useMemo(() => {
     if (!searchTerm.trim()) return crl.revokedCertificates;
-    const q = searchTerm.toLowerCase();
+    const rawQ = searchTerm.trim().toLowerCase();
+    const normQ = normalizeSearchText(rawQ);
+
     return crl.revokedCertificates.filter((item) => {
-      const reasonKey = REASON_KEY_MAP[item.reason];
+      const reasonKey = getReasonKey(item.reason);
       const localizedReason = reasonKey ? t(`app.crl.reasons.${reasonKey}`, item.reason).toLowerCase() : '';
-      return (
-        item.serialNumber.toLowerCase().includes(q) ||
-        item.reason.toLowerCase().includes(q) ||
-        localizedReason.includes(q)
-      );
+      const formattedDate = formatDate(item.revocationDate).toLowerCase();
+      const rawDate = (item.revocationDate || '').toLowerCase();
+      const serial = item.serialNumber.toLowerCase();
+
+      // 1. Serial Number match (hex, with or without leading zeros)
+      const trimmedSerial = serial.replace(/^0+/, '');
+      const trimmedQ = rawQ.replace(/^0+/, '');
+      if (serial.includes(rawQ) || (trimmedQ && trimmedSerial.includes(trimmedQ))) return true;
+
+      // 2. Date match (both formatted localized date and ISO date)
+      if (formattedDate.includes(rawQ) || rawDate.includes(rawQ)) return true;
+
+      // 3. Raw English reason match
+      if (item.reason.toLowerCase().includes(rawQ) || normalizeSearchText(item.reason).includes(normQ)) return true;
+
+      // 4. Localized reason match (direct + normalized cross-script Latin/Cyrillic + diacritics)
+      if (localizedReason.includes(rawQ) || (normQ && normalizeSearchText(localizedReason).includes(normQ))) return true;
+
+      return false;
     });
   }, [crl.revokedCertificates, searchTerm, t]);
 
@@ -110,14 +243,6 @@ function CRLDetails({
     return filteredRevoked.slice(start, start + pageSize);
   }, [filteredRevoked, currentPage]);
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleString();
-    } catch {
-      return dateStr;
-    }
-  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -251,17 +376,37 @@ function CRLDetails({
             <ShieldAlert size={16} /> {t('app.crl.revokedEntriesTitle', 'Revoked Certificate Entries')} ({filteredRevoked.length})
           </h4>
           {crl.revokedCertificates.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--input-bg, rgba(255,255,255,0.05))', borderRadius: '6px', padding: '0.35rem 0.6rem', border: '1px solid var(--border-color)', minWidth: '240px' }}>
-              <Search size={14} style={{ color: 'var(--text-secondary)', marginRight: '0.5rem' }} />
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: 'var(--input-bg, rgba(255,255,255,0.05))',
+              borderRadius: '6px',
+              padding: '0.35rem 0.6rem',
+              border: '1px solid var(--border-color)',
+              minWidth: '280px',
+              maxWidth: '420px',
+              flex: '1 1 280px',
+            }}>
+              <Search size={14} style={{ color: 'var(--text-secondary)', marginRight: '0.5rem', flexShrink: 0 }} />
               <input
                 type="text"
                 placeholder={t('app.crl.searchPlaceholder', 'Search by serial or reason...')}
+                aria-label={t('app.crl.searchPlaceholder', 'Search by serial or reason...')}
+                title={t('app.crl.searchPlaceholder', 'Search by serial or reason...')}
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                 style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '100%', outline: 'none', fontSize: '0.85rem' }}
               />
               {searchTerm && (
-                <X size={14} style={{ cursor: 'pointer', color: 'var(--text-secondary)' }} onClick={() => { setSearchTerm(''); setCurrentPage(1); }} />
+                <button
+                  type="button"
+                  onClick={() => { setSearchTerm(''); setCurrentPage(1); }}
+                  title={t('common.clear', 'Clear')}
+                  aria-label={t('common.clear', 'Clear')}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                >
+                  <X size={14} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+                </button>
               )}
             </div>
           )}
@@ -275,37 +420,30 @@ function CRLDetails({
           </div>
         ) : (
           <>
-            <div style={{ overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: 8 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <div className="crl-table-container">
+              <table className="crl-table">
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid var(--border-color)' }}>
-                    <th style={{ padding: '0.65rem 0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{t('app.crl.serialNumberHex', 'Serial Number (Hex)')}</th>
-                    <th style={{ padding: '0.65rem 0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{t('app.crl.revocationDate', 'Revocation Date')}</th>
-                    <th style={{ padding: '0.65rem 0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{t('app.crl.reasonCode', 'Reason Code')}</th>
+                  <tr>
+                    <th>{t('app.crl.serialNumberHex', 'Serial Number (Hex)')}</th>
+                    <th>{t('app.crl.revocationDate', 'Revocation Date')}</th>
+                    <th>{t('app.crl.reasonCode', 'Reason Code')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentSlice.map((entry, idx) => {
-                    const reasonKey = REASON_KEY_MAP[entry.reason];
+                    const reasonKey = getReasonKey(entry.reason);
                     const localizedReason = reasonKey ? t(`app.crl.reasons.${reasonKey}`, entry.reason) : entry.reason;
                     return (
-                      <tr key={`${entry.serialNumber}-${idx}`} style={{ borderBottom: idx < currentSlice.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                        <td style={{ padding: '0.65rem 0.85rem', fontFamily: 'monospace', fontWeight: 500 }}>
+                      <tr key={`${entry.serialNumber}-${idx}`}>
+                        <td style={{ fontFamily: 'monospace', fontWeight: 500 }}>
                           {entry.serialNumber}
                           <CopyButton value={entry.serialNumber} />
                         </td>
-                        <td style={{ padding: '0.65rem 0.85rem', color: 'var(--text-secondary)' }}>
+                        <td style={{ color: 'var(--text-secondary)' }}>
                           {formatDate(entry.revocationDate)}
                         </td>
-                        <td style={{ padding: '0.65rem 0.85rem' }}>
-                          <span style={{
-                            display: 'inline-block', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.78rem',
-                            background: entry.reason.includes('Compromise') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.06)',
-                            color: entry.reason.includes('Compromise') ? '#ef4444' : 'var(--text-primary)',
-                            border: `1px solid ${entry.reason.includes('Compromise') ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255,255,255,0.1)'}`
-                          }}>
-                            {localizedReason}
-                          </span>
+                        <td>
+                          <ReasonBadge reason={entry.reason} localizedText={localizedReason} />
                         </td>
                       </tr>
                     );
@@ -353,17 +491,83 @@ function CRLDetails({
           </div>
           {showExts && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '1rem' }}>
-              {crl.extensions.map((ext, idx) => (
-                <div key={idx} className="details-grid" style={{ padding: '0.65rem 0.85rem', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid var(--glass-border)' }}>
-                  <div className="details-label">{ext.name}</div>
-                  <div className="details-value">
-                    <div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                      OID: {ext.oid} {ext.critical && <span style={{ color: '#f59e0b', marginLeft: '0.5rem', fontWeight: 600 }}>[{t('app.crl.critical', 'CRITICAL')}]</span>}
+              {crl.extensions.map((ext, idx) => {
+                const isCrlNumber = ext.name === 'crlNumber' || ext.oid === '2.5.29.20';
+                const label = t(`app.crl.extensionNames.${ext.name}`, EXTENSION_DISPLAY_NAMES[ext.name] || ext.name);
+                const isShortValue = Boolean(ext.value && ext.value.length <= 16);
+
+                return (
+                  <div
+                    key={idx}
+                    className="details-grid"
+                    style={{
+                      padding: '0.65rem 0.85rem',
+                      background: 'var(--table-row-alt-bg, rgba(255,255,255,0.02))',
+                      borderRadius: 6,
+                      border: '1px solid var(--glass-border)',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div className="details-label" style={{ fontWeight: 600 }}>{label}</div>
+                    <div className="details-value">
+                      {isShortValue ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                          <span style={{
+                            fontFamily: 'monospace',
+                            fontWeight: 600,
+                            fontSize: '0.88rem',
+                            padding: '0.15rem 0.55rem',
+                            borderRadius: '6px',
+                            background: 'var(--input-bg, rgba(255,255,255,0.05))',
+                            border: '1px solid var(--border-color)',
+                            color: 'var(--text-accent, #34d399)'
+                          }}>
+                            {isCrlNumber ? `#${ext.value}` : ext.value}
+                          </span>
+                          <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                            (OID: {ext.oid})
+                          </span>
+                          {ext.critical && (
+                            <span style={{
+                              fontSize: '0.7rem', padding: '0.12rem 0.45rem', borderRadius: '4px',
+                              background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b',
+                              border: '1px solid rgba(245, 158, 11, 0.3)', fontWeight: 600
+                            }}>
+                              [{t('app.crl.critical', 'CRITICAL')}]
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                            <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                              OID: {ext.oid}
+                            </span>
+                            {ext.critical && (
+                              <span style={{
+                                fontSize: '0.7rem', padding: '0.12rem 0.45rem', borderRadius: '4px',
+                                background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b',
+                                border: '1px solid rgba(245, 158, 11, 0.3)', fontWeight: 600
+                              }}>
+                                [{t('app.crl.critical', 'CRITICAL')}]
+                              </span>
+                            )}
+                          </div>
+                          {ext.value && (
+                            <div style={{
+                              fontFamily: 'monospace', fontSize: '0.82rem', color: 'var(--text-primary)',
+                              wordBreak: 'break-all', background: 'var(--input-bg, rgba(255,255,255,0.03))',
+                              padding: '0.35rem 0.55rem', borderRadius: '6px', border: '1px solid var(--border-color)'
+                            }}>
+                              {ext.value}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {ext.value && <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', wordBreak: 'break-all', marginTop: '0.25rem' }}>{ext.value}</div>}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -508,6 +508,13 @@
         "removeFromCRL": "Hapus Dari CRL",
         "privilegeWithdrawn": "Hak Istimewa Dicabut",
         "aaCompromise": "Kompromi AA"
+      },
+      "extensionNames": {
+        "crlNumber": "Nomor CRL",
+        "crlReason": "Alasan CRL",
+        "deltaCRLIndicator": "Indikator Delta CRL",
+        "issuingDistributionPoint": "Titik Distribusi Penerbit",
+        "authorityKeyIdentifier": "Pengidentifikasi Kunci Otoritas"
       }
     },
     "csr": {

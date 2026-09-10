@@ -514,6 +514,13 @@
         "removeFromCRL": "Usunięcie z CRL",
         "privilegeWithdrawn": "Wycofanie uprawnień",
         "aaCompromise": "Kompromitacja AA"
+      },
+      "extensionNames": {
+        "crlNumber": "Numer CRL",
+        "crlReason": "Powód CRL",
+        "deltaCRLIndicator": "Wskaźnik Delta CRL",
+        "issuingDistributionPoint": "Punkt Dystrybucji Wystawcy",
+        "authorityKeyIdentifier": "Identyfikator Klucza Urzędu"
       }
     },
     "csr": {

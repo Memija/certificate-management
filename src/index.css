@@ -67,6 +67,10 @@
   --card-bg-hover: rgba(255, 255, 255, 0.065);
   --input-bg: rgba(6, 14, 20, 0.65);
   --input-bg-focus: rgba(8, 18, 26, 0.90);
+  --border-color: rgba(255, 255, 255, 0.09);
+  --table-header-bg: rgba(255, 255, 255, 0.045);
+  --table-row-alt-bg: rgba(255, 255, 255, 0.018);
+  --table-row-hover-bg: rgba(255, 255, 255, 0.05);
 
   --header-height: 68px;
   --footer-height: 48px;
@@ -168,6 +172,10 @@
   --card-bg-hover: #ffffff;
   --input-bg: #f8fafc;
   --input-bg-focus: #ffffff;
+  --border-color: rgba(15, 23, 42, 0.12);
+  --table-header-bg: rgba(15, 23, 42, 0.05);
+  --table-row-alt-bg: rgba(15, 23, 42, 0.022);
+  --table-row-hover-bg: rgba(15, 23, 42, 0.045);
 
   --scrollbar-thumb: rgba(5, 150, 105, 0.22);
   --scrollbar-thumb-hover: rgba(5, 150, 105, 0.4);
@@ -3434,3 +3442,162 @@ pre,
   border-color: var(--glass-border);
 }
 
+/* ════════════════════════════════════════════════════════════
+   CRL REVOCATION REASON BADGES
+   ════════════════════════════════════════════════════════════ */
+.crl-reason-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.crl-reason-badge svg {
+  flex-shrink: 0;
+}
+
+.crl-reason-badge:hover {
+  filter: brightness(1.08);
+}
+
+/* Key, CA, AA Compromise - Critical Security Breaches */
+.crl-reason-badge.reason-key-compromise,
+.crl-reason-badge.reason-ca-compromise,
+.crl-reason-badge.reason-aa-compromise {
+  background: var(--danger-bg);
+  color: var(--danger-color);
+  border: 1px solid var(--danger-border);
+}
+
+/* Superseded - Lifecycle Replacement */
+.crl-reason-badge.reason-superseded {
+  background: var(--info-bg);
+  color: var(--info-color);
+  border: 1px solid var(--info-border);
+}
+
+/* Cessation Of Operation - Service Decommissioned */
+.crl-reason-badge.reason-cessation {
+  background: var(--warning-bg);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-border);
+}
+
+/* Affiliation Changed - Subject Info Update */
+.crl-reason-badge.reason-affiliation {
+  background: var(--purple-bg);
+  color: var(--purple-color);
+  border: 1px solid var(--purple-border);
+}
+
+/* Certificate Hold - Temporary Suspension */
+.crl-reason-badge.reason-hold {
+  background: rgba(234, 179, 8, 0.14);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.35);
+}
+
+[data-theme="light"] .crl-reason-badge.reason-hold {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Privilege Withdrawn - Permissions Revoked */
+.crl-reason-badge.reason-privilege {
+  background: rgba(249, 115, 22, 0.14);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.35);
+}
+
+[data-theme="light"] .crl-reason-badge.reason-privilege {
+  background: rgba(234, 88, 12, 0.12);
+  color: #c2410c;
+  border-color: rgba(234, 88, 12, 0.3);
+}
+
+/* Remove From CRL - Reinstated from hold */
+.crl-reason-badge.reason-remove {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-border);
+}
+
+/* Unspecified / Unknown - Neutral State */
+.crl-reason-badge.reason-unspecified {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text-secondary);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+[data-theme="light"] .crl-reason-badge.reason-unspecified {
+  background: rgba(100, 116, 139, 0.08);
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.22);
+}
+
+/* ─── CRL Revoked Entries Table Shading & Theme Adaptation ────────────────── */
+.crl-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="light"] .crl-table-container {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--border-color);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.crl-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.crl-table thead tr {
+  background: var(--table-header-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.crl-table th {
+  padding: 0.75rem 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.crl-table tbody tr {
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.crl-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.crl-table tbody tr:nth-child(even) {
+  background: var(--table-row-alt-bg);
+}
+
+.crl-table tbody tr:hover {
+  background: var(--table-row-hover-bg);
+}
+
+.crl-table td {
+  padding: 0.75rem 0.95rem;
+  color: var(--text-primary);
+}

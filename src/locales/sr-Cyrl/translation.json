@@ -511,6 +511,13 @@
         "removeFromCRL": "Уклони из CRL листе",
         "privilegeWithdrawn": "Одузете привилегије",
         "aaCompromise": "Компромитовање AA тела"
+      },
+      "extensionNames": {
+        "crlNumber": "CRL Број",
+        "crlReason": "Разлог опозива (CRL Reason)",
+        "deltaCRLIndicator": "Индикатор Делта CRL-а",
+        "issuingDistributionPoint": "Тачка дистрибуције издавача",
+        "authorityKeyIdentifier": "Идентификатор кључа ауторитета"
       }
     },
     "csr": {

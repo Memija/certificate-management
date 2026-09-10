@@ -508,6 +508,13 @@
         "removeFromCRL": "Aus CRL entfernen",
         "privilegeWithdrawn": "Berechtigung entzogen",
         "aaCompromise": "AA-Kompromittierung"
+      },
+      "extensionNames": {
+        "crlNumber": "CRL-Nummer",
+        "crlReason": "CRL-Grund",
+        "deltaCRLIndicator": "Delta-CRL-Indikator",
+        "issuingDistributionPoint": "Ausgabeverteilungspunkt",
+        "authorityKeyIdentifier": "Autoritätsschlüsselkennung"
       }
     },
     "csr": {
