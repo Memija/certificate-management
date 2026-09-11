@@ -378,6 +378,7 @@
           "p2": "100% po stronie klienta, nic nie opuszcza Twojego komputera."
         },
         "incorrectPassword": "Nieprawidłowe hasło.",
+        "pkcs12RequiresPassword": "Ten plik PKCS#12 wymaga hasła.",
         "unlockJksTitle": "Odblokuj klucze prywatne",
         "showPassword": "Pokaż hasło",
         "hidePassword": "Ukryj hasło"
@@ -395,7 +396,8 @@
         "csrFile": "Ten plik zawiera żądanie podpisania certyfikatu (CSR), a nie magazyn certyfikatów. Zbadaj ten plik w Inspektorze CSR.",
         "privateKeyFile": "Ten plik zawiera klucz prywatny, a nie magazyn certyfikatów.",
         "goToCrlInspector": "Otwórz w Inspektorze CRL",
-        "goToCsrInspector": "Otwórz w Inspektorze CSR"
+        "goToCsrInspector": "Otwórz w Inspektorze CSR",
+        "pkcs12RequiresPassword": "Ten plik PKCS#12 wymaga hasła."
       }
     },
     "chain": {
@@ -449,7 +451,26 @@
       "sampleMultiLeaf": "Wiele odgałęzień końcowych",
       "sampleBroken": "Ostrzeżenie o przerwanym łańcuchu",
       "dropZoneTitle": "Upuść certyfikaty tutaj, aby zrekonstruować graf zaufania",
-      "dropZoneDesc": "Prześlij pojedyncze pliki lub pakiety certyfikatów (.pem, .crt, .p7b, .pfx), aby zwizualizować i zweryfikować matematycznie pełną ścieżkę certyfikacji."
+      "dropZoneDesc": "Prześlij pojedyncze pliki lub pakiety certyfikatów (.pem, .crt, .p7b, .pfx), aby zwizualizować i zweryfikować matematycznie pełną ścieżkę certyfikacji.",
+      "loadedPoolSuccess": "Załadowano {{count}} certyfikat(ów) do puli łańcucha",
+      "loadedPoolSuccess_one": "Załadowano 1 certyfikat do puli łańcucha",
+      "loadedPoolSuccess_few": "Załadowano {{count}} certyfikaty do puli łańcucha",
+      "loadedPoolSuccess_many": "Załadowano {{count}} certyfikatów do puli łańcucha",
+      "loadedPoolSuccess_other": "Załadowano {{count}} certyfikatów do puli łańcucha",
+      "noValidCerts": "Nie udało się wyodrębnić prawidłowych certyfikatów X.509 z przesłanych plików.",
+      "loadedSample": "Załadowano przykład: {{label}}",
+      "failedLoadSample": "Nie udało się załadować przykładu: {{error}}",
+      "fileWarning": "Ostrzeżenie dla \"{{fileName}}\": {{warning}}",
+      "fileProcessError": "Nie udało się przetworzyć \"{{fileName}}\": {{error}}",
+      "isCaYes": "Jest CA: Tak",
+      "isCaNo": "Jest CA: Nie",
+      "certTabsLabel": "Certyfikaty",
+      "certRemoved": "Certyfikat usunięty z puli",
+      "inspectNode": "Pokaż szczegóły",
+      "unlockPfxTitle": "Odblokuj magazyn PKCS#12 / PFX",
+      "pfxPasswordPrompt": "Plik \"{{fileName}}\" jest chroniony hasłem. Wprowadź hasło, aby wyodrębnić certyfikaty do puli walidacji łańcucha.",
+      "unlocking": "Odblokowywanie…",
+      "sampleAlreadyLoaded": "Ten przykładowy łańcuch jest już załadowany"
     },
     "crl": {
       "title": "Inspektor <0>listy odwołanych certyfikatów (CRL)</0>",
@@ -483,7 +504,10 @@
       "dropZoneDesc": "Obsługuje standardowe listy odwołanych certyfikatów w formatach DER i PEM (.crl)",
       "replaceCrl": "Zastąp CRL",
       "clearCrl": "Wyczyść",
-      "sampleBadge": "Przykładowy CRL",
+      "loadedFiles": "Załadowane pliki",
+      "tabsLabel": "Listy CRL",
+      "addCrl": "Dodaj CRL",
+      "sampleTag": "Przykładowa",
       "loadedCrls": "Załadowane listy CRL ({{count}})",
       "addMore": "+ Dodaj więcej",
       "itemSummary": "{{count}} odwołanych · {{status}}",
@@ -491,6 +515,7 @@
       "removeFile": "Usuń plik",
       "unknownIssuer": "Nieznany wystawca",
       "trySampleCrl": "Wypróbuj przykładową listę CRL",
+      "sampleAlreadyLoaded": "Przykładowa lista CRL jest już załadowana",
       "certDerNotCrl": "Ten plik to certyfikat X.509 w formacie DER (Podmiot: {{subject}}), a nie lista odwołanych certyfikatów (CRL). Prześlij prawidłowy plik .crl lub zbadaj ten certyfikat w Inspektorze Trust Store.",
       "certDerNotCrlSimple": "Ten plik to certyfikat X.509 w formacie DER, a nie lista odwołanych certyfikatów (CRL). Prześlij prawidłowy plik .crl lub zbadaj ten certyfikat w Inspektorze Trust Store.",
       "certNotCrl": "Ten plik zawiera certyfikat X.509, a nie listę odwołanych certyfikatów (CRL). Prześlij prawidłowy plik .crl lub zbadaj ten certyfikat w Inspektorze Trust Store.",
@@ -524,6 +549,10 @@
       }
     },
     "csr": {
+      "loadedFiles": "Załadowane pliki",
+      "tabsLabel": "Żądania CSR",
+      "addCsr": "Dodaj CSR",
+      "trySampleCsr": "Wypróbuj przykładowe CSR",
       "validSignature": "Własny podpis poprawny",
       "invalidSignature": "Własny podpis niepoprawny",
       "subjectTitle": "Podmiot",
@@ -533,13 +562,16 @@
       "signatureAlgorithm": "Algorytm podpisu",
       "signatureOid": "OID podpisu",
       "requestedPurposes": "Żądane cele",
-      "sha256Fingerprint": "Odcisk palca SHA-256"
+      "sha256Fingerprint": "Odcisk palca SHA-256",
+      "sampleAlreadyLoaded": "Przykładowe CSR jest już załadowane"
     }
   },
   "common": {
     "error": "Błąd",
     "copiedToClipboard": "Skopiowano do schowka",
     "copyToClipboard": "Kopiuj do schowka",
-    "clear": "Wyczyść"
+    "clear": "Wyczyść",
+    "clearAll": "Wyczyść wszystko",
+    "remove": "Usuń"
   }
 }

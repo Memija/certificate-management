@@ -144,7 +144,29 @@ function subjectCN(cert: ParsedCertificate): string {
 const JKS_MAGIC = 0xfeedfeed;
 const PKCS12_MAGIC_BYTE = 0x30; // ASN.1 SEQUENCE
 
-function detectFormat(bytes: Uint8Array, textContent: string): ParsedTrustStore['format'] {
+function isPkcs12Bytes(bytes: Uint8Array): boolean {
+  if (bytes.length < 10 || bytes[0] !== PKCS12_MAGIC_BYTE) return false;
+  let offset = 1;
+  // skip sequence length
+  if (bytes[offset] & 0x80) {
+    const lenBytes = bytes[offset] & 0x7f;
+    offset += 1 + lenBytes;
+  } else {
+    offset += 1;
+  }
+  // Next should be INTEGER 3: 0x02, 0x01, 0x03
+  if (offset + 3 <= bytes.length && bytes[offset] === 0x02 && bytes[offset + 1] === 0x01 && bytes[offset + 2] === 0x03) {
+    return true;
+  }
+  return false;
+}
+
+function detectFormat(bytes: Uint8Array, textContent: string, fileName?: string): ParsedTrustStore['format'] {
+  const lowerName = (fileName || '').toLowerCase();
+  if (lowerName.endsWith('.pfx') || lowerName.endsWith('.p12')) {
+    return 'PKCS12';
+  }
+
   // JKS magic: 0xFEEDFEED
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (bytes.length >= 4 && view.getUint32(0, false) === JKS_MAGIC) return 'JKS';
@@ -162,10 +184,8 @@ function detectFormat(bytes: Uint8Array, textContent: string): ParsedTrustStore[
   // DER: first byte 0x30 (ASN.1 SEQUENCE)
   if (bytes.length >= 4 && bytes[0] === PKCS12_MAGIC_BYTE) {
     if (isDerCrl(bytes)) return 'CRL';
-    // Distinguish PKCS12 (OID 1.2.840.113549.1.12) vs plain DER X.509
-    // PKCS12 starts with SEQUENCE { INTEGER 3, ... contentInfo ... }
-    // We try X.509 first, if it fails try PKCS12
-    return 'X509-DER'; // will be refined during parsing
+    if (isPkcs12Bytes(bytes)) return 'PKCS12';
+    return 'X509-DER'; // plain X.509 or PKCS#7 DER
   }
 
   return 'Unknown';
@@ -249,52 +269,161 @@ function parsePkcs7(bytes: Uint8Array, isPem: boolean): { entries: TrustStoreEnt
   return { entries, warnings };
 }
 
+function extractCertificatesFromP12(p12: any): { cert: any; alias?: string }[] {
+  const result: { cert: any; alias?: string }[] = [];
+  const seenSerials = new Set<string>();
+
+  const addCert = (forgeCert: any, alias?: string) => {
+    if (!forgeCert) return;
+    try {
+      const serial = forgeCert.serialNumber || '';
+      const subject = forgeCert.subject ? forgeCert.subject.attributes.map((a: any) => `${a.shortName || a.name}=${a.value}`).join(', ') : '';
+      const key = `${serial}::${subject}`;
+      if (!seenSerials.has(key)) {
+        seenSerials.add(key);
+        result.push({ cert: forgeCert, alias });
+      }
+    } catch {
+      result.push({ cert: forgeCert, alias });
+    }
+  };
+
+  // 1. Check getBags for certBag
+  try {
+    const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
+    const bags = certBags[forge.pki.oids.certBag] || [];
+    for (const b of bags) {
+      if (b.cert) {
+        addCert(b.cert, b.attributes?.friendlyName?.[0]);
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // 2. Iterate safeContents and safeBags
+  try {
+    for (const sc of p12.safeContents || []) {
+      for (const sb of sc.safeBags || []) {
+        if (sb.cert) {
+          addCert(sb.cert, sb.attributes?.friendlyName?.[0]);
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return result;
+}
+
 // ─── PKCS#12 parser ──────────────────────────────────────────────────────────
 function parsePkcs12(bytes: Uint8Array, password: string): { entries: TrustStoreEntry[]; warnings: string[]; needsPassword?: boolean } {
   const warnings: string[] = [];
   const entries: TrustStoreEntry[] = [];
+
+  let asn1: any;
   try {
     const derStr = forge.util.createBuffer(bytes as any).getBytes();
-    const asn1 = forge.asn1.fromDer(derStr);
-    const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, password);
-    const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
-    const bags: any[] = certBags[forge.pki.oids.certBag] || [];
-    bags.forEach((bag: any, i: number) => {
+    asn1 = forge.asn1.fromDer(derStr);
+  } catch (e: any) {
+    return { entries: [], warnings: [`Invalid PKCS#12 DER structure: ${e?.message || e}`] };
+  }
+
+  let p12Certs: { cert?: any; derBuffer?: ArrayBuffer; alias?: string }[] = [];
+  let pkcs12Obj: any = null;
+
+  // Attempt 1: standard forge pkcs12FromAsn1
+  try {
+    pkcs12Obj = forge.pkcs12.pkcs12FromAsn1(asn1, false, password);
+    p12Certs = extractCertificatesFromP12(pkcs12Obj);
+  } catch {
+    // If no password was provided and standard parsing failed, this keystore requires a password!
+    if (!password) {
+      return {
+        entries: [],
+        warnings: ['This PKCS#12 file requires a password.'],
+        needsPassword: true,
+      };
+    }
+
+    // If a password WAS provided and MAC verification failed (e.g. modern OpenSSL 3 PBKDF2 MAC),
+    // try stripping macData and decrypting with the user-provided password
+    if (asn1.value && asn1.value.length > 2) {
       try {
-        const forgeCert = bag.cert;
-        if (!forgeCert) return;
-        const alias = (bag.attributes?.friendlyName?.[0]) || null;
-        const derStr2 = forge.asn1.toDer(forge.pki.certificateToAsn1(forgeCert)).getBytes();
+        const asn1NoMac = forge.asn1.create(asn1.tagClass, asn1.type, asn1.constructed, [
+          asn1.value[0],
+          asn1.value[1],
+        ]);
+        pkcs12Obj = forge.pkcs12.pkcs12FromAsn1(asn1NoMac, false, password);
+        p12Certs = extractCertificatesFromP12(pkcs12Obj);
+      } catch {
+        // Fallback decryption also failed -> wrong password
+      }
+    }
+  }
+
+  if (p12Certs.length === 0) {
+    return {
+      entries: [],
+      warnings: [password ? 'Incorrect password.' : 'This PKCS#12 file requires a password.'],
+      needsPassword: true,
+    };
+  }
+
+  // Convert found certs to TrustStoreEntry
+  for (let i = 0; i < p12Certs.length; i++) {
+    const item = p12Certs[i];
+    try {
+      let parsed: ParsedCertificate | null = null;
+      if (item.derBuffer) {
+        parsed = parseX509FromDer(item.derBuffer);
+      } else if (item.cert) {
+        const derStr2 = forge.asn1.toDer(forge.pki.certificateToAsn1(item.cert)).getBytes();
         const buf = new Uint8Array(derStr2.length);
         for (let j = 0; j < derStr2.length; j++) buf[j] = derStr2.charCodeAt(j);
-        const parsed = parseX509FromDer(buf.buffer);
-        if (parsed) entries.push({ alias: alias || subjectCN(parsed) || `Certificate ${i + 1}`, certificate: parsed });
-      } catch {
-        warnings.push(`Could not parse certificate bag #${i + 1}.`);
+        parsed = parseX509FromDer(buf.buffer);
       }
-    });
-
-    // Count private key bags - warn but never expose
-    const pkBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
-    const pks = pkBags[forge.pki.oids.pkcs8ShroudedKeyBag] || [];
-    if (pks.length > 0) {
-      warnings.push(`This file contains ${pks.length} private key(s). Private keys are never displayed.`);
-      try {
-        const pkPem = pks[0].key ? forge.pki.privateKeyToPem(pks[0].key) : undefined;
-        if (pkPem && entries.length > 0) entries[0].privateKeyPem = pkPem;
-      } catch (e) {
-        // ignore
+      if (parsed) {
+        entries.push({
+          alias: item.alias || subjectCN(parsed) || `Certificate ${i + 1}`,
+          certificate: parsed,
+        });
       }
+    } catch {
+      warnings.push(`Could not parse certificate bag #${i + 1}.`);
     }
-  } catch (e: any) {
-    const msg = e?.message || String(e);
-    if (msg.includes('Invalid password') || msg.includes('PKCS#12 MAC could not be verified')) {
-      return { entries: [], warnings: ['Incorrect password.'], needsPassword: true };
-    }
-    // May be a DER X.509, not PKCS12 - signal to caller
-    return { entries: [], warnings: [`PKCS#12 parse error: ${msg}`] };
   }
-  return { entries, warnings };
+
+  // Extract private keys if available in pkcs12Obj
+  if (pkcs12Obj) {
+    try {
+      const pkBags = pkcs12Obj.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
+      const pks = pkBags[forge.pki.oids.pkcs8ShroudedKeyBag] || [];
+      if (pks.length > 0) {
+        warnings.push(`This file contains ${pks.length} private key(s). Private keys are never displayed.`);
+        try {
+          const pkPem = pks[0].key ? forge.pki.privateKeyToPem(pks[0].key) : undefined;
+          if (pkPem && entries.length > 0) entries[0].privateKeyPem = pkPem;
+        } catch {
+          // ignore
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (entries.length > 0) {
+    return { entries, warnings, needsPassword: false };
+  }
+
+  // If no certs extracted, it requires a password or password was wrong
+  return {
+    entries: [],
+    warnings: [password ? 'Incorrect password.' : 'This PKCS#12 file requires a password.'],
+    needsPassword: true,
+  };
 }
 
 // ─── JKS parser ──────────────────────────────────────────────────────────────
@@ -420,7 +549,7 @@ export async function parseTrustStoreFile(
   let text = '';
   try { text = new TextDecoder('utf-8').decode(bytes); } catch { /* binary file */ }
 
-  const format = detectFormat(bytes, text);
+  const format = detectFormat(bytes, text, file.name);
 
   if (format === 'CRL') {
     return { format: 'CRL', entries: [], warnings: ['ERR_CRL_FILE'] };
@@ -434,6 +563,19 @@ export async function parseTrustStoreFile(
   if (format === 'PKCS7') {
     const { entries, warnings } = parsePkcs7(bytes, text.includes('-----BEGIN'));
     return { format: 'PKCS7', entries, warnings };
+  }
+
+  if (format === 'PKCS12') {
+    const p12 = parsePkcs12(bytes, password);
+    if (p12.entries.length > 0) {
+      return { format: 'PKCS12', ...p12 };
+    }
+    return {
+      format: 'PKCS12',
+      entries: [],
+      warnings: p12.warnings.length > 0 ? p12.warnings : [password ? 'Incorrect password.' : 'This PKCS#12 file requires a password.'],
+      needsPassword: true,
+    };
   }
 
   if (format === 'PEM-Bundle') {
@@ -477,23 +619,11 @@ export async function parseTrustStoreFile(
 
     // Try DER PKCS#12
     const p12 = parsePkcs12(bytes, password);
-    if (p12.needsPassword) {
-      return { format: 'PKCS12', entries: [], warnings: p12.warnings, needsPassword: true };
-    }
     if (p12.entries.length > 0) {
       return { format: 'PKCS12', ...p12 };
     }
-
-    // If password was supplied and p12 failed, it might need a password
-    if (!password) {
-      // Try PKCS12 with empty password to check if it needs one
-      const p12Check = parsePkcs12(bytes, '');
-      if (p12Check.needsPassword) {
-        return { format: 'PKCS12', entries: [], warnings: ['This PKCS#12 file requires a password.'], needsPassword: true };
-      }
-      if (p12Check.entries.length > 0) {
-        return { format: 'PKCS12', ...p12Check };
-      }
+    if (p12.needsPassword) {
+      return { format: 'PKCS12', entries: [], warnings: p12.warnings, needsPassword: true };
     }
 
     return { format: 'Unknown', entries: [], warnings: ['ERR_COULD_NOT_PARSE_DER'] };

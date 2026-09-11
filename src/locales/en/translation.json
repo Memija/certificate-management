@@ -372,6 +372,7 @@
           "p2": "100% client-side, nothing leaves your machine."
         },
         "incorrectPassword": "Incorrect password.",
+        "pkcs12RequiresPassword": "This PKCS#12 file requires a password.",
         "unlockJksTitle": "Unlock Private Keys",
         "showPassword": "Show password",
         "hidePassword": "Hide password"
@@ -389,7 +390,8 @@
         "csrFile": "This file contains a Certificate Signing Request (CSR), not a certificate trust store. Please inspect this file in the CSR Inspector.",
         "privateKeyFile": "This file contains a Private Key, not a certificate trust store.",
         "goToCrlInspector": "Open in CRL Inspector",
-        "goToCsrInspector": "Open in CSR Inspector"
+        "goToCsrInspector": "Open in CSR Inspector",
+        "pkcs12RequiresPassword": "This PKCS#12 file requires a password."
       }
     },
     "chain": {
@@ -443,7 +445,24 @@
       "sampleMultiLeaf": "Multi-Leaf Branch",
       "sampleBroken": "Broken Chain Warning",
       "dropZoneTitle": "Drop certificates here to reconstruct trust graph",
-      "dropZoneDesc": "Upload single files or multi-certificate bundles (.pem, .crt, .p7b, .pfx) to visualize and mathematically verify the full certification path."
+      "dropZoneDesc": "Upload single files or multi-certificate bundles (.pem, .crt, .p7b, .pfx) to visualize and mathematically verify the full certification path.",
+      "loadedPoolSuccess": "Loaded {{count}} certificate(s) into chain pool",
+      "loadedPoolSuccess_one": "Loaded 1 certificate into chain pool",
+      "loadedPoolSuccess_other": "Loaded {{count}} certificates into chain pool",
+      "noValidCerts": "No valid X.509 certificates could be extracted from the uploaded files.",
+      "loadedSample": "Loaded sample: {{label}}",
+      "failedLoadSample": "Failed to load sample: {{error}}",
+      "fileWarning": "Warning for \"{{fileName}}\": {{warning}}",
+      "fileProcessError": "Failed to process \"{{fileName}}\": {{error}}",
+      "isCaYes": "Is CA: Yes",
+      "isCaNo": "Is CA: No",
+      "certTabsLabel": "Certificates",
+      "certRemoved": "Certificate removed from pool",
+      "inspectNode": "Inspect details",
+      "unlockPfxTitle": "Unlock PKCS#12 / PFX Keystore",
+      "pfxPasswordPrompt": "The file \"{{fileName}}\" is password-protected. Enter the password to extract certificates into the chain validation pool.",
+      "unlocking": "Unlocking…",
+      "sampleAlreadyLoaded": "This sample chain is already loaded"
     },
     "crl": {
       "title": "<0>Certificate Revocation List (CRL)</0> Inspector",
@@ -478,6 +497,10 @@
       "replaceCrl": "Replace CRL",
       "clearCrl": "Clear",
       "sampleBadge": "Sample CRL",
+      "loadedFiles": "Loaded Files",
+      "tabsLabel": "CRLs",
+      "addCrl": "Add CRL",
+      "sampleTag": "Sample",
       "loadedCrls": "Loaded CRLs ({{count}})",
       "addMore": "+ Add More",
       "itemSummary": "{{count}} revoked · {{status}}",
@@ -485,6 +508,7 @@
       "removeFile": "Remove file",
       "unknownIssuer": "Unknown Issuer",
       "trySampleCrl": "Try Sample CRL",
+      "sampleAlreadyLoaded": "Sample CRL is already loaded",
       "certDerNotCrl": "This file is an X.509 Certificate in DER format (Subject: {{subject}}), not a Certificate Revocation List (CRL). Please upload a valid .crl file, or inspect this certificate in the Trust Store Inspector.",
       "certDerNotCrlSimple": "This file is an X.509 Certificate in DER format, not a Certificate Revocation List (CRL). Please upload a valid .crl file, or inspect this certificate in the Trust Store Inspector.",
       "certNotCrl": "This file contains an X.509 Certificate, not a Certificate Revocation List (CRL). Please upload a valid .crl file, or inspect this certificate in the Trust Store Inspector.",
@@ -518,6 +542,10 @@
       }
     },
     "csr": {
+      "loadedFiles": "Loaded Files",
+      "tabsLabel": "CSRs",
+      "addCsr": "Add CSR",
+      "trySampleCsr": "Try Sample CSR",
       "validSignature": "Self-Signature Valid",
       "invalidSignature": "Self-Signature Invalid",
       "subjectTitle": "Subject",
@@ -527,13 +555,16 @@
       "signatureAlgorithm": "Signature Algorithm",
       "signatureOid": "Signature OID",
       "requestedPurposes": "Requested Purposes",
-      "sha256Fingerprint": "SHA-256 Fingerprint"
+      "sha256Fingerprint": "SHA-256 Fingerprint",
+      "sampleAlreadyLoaded": "Sample CSR is already loaded"
     }
   },
   "common": {
     "error": "Error",
     "copiedToClipboard": "Copied to clipboard",
     "copyToClipboard": "Copy to clipboard",
-    "clear": "Clear"
+    "clear": "Clear",
+    "clearAll": "Clear All",
+    "remove": "Remove"
   }
 }

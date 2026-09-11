@@ -1,10 +1,10 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   Upload, FileKey, AlertTriangle, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, Copy, Download, RefreshCw, X, Eye, EyeOff
+  ChevronDown, ChevronUp, Copy, Download, RefreshCw, X, Eye, EyeOff, Sparkles
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { parseCSRFile } from './utils/csrParser';
+import { parseCSRFile, parseCSRFromText, SAMPLE_CSR_PEM } from './utils/csrParser';
 import { LearningTerm } from './LearningTerm';
 import type { ParsedCSR } from './utils/csrParser';
 import { formatPurposesList } from './utils/purposeFormatter';
@@ -215,7 +215,8 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
 
 // ─── Drop zone ────────────────────────────────────────────────────────────────
 
-function DropZone({ onFiles }: { onFiles: (files: File[]) => void }) {
+function DropZone({ onFiles, onLoadSample, hasSample }: { onFiles: (files: File[]) => void; onLoadSample?: () => void; hasSample?: boolean }) {
+  const { t } = useTranslation();
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -261,6 +262,31 @@ function DropZone({ onFiles }: { onFiles: (files: File[]) => void }) {
       <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
         Supports PEM and DER · <code>.csr</code> · <code>.req</code> · <code>.pem</code> · <code>.der</code>
       </p>
+      {onLoadSample && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onLoadSample();
+            }}
+            disabled={hasSample}
+            className="btn btn-secondary btn-sm"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.45rem 1rem',
+              opacity: hasSample ? 0.5 : 1,
+              cursor: hasSample ? 'not-allowed' : 'pointer'
+            }}
+            title={hasSample ? t('app.csr.sampleAlreadyLoaded', 'Sample CSR is already loaded') : undefined}
+          >
+            <Sparkles size={14} style={{ color: 'var(--text-accent)' }} />
+            {t('app.csr.trySampleCsr', 'Try Sample CSR')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -338,19 +364,45 @@ interface CSREntry {
 }
 
 export function CsrInspector() {
+  const { t } = useTranslation();
   const [entries, setEntries] = useState<CSREntry[]>([]);
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+  const addFileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (entries.length > 0 && (!activeEntryId || !entries.some(e => e.id === activeEntryId))) {
+      setActiveEntryId(entries[0].id);
+    } else if (entries.length === 0) {
+      setActiveEntryId(null);
+    }
+  }, [entries, activeEntryId]);
+
+  const hasSample = useMemo(() => {
+    return entries.some(e => e.id.startsWith('sample-csr-') || e.name === 'sample_request.csr');
+  }, [entries]);
 
   const handleFiles = useCallback(async (files: File[]) => {
-    const pending: CSREntry[] = files.map(f => ({
+    // Avoid adding exact duplicate files by name if already loaded
+    const newFiles = files.filter(f => !entries.some(e => e.name === f.name));
+    if (newFiles.length === 0) {
+      const firstExisting = entries.find(e => files.some(f => f.name === e.name));
+      if (firstExisting) setActiveEntryId(firstExisting.id);
+      return;
+    }
+
+    const pending: CSREntry[] = newFiles.map(f => ({
       id: `${f.name}-${Date.now()}-${Math.random()}`,
       name: f.name,
       result: { ok: false, error: '' },
       loading: true,
     }));
     setEntries(prev => [...prev, ...pending]);
+    if (pending.length > 0) {
+      setActiveEntryId(pending[pending.length - 1].id);
+    }
 
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i];
+    for (let i = 0; i < newFiles.length; i++) {
+      const f = newFiles[i];
       const id = pending[i].id;
       try {
         const csr = await parseCSRFile(f);
@@ -363,10 +415,50 @@ export function CsrInspector() {
         ));
       }
     }
-  }, []);
+  }, [entries]);
 
-  const removeEntry = (id: string) => setEntries(prev => prev.filter(e => e.id !== id));
-  const clearAll = () => setEntries([]);
+  const removeEntry = (id: string) => {
+    setEntries(prev => {
+      const remaining = prev.filter(e => e.id !== id);
+      if (activeEntryId === id) {
+        const removedIdx = prev.findIndex(e => e.id === id);
+        const next = remaining[removedIdx] || remaining[removedIdx - 1] || remaining[0] || null;
+        setActiveEntryId(next ? next.id : null);
+      }
+      return remaining;
+    });
+  };
+
+  const clearAll = () => {
+    setEntries([]);
+    setActiveEntryId(null);
+  };
+
+  const loadSampleCsr = useCallback(() => {
+    const existing = entries.find(e => e.id.startsWith('sample-csr-') || e.name === 'sample_request.csr');
+    if (existing) {
+      setActiveEntryId(existing.id);
+      return;
+    }
+    try {
+      const csr = parseCSRFromText(SAMPLE_CSR_PEM);
+      const entry: CSREntry = {
+        id: 'sample-csr-' + Date.now(),
+        name: 'sample_request.csr',
+        result: { ok: true, csr },
+        loading: false,
+      };
+      setEntries(prev => {
+        if (prev.some(e => e.id.startsWith('sample-csr-') || e.name === 'sample_request.csr')) {
+          return prev;
+        }
+        return [...prev, entry];
+      });
+      setActiveEntryId(entry.id);
+    } catch (err: any) {
+      console.error(err);
+    }
+  }, [entries]);
 
   return (
     <div className="main-content">
@@ -384,20 +476,93 @@ export function CsrInspector() {
           </div>
         </div>
 
-        <DropZone onFiles={handleFiles} />
+        <DropZone onFiles={handleFiles} onLoadSample={loadSampleCsr} hasSample={hasSample} />
+
+        <input
+          ref={addFileInputRef}
+          type="file"
+          accept=".csr,.req,.pem,.der,.cer,.txt"
+          multiple
+          style={{ display: 'none' }}
+          onChange={e => {
+            const files = Array.from(e.target.files || []);
+            if (files.length) handleFiles(files);
+            e.target.value = '';
+          }}
+        />
 
         {entries.length > 0 && (
-          <div style={{ marginTop: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
-                {entries.length} file{entries.length !== 1 ? 's' : ''} loaded
-              </span>
-              <button className="btn btn-secondary" style={{ padding: '0.3rem 0.75rem', fontSize: '0.82rem' }} onClick={clearAll}>
-                <X size={13} /> Clear all
-              </button>
+          <div style={{ marginTop: '2rem' }} className="animate-fade-in">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <h3 style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem', letterSpacing: '0.06em' }}>
+                {t('app.csr.loadedFiles', 'Loaded Files')} ({entries.length})
+              </h3>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.82rem', padding: '0.35rem 0.8rem' }}
+                  onClick={() => addFileInputRef.current?.click()}
+                >
+                  <Upload size={13} /> {t('app.csr.addCsr', 'Add CSR')}
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.82rem', padding: '0.35rem 0.8rem' }}
+                  onClick={clearAll}
+                >
+                  <X size={13} /> {t('common.clearAll', 'Clear All')}
+                </button>
+              </div>
             </div>
 
-            {entries.map(entry => {
+            {/* Certificate Tabs Row */}
+            <div className="chain-cert-tabs-container" style={{ marginBottom: '1.5rem' }}>
+              <span style={{
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                flexShrink: 0,
+                marginRight: '0.25rem'
+              }}>
+                <FileKey size={14} style={{ color: 'var(--text-accent-2)' }} />
+                {t('app.csr.tabsLabel', 'CSRs')} ({entries.length}):
+              </span>
+              {entries.map(entry => {
+                const isActive = activeEntryId === entry.id;
+                const cn = entry.result.ok
+                  ? (entry.result.csr.subjectFields.find(f => f.shortName === 'CN')?.value || entry.name)
+                  : entry.name;
+                return (
+                  <button
+                    key={entry.id}
+                    onClick={() => setActiveEntryId(entry.id)}
+                    className={`chain-cert-tab role-csr ${!entry.result.ok ? 'status-error' : ''} ${isActive ? 'active' : ''}`}
+                    title={entry.name}
+                  >
+                    {isActive && <span className="tab-active-dot" />}
+                    <FileKey size={13} className="tab-role-icon" />
+                    <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cn}</span>
+                    <span
+                      className="tab-action-btn btn-remove"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeEntry(entry.id);
+                      }}
+                      title={t('common.remove', 'Remove')}
+                    >
+                      <X size={12} />
+                    </span>
+                    {isActive && <span className="tab-accent-line" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Active CSR details panel */}
+            {entries.filter(e => e.id === activeEntryId).map(entry => {
               if (entry.loading) {
                 return (
                   <div key={entry.id} className="glass-panel" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

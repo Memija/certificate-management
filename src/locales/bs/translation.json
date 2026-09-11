@@ -375,6 +375,7 @@
           "p2": "100% na strani klijenta, ništa ne napušta vaš računar."
         },
         "incorrectPassword": "Netačna lozinka.",
+        "pkcs12RequiresPassword": "Ova PKCS#12 datoteka zahtijeva lozinku.",
         "unlockJksTitle": "Otključaj privatne ključeve",
         "showPassword": "Prikaži lozinku",
         "hidePassword": "Sakrij lozinku"
@@ -392,7 +393,8 @@
         "csrFile": "Ova datoteka sadrži zahtjev za potpisivanje certifikata (CSR), a ne skladište certifikata. Molimo pregledajte je u CSR Inspektoru.",
         "privateKeyFile": "Ova datoteka sadrži privatni ključ, a ne skladište certifikata.",
         "goToCrlInspector": "Otvori u CRL Inspektoru",
-        "goToCsrInspector": "Otvori u CSR Inspektoru"
+        "goToCsrInspector": "Otvori u CSR Inspektoru",
+        "pkcs12RequiresPassword": "Ova PKCS#12 datoteka zahtijeva lozinku."
       }
     },
     "chain": {
@@ -446,7 +448,25 @@
       "sampleMultiLeaf": "Višestruko grananje",
       "sampleBroken": "Upozorenje na prekinut lanac",
       "dropZoneTitle": "Prevucite certifikate ovdje za rekonstrukciju stabla povjerenja",
-      "dropZoneDesc": "Učitajte pojedinačne datoteke ili pakete certifikata (.pem, .crt, .p7b, .pfx) za vizualizaciju i matematičku provjeru cijelog puta certificiranja."
+      "dropZoneDesc": "Učitajte pojedinačne datoteke ili pakete certifikata (.pem, .crt, .p7b, .pfx) za vizualizaciju i matematičku provjeru cijelog puta certificiranja.",
+      "loadedPoolSuccess": "Učitano {{count}} certifikata u bazu lanca",
+      "loadedPoolSuccess_one": "Učitan 1 certifikat u bazu lanca",
+      "loadedPoolSuccess_few": "Učitana {{count}} certifikata u bazu lanca",
+      "loadedPoolSuccess_other": "Učitano {{count}} certifikata u bazu lanca",
+      "noValidCerts": "Nije moguće izdvojiti važeće X.509 certifikate iz prenesenih datoteka.",
+      "loadedSample": "Učitan primjer: {{label}}",
+      "failedLoadSample": "Učitavanje primjera nije uspjelo: {{error}}",
+      "fileWarning": "Upozorenje za \"{{fileName}}\": {{warning}}",
+      "fileProcessError": "Obrada \"{{fileName}}\" nije uspjela: {{error}}",
+      "isCaYes": "Je CA: Da",
+      "isCaNo": "Je CA: Ne",
+      "certTabsLabel": "Certifikati",
+      "certRemoved": "Certifikat uklonjen iz lanca",
+      "inspectNode": "Pregledaj detalje",
+      "unlockPfxTitle": "Otključaj PKCS#12 / PFX skladište",
+      "pfxPasswordPrompt": "Datoteka \"{{fileName}}\" je zaštićena lozinkom. Unesite lozinku za izdvajanje certifikata u bazu provjere lanca.",
+      "unlocking": "Otključavanje…",
+      "sampleAlreadyLoaded": "Ovaj primjer lanca je već učitan"
     },
     "crl": {
       "title": "Inspektor <0>liste opozvanih certifikata (CRL)</0>",
@@ -480,7 +500,10 @@
       "dropZoneDesc": "Podržava standardne DER i PEM formatirane liste opozvanih certifikata (.crl)",
       "replaceCrl": "Zamijeni CRL",
       "clearCrl": "Očisti",
-      "sampleBadge": "Primjer CRL",
+      "loadedFiles": "Učitane datoteke",
+      "tabsLabel": "CRL-ovi",
+      "addCrl": "Dodaj CRL",
+      "sampleTag": "Uzorak",
       "loadedCrls": "Učitane CRL liste ({{count}})",
       "addMore": "+ Dodaj još",
       "itemSummary": "{{count}} opozvano · {{status}}",
@@ -488,6 +511,7 @@
       "removeFile": "Ukloni datoteku",
       "unknownIssuer": "Nepoznat izdavač",
       "trySampleCrl": "Isprobajte primjer CRL",
+      "sampleAlreadyLoaded": "Primjer CRL liste je već učitan",
       "certDerNotCrl": "Ova datoteka je X.509 certifikat u DER formatu (Predmet: {{subject}}), a ne lista opoziva certifikata (CRL). Molimo učitajte važeću .crl datoteku ili pregledajte ovaj certifikat u Inspektoru Trust Store-a.",
       "certDerNotCrlSimple": "Ova datoteka je X.509 certifikat u DER formatu, a ne lista opoziva certifikata (CRL). Molimo učitajte važeću .crl datoteku ili pregledajte ovaj certifikat u Inspektoru Trust Store-a.",
       "certNotCrl": "Ova datoteka sadrži X.509 certifikat, a ne listu opozvanih certifikata (CRL). Molimo učitajte važeću .crl datoteku ili pregledajte ovaj certifikat u Inspektoru Trust Store-a.",
@@ -521,6 +545,10 @@
       }
     },
     "csr": {
+      "loadedFiles": "Učitane datoteke",
+      "tabsLabel": "CSR-ovi",
+      "addCsr": "Dodaj CSR",
+      "trySampleCsr": "Isprobajte primjer CSR",
       "validSignature": "Vlastiti potpis ispravan",
       "invalidSignature": "Vlastiti potpis neispravan",
       "subjectTitle": "Subjekt",
@@ -530,13 +558,16 @@
       "signatureAlgorithm": "Algoritam potpisa",
       "signatureOid": "OID potpisa",
       "requestedPurposes": "Zatražene svrhe",
-      "sha256Fingerprint": "SHA-256 otisak"
+      "sha256Fingerprint": "SHA-256 otisak",
+      "sampleAlreadyLoaded": "Primjer CSR-a je već učitan"
     }
   },
   "common": {
     "error": "Greška",
     "copiedToClipboard": "Kopirano u međuspremnik",
     "copyToClipboard": "Kopiraj u međuspremnik",
-    "clear": "Očisti"
+    "clear": "Očisti",
+    "clearAll": "Očisti sve",
+    "remove": "Ukloni"
   }
 }

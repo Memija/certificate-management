@@ -123,3 +123,30 @@ export function formatPurposesList(
   const list = splitPurposes(purposes);
   return list.map(p => translatePurpose(p, t)).join(', ');
 }
+
+/**
+ * Formats an extension value (e.g. Key Usage, Basic Constraints) into a readable representation.
+ */
+export function formatExtensionValue(
+  name: string = '',
+  oid: string = '',
+  value: string = '',
+  t: (key: string, fallback?: any) => string
+): string {
+  if (!value) return '';
+  const normName = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (normName === 'keyusage' || oid === '2.5.29.15') {
+    return formatKeyUsageValue(value, t);
+  }
+  if (normName === 'basicconstraints' || oid === '2.5.29.19') {
+    const isCA = value.includes('01 01 FF') || value.includes('01 01 ff');
+    const isNotCA = value.includes('01 01 00') || value.trim() === '30 00';
+    if (isCA) {
+      return `${t('app.chain.isCaYes', 'Is CA: Yes')} (${value})`;
+    }
+    if (isNotCA) {
+      return `${t('app.chain.isCaNo', 'Is CA: No')} (${value})`;
+    }
+  }
+  return value;
+}

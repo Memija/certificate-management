@@ -3254,8 +3254,8 @@ pre,
 }
 
 .chain-node-card {
-  min-width: 280px;
-  max-width: 360px;
+  min-width: 320px;
+  max-width: 420px;
   padding: 1.15rem 1.25rem;
   border-radius: 14px;
   background: var(--card-bg);
@@ -3313,9 +3313,10 @@ pre,
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  padding: 0.2rem 0.6rem;
+  padding: 0.22rem 0.6rem;
   border-radius: 999px;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0;
+  white-space: nowrap;
 }
 
 .badge-root {
@@ -3436,10 +3437,21 @@ pre,
   gap: 0.4rem;
 }
 
-.chain-sample-pill:hover {
+.chain-sample-pill:hover:not(:disabled) {
   background: var(--card-bg-hover);
   color: var(--text-primary);
   border-color: var(--glass-border);
+}
+
+.chain-sample-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chain-sample-pill.active {
+  border-color: var(--cat-validation);
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--text-primary);
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -3601,3 +3613,325 @@ pre,
   padding: 0.75rem 0.95rem;
   color: var(--text-primary);
 }
+
+/* ════════════════════════════════════════════════════════════
+   CHAIN VALIDATOR - NODE INSPECTOR MODAL
+════════════════════════════════════════════════════════════ */
+.chain-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 10, 16, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: expiryBackdropFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .chain-modal-backdrop {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.chain-modal-dialog {
+  width: 100%;
+  max-width: 800px;
+  max-height: 88vh;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border-accent);
+  border-radius: 18px;
+  padding: 1.75rem;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 30px rgba(6, 182, 212, 0.15), var(--glass-inner-light);
+  overflow-y: auto;
+  position: relative;
+  animation: chainModalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+[data-theme="light"] .chain-modal-dialog {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
+}
+
+@keyframes chainModalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   CHAIN VALIDATOR - CERTIFICATE TABS
+════════════════════════════════════════════════════════════ */
+.chain-cert-tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  overflow-x: auto;
+  padding: 0.25rem 0.25rem 0.6rem 0.25rem;
+  width: 100%;
+  scrollbar-width: thin;
+}
+
+.chain-cert-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border-subtle);
+  color: var(--text-secondary);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  position: relative;
+  user-select: none;
+}
+
+.chain-cert-tab:hover {
+  background: var(--card-bg-hover);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .chain-cert-tab {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+[data-theme="light"] .chain-cert-tab:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+/* ── Active Tab Base ── */
+.chain-cert-tab.active {
+  font-weight: 600;
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(14, 165, 233, 0.14) 100%);
+  border: 1.5px solid var(--text-accent);
+  color: #f0f9ff;
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35), 0 0 0 1px rgba(56, 189, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.chain-cert-tab.active .tab-role-icon {
+  color: var(--text-accent);
+}
+
+[data-theme="light"] .chain-cert-tab.active {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1.5px solid #0284c7;
+  color: #0369a1;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25), 0 0 0 1px #bae6fd;
+}
+
+[data-theme="light"] .chain-cert-tab.active .tab-role-icon {
+  color: #0284c7;
+}
+
+/* ── Active CSR (Violet) ── */
+.chain-cert-tab.active.role-csr {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.28) 0%, rgba(139, 92, 246, 0.16) 100%);
+  border: 1.5px solid #a78bfa;
+  color: #faf5ff;
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.35), 0 0 0 1px rgba(196, 181, 253, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.chain-cert-tab.active.role-csr .tab-role-icon {
+  color: #c4b5fd;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-csr {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border: 1.5px solid #8b5cf6;
+  color: #4c1d95;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25), 0 0 0 1px #ddd6fe;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-csr .tab-role-icon {
+  color: #8b5cf6;
+}
+
+/* ── Active CRL (Rose) ── */
+.chain-cert-tab.active.role-crl {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.28) 0%, rgba(225, 29, 72, 0.16) 100%);
+  border: 1.5px solid #f43f5e;
+  color: #fff1f2;
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35), 0 0 0 1px rgba(251, 113, 133, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.chain-cert-tab.active.role-crl .tab-role-icon {
+  color: #fb7185;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-crl {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border: 1.5px solid #e11d48;
+  color: #881337;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25), 0 0 0 1px #fecdd3;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-crl .tab-role-icon {
+  color: #e11d48;
+}
+
+/* ── Active Root CA (Emerald) ── */
+.chain-cert-tab.active.role-root {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(5, 150, 105, 0.16) 100%);
+  border: 1.5px solid #10b981;
+  color: #ecfdf5;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(52, 211, 153, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.chain-cert-tab.active.role-root .tab-role-icon {
+  color: #34d399;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-root {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1.5px solid #059669;
+  color: #064e3b;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25), 0 0 0 1px #a7f3d0;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-root .tab-role-icon {
+  color: #059669;
+}
+
+/* ── Active Intermediate CA (Cyan) ── */
+.chain-cert-tab.active.role-intermediate {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.28) 0%, rgba(8, 145, 178, 0.16) 100%);
+  border: 1.5px solid #06b6d4;
+  color: #ecfeff;
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.35), 0 0 0 1px rgba(34, 211, 238, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.chain-cert-tab.active.role-intermediate .tab-role-icon {
+  color: #22d3ee;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-intermediate {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+  border: 1.5px solid #0891b2;
+  color: #164e63;
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.25), 0 0 0 1px #a5f3fc;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-intermediate .tab-role-icon {
+  color: #0891b2;
+}
+
+/* ── Active Leaf Entity (Purple) ── */
+.chain-cert-tab.active.role-leaf {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.28) 0%, rgba(147, 51, 234, 0.16) 100%);
+  border: 1.5px solid #a855f7;
+  color: #faf5ff;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.35), 0 0 0 1px rgba(192, 132, 252, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.chain-cert-tab.active.role-leaf .tab-role-icon {
+  color: #c084fc;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-leaf {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border: 1.5px solid #7c3aed;
+  color: #4c1d95;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.25), 0 0 0 1px #ddd6fe;
+}
+
+[data-theme="light"] .chain-cert-tab.active.role-leaf .tab-role-icon {
+  color: #7c3aed;
+}
+
+/* ── Active Status Error (Red) ── */
+.chain-cert-tab.active.status-error {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.28) 0%, rgba(225, 29, 72, 0.16) 100%) !important;
+  border: 1.5px solid var(--danger-color) !important;
+  color: #fff1f2 !important;
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35), 0 0 0 1px rgba(244, 63, 94, 0.3) !important;
+}
+
+[data-theme="light"] .chain-cert-tab.active.status-error {
+  background: #ffe4e6 !important;
+  border-color: #e11d48 !important;
+  color: #881337 !important;
+}
+
+/* ── Tab Active Indicators ── */
+.chain-cert-tab .tab-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+  flex-shrink: 0;
+  animation: tabDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes tabDotPulse {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.chain-cert-tab .tab-accent-line {
+  position: absolute;
+  bottom: -1px;
+  left: 14%;
+  right: 14%;
+  height: 2.5px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.chain-cert-tab .tab-action-btn {
+  opacity: 0.55;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.chain-cert-tab .tab-action-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.chain-cert-tab .tab-action-btn.btn-remove:hover {
+  color: var(--danger-color);
+  background: rgba(244, 63, 94, 0.15);
+}
+
+.chain-cert-tab.active .tab-action-btn {
+  opacity: 0.8;
+}
+
+.chain-cert-tab.active .tab-action-btn:hover {
+  opacity: 1;
+}
+

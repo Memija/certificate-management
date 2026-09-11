@@ -375,6 +375,7 @@
           "p2": "100% на страни клијента, ништа не напушта ваш рачунар."
         },
         "incorrectPassword": "Нетачна лозинка.",
+        "pkcs12RequiresPassword": "Ова PKCS#12 датотека захтева лозинку.",
         "unlockJksTitle": "Откључај приватне кључеве",
         "showPassword": "Прикажи лозинку",
         "hidePassword": "Сакриј лозинку"
@@ -392,7 +393,8 @@
         "csrFile": "Ова датотека садржи захтев за потписивање сертификата (CSR), а не складиште сертификата. Молимо прегледајте је у CSR Инспектору.",
         "privateKeyFile": "Ова датотека садржи приватни кључ, а не складиште сертификата.",
         "goToCrlInspector": "Отвори у CRL Инспектору",
-        "goToCsrInspector": "Отвори у CSR Инспектору"
+        "goToCsrInspector": "Отвори у CSR Инспектору",
+        "pkcs12RequiresPassword": "Ова PKCS#12 датотека захтева лозинку."
       }
     },
     "chain": {
@@ -446,7 +448,25 @@
       "sampleMultiLeaf": "Вишеструко гранање",
       "sampleBroken": "Упозорење на прекинут ланац",
       "dropZoneTitle": "Превуците сертификате овде за реконструкцију стабла поверења",
-      "dropZoneDesc": "Учитајте појединачне датотеке или пакете сертификата (.pem, .crt, .p7b, .pfx) за визуелизацију и математичку проверу целог пута сертификовања."
+      "dropZoneDesc": "Учитајте појединачне датотеке или пакете сертификата (.pem, .crt, .p7b, .pfx) за визуелизацију и математичку проверу целог пута сертификовања.",
+      "loadedPoolSuccess": "Учитано {{count}} сертификата у базу ланца",
+      "loadedPoolSuccess_one": "Учитан 1 сертификат у базу ланца",
+      "loadedPoolSuccess_few": "Учитана {{count}} сертификата у базу ланца",
+      "loadedPoolSuccess_other": "Учитано {{count}} сертификата у базу ланца",
+      "noValidCerts": "Није могуће издвојити важеће X.509 сертификате из отпремљених датотека.",
+      "loadedSample": "Учитан пример: {{label}}",
+      "failedLoadSample": "Учитавање примера није успело: {{error}}",
+      "fileWarning": "Упозорење за \"{{fileName}}\": {{warning}}",
+      "fileProcessError": "Обрада \"{{fileName}}\" није успела: {{error}}",
+      "isCaYes": "Је CA: Да",
+      "isCaNo": "Је CA: Не",
+      "certTabsLabel": "Сертификати",
+      "certRemoved": "Сертификат уклоњен из ланца",
+      "inspectNode": "Прегледај детаље",
+      "unlockPfxTitle": "Откључај PKCS#12 / PFX складиште",
+      "pfxPasswordPrompt": "Датотека \"{{fileName}}\" је заштићена лозинком. Унесите лозинку за издвајање сертификата у базу провере ланца.",
+      "unlocking": "Откључавање…",
+      "sampleAlreadyLoaded": "Овај пример ланца је већ учитан"
     },
     "crl": {
       "title": "Инспектор <0>листе опозваних сертификата (CRL)</0>",
@@ -480,7 +500,10 @@
       "dropZoneDesc": "Подржава стандардне DER и PEM форматиране листе опозваних сертификата (.crl)",
       "replaceCrl": "Замени CRL",
       "clearCrl": "Очисти",
-      "sampleBadge": "Пример CRL",
+      "loadedFiles": "Учитане датотеке",
+      "tabsLabel": "CRL-ови",
+      "addCrl": "Додај CRL",
+      "sampleTag": "Узорак",
       "loadedCrls": "Учитане CRL листе ({{count}})",
       "addMore": "+ Додај још",
       "itemSummary": "{{count}} опозвано · {{status}}",
@@ -488,6 +511,7 @@
       "removeFile": "Уклони датотеку",
       "unknownIssuer": "Непознат издавач",
       "trySampleCrl": "Испробајте пример CRL",
+      "sampleAlreadyLoaded": "Пример CRL листе је већ учитан",
       "certDerNotCrl": "Ова датотека је X.509 сертификат у DER формату (Субјекат: {{subject}}), а не листа опозива сертификата (CRL). Молимо учитајте важећу .crl датотеку или прегледајте овај сертификат у Инспектору Trust Store-а.",
       "certDerNotCrlSimple": "Ова датотека је X.509 сертификат у DER формату, а не листа опозива сертификата (CRL). Молимо учитајте важећу .crl датотеку или прегледајте овај сертификат у Инспектору Trust Store-а.",
       "certNotCrl": "Ова датотека садржи X.509 сертификат, а не листу опозваних сертификата (CRL). Молимо учитајте важећу .crl датотеку или прегледајте овај сертификат у Инспектору Trust Store-а.",
@@ -521,6 +545,10 @@
       }
     },
     "csr": {
+      "loadedFiles": "Учитане датотеке",
+      "tabsLabel": "CSR-ови",
+      "addCsr": "Додај CSR",
+      "trySampleCsr": "Испробајте пример CSR",
       "validSignature": "Сопствени потпис исправан",
       "invalidSignature": "Сопствени потпис неисправан",
       "subjectTitle": "Субјект",
@@ -530,13 +558,16 @@
       "signatureAlgorithm": "Алгоритам потписа",
       "signatureOid": "OID потписа",
       "requestedPurposes": "Затражене сврхе",
-      "sha256Fingerprint": "SHA-256 отисак"
+      "sha256Fingerprint": "SHA-256 отисак",
+      "sampleAlreadyLoaded": "Пример CSR-а је већ учитан"
     }
   },
   "common": {
     "error": "Грешка",
     "copiedToClipboard": "Копирано у међуспремник",
     "copyToClipboard": "Копирај у међуспремник",
-    "clear": "Очисти"
+    "clear": "Очисти",
+    "clearAll": "Очисти све",
+    "remove": "Уклони"
   }
 }

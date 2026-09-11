@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { parseTrustStoreFile, decryptJKSPrivateKey } from './utils/trustStoreParser';
 import type { ParsedTrustStore, TrustStoreEntry, ParsedCertificate } from './utils/trustStoreParser';
-import { formatPurposesList, formatKeyUsageValue } from './utils/purposeFormatter';
+import { formatPurposesList, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 import type { AppMode } from './App';
 
@@ -108,9 +108,7 @@ function CertificateDetails({ cert, privateKeyPem }: { cert: ParsedCertificate; 
                   <div>OID: {ext.oid}{ext.critical && <span style={{ color: 'var(--danger-color)', fontSize: '0.8em', marginLeft: '0.4rem' }}>{t('app.certDetails.critical', '(Critical)')}</span>}</div>
                   {ext.value && (
                     <div style={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.82em', marginTop: '0.25rem', color: 'var(--text-secondary)' }}>
-                      {ext.name === 'Key Usage' || ext.oid === '2.5.29.15'
-                        ? formatKeyUsageValue(ext.value, t)
-                        : ext.value}
+                      {formatExtensionValue(ext.name, ext.oid, ext.value, t)}
                     </div>
                   )}
                 </div>
@@ -232,6 +230,8 @@ function FileTrustStore({
 }: FileTrustStoreProps) {
   const { t, i18n } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [hasExitedEmpty, setHasExitedEmpty] = useState(false);
 
   const [selectedEntry, setSelectedEntry] = useState<TrustStoreEntry | null>(
     loadedFile.store.entries[0] ?? null
@@ -253,6 +253,17 @@ function FileTrustStore({
   const { store, name, needsPassword, id } = loadedFile;
   const fmtInfo = FORMAT_LABELS[store.format] ?? FORMAT_LABELS['Unknown'];
   const FmtIcon = fmtInfo.icon;
+
+  const isInputEmpty = !loadedFile.passwordInput?.trim();
+  const showError = hasAttemptedSubmit || hasExitedEmpty;
+
+  const handleUnlock = () => {
+    setHasAttemptedSubmit(true);
+    if (isInputEmpty) {
+      return;
+    }
+    onPasswordSubmit(id, loadedFile.passwordInput ?? '');
+  };
 
   // If this file needs a password
   if (needsPassword) {
@@ -284,8 +295,17 @@ function FileTrustStore({
                 className="form-input"
                 placeholder={t('app.trustStore.inspector.passwordPlaceholder', 'Enter keystore password…')}
                 value={loadedFile.passwordInput ?? ''}
-                onChange={e => onPasswordChange(id, e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') onPasswordSubmit(id, loadedFile.passwordInput ?? ''); }}
+                onChange={e => {
+                  if (hasExitedEmpty) setHasExitedEmpty(false);
+                  if (hasAttemptedSubmit && e.target.value) setHasAttemptedSubmit(false);
+                  onPasswordChange(id, e.target.value);
+                }}
+                onBlur={() => {
+                  if (isInputEmpty) {
+                    setHasExitedEmpty(true);
+                  }
+                }}
+                onKeyDown={e => { if (e.key === 'Enter') handleUnlock(); }}
                 style={{ paddingRight: '2.5rem', width: '100%' }}
               />
               <button
@@ -300,16 +320,25 @@ function FileTrustStore({
             </div>
             <button
               className="btn btn-primary"
-              onClick={() => onPasswordSubmit(id, loadedFile.passwordInput ?? '')}
+              onClick={handleUnlock}
             >
               {t('app.trustStore.inspector.unlock', 'Unlock')}
             </button>
           </div>
-          {store.warnings.filter(w => w.includes('password') || w.includes('Password')).map((w, i) => (
-            <p key={i} style={{ color: 'var(--danger-color)', marginTop: '0.5rem', fontSize: '0.85rem' }}>
-              {w === 'Incorrect password.' ? t('app.trustStore.inspector.incorrectPassword', 'Incorrect password.') : w}
+          {showError && (
+            <p style={{ color: 'var(--danger-color)', marginTop: '0.5rem', fontSize: '0.85rem' }}>
+              {isInputEmpty
+                ? t('app.trustStore.inspector.pkcs12RequiresPassword', 'This PKCS#12 file requires a password.')
+                : store.warnings.includes('Incorrect password.')
+                ? t('app.trustStore.inspector.incorrectPassword', 'Incorrect password.')
+                : store.warnings[0]
+                ? (store.warnings[0] === 'This PKCS#12 file requires a password.'
+                    ? t('app.trustStore.inspector.pkcs12RequiresPassword', 'This PKCS#12 file requires a password.')
+                    : store.warnings[0])
+                : t('app.trustStore.inspector.pkcs12RequiresPassword', 'This PKCS#12 file requires a password.')
+              }
             </p>
-          ))}
+          )}
         </div>
       </div>
     );
@@ -370,6 +399,10 @@ function FileTrustStore({
           localizedW = t('app.trustStore.warnings.couldNotParseDer', 'Could not parse this DER file as X.509, PKCS#7, or PKCS#12.');
         } else if (w === 'ERR_UNRECOGNIZED_FORMAT' || w.includes('Unrecognized file format')) {
           localizedW = t('app.trustStore.warnings.unrecognizedFormat', 'Unrecognized file format. Supported formats: PEM, DER, PKCS#7 (.p7b), PKCS#12 (.p12/.pfx), JKS.');
+        } else if (w === 'This PKCS#12 file requires a password.') {
+          localizedW = t('app.trustStore.warnings.pkcs12RequiresPassword', 'This PKCS#12 file requires a password.');
+        } else if (w === 'Incorrect password.') {
+          localizedW = t('app.trustStore.inspector.incorrectPassword', 'Incorrect password.');
         }
         
         return (
@@ -744,34 +777,45 @@ export function TrustStoreInspector({ onNavigate }: { onNavigate?: (mode: AppMod
             </div>
             
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+            <div className="chain-cert-tabs-container" style={{ marginBottom: '1.5rem' }}>
+              <span style={{
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                flexShrink: 0,
+                marginRight: '0.25rem'
+              }}>
+                <FolderOpen size={14} style={{ color: 'var(--text-accent)' }} />
+                {t('app.trustStore.inspector.loadedFiles', 'Loaded Files')} ({loadedFiles.length}):
+              </span>
               {loadedFiles.map(lf => {
                 const isActive = activeFileId === lf.id;
+                const fmtInfo = FORMAT_LABELS[lf.store.format] ?? FORMAT_LABELS['Unknown'];
+                const FmtIcon = fmtInfo.icon;
                 return (
                   <button
                     key={lf.id}
                     onClick={() => setActiveFileId(lf.id)}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: isActive ? 'var(--bg-glass)' : 'rgba(255,255,255,0.02)',
-                      border: isActive ? '1px solid var(--text-accent)' : '1px solid var(--glass-border)',
-                      borderRadius: '8px',
-                      color: isActive ? 'var(--text-accent)' : 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      transition: 'all 0.2s',
-                    }}
+                    className={`chain-cert-tab ${isActive ? 'active' : ''}`}
+                    title={lf.name}
                   >
-                    <FileText size={14} />
-                    <span style={{ textTransform: 'none' }}>{lf.name}</span>
-                    <X 
-                      size={14} 
-                      onClick={(e) => { e.stopPropagation(); removeFile(lf.id); }}
-                      style={{ marginLeft: '0.5rem', opacity: 0.6, cursor: 'pointer' }}
-                    />
+                    {isActive && <span className="tab-active-dot" />}
+                    <FmtIcon size={13} className="tab-role-icon" />
+                    <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lf.name}</span>
+                    <span
+                      className="tab-action-btn btn-remove"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(lf.id);
+                      }}
+                      title={t('common.remove', 'Remove')}
+                    >
+                      <X size={12} />
+                    </span>
+                    {isActive && <span className="tab-accent-line" />}
                   </button>
                 );
               })}

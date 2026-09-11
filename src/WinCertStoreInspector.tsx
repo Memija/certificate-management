@@ -8,7 +8,7 @@ import {
   Clock, Award, Layers, X
 } from 'lucide-react';
 import { useToast } from './ToastContext';
-import { splitPurposes, translatePurpose, formatKeyUsageValue } from './utils/purposeFormatter';
+import { splitPurposes, translatePurpose, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -309,9 +309,7 @@ function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEn
                       )}
                       {ext.value && (
                         <div style={{ color: 'var(--text-muted)', marginTop: 2 }}>
-                          {ext.name === 'Key Usage' || ext.oid === '2.5.29.15'
-                            ? formatKeyUsageValue(ext.value, t)
-                            : ext.value}
+                          {formatExtensionValue(ext.name, ext.oid, ext.value, t)}
                         </div>
                       )}
                     </div>

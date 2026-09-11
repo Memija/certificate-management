@@ -372,6 +372,7 @@
           "p2": "100% sisi klien, tidak ada yang keluar dari komputer Anda."
         },
         "incorrectPassword": "Kata sandi salah.",
+        "pkcs12RequiresPassword": "Berkas PKCS#12 ini memerlukan kata sandi.",
         "unlockJksTitle": "Buka Kunci Privat",
         "showPassword": "Tampilkan kata sandi",
         "hidePassword": "Sembunyikan kata sandi"
@@ -389,7 +390,8 @@
         "csrFile": "Berkas ini berisi Permintaan Penandatanganan Sertifikat (CSR), bukan penyimpanan kepercayaan sertifikat. Silakan periksa di Inspektur CSR.",
         "privateKeyFile": "Berkas ini berisi Kunci Privat, bukan penyimpanan kepercayaan sertifikat.",
         "goToCrlInspector": "Buka di Inspektur CRL",
-        "goToCsrInspector": "Buka di Inspektur CSR"
+        "goToCsrInspector": "Buka di Inspektur CSR",
+        "pkcs12RequiresPassword": "Berkas PKCS#12 ini memerlukan kata sandi."
       }
     },
     "chain": {
@@ -443,7 +445,24 @@
       "sampleMultiLeaf": "Cabang Multi-Leaf",
       "sampleBroken": "Peringatan Rantai Rusak",
       "dropZoneTitle": "Tarik sertifikat ke sini untuk merekonstruksi grafik kepercayaan",
-      "dropZoneDesc": "Unggah berkas tunggal atau bundel multisertifikat (.pem, .crt, .p7b, .pfx) untuk memvisualisasikan dan memverifikasi secara matematis jalur sertifikasi lengkap."
+      "dropZoneDesc": "Unggah berkas tunggal atau bundel multisertifikat (.pem, .crt, .p7b, .pfx) untuk memvisualisasikan dan memverifikasi secara matematis jalur sertifikasi lengkap.",
+      "loadedPoolSuccess": "{{count}} sertifikat dimuat ke pool rantai",
+      "loadedPoolSuccess_one": "1 sertifikat dimuat ke pool rantai",
+      "loadedPoolSuccess_other": "{{count}} sertifikat dimuat ke pool rantai",
+      "noValidCerts": "Tidak ada sertifikat X.509 yang valid yang dapat diekstrak dari berkas yang diunggah.",
+      "loadedSample": "Contoh dimuat: {{label}}",
+      "failedLoadSample": "Gagal memuat contoh: {{error}}",
+      "fileWarning": "Peringatan untuk \"{{fileName}}\": {{warning}}",
+      "fileProcessError": "Gagal memproses \"{{fileName}}\": {{error}}",
+      "isCaYes": "Adalah CA: Ya",
+      "isCaNo": "Adalah CA: Tidak",
+      "certTabsLabel": "Sertifikat",
+      "certRemoved": "Sertifikat dihapus dari pool",
+      "inspectNode": "Periksa detail",
+      "unlockPfxTitle": "Buka Kunci Keystore PKCS#12 / PFX",
+      "pfxPasswordPrompt": "File \"{{fileName}}\" dilindungi kata sandi. Masukkan kata sandi untuk mengekstrak sertifikat ke pool validasi rantai.",
+      "unlocking": "Membuka kunci…",
+      "sampleAlreadyLoaded": "Contoh rantai ini sudah dimuat"
     },
     "crl": {
       "title": "Inspektur <0>Daftar Pencabutan Sertifikat (CRL)</0>",
@@ -477,7 +496,10 @@
       "dropZoneDesc": "Mendukung Daftar Pencabutan Sertifikat berformat DER dan PEM standar (.crl)",
       "replaceCrl": "Ganti CRL",
       "clearCrl": "Hapus",
-      "sampleBadge": "Contoh CRL",
+      "loadedFiles": "Berkas Dimuat",
+      "tabsLabel": "CRL",
+      "addCrl": "Tambah CRL",
+      "sampleTag": "Contoh",
       "loadedCrls": "CRL Termuat ({{count}})",
       "addMore": "+ Tambah Lagi",
       "itemSummary": "{{count}} dicabut · {{status}}",
@@ -485,6 +507,7 @@
       "removeFile": "Hapus berkas",
       "unknownIssuer": "Penerbit Tidak Dikenal",
       "trySampleCrl": "Coba Contoh CRL",
+      "sampleAlreadyLoaded": "Contoh CRL sudah dimuat",
       "certDerNotCrl": "File ini adalah Sertifikat X.509 dalam format DER (Subjek: {{subject}}), bukan Daftar Pencabutan Sertifikat (CRL). Silakan unggah file .crl yang valid, atau periksa sertifikat ini di Inspektur Trust Store.",
       "certDerNotCrlSimple": "File ini adalah Sertifikat X.509 dalam format DER, bukan Daftar Pencabutan Sertifikat (CRL). Silakan unggah file .crl yang valid, atau periksa sertifikat ini di Inspektur Trust Store.",
       "certNotCrl": "Berkas ini berisi Sertifikat X.509, bukan Daftar Pencabutan Sertifikat (CRL). Silakan unggah berkas .crl yang valid, atau periksa sertifikat ini di Inspektur Trust Store.",
@@ -518,6 +541,10 @@
       }
     },
     "csr": {
+      "loadedFiles": "Berkas Dimuat",
+      "tabsLabel": "CSR",
+      "addCsr": "Tambah CSR",
+      "trySampleCsr": "Coba Contoh CSR",
       "validSignature": "Tanda Tangan Mandiri Valid",
       "invalidSignature": "Tanda Tangan Mandiri Tidak Valid",
       "subjectTitle": "Subjek",
@@ -527,13 +554,16 @@
       "signatureAlgorithm": "Algoritma Tanda Tangan",
       "signatureOid": "OID Tanda Tangan",
       "requestedPurposes": "Tujuan yang Diminta",
-      "sha256Fingerprint": "Sidik Jari SHA-256"
+      "sha256Fingerprint": "Sidik Jari SHA-256",
+      "sampleAlreadyLoaded": "Contoh CSR sudah dimuat"
     }
   },
   "common": {
     "error": "Kesalahan",
     "copiedToClipboard": "Disalin ke papan klip",
     "copyToClipboard": "Salin ke papan klip",
-    "clear": "Hapus"
+    "clear": "Hapus",
+    "clearAll": "Hapus Semua",
+    "remove": "Hapus"
   }
 }

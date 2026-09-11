@@ -372,6 +372,7 @@
           "p2": "100 % clientseitig, nichts verlässt Ihren Computer."
         },
         "incorrectPassword": "Falsches Passwort.",
+        "pkcs12RequiresPassword": "Diese PKCS#12-Datei erfordert ein Passwort.",
         "unlockJksTitle": "Private Schlüssel entsperren",
         "showPassword": "Passwort anzeigen",
         "hidePassword": "Passwort verbergen"
@@ -389,7 +390,8 @@
         "csrFile": "Diese Datei enthält eine Zertifikatsignierungsanforderung (CSR) und keinen Zertifikatsspeicher. Bitte untersuchen Sie diese Datei im CSR-Inspektor.",
         "privateKeyFile": "Diese Datei enthält einen privaten Schlüssel und keinen Zertifikatsspeicher.",
         "goToCrlInspector": "Im CRL-Inspektor öffnen",
-        "goToCsrInspector": "Im CSR-Inspektor öffnen"
+        "goToCsrInspector": "Im CSR-Inspektor öffnen",
+        "pkcs12RequiresPassword": "Diese PKCS#12-Datei erfordert ein Passwort."
       }
     },
     "chain": {
@@ -443,7 +445,24 @@
       "sampleMultiLeaf": "Mehrere Blattzweige",
       "sampleBroken": "Warnung vor unterbrochener Kette",
       "dropZoneTitle": "Zertifikate hier ablegen, um den Vertrauensgraphen zu rekonstruieren",
-      "dropZoneDesc": "Laden Sie einzelne Dateien oder Zertifikatsbündel (.pem, .crt, .p7b, .pfx) hoch, um den vollständigen Zertifizierungspfad zu visualisieren und mathematisch zu überprüfen."
+      "dropZoneDesc": "Laden Sie einzelne Dateien oder Zertifikatsbündel (.pem, .crt, .p7b, .pfx) hoch, um den vollständigen Zertifizierungspfad zu visualisieren und mathematisch zu überprüfen.",
+      "loadedPoolSuccess": "{{count}} Zertifikat(e) in den Ketten-Pool geladen",
+      "loadedPoolSuccess_one": "1 Zertifikat in den Ketten-Pool geladen",
+      "loadedPoolSuccess_other": "{{count}} Zertifikate in den Ketten-Pool geladen",
+      "noValidCerts": "Aus den hochgeladenen Dateien konnten keine gültigen X.509-Zertifikate extrahiert werden.",
+      "loadedSample": "Beispiel geladen: {{label}}",
+      "failedLoadSample": "Beispiel konnte nicht geladen werden: {{error}}",
+      "fileWarning": "Warnung für „{{fileName}}“: {{warning}}",
+      "fileProcessError": "„{{fileName}}“ konnte nicht verarbeitet werden: {{error}}",
+      "isCaYes": "Ist CA: Ja",
+      "isCaNo": "Ist CA: Nein",
+      "certTabsLabel": "Zertifikate",
+      "certRemoved": "Zertifikat aus dem Pool entfernt",
+      "inspectNode": "Details anzeigen",
+      "unlockPfxTitle": "PKCS#12 / PFX-Keystore entsperren",
+      "pfxPasswordPrompt": "Die Datei „{{fileName}}“ ist passwortgeschützt. Geben Sie das Passwort ein, um Zertifikate in den Kettenvalidierungs-Pool zu extrahieren.",
+      "unlocking": "Wird entsperrt…",
+      "sampleAlreadyLoaded": "Diese Beispielkette ist bereits geladen"
     },
     "crl": {
       "title": "<0>Zertifikatssperrlisten (CRL)</0>-Inspektor",
@@ -478,6 +497,10 @@
       "replaceCrl": "CRL ersetzen",
       "clearCrl": "Leeren",
       "sampleBadge": "Beispiel-CRL",
+      "loadedFiles": "Geladene Dateien",
+      "tabsLabel": "CRLs",
+      "addCrl": "CRL hinzufügen",
+      "sampleTag": "Beispiel",
       "loadedCrls": "Geladene CRLs ({{count}})",
       "addMore": "+ Weitere hinzufügen",
       "itemSummary": "{{count}} gesperrt · {{status}}",
@@ -485,6 +508,7 @@
       "removeFile": "Datei entfernen",
       "unknownIssuer": "Unbekannter Aussteller",
       "trySampleCrl": "Beispiel-CRL ausprobieren",
+      "sampleAlreadyLoaded": "Beispiel-CRL ist bereits geladen",
       "certDerNotCrl": "Diese Datei ist ein X.509-Zertifikat im DER-Format (Betreff: {{subject}}), keine Zertifikatssperrliste (CRL). Bitte laden Sie eine gültige .crl-Datei hoch oder untersuchen Sie dieses Zertifikat im Trust Store Inspektor.",
       "certDerNotCrlSimple": "Diese Datei ist ein X.509-Zertifikat im DER-Format, keine Zertifikatssperrliste (CRL). Bitte laden Sie eine gültige .crl-Datei hoch oder untersuchen Sie dieses Zertifikat im Trust Store Inspektor.",
       "certNotCrl": "Diese Datei enthält ein X.509-Zertifikat, keine Zertifikatssperrliste (CRL). Bitte laden Sie eine gültige .crl-Datei hoch oder untersuchen Sie dieses Zertifikat im Trust Store Inspektor.",
@@ -518,6 +542,10 @@
       }
     },
     "csr": {
+      "loadedFiles": "Geladene Dateien",
+      "tabsLabel": "CSRs",
+      "addCsr": "CSR hinzufügen",
+      "trySampleCsr": "Beispiel-CSR ausprobieren",
       "validSignature": "Selbstsignatur gültig",
       "invalidSignature": "Selbstsignatur ungültig",
       "subjectTitle": "Subjekt",
@@ -527,13 +555,16 @@
       "signatureAlgorithm": "Signaturalgorithmus",
       "signatureOid": "Signatur-OID",
       "requestedPurposes": "Angeforderte Zwecke",
-      "sha256Fingerprint": "SHA-256-Fingerabdruck"
+      "sha256Fingerprint": "SHA-256-Fingerabdruck",
+      "sampleAlreadyLoaded": "Beispiel-CSR ist bereits geladen"
     }
   },
   "common": {
     "error": "Fehler",
     "copiedToClipboard": "In die Zwischenablage kopiert",
     "copyToClipboard": "In die Zwischenablage kopieren",
-    "clear": "Löschen"
+    "clear": "Löschen",
+    "clearAll": "Alle löschen",
+    "remove": "Entfernen"
   }
 }

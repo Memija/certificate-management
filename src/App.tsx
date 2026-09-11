@@ -17,7 +17,7 @@ import { CtLogSearch } from './CtLogSearch';
 import { EducationCenter } from './EducationCenter';
 import { LearningTerm } from './LearningTerm';
 import { ToastProvider, useToast } from './ToastContext';
-import { splitPurposes, translatePurpose, formatKeyUsageValue } from './utils/purposeFormatter';
+import { splitPurposes, translatePurpose, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 import './index.css';
 
@@ -711,9 +711,7 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
                   <div>OID: <span className="mono">{ext.oid}</span> {ext.critical && <span className="badge badge-danger" style={{ fontSize: '0.7em', marginLeft: '0.3rem' }}>{t('app.certDetails.critical', '(Critical)')}</span>}</div>
                   {ext.value && (
                     <div className="mono" style={{ wordBreak: 'break-all', fontSize: '0.82em', marginTop: '0.25rem', color: 'var(--text-muted)' }}>
-                      {ext.name === 'Key Usage' || ext.oid === '2.5.29.15'
-                        ? formatKeyUsageValue(ext.value, t)
-                        : ext.value}
+                      {formatExtensionValue(ext.name, ext.oid, ext.value, t)}
                     </div>
                   )}
                 </div>

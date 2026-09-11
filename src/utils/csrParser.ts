@@ -58,6 +58,23 @@ function uint8ToForgeBytes(bytes: Uint8Array): string {
   return forge.util.createBuffer(bytes as any).getBytes();
 }
 
+export const SAMPLE_CSR_PEM = `-----BEGIN CERTIFICATE REQUEST-----
+MIICbzCCAVcCAQAwKjEUMBIGA1UEAxMLZXhhbXBsZS5jb20xEjAQBgNVBAoTCUFj
+bWUgQ29ycDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALupgyAYJAWv
+6aDRoJaf9ZDdmuavKNzK9AhkN97AjLb8XAQa9eXioqUm3kmMPDcKUESoQYoq8Oye
+Wl2Vlvb0NjDiSNSfjBqnkIQOPABNtAoTCJhhICFwlr4Bm1tnrEwn5BvC+dfhIgsv
+1Pcv3Qq539xkyGtKwvyiSyjBX48Jdy4vJ27mxAHClzkZgABIUTQFfnb51P+TRsON
+kAwIzSxmV+ysIZnR+qUQCE6h5jPekhdH2vawRGBig0JjdTicxIDMdcL9EkMR/CT1
+vYkFLcEjAtFDLmSGZIIsuuXM89uJci+Uy3AWvhA0qcTsXfAebZaIy3xe4lsFuyPj
+mLDiqYZQSH8CAwEAAaAAMA0GCSqGSIb3DQEBBQUAA4IBAQCKqGGgUy4+vn17sNcm
+pAjRmpiPujza0RvchxgNHJkbfv8gyumy7xmaj1oSsAay64wIIFmcn7u1tKGPJWpq
+H9yYgP8SS35uRQ3vn0Vuu/7CeifPyKwPR96zWlAUwxPsXkTlNUDM6PRv20+Qfl9Q
+y0rjshzi0AQr90WHqQZW9gQQDqVwRGtdC1jFkeObY4F1zWx/yu7QV3S9FJ90fPmq
+KLIs7h/kueT7ohvb2scjU4rdoq/531EW/dIPG14xDXwaDFqMO+cE6R1ur74OJM+N
+PUHpqh5kiCeJPn4T2tU896RcYd7uG4O0FfNWbMRtA8JPIKhe9xVzTwdWqq6c8/oV
+rS0T
+-----END CERTIFICATE REQUEST-----`;
+
 // ─── Main parser ─────────────────────────────────────────────────────────────
 
 export async function parseCSRFile(file: File): Promise<ParsedCSR> {

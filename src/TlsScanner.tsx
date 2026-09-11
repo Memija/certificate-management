@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Globe, Shield, RefreshCw, AlertTriangle, Link as LinkIcon, Download, Server, Lock } from 'lucide-react';
 import * as forge from 'node-forge';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
+import { formatExtensionValue } from './utils/purposeFormatter';
 
 export function TlsScanner() {
   const { t, i18n } = useTranslation();
@@ -213,7 +214,7 @@ export function TlsScanner() {
                                          <div className="details-label" style={{ fontSize: '0.78rem' }}>{ext.name || ext.oid}</div>
                                          <div className="details-value">
                                            <div style={{ fontSize: '0.8rem' }}>OID: {ext.oid} {ext.critical && <span className="badge badge-danger" style={{ fontSize: '0.65em', marginLeft: 4 }}>{t('app.certDetails.critical', 'Critical')}</span>}</div>
-                                           {ext.value && <div className="mono" style={{ wordBreak: 'break-all', fontSize: '0.78rem', marginTop: '0.25rem', color: 'var(--text-muted)' }}>{String(ext.value)}</div>}
+                                            {ext.value && <div className="mono" style={{ wordBreak: 'break-all', fontSize: '0.78rem', marginTop: '0.25rem', color: 'var(--text-muted)' }}>{formatExtensionValue(ext.name, ext.oid, String(ext.value), t)}</div>}
                                          </div>
                                       </div>
                                    ))}

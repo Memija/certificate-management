@@ -616,6 +616,13 @@ function CRLDetails({
   );
 }
 
+function getIssuerCN(issuer: string): string {
+  if (!issuer) return '';
+  return issuer.match(/CN=([^,]+)/)?.[1]?.trim() ||
+    issuer.match(/O=([^,]+)/)?.[1]?.trim() ||
+    issuer;
+}
+
 interface CrlErrorInfo {
   fileName: string;
   code: string;
@@ -629,22 +636,143 @@ interface CrlErrorInfo {
 
 export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => void } = {}) {
   const { t } = useTranslation();
-  const [activeCrl, setActiveCrl] = useState<LoadedCRL | null>(null);
+  const [loadedCrls, setLoadedCrls] = useState<LoadedCRL[]>([]);
+  const [activeCrlId, setActiveCrlId] = useState<string | null>(null);
   const [errorInfo, setErrorInfo] = useState<CrlErrorInfo | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const replaceFileInputRef = useRef<HTMLInputElement>(null);
 
-  const processFile = useCallback(async (file: File) => {
+  const activeItem = useMemo(() => {
+    return loadedCrls.find(c => c.id === activeCrlId) || (loadedCrls.length > 0 ? loadedCrls[0] : null);
+  }, [loadedCrls, activeCrlId]);
+
+  const hasSample = useMemo(() => {
+    return loadedCrls.some(c => c.isSample || c.name === 'sample_revocation_list.crl');
+  }, [loadedCrls]);
+
+  const processFiles = useCallback(async (files: File[] | FileList) => {
+    const fileList = Array.from(files);
+    if (!fileList.length) return;
+
+    const newItems: LoadedCRL[] = [];
+    let lastAddedId: string | null = null;
+
+    for (const file of fileList) {
+      try {
+        const parsed = await parseCrlFile(file);
+        // Check if this CRL is already loaded by SHA-256 fingerprint
+        const alreadyLoaded = loadedCrls.find(c => c.crl.fingerprintSha256 === parsed.fingerprintSha256) ||
+                              newItems.find(c => c.crl.fingerprintSha256 === parsed.fingerprintSha256);
+        if (alreadyLoaded) {
+          lastAddedId = alreadyLoaded.id;
+          continue;
+        }
+
+        const item: LoadedCRL = {
+          id: 'crl-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9),
+          name: file.name,
+          crl: parsed,
+          isSample: false,
+        };
+        newItems.push(item);
+        lastAddedId = item.id;
+        setErrorInfo(null);
+      } catch (err: any) {
+        let code = err.message || 'Unknown structure';
+        let subject: string | undefined;
+        let action: { labelKey: string; defaultLabel: string; targetMode: AppMode } | null = null;
+
+        if (err.message?.startsWith('ERR_CERT_DER_NOT_CRL')) {
+          code = 'ERR_CERT_DER_NOT_CRL';
+          subject = err.message.includes(':') ? err.message.split(':').slice(1).join(':').trim() : undefined;
+          action = { labelKey: 'app.crl.goToTrustStore', defaultLabel: 'Open in Trust Store Inspector', targetMode: 'trust-store' };
+        } else if (err.message === 'ERR_CERT_NOT_CRL') {
+          action = { labelKey: 'app.crl.goToTrustStore', defaultLabel: 'Open in Trust Store Inspector', targetMode: 'trust-store' };
+        } else if (err.message === 'ERR_CSR_NOT_CRL') {
+          action = { labelKey: 'app.crl.goToCsrInspector', defaultLabel: 'Open in CSR Inspector', targetMode: 'csr-inspector' };
+        } else if (err.message === 'ERR_TRUST_STORE_NOT_CRL') {
+          action = { labelKey: 'app.crl.goToTrustStore', defaultLabel: 'Open in Trust Store Inspector', targetMode: 'trust-store' };
+        }
+
+        setErrorInfo({
+          fileName: file.name,
+          code,
+          subject,
+          action
+        });
+      }
+    }
+
+    if (newItems.length > 0) {
+      setLoadedCrls(prev => [...prev, ...newItems]);
+    }
+    if (lastAddedId) {
+      setActiveCrlId(lastAddedId);
+    }
+  }, [loadedCrls]);
+
+  const loadSampleCrl = useCallback(() => {
+    const existing = loadedCrls.find(c => c.isSample || c.name === 'sample_revocation_list.crl');
+    if (existing) {
+      setActiveCrlId(existing.id);
+      return;
+    }
+    try {
+      const parsed = parseCrlText(SAMPLE_CRL_PEM);
+      const item: LoadedCRL = {
+        id: 'sample-crl-' + Date.now(),
+        name: 'sample_revocation_list.crl',
+        crl: parsed,
+        isSample: true,
+      };
+      setLoadedCrls(prev => {
+        if (prev.some(c => c.isSample || c.name === 'sample_revocation_list.crl')) {
+          return prev;
+        }
+        return [...prev, item];
+      });
+      setActiveCrlId(item.id);
+      setErrorInfo(null);
+    } catch (err: any) {
+      setErrorInfo({
+        fileName: 'sample_revocation_list.crl',
+        code: err.message || 'Unknown error'
+      });
+    }
+  }, [loadedCrls]);
+
+  const removeCrl = (id: string) => {
+    setLoadedCrls(prev => {
+      const remaining = prev.filter(c => c.id !== id);
+      if (activeCrlId === id) {
+        const removedIdx = prev.findIndex(c => c.id === id);
+        const next = remaining[removedIdx] || remaining[removedIdx - 1] || remaining[0] || null;
+        setActiveCrlId(next ? next.id : null);
+      }
+      return remaining;
+    });
+  };
+
+  const clearAll = () => {
+    setLoadedCrls([]);
+    setActiveCrlId(null);
     setErrorInfo(null);
+  };
+
+  const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeItem) return;
+    const targetId = activeItem.id;
     try {
       const parsed = await parseCrlFile(file);
-      const item: LoadedCRL = {
-        id: Math.random().toString(36).substring(2, 11),
+      setLoadedCrls(prev => prev.map(c => c.id === targetId ? {
+        id: targetId,
         name: file.name,
         crl: parsed,
-        isSample: false,
-      };
-      setActiveCrl(item);
+        isSample: false
+      } : c));
+      setErrorInfo(null);
     } catch (err: any) {
       let code = err.message || 'Unknown structure';
       let subject: string | undefined;
@@ -668,27 +796,10 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
         subject,
         action
       });
+    } finally {
+      e.target.value = '';
     }
-  }, []);
-
-  const loadSampleCrl = useCallback(() => {
-    try {
-      const parsed = parseCrlText(SAMPLE_CRL_PEM);
-      const item: LoadedCRL = {
-        id: 'sample-crl-' + Date.now(),
-        name: 'sample_revocation_list.crl',
-        crl: parsed,
-        isSample: true,
-      };
-      setActiveCrl(item);
-      setErrorInfo(null);
-    } catch (err: any) {
-      setErrorInfo({
-        fileName: 'sample_revocation_list.crl',
-        code: err.message || 'Unknown error'
-      });
-    }
-  }, []);
+  };
 
   const localizedError = useMemo(() => {
     if (!errorInfo) return null;
@@ -724,10 +835,10 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files.length > 0) {
-      processFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
     }
-  }, [processFile]);
+  }, [processFiles]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -739,7 +850,12 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <div
+      style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+    >
       <div style={{ marginBottom: '2rem' }}>
         <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
           <Trans i18nKey="app.crl.title" components={[<LearningTerm key="crl" termId="crl">{""}</LearningTerm>]} />
@@ -821,66 +937,175 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
         </div>
       )}
 
-      {/* Hidden single-file input */}
+      {/* Hidden multiple-file input */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".crl"
+        accept=".crl,.pem,.der"
+        multiple
         style={{ display: 'none' }}
         onChange={(e) => {
-          if (e.target.files && e.target.files[0]) {
-            processFile(e.target.files[0]);
+          if (e.target.files && e.target.files.length > 0) {
+            processFiles(e.target.files);
             e.target.value = '';
           }
         }}
       />
 
-      {!activeCrl ? (
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onClick={() => fileInputRef.current?.click()}
-          style={{
-            border: `2px dashed ${isDragging ? 'var(--text-accent)' : 'var(--border-color)'}`,
-            borderRadius: '12px',
-            background: isDragging ? 'rgba(56, 189, 248, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-            padding: '4rem 2rem',
-            textAlign: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-          }}
-        >
-          <Upload size={48} style={{ color: 'var(--text-accent)', marginBottom: '1rem', opacity: 0.8 }} />
-          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)', fontSize: '1.2rem' }}>
-            {t('app.crl.dropZoneTitle', 'Drop a CRL file here or click to browse')}
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.88rem' }}>
-            {t('app.crl.dropZoneDesc', 'Supports standard PEM and DER formatted Certificate Revocation Lists (.crl, .pem, .der)')}
-          </p>
-          <div style={{ marginTop: '1.5rem' }}>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                loadSampleCrl();
-              }}
-              className="btn btn-secondary btn-sm"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.45rem 1rem' }}
-            >
-              <Sparkles size={14} style={{ color: 'var(--text-accent)' }} />
-              {t('app.crl.trySampleCrl', 'Try Sample CRL')}
-            </button>
-          </div>
+      {/* Hidden single-file replace input */}
+      <input
+        ref={replaceFileInputRef}
+        type="file"
+        accept=".crl,.pem,.der"
+        style={{ display: 'none' }}
+        onChange={handleReplaceFile}
+      />
+
+      {/* Drop zone */}
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={() => fileInputRef.current?.click()}
+        style={{
+          border: `2px dashed ${isDragging ? 'var(--text-accent)' : 'var(--border-color)'}`,
+          borderRadius: '12px',
+          background: isDragging ? 'rgba(56, 189, 248, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+          padding: '3.5rem 2rem',
+          textAlign: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          marginBottom: loadedCrls.length > 0 ? '2rem' : 0,
+        }}
+      >
+        <Upload size={48} style={{ color: 'var(--text-accent)', marginBottom: '1rem', opacity: 0.8 }} />
+        <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)', fontSize: '1.2rem' }}>
+          {t('app.crl.dropZoneTitle', 'Drop a CRL file here or click to browse')}
+        </h3>
+        <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.88rem' }}>
+          {t('app.crl.dropZoneDesc', 'Supports standard PEM and DER formatted Certificate Revocation Lists (.crl, .pem, .der)')}
+        </p>
+        <div style={{ marginTop: '1.5rem' }}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              loadSampleCrl();
+            }}
+            disabled={hasSample}
+            className="btn btn-secondary btn-sm"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.45rem 1rem',
+              opacity: hasSample ? 0.5 : 1,
+              cursor: hasSample ? 'not-allowed' : 'pointer'
+            }}
+            title={hasSample ? t('app.crl.sampleAlreadyLoaded', 'Sample CRL is already loaded') : undefined}
+          >
+            <Sparkles size={14} style={{ color: 'var(--text-accent)' }} />
+            {t('app.crl.trySampleCrl', 'Try Sample CRL')}
+          </button>
         </div>
-      ) : (
-        <CRLDetails
-          crl={activeCrl.crl}
-          fileName={activeCrl.name}
-          isSample={activeCrl.isSample}
-          onReplace={() => fileInputRef.current?.click()}
-          onClear={() => setActiveCrl(null)}
-        />
+      </div>
+
+      {loadedCrls.length > 0 && (
+        <div style={{ marginTop: '2rem' }} className="animate-fade-in">
+          {/* Header Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <h3 style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem', letterSpacing: '0.06em' }}>
+              {t('app.crl.loadedFiles', 'Loaded Files')} ({loadedCrls.length})
+            </h3>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.82rem', padding: '0.35rem 0.8rem' }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload size={13} /> {t('app.crl.addCrl', 'Add CRL')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.82rem', padding: '0.35rem 0.8rem' }}
+                onClick={clearAll}
+              >
+                <X size={13} /> {t('common.clearAll', 'Clear All')}
+              </button>
+            </div>
+          </div>
+
+          {/* Certificate Tabs Row */}
+          <div className="chain-cert-tabs-container" style={{ marginBottom: '1.5rem' }}>
+            <span style={{
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              color: 'var(--text-muted)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              flexShrink: 0,
+              marginRight: '0.25rem'
+            }}>
+              <ShieldAlert size={14} style={{ color: '#f43f5e' }} />
+              {t('app.crl.tabsLabel', 'CRLs')} ({loadedCrls.length}):
+            </span>
+            {loadedCrls.map(item => {
+              const isActive = activeItem?.id === item.id;
+              const issuerCn = getIssuerCN(item.crl.issuer) || item.name;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveCrlId(item.id)}
+                  className={`chain-cert-tab role-crl ${item.crl.isExpired ? 'status-error' : ''} ${isActive ? 'active' : ''}`}
+                  title={item.name}
+                >
+                  {isActive && <span className="tab-active-dot" />}
+                  <ShieldAlert size={13} className="tab-role-icon" />
+                  <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{issuerCn}</span>
+                  {item.isSample && (
+                    <span style={{
+                      fontSize: '0.65rem',
+                      padding: '1px 5px',
+                      borderRadius: 10,
+                      background: 'rgba(234, 179, 8, 0.2)',
+                      color: '#eab308',
+                      fontWeight: 600,
+                      marginLeft: 2
+                    }}>
+                      {t('app.crl.sampleTag', 'Sample')}
+                    </span>
+                  )}
+                  <span
+                    className="tab-action-btn btn-remove"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeCrl(item.id);
+                    }}
+                    title={t('common.remove', 'Remove')}
+                  >
+                    <X size={12} />
+                  </span>
+                  {isActive && <span className="tab-accent-line" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active CRL Details */}
+          {activeItem && (
+            <CRLDetails
+              key={activeItem.id}
+              crl={activeItem.crl}
+              fileName={activeItem.name}
+              isSample={activeItem.isSample}
+              onReplace={() => replaceFileInputRef.current?.click()}
+              onClear={() => removeCrl(activeItem.id)}
+            />
+          )}
+        </div>
       )}
     </div>
   );
