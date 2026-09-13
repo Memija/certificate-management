@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import {
   Upload, AlertTriangle, CheckCircle, XCircle, ShieldCheck, Shield,
   Copy, Trash2, GitFork, List,
-  Download, Eye, EyeOff, Globe, Sparkles, X, Lock, RefreshCw
+  Download, Eye, EyeOff, Globe, Sparkles, X, Lock, RefreshCw, ChevronRight
 } from 'lucide-react';
 import { parseTrustStoreFile } from './utils/trustStoreParser';
 import type { ParsedCertificate } from './utils/trustStoreParser';
@@ -210,6 +210,349 @@ function VisualTreeNode({
             ))}
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+// ─── Single Certificate View Component ───────────────────────────────────────
+
+function SingleCertificateView({
+  node,
+  allNodes,
+  onSelectNode,
+  onViewFullChain,
+  onRemoveCert,
+}: {
+  node: CertNode;
+  allNodes: CertNode[];
+  onSelectNode: (node: CertNode) => void;
+  onViewFullChain: () => void;
+  onRemoveCert: (nodeId: string) => void;
+}) {
+  const c = node.cert;
+  const { t, i18n } = useTranslation();
+  const { showToast } = useToast();
+  const [showPem, setShowPem] = useState(false);
+  const now = new Date();
+  const validToDate = new Date(c.validTo);
+  const isExpired = validToDate < now;
+  const cn = getSubjectCN(c.subject);
+
+  const copyVal = (val: string, _label: string) => {
+    navigator.clipboard.writeText(val);
+    showToast(t('common.copiedToClipboard', 'Copied to clipboard'), 'success');
+  };
+
+  const downloadPem = () => {
+    if (!c.pem) return;
+    const blob = new Blob([c.pem], { type: 'application/x-pem-file' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const filename = `${cn.replace(/[^a-zA-Z0-9_-]/g, '_')}.pem`;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`Downloaded ${filename}`, 'success');
+  };
+
+  const downloadDer = () => {
+    if (!c.pem) return;
+    try {
+      const b64 = c.pem.replace(/-----[^\n]+-----/g, '').replace(/\s+/g, '');
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: 'application/x-x509-ca-cert' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const filename = `${cn.replace(/[^a-zA-Z0-9_-]/g, '_')}.der`;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Downloaded ${filename}`, 'success');
+    } catch {
+      showToast('Failed to export DER', 'error');
+    }
+  };
+
+  let roleLabel = t('app.chain.roles.leafEntity', 'Leaf / End-Entity');
+  let roleBadgeClass = 'badge-leaf';
+  let RoleIcon = Globe;
+  if (node.isSelfSigned) {
+    roleLabel = t('app.chain.roles.rootAnchor', 'Root CA (Trust Anchor)');
+    roleBadgeClass = 'badge-root';
+    RoleIcon = ShieldCheck;
+  } else if (c.isIntermediate || node.children.length > 0) {
+    roleLabel = t('app.chain.roles.intermediateCa', 'Intermediate CA');
+    roleBadgeClass = 'badge-intermediate';
+    RoleIcon = Shield;
+  }
+
+  // Find SAN extension if present
+  const sanExt = c.extensions?.find(
+    e => e.name?.toLowerCase().includes('subjectaltname') || e.oid === '2.5.29.17'
+  );
+
+  return (
+    <div className="glass-panel animate-fade-in" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+      {/* Top Action & Navigation Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--glass-border-subtle)', paddingBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          {allNodes.length > 1 && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={onViewFullChain}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem' }}
+            >
+              <GitFork size={13} style={{ color: 'var(--cat-validation)' }} />
+              <span>{t('app.chain.viewFullChain', '← View Full Chain')}</span>
+            </button>
+          )}
+          <span className={`chain-node-badge ${roleBadgeClass}`}>
+            <RoleIcon size={13} /> {roleLabel}
+          </span>
+          {isExpired ? (
+            <span className="badge badge-danger">
+              <span className="badge-dot pulse" /> {t('app.certDetails.expired', 'Expired')}
+            </span>
+          ) : (
+            <span className="badge badge-success">
+              <CheckCircle size={12} /> {t('app.chain.valid', 'Valid')}
+            </span>
+          )}
+          {node.isSelfSigned ? (
+            <span className="badge badge-success">
+              <ShieldCheck size={12} /> {t('app.chain.rootCaSelfSigned', 'Root CA (Self-Signed)')}
+            </span>
+          ) : node.signatureVerified === true ? (
+            <span className="badge badge-success">
+              <CheckCircle size={12} /> {t('app.chain.cryptoVerified', 'Cryptographically Verified')}
+            </span>
+          ) : node.signatureVerified === false ? (
+            <span className="badge badge-danger">
+              <XCircle size={12} /> {t('app.chain.badSig', 'Bad Signature / Untrusted')}
+            </span>
+          ) : (
+            <span className="badge badge-warning">
+              <AlertTriangle size={12} /> {t('app.chain.parentMissing', 'Parent Missing in Pool')}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button type="button" className="btn btn-download-pem btn-sm" onClick={downloadPem}>
+            <Download size={12} /> PEM
+          </button>
+          <button type="button" className="btn btn-download-der btn-sm" onClick={downloadDer}>
+            <Download size={12} /> DER
+          </button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowPem(!showPem)}>
+            <Eye size={12} /> {showPem ? t('app.chain.hidePem', 'Hide PEM') : t('app.chain.viewPem', 'View PEM')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger btn-sm btn-icon"
+            onClick={() => onRemoveCert(node.id)}
+            title={t('common.remove', 'Remove certificate from chain pool')}
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Cert Title Headline */}
+      <div style={{ marginBottom: '1.25rem' }}>
+        <h3 style={{ margin: '0 0 0.35rem 0', fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+          {cn}
+        </h3>
+        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>
+          {c.subject}
+        </p>
+      </div>
+
+      {/* Chain Context & Position Box */}
+      <div className="glass-card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {/* Issuer relationship */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                {t('app.certDetails.issuer', 'Issuer')}:
+              </span>
+              {node.parent ? (
+                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {getSubjectCN(node.parent.cert.subject)}
+                </span>
+              ) : node.isSelfSigned ? (
+                <span style={{ fontSize: '0.85rem', color: 'var(--success-color)', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <ShieldCheck size={14} />
+                  <span>{t('app.chain.selfSignedRoot', 'Self-signed (Trust Anchor)')}</span>
+                </span>
+              ) : (
+                <span style={{ fontSize: '0.85rem', color: 'var(--warning-color)' }}>
+                  {getSubjectCN(c.issuer)} ({t('app.chain.notLoaded', 'Not loaded in pool')})
+                </span>
+              )}
+            </div>
+            {node.parent && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => onSelectNode(node.parent!)}
+                style={{ fontSize: '0.78rem', padding: '0.25rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                <span>{t('app.chain.viewIssuer', 'View Issuer Cert')}</span>
+                <ChevronRight size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* Children relationship */}
+          {node.children.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', borderTop: '1px solid var(--glass-border-subtle)', paddingTop: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                  {t('app.chain.signsAndIssues', 'Signs & Issues')} ({node.children.length}):
+                </span>
+                {node.children.map(child => (
+                  <button
+                    key={child.id}
+                    type="button"
+                    className="chain-sample-pill"
+                    onClick={() => onSelectNode(child)}
+                    style={{ fontSize: '0.78rem', padding: '0.2rem 0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                  >
+                    <span>{getSubjectCN(child.cert.subject)}</span>
+                    <ChevronRight size={12} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Details Grid */}
+      <div className="details-grid">
+        <div className="details-label">{t('app.chain.subjectDn', 'Subject DN')}</div>
+        <div className="details-value copy-trigger-wrap" onClick={() => copyVal(c.subject, 'Subject DN')} title="Click to copy">
+          <span>{c.subject}</span>
+          <Copy size={12} className="copy-trigger-icon" />
+        </div>
+
+        <div className="details-label">{t('app.chain.issuerDn', 'Issuer DN')}</div>
+        <div className="details-value copy-trigger-wrap" onClick={() => copyVal(c.issuer, 'Issuer DN')} title="Click to copy">
+          <span>{c.issuer}</span>
+          <Copy size={12} className="copy-trigger-icon" />
+        </div>
+
+        <div className="details-label">{t('app.chain.serialNumber', 'Serial Number')}</div>
+        <div className="details-value mono copy-trigger-wrap" onClick={() => copyVal(c.serialNumber, 'Serial Number')} title="Click to copy">
+          <span>{c.serialNumber}</span>
+          <Copy size={12} className="copy-trigger-icon" />
+        </div>
+
+        <div className="details-label">{t('app.chain.validity', 'Validity')}</div>
+        <div className="details-value">
+          {new Date(c.validFrom).toLocaleDateString()} - {new Date(c.validTo).toLocaleDateString()}{' '}
+          <span
+            style={{ fontSize: '0.8rem', color: isExpired ? 'var(--danger-color)' : 'var(--text-secondary)', marginLeft: '0.35rem', cursor: 'help' }}
+            title={formatExpiryTooltip(c.validTo, t, i18n.language)}
+          >
+            ({formatExpiry(c.validTo, t, i18n.language)})
+          </span>
+          {isExpired && <span className="badge badge-danger" style={{ marginLeft: '0.5rem' }}>{t('app.certDetails.expired', 'Expired')}</span>}
+        </div>
+
+        <div className="details-label">{t('app.chain.publicKey', 'Public Key')}</div>
+        <div className="details-value">
+          {c.publicKeyAlgorithm} {c.publicKeySize ? `(${c.publicKeySize} ${t('app.certDetails.bits', 'bits')})` : ''} &nbsp;•&nbsp; Sig: {c.signatureAlgorithm}
+        </div>
+
+        <div className="details-label">{t('app.chain.sha256', 'SHA-256 Fingerprint')}</div>
+        <div className="details-value mono copy-trigger-wrap" style={{ wordBreak: 'break-all', fontSize: '0.82rem' }} onClick={() => copyVal(c.fingerprintSha256, 'SHA-256 Fingerprint')} title="Click to copy">
+          <span>{c.fingerprintSha256}</span>
+          <Copy size={12} className="copy-trigger-icon" />
+        </div>
+
+        {c.fingerprintSha1 && (
+          <>
+            <div className="details-label">{t('app.chain.sha1', 'SHA-1 Fingerprint')}</div>
+            <div className="details-value mono copy-trigger-wrap" style={{ wordBreak: 'break-all', fontSize: '0.82rem' }} onClick={() => copyVal(c.fingerprintSha1, 'SHA-1 Fingerprint')} title="Click to copy">
+              <span>{c.fingerprintSha1}</span>
+              <Copy size={12} className="copy-trigger-icon" />
+            </div>
+          </>
+        )}
+
+        <div className="details-label">{t('app.chain.keyUsages', 'Key Usages')}</div>
+        <div className="details-value">
+          {formatPurposesList(c.purposes, t) || t('app.chain.noneSpecified', 'None specified')}
+        </div>
+
+        {sanExt && (
+          <>
+            <div className="details-label">{t('app.certDetails.san', 'Subject Alt Names (SAN)')}</div>
+            <div className="details-value mono" style={{ fontSize: '0.82rem', wordBreak: 'break-all' }}>
+              {formatExtensionValue(sanExt.name, sanExt.oid, sanExt.value, t) || sanExt.value}
+            </div>
+          </>
+        )}
+      </div>
+
+      {c.extensions && c.extensions.length > 0 && (
+        <details style={{ marginTop: '1.25rem' }}>
+          <summary style={{ cursor: 'pointer', color: 'var(--text-accent)', fontWeight: 600, fontSize: '0.88rem', marginBottom: '0.5rem' }}>
+            {t('app.chain.extensions', 'Extensions')} ({c.extensions.length})
+          </summary>
+          <div className="details-grid" style={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border-subtle)', padding: '1rem 1.25rem', borderRadius: '10px' }}>
+            {c.extensions.map((ex, idx) => (
+              <div key={idx} style={{ display: 'contents' }}>
+                <div className="details-label">
+                  {t([`app.winCertStore.extensions.${ex.name.replace(/\s+/g, '')}`, `app.winCertStore.extensions.${ex.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`] as any, ex.name) as string}
+                </div>
+                <div className="details-value">
+                  <div>
+                    OID: <span className="mono">{ex.oid}</span>
+                    {ex.critical && (
+                      <span className="badge badge-danger" style={{ fontSize: '0.68rem', marginLeft: '0.4rem' }}>
+                        {t('app.certDetails.critical', '(Critical)')}
+                      </span>
+                    )}
+                  </div>
+                  {ex.value && (
+                    <div className="mono" style={{ wordBreak: 'break-all', fontSize: '0.8rem', marginTop: '0.25rem', color: 'var(--text-muted)' }}>
+                      {formatExtensionValue(ex.name, ex.oid, ex.value, t) || t('app.chain.configured', 'Configured')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
+
+      {showPem && (
+        <div style={{ marginTop: '1.25rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>PEM Data:</span>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => copyVal(c.pem, 'PEM Data')}
+              style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            >
+              <Copy size={11} /> {t('common.copy', 'Copy')}
+            </button>
+          </div>
+          <pre className="code-block" style={{ margin: 0, fontSize: '0.8rem' }}>
+            {c.pem}
+          </pre>
+        </div>
       )}
     </div>
   );
@@ -458,7 +801,7 @@ export function ChainValidator() {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph');
-  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [activeNodeId, setActiveNodeId] = useState<string | 'all' | null>('all');
   const [inspectingNode, setInspectingNode] = useState<CertNode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingSelectCertRef = useRef<ParsedCertificate | null>(null);
@@ -474,6 +817,17 @@ export function ChainValidator() {
 
   const [pendingPfxUnlock, setPendingPfxUnlock] = useState<PendingPfxUnlock | null>(null);
   const [showPfxPassword, setShowPfxPassword] = useState(false);
+
+  useEffect(() => {
+    if (!pendingPfxUnlock) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !pendingPfxUnlock.loading) {
+        setPendingPfxUnlock(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pendingPfxUnlock]);
 
   const handleUnlockPfxSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -583,8 +937,11 @@ export function ChainValidator() {
         loading: false,
       });
       setShowPfxPassword(false);
-    } else if (files.length > 0 && certsToAdd.length === 0 && !error) {
-      setError(t('app.chain.noValidCerts', 'No valid X.509 certificates could be extracted from the uploaded files.'));
+    } else {
+      setPendingPfxUnlock(null);
+      if (files.length > 0 && certsToAdd.length === 0 && !error) {
+        setError(t('app.chain.noValidCerts', 'No valid X.509 certificates could be extracted from the uploaded files.'));
+      }
     }
   }, [error, showToast, t]);
 
@@ -597,8 +954,9 @@ export function ChainValidator() {
       setActivePreset(preset);
       setCerts(sampleCerts);
       setInspectingNode(null);
-      setActiveNodeId(null);
+      setActiveNodeId('all');
       setError(null);
+      setPendingPfxUnlock(null);
       showToast(t('app.chain.loadedSample', { label, defaultValue: `Loaded sample: ${label}` }), 'info');
     } catch (e: any) {
       setError(t('app.chain.failedLoadSample', { error: e.message, defaultValue: `Failed to load sample: ${e.message}` }));
@@ -627,14 +985,13 @@ export function ChainValidator() {
 
   const { rootNodes, orphanNodes, allNodes } = useMemo(() => buildChains(certs), [certs]);
 
-  // Sync activeNodeId with allNodes: default to leaf/root if unset or invalid
+  // Sync activeNodeId with allNodes: default to 'all' if multiple or single node if unset or invalid
   useEffect(() => {
     if (allNodes.length === 0) {
       setActiveNodeId(null);
       setInspectingNode(null);
-    } else if (!activeNodeId || !allNodes.some(n => n.id === activeNodeId)) {
-      const defaultNode = allNodes[allNodes.length - 1] || allNodes[0];
-      setActiveNodeId(defaultNode.id);
+    } else if (activeNodeId !== 'all' && (!activeNodeId || !allNodes.some(n => n.id === activeNodeId))) {
+      setActiveNodeId(allNodes.length > 1 ? 'all' : allNodes[0].id);
     }
   }, [allNodes, activeNodeId]);
 
@@ -672,7 +1029,7 @@ export function ChainValidator() {
       setCerts(prev => prev.filter(c => c !== targetNode.cert));
       if (activeNodeId === nodeId) {
         const remaining = allNodes.filter(n => n.id !== nodeId);
-        setActiveNodeId(remaining[0]?.id || null);
+        setActiveNodeId(remaining.length > 1 ? 'all' : (remaining[0]?.id || null));
       }
       if (inspectingNode?.id === nodeId) {
         setInspectingNode(null);
@@ -682,12 +1039,12 @@ export function ChainValidator() {
   }, [allNodes, activeNodeId, inspectingNode, showToast, t]);
 
   const handleTabClick = (node: CertNode) => {
-    if (activeNodeId === node.id) {
-      setInspectingNode(node);
-    } else {
-      setActiveNodeId(node.id);
-    }
+    setActiveNodeId(node.id);
   };
+
+  const selectedNode = activeNodeId && activeNodeId !== 'all'
+    ? allNodes.find(n => n.id === activeNodeId) || null
+    : null;
 
   const allChainComplete = certs.length > 0 && orphanNodes.length === 0 && rootNodes.length > 0;
   const hasSignMismatch = certs.some(c => {
@@ -777,7 +1134,14 @@ export function ChainValidator() {
                   <Upload size={13} /> {t('app.chain.addCerts', 'Add Certs')}
                 </button>
                 <button
-                  onClick={() => { setCerts([]); setError(null); setActiveNodeId(null); setInspectingNode(null); setActivePreset(null); }}
+                  onClick={() => {
+                    setCerts([]);
+                    setError(null);
+                    setActiveNodeId(null);
+                    setInspectingNode(null);
+                    setActivePreset(null);
+                    setPendingPfxUnlock(null);
+                  }}
                   className="btn btn-danger btn-sm"
                 >
                   <Trash2 size={13} /> {t('common.clear', 'Clear')}
@@ -872,42 +1236,7 @@ export function ChainValidator() {
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-            {/* Status Summary Banner */}
-            <div className="glass-panel" style={{
-              padding: '1.15rem 1.5rem',
-              background: allChainComplete && !hasSignMismatch ? 'var(--success-bg)' : 'var(--warning-bg)',
-              borderColor: allChainComplete && !hasSignMismatch ? 'var(--success-border)' : 'var(--warning-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '1rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div className={`metric-icon-wrap ${allChainComplete && !hasSignMismatch ? 'success' : 'warning'}`}>
-                  {allChainComplete && !hasSignMismatch ? <ShieldCheck size={24} /> : <AlertTriangle size={24} />}
-                </div>
-                <div>
-                  <h4 style={{ margin: '0 0 0.2rem 0', color: allChainComplete && !hasSignMismatch ? 'var(--success-color)' : 'var(--warning-color)', fontSize: '1.05rem' }}>
-                    {allChainComplete && !hasSignMismatch
-                      ? t('app.chain.validCompleteHierarchy', 'Valid Complete Trust Hierarchy')
-                      : t('app.chain.incompleteChain', 'Incomplete Chain (Missing Intermediate or Issuer in Pool)')}
-                  </h4>
-                  <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
-                    {allChainComplete && !hasSignMismatch
-                      ? t('app.chain.allCertsLinkRoot', 'All {{count}} certificate(s) link back to a verified self-signed Root CA.', { count: certs.length })
-                      : t('app.chain.missingParentDesc', 'One or more certificates cannot find their parent issuer in the current pool.')}
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <span className="badge" style={{ fontSize: '0.78rem' }}>{t('app.chain.loadedCerts', '{{count}} Loaded Certs', { count: certs.length })}</span>
-                <span className="badge badge-success" style={{ fontSize: '0.78rem' }}>{t('app.chain.rootAnchorsCount', '{{count}} Root Anchor(s)', { count: rootNodes.length })}</span>
-              </div>
-            </div>
-
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {/* Certificate Tabs Row */}
             <div className="chain-cert-tabs-container">
               <span style={{
@@ -923,6 +1252,26 @@ export function ChainValidator() {
                 <Shield size={14} style={{ color: 'var(--cat-validation)' }} />
                 {t('app.chain.certTabsLabel', 'Certificates')} ({allNodes.length}):
               </span>
+
+              {/* Full Chain Overview Tab */}
+              {allNodes.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveNodeId('all')}
+                  className={`chain-cert-tab ${activeNodeId === 'all' ? 'active' : ''}`}
+                  title={t('app.chain.fullChainOverview', 'Full Chain Overview')}
+                >
+                  {activeNodeId === 'all' && <span className="tab-active-dot" />}
+                  <GitFork size={13} className="tab-role-icon" />
+                  <span>{t('app.chain.fullChainTab', 'Full Chain')}</span>
+                  <span className="badge" style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem' }}>
+                    {allNodes.length}
+                  </span>
+                  {activeNodeId === 'all' && <span className="tab-accent-line" />}
+                </button>
+              )}
+
+              {/* Individual Certificate Tabs */}
               {allNodes.map(node => {
                 const isActive = activeNodeId === node.id;
                 const cn = getSubjectCN(node.cert.subject);
@@ -941,6 +1290,7 @@ export function ChainValidator() {
                 return (
                   <button
                     key={node.id}
+                    type="button"
                     onClick={() => handleTabClick(node)}
                     className={`chain-cert-tab role-${roleType} ${hasErr ? 'status-error' : ''} ${isActive ? 'active' : ''}`}
                     title={node.cert.subject}
@@ -953,17 +1303,6 @@ export function ChainValidator() {
                         {t('app.chain.roles.root', 'Root')}
                       </span>
                     )}
-                    <span
-                      className="tab-action-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveNodeId(node.id);
-                        setInspectingNode(node);
-                      }}
-                      title={t('app.chain.inspectNode', 'Inspect details')}
-                    >
-                      <Eye size={12} />
-                    </span>
                     <span
                       className="tab-action-btn btn-remove"
                       onClick={(e) => {
@@ -980,6 +1319,7 @@ export function ChainValidator() {
               })}
 
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="btn btn-sm btn-secondary"
                 style={{
@@ -1003,103 +1343,141 @@ export function ChainValidator() {
               </button>
             </div>
 
-            {/* View Mode 1: Interactive Visual Graph */}
-            {viewMode === 'graph' ? (
-              <div className="chain-graph-wrapper animate-fade-in">
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--glass-border-subtle)', paddingBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    <GitFork size={15} style={{ color: 'var(--cat-validation)' }} />
-                    <span>{t('app.chain.clickNodeHint', 'Click any node to inspect detailed cryptographic properties')}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <span className="badge badge-root"><ShieldCheck size={11} /> {t('app.chain.roles.root', 'Root')}</span>
-                    <span className="badge badge-intermediate"><Shield size={11} /> {t('app.chain.roles.intermediate', 'Intermediate')}</span>
-                    <span className="badge badge-leaf"><Globe size={11} /> {t('app.chain.roles.leaf', 'Leaf')}</span>
-                  </div>
-                </div>
-
-                <div className="chain-graph-tree">
-                  {rootNodes.map(rootNode => (
-                    <VisualTreeNode
-                      key={rootNode.id}
-                      node={rootNode}
-                      selectedId={activeNodeId}
-                      onSelectNode={(node) => {
-                        setActiveNodeId(node.id);
-                        setInspectingNode(node);
-                      }}
-                    />
-                  ))}
-
-                  {orphanNodes.length > 0 && (
-                    <div style={{ width: '100%', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px dashed var(--warning-border)' }}>
-                      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                        <span className="badge badge-warning">
-                          <AlertTriangle size={12} /> {t('app.chain.orphanedChains', 'Orphaned / Incomplete Chains')}
-                        </span>
-                      </div>
-                      <div className="chain-graph-level">
-                        {orphanNodes.map(node => (
-                          <VisualTreeNode
-                            key={node.id}
-                            node={node}
-                            selectedId={activeNodeId}
-                            onSelectNode={(node) => {
-                              setActiveNodeId(node.id);
-                              setInspectingNode(node);
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* If a single certificate is selected: show ONLY that certificate */}
+            {selectedNode ? (
+              <SingleCertificateView
+                node={selectedNode}
+                allNodes={allNodes}
+                onSelectNode={(node) => setActiveNodeId(node.id)}
+                onViewFullChain={() => setActiveNodeId('all')}
+                onRemoveCert={removeCert}
+              />
             ) : (
-              /* View Mode 2: Classic Card Stack */
-              <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {allNodes.map(node => {
-                  const c = node.cert;
-                  const isExp = new Date(c.validTo) < new Date();
-                  const isSelected = activeNodeId === node.id;
-                  return (
-                    <div
-                      key={node.id}
-                      className={`glass-card ${isSelected ? 'selected' : ''}`}
-                      style={{
-                        padding: '1.25rem 1.5rem',
-                        cursor: 'pointer',
-                        border: isSelected ? '1.5px solid var(--accent-color)' : undefined,
-                        boxShadow: isSelected ? '0 0 16px rgba(16, 185, 129, 0.25)' : undefined
-                      }}
-                      onClick={() => {
-                        setActiveNodeId(node.id);
-                        setInspectingNode(node);
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        <div>
-                          <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.3rem' }}>
-                            {node.isSelfSigned ? <span className="badge badge-root">{t('app.certDetails.rootCa', 'Root CA')}</span> : <span className="badge badge-intermediate">{t('app.chain.intermediateLeaf', 'Intermediate / Leaf')}</span>}
-                            {isExp ? <span className="badge badge-danger">{t('app.certDetails.expired', 'Expired')}</span> : <span className="badge badge-success">{t('app.chain.valid', 'Valid')}</span>}
-                          </div>
-                          <h4 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--text-primary)' }}>{getSubjectCN(c.subject)}</h4>
-                          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{t('app.certDetails.issuer', 'Issuer')}: {c.issuer}</p>
-                        </div>
-                        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                          {t('app.certDetails.validTo', 'Expires')}: {new Date(c.validTo).toLocaleDateString()}{' '}
-                          <span
-                            style={{ color: isExp ? 'var(--danger-color)' : 'var(--text-secondary)', cursor: 'help' }}
-                            title={formatExpiryTooltip(c.validTo, t, i18n.language)}
-                          >
-                            ({formatExpiry(c.validTo, t, i18n.language)})
-                          </span>
-                        </div>
+              /* Full Chain Overview Mode */
+              <>
+                {/* Status Summary Banner */}
+                <div className="glass-panel" style={{
+                  padding: '1.15rem 1.5rem',
+                  background: allChainComplete && !hasSignMismatch ? 'var(--success-bg)' : 'var(--warning-bg)',
+                  borderColor: allChainComplete && !hasSignMismatch ? 'var(--success-border)' : 'var(--warning-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '1rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className={`metric-icon-wrap ${allChainComplete && !hasSignMismatch ? 'success' : 'warning'}`}>
+                      {allChainComplete && !hasSignMismatch ? <ShieldCheck size={24} /> : <AlertTriangle size={24} />}
+                    </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 0.2rem 0', color: allChainComplete && !hasSignMismatch ? 'var(--success-color)' : 'var(--warning-color)', fontSize: '1.05rem' }}>
+                        {allChainComplete && !hasSignMismatch
+                          ? t('app.chain.validCompleteHierarchy', 'Valid Complete Trust Hierarchy')
+                          : t('app.chain.incompleteChain', 'Incomplete Chain (Missing Intermediate or Issuer in Pool)')}
+                      </h4>
+                      <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
+                        {allChainComplete && !hasSignMismatch
+                          ? t('app.chain.allCertsLinkRoot', 'All {{count}} certificate(s) link back to a verified self-signed Root CA.', { count: certs.length })
+                          : t('app.chain.missingParentDesc', 'One or more certificates cannot find their parent issuer in the current pool.')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <span className="badge" style={{ fontSize: '0.78rem' }}>{t('app.chain.loadedCerts', '{{count}} Loaded Certs', { count: certs.length })}</span>
+                    <span className="badge badge-success" style={{ fontSize: '0.78rem' }}>{t('app.chain.rootAnchorsCount', '{{count}} Root Anchor(s)', { count: rootNodes.length })}</span>
+                  </div>
+                </div>
+
+                {/* View Mode 1: Interactive Visual Graph */}
+                {viewMode === 'graph' ? (
+                  <div className="chain-graph-wrapper animate-fade-in">
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--glass-border-subtle)', paddingBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        <GitFork size={15} style={{ color: 'var(--cat-validation)' }} />
+                        <span>{t('app.chain.clickNodeHint', 'Click any node to view only that certificate in detail')}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <span className="badge badge-root"><ShieldCheck size={11} /> {t('app.chain.roles.root', 'Root')}</span>
+                        <span className="badge badge-intermediate"><Shield size={11} /> {t('app.chain.roles.intermediate', 'Intermediate')}</span>
+                        <span className="badge badge-leaf"><Globe size={11} /> {t('app.chain.roles.leaf', 'Leaf')}</span>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+
+                    <div className="chain-graph-tree">
+                      {rootNodes.map(rootNode => (
+                        <VisualTreeNode
+                          key={rootNode.id}
+                          node={rootNode}
+                          selectedId={activeNodeId}
+                          onSelectNode={(node) => setActiveNodeId(node.id)}
+                        />
+                      ))}
+
+                      {orphanNodes.length > 0 && (
+                        <div style={{ width: '100%', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px dashed var(--warning-border)' }}>
+                          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                            <span className="badge badge-warning">
+                              <AlertTriangle size={12} /> {t('app.chain.orphanedChains', 'Orphaned / Incomplete Chains')}
+                            </span>
+                          </div>
+                          <div className="chain-graph-level">
+                            {orphanNodes.map(node => (
+                              <VisualTreeNode
+                                key={node.id}
+                                node={node}
+                                selectedId={activeNodeId}
+                                onSelectNode={(node) => setActiveNodeId(node.id)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* View Mode 2: Classic Card Stack */
+                  <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {allNodes.map(node => {
+                      const c = node.cert;
+                      const isExp = new Date(c.validTo) < new Date();
+                      return (
+                        <div
+                          key={node.id}
+                          className="glass-card"
+                          style={{
+                            padding: '1.25rem 1.5rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onClick={() => setActiveNodeId(node.id)}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <div>
+                              <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.3rem' }}>
+                                {node.isSelfSigned ? <span className="badge badge-root">{t('app.certDetails.rootCa', 'Root CA')}</span> : <span className="badge badge-intermediate">{t('app.chain.intermediateLeaf', 'Intermediate / Leaf')}</span>}
+                                {isExp ? <span className="badge badge-danger">{t('app.certDetails.expired', 'Expired')}</span> : <span className="badge badge-success">{t('app.chain.valid', 'Valid')}</span>}
+                              </div>
+                              <h4 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--text-primary)' }}>{getSubjectCN(c.subject)}</h4>
+                              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{t('app.certDetails.issuer', 'Issuer')}: {c.issuer}</p>
+                            </div>
+                            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                              {t('app.certDetails.validTo', 'Expires')}: {new Date(c.validTo).toLocaleDateString()}{' '}
+                              <span
+                                style={{ color: isExp ? 'var(--danger-color)' : 'var(--text-secondary)', cursor: 'help' }}
+                                title={formatExpiryTooltip(c.validTo, t, i18n.language)}
+                              >
+                                ({formatExpiry(c.validTo, t, i18n.language)})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
 
             {/* Selected Node Inspector Drawer */}
@@ -1115,117 +1493,117 @@ export function ChainValidator() {
               />
             )}
 
-            {/* PFX / PKCS#12 Unlock Modal */}
-            {pendingPfxUnlock && (
-              <div
-                className="chain-modal-backdrop"
-                onClick={() => !pendingPfxUnlock.loading && setPendingPfxUnlock(null)}
-              >
-                <div
-                  className="chain-modal-dialog"
-                  onClick={e => e.stopPropagation()}
-                  style={{ maxWidth: '440px', width: '90%' }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                      <div className="metric-icon-wrap warning" style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Lock size={18} />
-                      </div>
-                      <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>
-                        {t('app.chain.unlockPfxTitle', 'Unlock PKCS#12 / PFX Keystore')}
-                      </h3>
-                    </div>
-                    <button
-                      className="btn btn-secondary btn-sm btn-icon"
-                      onClick={() => !pendingPfxUnlock.loading && setPendingPfxUnlock(null)}
-                      title={t('common.cancel', 'Cancel')}
-                    >
-                      <X size={14} />
-                    </button>
+          </div>
+        )}
+
+        {/* PFX / PKCS#12 Unlock Modal */}
+        {pendingPfxUnlock && (
+          <div
+            className="chain-modal-backdrop"
+            onClick={() => !pendingPfxUnlock.loading && setPendingPfxUnlock(null)}
+          >
+            <div
+              className="chain-modal-dialog"
+              onClick={e => e.stopPropagation()}
+              style={{ maxWidth: '440px', width: '90%' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div className="metric-icon-wrap warning" style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Lock size={18} />
                   </div>
-
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1rem', lineHeight: 1.5 }}>
-                    {t('app.chain.pfxPasswordPrompt', {
-                      fileName: pendingPfxUnlock.file.name,
-                      defaultValue: `The file "${pendingPfxUnlock.file.name}" is password-protected. Enter the password to extract certificates into the chain validation pool.`
-                    })}
-                  </p>
-
-                  {pendingPfxUnlock.error && (
-                    <div
-                      className="glass-card"
-                      style={{
-                        padding: '0.6rem 0.8rem',
-                        background: 'rgba(239, 68, 68, 0.1)',
-                        borderColor: 'var(--danger-border)',
-                        color: 'var(--danger-color)',
-                        marginBottom: '1rem',
-                        fontSize: '0.85rem'
-                      }}
-                    >
-                      {pendingPfxUnlock.error}
-                    </div>
-                  )}
-
-                  <form onSubmit={handleUnlockPfxSubmit}>
-                    <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
-                      <input
-                        type={showPfxPassword ? 'text' : 'password'}
-                        className="form-input"
-                        autoFocus
-                        placeholder={t('app.trustStore.inspector.passwordPlaceholder', 'Enter keystore password…')}
-                        value={pendingPfxUnlock.passwordInput}
-                        onChange={e => setPendingPfxUnlock(prev => prev ? { ...prev, passwordInput: e.target.value, error: undefined } : null)}
-                        onBlur={() => {
-                          if (!pendingPfxUnlock.passwordInput?.trim()) {
-                            setPendingPfxUnlock(prev => prev ? {
-                              ...prev,
-                              error: t('app.trustStore.inspector.pkcs12RequiresPassword', 'This PKCS#12 file requires a password.')
-                            } : null);
-                          }
-                        }}
-                        style={{ paddingRight: '2.5rem', width: '100%' }}
-                      />
-                      <button
-                        type="button"
-                        className="password-toggle-btn"
-                        onClick={() => setShowPfxPassword(!showPfxPassword)}
-                        title={showPfxPassword ? t('app.trustStore.inspector.hidePassword', 'Hide password') : t('app.trustStore.inspector.showPassword', 'Show password')}
-                        aria-label={showPfxPassword ? t('app.trustStore.inspector.hidePassword', 'Hide password') : t('app.trustStore.inspector.showPassword', 'Show password')}
-                      >
-                        {showPfxPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={() => setPendingPfxUnlock(null)}
-                        disabled={pendingPfxUnlock.loading}
-                      >
-                        {t('common.cancel', 'Cancel')}
-                      </button>
-                      <button
-                        type="submit"
-                        className="btn btn-primary"
-                        disabled={pendingPfxUnlock.loading}
-                      >
-                        {pendingPfxUnlock.loading ? (
-                          <>
-                            <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
-                            {t('app.chain.unlocking', 'Unlocking…')}
-                          </>
-                        ) : (
-                          t('app.trustStore.inspector.unlock', 'Unlock')
-                        )}
-                      </button>
-                    </div>
-                  </form>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                    {t('app.chain.unlockPfxTitle', 'Unlock PKCS#12 / PFX Keystore')}
+                  </h3>
                 </div>
+                <button
+                  className="btn btn-secondary btn-sm btn-icon"
+                  onClick={() => !pendingPfxUnlock.loading && setPendingPfxUnlock(null)}
+                  title={t('common.cancel', 'Cancel')}
+                >
+                  <X size={14} />
+                </button>
               </div>
-            )}
 
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1rem', lineHeight: 1.5 }}>
+                {t('app.chain.pfxPasswordPrompt', {
+                  fileName: pendingPfxUnlock.file.name,
+                  defaultValue: `The file "${pendingPfxUnlock.file.name}" is password-protected. Enter the password to extract certificates into the chain validation pool.`
+                })}
+              </p>
+
+              {pendingPfxUnlock.error && (
+                <div
+                  className="glass-card"
+                  style={{
+                    padding: '0.6rem 0.8rem',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    borderColor: 'var(--danger-border)',
+                    color: 'var(--danger-color)',
+                    marginBottom: '1rem',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  {pendingPfxUnlock.error}
+                </div>
+              )}
+
+              <form onSubmit={handleUnlockPfxSubmit}>
+                <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
+                  <input
+                    type={showPfxPassword ? 'text' : 'password'}
+                    className="form-input"
+                    autoFocus
+                    placeholder={t('app.trustStore.inspector.passwordPlaceholder', 'Enter keystore password…')}
+                    value={pendingPfxUnlock.passwordInput}
+                    onChange={e => setPendingPfxUnlock(prev => prev ? { ...prev, passwordInput: e.target.value, error: undefined } : null)}
+                    onBlur={() => {
+                      if (!pendingPfxUnlock.passwordInput?.trim()) {
+                        setPendingPfxUnlock(prev => prev ? {
+                          ...prev,
+                          error: t('app.trustStore.inspector.pkcs12RequiresPassword', 'This PKCS#12 file requires a password.')
+                        } : null);
+                      }
+                    }}
+                    style={{ paddingRight: '2.5rem', width: '100%' }}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPfxPassword(!showPfxPassword)}
+                    title={showPfxPassword ? t('app.trustStore.inspector.hidePassword', 'Hide password') : t('app.trustStore.inspector.showPassword', 'Show password')}
+                    aria-label={showPfxPassword ? t('app.trustStore.inspector.hidePassword', 'Hide password') : t('app.trustStore.inspector.showPassword', 'Show password')}
+                  >
+                    {showPfxPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setPendingPfxUnlock(null)}
+                    disabled={pendingPfxUnlock.loading}
+                  >
+                    {t('common.cancel', 'Cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={pendingPfxUnlock.loading}
+                  >
+                    {pendingPfxUnlock.loading ? (
+                      <>
+                        <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                        {t('app.chain.unlocking', 'Unlocking…')}
+                      </>
+                    ) : (
+                      t('app.trustStore.inspector.unlock', 'Unlock')
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 

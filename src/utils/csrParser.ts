@@ -100,7 +100,7 @@ function parseCSRBytes(bytes: Uint8Array, text: string): ParsedCSR {
 
   if (isPem) {
     // Normalize - accept both "CERTIFICATE REQUEST" and "NEW CERTIFICATE REQUEST"
-    const pemNorm = text.replace('NEW CERTIFICATE REQUEST', 'CERTIFICATE REQUEST');
+    const pemNorm = text.replace(/NEW CERTIFICATE REQUEST/g, 'CERTIFICATE REQUEST');
     try {
       csr = forge.pki.certificationRequestFromPem(pemNorm);
     } catch (e: any) {
@@ -165,16 +165,36 @@ function parseCSRBytes(bytes: Uint8Array, text: string): ParsedCSR {
     const attrs: any[] = csr.getAttribute({ name: 'extensionRequest' })?.extensions || [];
     for (const ext of attrs) {
       let valueStr = '';
-      if (ext.subjectAltName) {
+      if (ext.name === 'subjectAltName' || ext.altNames || ext.subjectAltName || ext.id === '2.5.29.17') {
         valueStr = (ext.altNames || [])
           .map((an: any) => {
             if (an.type === 2) return `DNS: ${an.value}`;
-            if (an.type === 7) return `IP: ${an.ip}`;
+            if (an.type === 7) return `IP: ${an.ip || an.value}`;
             if (an.type === 1) return `Email: ${an.value}`;
             if (an.type === 6) return `URI: ${an.value}`;
             return `Type ${an.type}: ${an.value}`;
           })
           .join(', ');
+      } else if (ext.name === 'keyUsage') {
+        const usages: string[] = [];
+        if (ext.digitalSignature) usages.push('Digital Signature');
+        if (ext.nonRepudiation)   usages.push('Non-Repudiation');
+        if (ext.keyEncipherment)  usages.push('Key Encipherment');
+        if (ext.dataEncipherment) usages.push('Data Encipherment');
+        if (ext.keyAgreement)     usages.push('Key Agreement');
+        if (ext.keyCertSign)      usages.push('Certificate Sign');
+        if (ext.cRLSign)          usages.push('CRL Sign');
+        if (ext.encipherOnly)     usages.push('Encipher Only');
+        if (ext.decipherOnly)     usages.push('Decipher Only');
+        valueStr = usages.join(', ');
+      } else if (ext.name === 'extKeyUsage') {
+        const eku: string[] = [];
+        if (ext.serverAuth)      eku.push('Server Authentication');
+        if (ext.clientAuth)      eku.push('Client Authentication');
+        if (ext.codeSigning)     eku.push('Code Signing');
+        if (ext.emailProtection) eku.push('Email Protection');
+        if (ext.timeStamping)    eku.push('Time Stamping');
+        valueStr = eku.join(', ');
       } else if (typeof ext.value === 'string') {
         valueStr = forge.util.bytesToHex(ext.value).match(/.{1,2}/g)?.join(' ').toUpperCase() || '';
       }

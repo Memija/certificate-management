@@ -423,6 +423,12 @@
         "leafEntity": "Encja końcowa (Leaf)"
       },
       "rootCaSelfSigned": "Główny CA (samopodpisany)",
+      "selfSignedRoot": "Samopodpisany (punkt zaufania)",
+      "notLoaded": "Niezaładowany do puli",
+      "viewIssuer": "Zobacz certyfikat wystawcy",
+      "viewFullChain": "← Pokaż cały łańcuch",
+      "fullChainTab": "Cały łańcuch",
+      "fullChainOverview": "Przegląd całego łańcucha",
       "cryptoVerified": "Zweryfikowany kryptograficznie",
       "parentMissing": "Brak certyfikatu nadrzędnego w puli",
       "inspectingNode": "Inspekcja węzła",
@@ -572,6 +578,7 @@
     "copyToClipboard": "Kopiuj do schowka",
     "clear": "Wyczyść",
     "clearAll": "Wyczyść wszystko",
-    "remove": "Usuń"
+    "remove": "Usuń",
+    "cancel": "Anuluj"
   }
 }

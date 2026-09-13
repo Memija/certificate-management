@@ -417,6 +417,12 @@
         "leafEntity": "Entitas Akhir (Leaf)"
       },
       "rootCaSelfSigned": "CA Root (Ditandatangani sendiri)",
+      "selfSignedRoot": "Ditandatangani sendiri (Jangkar Kepercayaan)",
+      "notLoaded": "Tidak dimuat dalam pool",
+      "viewIssuer": "Lihat Sertifikat Penerbit",
+      "viewFullChain": "← Lihat Rantai Lengkap",
+      "fullChainTab": "Rantai Lengkap",
+      "fullChainOverview": "Ikhtisar Rantai Lengkap",
       "cryptoVerified": "Terverifikasi Secara Kriptografis",
       "parentMissing": "Induk Tidak Ditemukan di Pool",
       "inspectingNode": "Memeriksa Node",
@@ -564,6 +570,7 @@
     "copyToClipboard": "Salin ke papan klip",
     "clear": "Hapus",
     "clearAll": "Hapus Semua",
-    "remove": "Hapus"
+    "remove": "Hapus",
+    "cancel": "Batal"
   }
 }

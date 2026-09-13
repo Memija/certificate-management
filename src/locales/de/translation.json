@@ -417,6 +417,12 @@
         "leafEntity": "End-Entität"
       },
       "rootCaSelfSigned": "Stamm-CA (selbstsigniert)",
+      "selfSignedRoot": "Selbstsigniert (Vertrauensanker)",
+      "notLoaded": "Nicht im Pool geladen",
+      "viewIssuer": "Aussteller-Zertifikat anzeigen",
+      "viewFullChain": "← Gesamte Kette anzeigen",
+      "fullChainTab": "Gesamte Kette",
+      "fullChainOverview": "Übersicht der gesamten Kette",
       "cryptoVerified": "Kryptografisch verifiziert",
       "parentMissing": "Übergeordnetes Zertifikat fehlt im Pool",
       "inspectingNode": "Knoten prüfen",
@@ -565,6 +571,7 @@
     "copyToClipboard": "In die Zwischenablage kopieren",
     "clear": "Löschen",
     "clearAll": "Alle löschen",
-    "remove": "Entfernen"
+    "remove": "Entfernen",
+    "cancel": "Abbrechen"
   }
 }

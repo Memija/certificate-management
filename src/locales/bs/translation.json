@@ -420,6 +420,12 @@
         "leafEntity": "Krajnji entitet"
       },
       "rootCaSelfSigned": "Korijenski CA (samopotpisan)",
+      "selfSignedRoot": "Samopotpisan (sidro povjerenja)",
+      "notLoaded": "Nije učitan u bazu",
+      "viewIssuer": "Pregledaj certifikat izdavača",
+      "viewFullChain": "← Prikaz cijelog lanca",
+      "fullChainTab": "Cijeli lanac",
+      "fullChainOverview": "Pregled cijelog lanca",
       "cryptoVerified": "Kriptografski verificirano",
       "parentMissing": "Roditeljski CA nedostaje u bazi",
       "inspectingNode": "Pregled čvora",
@@ -568,6 +574,7 @@
     "copyToClipboard": "Kopiraj u međuspremnik",
     "clear": "Očisti",
     "clearAll": "Očisti sve",
-    "remove": "Ukloni"
+    "remove": "Ukloni",
+    "cancel": "Otkaži"
   }
 }

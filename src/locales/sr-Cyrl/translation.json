@@ -420,6 +420,12 @@
         "leafEntity": "Крајњи ентитет"
       },
       "rootCaSelfSigned": "Коренски CA (самопотписан)",
+      "selfSignedRoot": "Самопотписан (сидро поверења)",
+      "notLoaded": "Није учитан у базу",
+      "viewIssuer": "Прегледај сертификат издавача",
+      "viewFullChain": "← Прикажи цео ланац",
+      "fullChainTab": "Цео ланац",
+      "fullChainOverview": "Преглед целог ланца",
       "cryptoVerified": "Криптографски верификовано",
       "parentMissing": "Родитељски CA недостаје у бази",
       "inspectingNode": "Преглед чвора",
@@ -568,6 +574,7 @@
     "copyToClipboard": "Копирај у међуспремник",
     "clear": "Очисти",
     "clearAll": "Очисти све",
-    "remove": "Уклони"
+    "remove": "Уклони",
+    "cancel": "Откажи"
   }
 }

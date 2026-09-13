@@ -417,6 +417,12 @@
         "leafEntity": "Leaf / End-Entity"
       },
       "rootCaSelfSigned": "Root CA (Self-Signed)",
+      "selfSignedRoot": "Self-signed (Trust Anchor)",
+      "notLoaded": "Not loaded in pool",
+      "viewIssuer": "View Issuer Cert",
+      "viewFullChain": "← View Full Chain",
+      "fullChainTab": "Full Chain",
+      "fullChainOverview": "Full Chain Overview",
       "cryptoVerified": "Cryptographically Verified",
       "parentMissing": "Parent Missing in Pool",
       "inspectingNode": "Inspecting Node",
@@ -565,6 +571,7 @@
     "copyToClipboard": "Copy to clipboard",
     "clear": "Clear",
     "clearAll": "Clear All",
-    "remove": "Remove"
+    "remove": "Remove",
+    "cancel": "Cancel"
   }
 }
