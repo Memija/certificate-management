@@ -99,12 +99,21 @@ function parseCSRBytes(bytes: Uint8Array, text: string): ParsedCSR {
   let derBytes: Uint8Array;
 
   if (isPem) {
+    if (text.includes('BEGIN CERTIFICATE') && !text.includes('CERTIFICATE REQUEST')) {
+      throw new Error('ERR_CERT_NOT_CSR');
+    }
+    if (text.includes('BEGIN X509 CRL') || text.includes('BEGIN CRL')) {
+      throw new Error('ERR_CRL_NOT_CSR');
+    }
+    if (text.includes('PRIVATE KEY') && !text.includes('CERTIFICATE REQUEST')) {
+      throw new Error('ERR_KEY_NOT_CSR');
+    }
     // Normalize - accept both "CERTIFICATE REQUEST" and "NEW CERTIFICATE REQUEST"
     const pemNorm = text.replace(/NEW CERTIFICATE REQUEST/g, 'CERTIFICATE REQUEST');
     try {
       csr = forge.pki.certificationRequestFromPem(pemNorm);
     } catch (e: any) {
-      throw new Error(`Failed to parse PEM CSR: ${e?.message || e}`);
+      throw new Error(`ERR_INVALID_FORMAT: ${e?.message || e}`);
     }
     // Re-derive DER for fingerprint
     const derStr = forge.asn1.toDer(forge.pki.certificationRequestToAsn1(csr)).getBytes();
@@ -117,7 +126,15 @@ function parseCSRBytes(bytes: Uint8Array, text: string): ParsedCSR {
       const asn1 = forge.asn1.fromDer(derStr);
       csr = forge.pki.certificationRequestFromAsn1(asn1);
     } catch (e: any) {
-      throw new Error(`Failed to parse DER CSR: ${e?.message || e}`);
+      try {
+        const derStr = uint8ToForgeBytes(bytes);
+        const asn1 = forge.asn1.fromDer(derStr);
+        forge.pki.certificateFromAsn1(asn1);
+        throw new Error('ERR_CERT_NOT_CSR');
+      } catch (e2: any) {
+        if (e2.message === 'ERR_CERT_NOT_CSR') throw e2;
+      }
+      throw new Error(`ERR_INVALID_FORMAT: ${e?.message || e}`);
     }
     derBytes = bytes;
   }

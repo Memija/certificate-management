@@ -1,13 +1,16 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   Upload, FileKey, AlertTriangle, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, Copy, Download, RefreshCw, X, Eye, EyeOff, Sparkles
+  ChevronDown, ChevronUp, Copy, Download, RefreshCw, X, Eye, EyeOff, Sparkles,
+  Edit3, Key
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { parseCSRFile, parseCSRFromText, SAMPLE_CSR_PEM } from './utils/csrParser';
 import { LearningTerm } from './LearningTerm';
 import type { ParsedCSR } from './utils/csrParser';
-import { formatPurposesList } from './utils/purposeFormatter';
+import { formatPurposesList, formatExtensionValue } from './utils/purposeFormatter';
+import { CsrEditorModal } from './CsrEditorModal';
+import { useToast } from './ToastContext';
 
 // ─── Small reusable pieces ────────────────────────────────────────────────────
 
@@ -42,11 +45,22 @@ interface LoadedCSR {
   id: string;
   name: string;
   csr: ParsedCSR;
+  privateKeyPem?: string;
 }
 
 // ─── Details panel ────────────────────────────────────────────────────────────
 
-function CSRDetails({ csr }: { csr: ParsedCSR }) {
+function CSRDetails({
+  csr,
+  fileName,
+  privateKeyPem,
+  onEdit,
+}: {
+  csr: ParsedCSR;
+  fileName: string;
+  privateKeyPem?: string;
+  onEdit: () => void;
+}) {
   const { t } = useTranslation();
   const [showPem, setShowPem] = useState(false);
   const [showExts, setShowExts] = useState(true);
@@ -54,7 +68,7 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
   const downloadDer = () => {
     const link = document.createElement('a');
     link.href = `data:application/octet-stream;base64,${csr.derBase64}`;
-    link.download = 'request.der';
+    link.download = `${fileName.replace(/\.[^/.]+$/, '')}.der`;
     link.click();
   };
 
@@ -62,42 +76,75 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
     const blob = new Blob([csr.pem], { type: 'text/plain' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'request.csr';
+    link.download = fileName.endsWith('.csr') || fileName.endsWith('.req') || fileName.endsWith('.pem') ? fileName : `${fileName}.csr`;
+    link.click();
+  };
+
+  const downloadKey = () => {
+    if (!privateKeyPem) return;
+    const blob = new Blob([privateKeyPem], { type: 'application/x-pem-file' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${fileName.replace(/\.[^/.]+$/, '')}.key`;
     link.click();
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-      {/* Signature validity badge */}
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        {csr.signatureValid ? (
+      {/* Signature validity badge & Actions */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {csr.signatureValid ? (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.82rem', fontWeight: 600,
+              background: 'rgba(16, 185, 129, 0.15)', color: '#10b981',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+            }}>
+              <CheckCircle size={13} /> {t('app.csr.validSignature', 'Self-Signature Valid')}
+            </span>
+          ) : (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.82rem', fontWeight: 600,
+              background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+            }}>
+              <XCircle size={13} /> {t('app.csr.invalidSignature', 'Self-Signature Invalid')}
+            </span>
+          )}
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-            padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.82rem', fontWeight: 600,
-            background: 'rgba(16, 185, 129, 0.15)', color: '#10b981',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.82rem',
+            background: 'rgba(56, 189, 248, 0.12)', color: 'var(--text-accent)',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
           }}>
-            <CheckCircle size={13} /> {t('app.csr.validSignature', 'Self-Signature Valid')}
+            <FileKey size={13} /> {t('app.csr.csrBadge', 'CSR')}
           </span>
-        ) : (
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-            padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.82rem', fontWeight: 600,
-            background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-          }}>
-            <XCircle size={13} /> {t('app.csr.invalidSignature', 'Self-Signature Invalid')}
-          </span>
-        )}
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-          padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.82rem',
-          background: 'rgba(56, 189, 248, 0.12)', color: 'var(--text-accent)',
-          border: '1px solid rgba(56, 189, 248, 0.25)',
-        }}>
-          <FileKey size={13} /> CSR
-        </span>
+          {privateKeyPem && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.82rem', fontWeight: 600,
+              background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc',
+              border: '1px solid rgba(168, 85, 247, 0.3)',
+            }}>
+              <Key size={13} /> {t('app.csr.editor.privateKeyAvailable', 'Private Key Available')}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={onEdit}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.82rem', padding: '0.35rem 0.85rem' }}
+            title={t('app.csr.editor.modalTitle', 'Edit & Re-sign CSR')}
+          >
+            <Edit3 size={14} style={{ color: 'var(--text-accent)' }} /> {t('app.csr.editor.editCsrBtn', 'Edit CSR')}
+          </button>
+        </div>
       </div>
 
       {/* Subject fields */}
@@ -108,13 +155,15 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
         <div className="details-grid">
           {csr.subjectFields.length > 0 ? csr.subjectFields.map((f, i) => (
             <div key={i} style={{ display: 'contents' }}>
-              <div className="details-label">{f.name}</div>
+              <div className="details-label">
+                {t([`app.csr.fields.${f.shortName}`, `app.csr.fields.${f.name}`] as any, f.name) as string}
+              </div>
               <div className="details-value">{f.value}</div>
             </div>
           )) : (
             <>
               <div className="details-label">{t('app.csr.fullDn', 'Full DN')}</div>
-              <div className="details-value">{csr.subject || '(empty subject)'}</div>
+              <div className="details-value">{csr.subject || t('app.csr.emptySubject', '(empty subject)')}</div>
             </>
           )}
         </div>
@@ -157,7 +206,10 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
             onClick={() => setShowExts(e => !e)}
           >
             <h4 style={{ margin: 0, color: 'var(--text-accent)', fontSize: '0.92rem', fontWeight: 600 }}>
-              Requested Extensions ({csr.requestedExtensions.length})
+              {t('app.csr.requestedExtensions', {
+                count: csr.requestedExtensions.length,
+                defaultValue: `Requested Extensions (${csr.requestedExtensions.length})`
+              })}
             </h4>
             {showExts ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
           </div>
@@ -166,14 +218,16 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
               {csr.requestedExtensions.map((ext, idx) => (
                 <div key={idx} style={{ display: 'contents' }}>
                   <div className="details-label">
-                    {ext.name}
+                    {t([`app.winCertStore.extensions.${ext.name.replace(/\s+/g, '')}`, `app.winCertStore.extensions.${ext.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`] as any, ext.name) as string}
                     {ext.critical && (
-                      <span style={{ marginLeft: 6, fontSize: '0.75em', color: 'var(--danger-color)' }}>Critical</span>
+                      <span style={{ marginLeft: 6, fontSize: '0.75em', color: 'var(--danger-color)' }}>
+                        {t('app.csr.critical', 'Critical')}
+                      </span>
                     )}
                   </div>
                   <div className="details-value" style={{ fontFamily: ext.value.length > 60 ? 'monospace' : undefined, fontSize: '0.88em', wordBreak: 'break-all' }}>
-                    {ext.value || '(no value)'}
-                    {ext.oid && <div style={{ fontSize: '0.78em', color: 'var(--text-muted)', marginTop: 2 }}>OID: {ext.oid}</div>}
+                    {formatExtensionValue(ext.name, ext.oid, ext.value, t) || ext.value || t('app.csr.noValue', '(no value)')}
+                    {ext.oid && <div style={{ fontSize: '0.78em', color: 'var(--text-muted)', marginTop: 2 }}>{t('app.csr.oidLabel', 'OID:')} {ext.oid}</div>}
                   </div>
                 </div>
               ))}
@@ -184,7 +238,7 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
 
       {/* PEM + Download */}
       <div className="glass-card" style={{ padding: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <button
             onClick={() => setShowPem(p => !p)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-accent)', fontSize: '0.88rem', padding: 0 }}
@@ -193,13 +247,23 @@ function CSRDetails({ csr }: { csr: ParsedCSR }) {
             <span>{showPem ? t('app.chain.hidePem', 'Hide PEM') : t('app.chain.viewPem', 'View PEM')}</span>
             {showPem ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <button className="btn btn-download-pem" onClick={downloadPem}>
-              <Download size={13} /> Download .csr
+              <Download size={13} /> {t('app.csr.downloadCsr', 'Download .csr')}
             </button>
             <button className="btn btn-download-der" onClick={downloadDer}>
-              <Download size={13} /> Download .der
+              <Download size={13} /> {t('app.csr.downloadDer', 'Download .der')}
             </button>
+            {privateKeyPem && (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={downloadKey}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem' }}
+              >
+                <Key size={13} /> {t('app.csr.editor.downloadKey', 'Download .key')}
+              </button>
+            )}
           </div>
         </div>
         {showPem && (
@@ -257,10 +321,14 @@ function DropZone({ onFiles, onLoadSample, hasSample }: { onFiles: (files: File[
       />
       <Upload size={48} color="var(--text-accent)" style={{ marginBottom: '1rem', opacity: dragging ? 1 : 0.7 }} />
       <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>
-        Drop CSR files here
+        {t('app.csr.dropTitle', 'Drop CSR files here')}
       </h3>
       <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-        Supports PEM and DER · <code>.csr</code> · <code>.req</code> · <code>.pem</code> · <code>.der</code>
+        <Trans
+          i18nKey="app.csr.dropDesc"
+          defaults="Supports PEM and DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>"
+          components={[<code key="0" />, <code key="1" />, <code key="2" />, <code key="3" />]}
+        />
       </p>
       {onLoadSample && (
         <div style={{ marginTop: '1.5rem' }}>
@@ -293,7 +361,16 @@ function DropZone({ onFiles, onLoadSample, hasSample }: { onFiles: (files: File[
 
 // ─── Loaded CSR card ──────────────────────────────────────────────────────────
 
-function CSRCard({ item, onRemove }: { item: LoadedCSR; onRemove: () => void }) {
+function CSRCard({
+  item,
+  onRemove,
+  onEdit,
+}: {
+  item: LoadedCSR;
+  onRemove: () => void;
+  onEdit: () => void;
+}) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
   const cn = item.csr.subjectFields.find(f => f.shortName === 'CN')?.value || item.name;
 
@@ -306,7 +383,14 @@ function CSRCard({ item, onRemove }: { item: LoadedCSR; onRemove: () => void }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <FileKey size={22} color="var(--text-accent)" />
           <div>
-            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{cn}</div>
+            <div style={{ fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <span>{cn}</span>
+              {item.privateKeyPem && (
+                <span title={t('app.csr.editor.privateKeyAvailable', 'Private Key Available')} style={{ display: 'inline-flex' }}>
+                  <Key size={13} style={{ color: '#c084fc' }} />
+                </span>
+              )}
+            </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{item.name}</div>
           </div>
         </div>
@@ -314,6 +398,7 @@ function CSRCard({ item, onRemove }: { item: LoadedCSR; onRemove: () => void }) 
           {expanded ? <ChevronUp size={18} color="var(--text-secondary)" /> : <ChevronDown size={18} color="var(--text-secondary)" />}
           <button
             onClick={e => { e.stopPropagation(); onRemove(); }}
+            title={t('common.remove', 'Remove')}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', padding: '2px' }}
           >
             <X size={16} />
@@ -323,7 +408,12 @@ function CSRCard({ item, onRemove }: { item: LoadedCSR; onRemove: () => void }) 
 
       {expanded && (
         <div style={{ marginTop: '1.25rem', animation: 'fadeIn 0.2s ease' }}>
-          <CSRDetails csr={item.csr} />
+          <CSRDetails
+            csr={item.csr}
+            fileName={item.name}
+            privateKeyPem={item.privateKeyPem}
+            onEdit={onEdit}
+          />
         </div>
       )}
     </div>
@@ -332,7 +422,31 @@ function CSRCard({ item, onRemove }: { item: LoadedCSR; onRemove: () => void }) 
 
 // ─── Error card ───────────────────────────────────────────────────────────────
 
-function ErrorCard({ name, message, onRemove }: { name: string; message: string; onRemove: () => void }) {
+function ErrorCard({
+  name,
+  error,
+  action,
+  onRemove
+}: {
+  name: string;
+  error: string;
+  action?: { label: string; onClick: () => void };
+  onRemove: () => void;
+}) {
+  const { t } = useTranslation();
+  let displayMessage = error;
+  if (error === 'ERR_CERT_NOT_CSR') {
+    displayMessage = t('app.csr.certNotCsr', 'This file contains an X.509 Certificate, not a Certificate Signing Request (CSR). Please inspect this file in the Trust Store Inspector.');
+  } else if (error === 'ERR_CRL_NOT_CSR') {
+    displayMessage = t('app.csr.crlNotCsr', 'This file contains a Certificate Revocation List (CRL), not a Certificate Signing Request (CSR). Please inspect this file in the CRL Inspector.');
+  } else if (error === 'ERR_KEY_NOT_CSR') {
+    displayMessage = t('app.csr.keyNotCsr', 'This file contains a Private Key, not a Certificate Signing Request (CSR).');
+  } else if (error === 'ERR_INVALID_FORMAT' || error.startsWith('ERR_INVALID_FORMAT:')) {
+    displayMessage = t('app.csr.invalidFormat', 'File is not a valid PEM or DER Certificate Signing Request.');
+  } else {
+    displayMessage = t('app.csr.parseError', { name, error, defaultValue: `Failed to parse "${name}": ${error}` });
+  }
+
   return (
     <div className="glass-panel" style={{ marginBottom: '1rem', borderColor: 'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.05)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -340,11 +454,22 @@ function ErrorCard({ name, message, onRemove }: { name: string; message: string;
           <AlertTriangle size={20} color="#ef4444" style={{ flexShrink: 0, marginTop: 2 }} />
           <div>
             <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{name}</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--danger-color)', marginTop: '0.25rem' }}>{message}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--danger-color)', marginTop: '0.25rem' }}>{displayMessage}</div>
+            {action && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={action.onClick}
+                style={{ marginTop: '0.6rem', fontSize: '0.82rem', padding: '0.35rem 0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {action.label}
+              </button>
+            )}
           </div>
         </div>
         <button
           onClick={onRemove}
+          title={t('common.remove', 'Remove')}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', padding: '2px' }}
         >
           <X size={16} />
@@ -359,14 +484,16 @@ function ErrorCard({ name, message, onRemove }: { name: string; message: string;
 interface CSREntry {
   id: string;
   name: string;
-  result: { ok: true; csr: ParsedCSR } | { ok: false; error: string };
+  result: { ok: true; csr: ParsedCSR; privateKeyPem?: string } | { ok: false; error: string };
   loading: boolean;
 }
 
-export function CsrInspector() {
+export function CsrInspector({ onNavigate }: { onNavigate?: (mode: any) => void } = {}) {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [entries, setEntries] = useState<CSREntry[]>([]);
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+  const [editingCsr, setEditingCsr] = useState<{ csr: ParsedCSR; name: string } | null>(null);
   const addFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -460,6 +587,23 @@ export function CsrInspector() {
     }
   }, [entries]);
 
+  const getAction = (err: string) => {
+    if (!onNavigate) return undefined;
+    if (err === 'ERR_CERT_NOT_CSR') {
+      return {
+        label: t('app.csr.goToTrustStore', 'Open in Trust Store Inspector'),
+        onClick: () => onNavigate('trust-store'),
+      };
+    }
+    if (err === 'ERR_CRL_NOT_CSR') {
+      return {
+        label: t('app.csr.goToCrlInspector', 'Open in CRL Inspector'),
+        onClick: () => onNavigate('crl-inspector'),
+      };
+    }
+    return undefined;
+  };
+
   return (
     <div className="main-content">
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -469,9 +613,15 @@ export function CsrInspector() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
             <FileKey size={18} color="var(--text-accent-2)" style={{ flexShrink: 0, marginTop: 1 }} />
             <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              <strong style={{ color: 'var(--text-primary)' }}><LearningTerm termId="csr">CSR</LearningTerm> Inspector</strong> - Inspect Certificate Signing Requests before submitting them to a CA.
-              Verifies the self-signature, shows all requested extensions and subject fields.
-              &nbsp;<strong style={{ color: 'var(--text-primary)' }}>100% offline</strong> · no data leaves your machine.
+              <Trans
+                i18nKey="app.csr.banner"
+                defaults="<0><1>CSR</1> Inspector</0> — Inspect Certificate Signing Requests before submitting them to a CA. Verifies the self-signature, shows all requested extensions and subject fields. <2>100% offline</2> · no data leaves your machine."
+                components={[
+                  <strong key="0" style={{ color: 'var(--text-primary)' }} />,
+                  <LearningTerm key="1" termId="csr">CSR</LearningTerm>,
+                  <strong key="2" style={{ color: 'var(--text-primary)' }} />
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -535,6 +685,7 @@ export function CsrInspector() {
                 const cn = entry.result.ok
                   ? (entry.result.csr.subjectFields.find(f => f.shortName === 'CN')?.value || entry.name)
                   : entry.name;
+                const hasKey = entry.result.ok && !!entry.result.privateKeyPem;
                 return (
                   <button
                     key={entry.id}
@@ -545,6 +696,11 @@ export function CsrInspector() {
                     {isActive && <span className="tab-active-dot" />}
                     <FileKey size={13} className="tab-role-icon" />
                     <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cn}</span>
+                    {hasKey && (
+                      <span title={t('app.csr.editor.privateKeyAvailable', 'Private Key Available')} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <Key size={11} style={{ color: '#c084fc', flexShrink: 0, marginLeft: 2 }} />
+                      </span>
+                    )}
                     <span
                       className="tab-action-btn btn-remove"
                       onClick={(e) => {
@@ -567,16 +723,26 @@ export function CsrInspector() {
                 return (
                   <div key={entry.id} className="glass-panel" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <RefreshCw size={18} color="var(--text-accent)" style={{ animation: 'spin 1s linear infinite' }} />
-                    <span style={{ color: 'var(--text-secondary)' }}>Parsing {entry.name}…</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      {t('app.csr.parsing', { name: entry.name, defaultValue: `Parsing ${entry.name}…` })}
+                    </span>
                   </div>
                 );
               }
               if (entry.result.ok) {
+                const csr = entry.result.csr;
+                const privateKeyPem = entry.result.privateKeyPem;
                 return (
                   <CSRCard
                     key={entry.id}
-                    item={{ id: entry.id, name: entry.name, csr: entry.result.csr }}
+                    item={{
+                      id: entry.id,
+                      name: entry.name,
+                      csr,
+                      privateKeyPem,
+                    }}
                     onRemove={() => removeEntry(entry.id)}
+                    onEdit={() => setEditingCsr({ csr, name: entry.name })}
                   />
                 );
               }
@@ -584,7 +750,8 @@ export function CsrInspector() {
                 <ErrorCard
                   key={entry.id}
                   name={entry.name}
-                  message={entry.result.error}
+                  error={entry.result.error}
+                  action={getAction(entry.result.error)}
                   onRemove={() => removeEntry(entry.id)}
                 />
               );
@@ -593,6 +760,32 @@ export function CsrInspector() {
         )}
 
       </div>
+
+      {/* CSR Editor Modal */}
+      {editingCsr && (
+        <CsrEditorModal
+          isOpen={!!editingCsr}
+          csr={editingCsr.csr}
+          initialName={editingCsr.name}
+          onClose={() => setEditingCsr(null)}
+          onSave={(newCsr, fileName, generatedPrivateKeyPem) => {
+            const newId = `csr-edited-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+            const newEntry: CSREntry = {
+              id: newId,
+              name: fileName,
+              result: {
+                ok: true,
+                csr: newCsr,
+                privateKeyPem: generatedPrivateKeyPem,
+              },
+              loading: false,
+            };
+            setEntries(prev => [...prev, newEntry]);
+            setActiveEntryId(newId);
+            showToast(t('app.csr.editor.saveSuccess', 'CSR successfully re-signed and loaded!'), 'success');
+          }}
+        />
+      )}
     </div>
   );
 }

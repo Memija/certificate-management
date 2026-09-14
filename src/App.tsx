@@ -209,7 +209,7 @@ function App() {
   const renderContent = () => {
     switch (mode) {
       case 'trust-store': return <TrustStoreInspector onNavigate={switchMode} />;
-      case 'csr-inspector': return <CsrInspector />;
+      case 'csr-inspector': return <CsrInspector onNavigate={switchMode} />;
       case 'win-cert-store': return <WinCertStoreInspector />;
       case 'crl-inspector': return <CrlInspector onNavigate={switchMode} />;
       case 'chain-validator': return <ChainValidator />;
