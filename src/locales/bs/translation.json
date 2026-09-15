@@ -364,15 +364,23 @@
         "selectCert": "Odaberite certifikat sa liste",
         "dropFilesHere": "Prevucite certifikate ovdje",
         "orClickToBrowse": "ili kliknite za pretragu",
-        "title": "Inspektor Trust Store-a",
+        "title": "Inspektor Trust Store-a i KeyStore-a",
+        "eyebrow": "Inspekcija KeyStore-a i certifikata",
+        "pills": {
+          "inMemory": "Parsiranje u memoriji",
+          "pkcs12": "PKCS#12 / PFX",
+          "jks": "Java KeyStore (JKS)",
+          "pemBundle": "PEM paketi",
+          "derPkcs7": "DER i PKCS#7"
+        },
         "parsingFiles": "Parsiranje fajla(ova)…",
         "loadedFiles": "Učitani fajlovi",
         "clearAll": "Očisti sve",
         "decryptionFailed": "Dekripcija nije uspjela.",
         "unknownError": "Nepoznata greška",
         "subtitle": {
-          "p1": "Učitajte bilo koju datoteku certifikata ili keystore da pregledate njen sadržaj.",
-          "p2": "100% na strani klijenta, ništa ne napušta vaš računar."
+          "p1": "Pregledajte X.509 certifikate, PKCS#12 arhive, Java KeyStore-ove i PEM/DER pakete.",
+          "p2": "Klijentsko kriptografsko parsiranje: privatni ključevi i certifikati nikada ne napuštaju vaš pretraživač."
         },
         "incorrectPassword": "Netačna lozinka.",
         "pkcs12RequiresPassword": "Ova PKCS#12 datoteka zahtijeva lozinku.",
@@ -443,8 +451,17 @@
       "missingParent": "Nedostaje roditelj",
       "key": "Ključ",
       "signsAndIssues": "Potpisuje i izdaje",
-      "title": "Vizuelni graf i validator lanca certifikata",
+      "eyebrow": "Validacija putanje i hijerarhija",
+      "title": "Vizuelizator i validator lanca certifikata",
       "subtitle": "Rekonstruirajte i kriptografski verificirajte višeslojne PKI hijerarhije (Korijenski CA → Srednji → Krajnji) u interaktivnom vizuelnom dijagramu stabla.",
+      "subtitleP1": "Rekonstruišite certifikacijske putanje od krajnjeg certifikata do korijenskog sidra povjerenja.",
+      "subtitleP2": "Verifikujte kriptografske potpise, pregledajte Authority Key Identifier i otkrijte nedostajuće posredne certifikate.",
+      "pills": {
+        "sigVerify": "Verifikacija potpisa",
+        "treeGraph": "Interaktivni graf stabla",
+        "rootAnchor": "Detekcija korijenskog sidra",
+        "brokenChain": "Izolacija prekinutog lanca"
+      },
       "visualGraph": "Vizuelni graf",
       "classicStack": "Klasični prikaz",
       "addCerts": "Dodaj certifikate",
@@ -475,8 +492,17 @@
       "sampleAlreadyLoaded": "Ovaj primjer lanca je već učitan"
     },
     "crl": {
+      "eyebrow": "Status opoziva i RFC 5280",
       "title": "Inspektor <0>liste opozvanih certifikata (CRL)</0>",
       "description": "Pregledajte <0>X.509</0> <1>CRL</1> datoteke (.crl). Provjerite metapodatke izdavača, datume važenja sljedećeg ažuriranja i pretražite stavke opozvanih certifikata i kodove razloga.",
+      "descP1": "Parsirajte RFC 5280 liste opoziva u PEM ili DER formatu.",
+      "descP2": "Provjerite validnost izdavača, intervale ažuriranja i pretražujte opozvane serijske brojeve i razloge opoziva.",
+      "pills": {
+        "rfc5280": "RFC 5280 parser",
+        "pemDer": "PEM i DER dekoderi",
+        "serialLookup": "Pretraga opozvanih serijskih brojeva",
+        "updateWindow": "Revizija intervala ažuriranja"
+      },
       "expiredBadge": "Istekla CRL",
       "activeBadge": "Aktivna CRL",
       "revokedCount": "{{count}} Opozvanih certifikata",
@@ -551,7 +577,18 @@
       }
     },
     "csr": {
-      "banner": "<0><1>CSR</1> Inspektor</0> — Pregledajte zahtjeve za potpisivanje certifikata (CSR) prije slanja certifikacijskom tijelu (CA). Provjerava vlastiti potpis, prikazuje sva zatražena proširenja i polja subjekta. <2>100% offline</2> · podaci ne napuštaju vaš računar.",
+      "eyebrow": "Inspekcija PKCS#10 zahtjeva",
+      "title": "<0>Inspektor zahtjeva za potpisivanje certifikata (CSR)</0>",
+      "description": "Verifikujte ugrađene vlastite potpise, pregledajte atribute subjekta i zatražena SAN proširenja ili uredite i ponovo potpišite na licu mjesta.",
+      "descP1": "Verifikujte ugrađene vlastite potpise, pregledajte atribute subjekta i zatražena SAN proširenja.",
+      "descP2": "Klijentsko kriptografsko parsiranje: uredite i ponovo potpišite na licu mjesta bez izlaganja privatnih ključeva.",
+      "banner": "<0><1>CSR</1> Inspektor</0>: Pregledajte zahtjeve za potpisivanje certifikata (CSR) prije slanja certifikacijskom tijelu (CA). Provjerava vlastiti potpis, prikazuje sva zatražena proširenja i polja subjekta. <2>100% offline</2> · podaci ne napuštaju vaš računar.",
+      "pills": {
+        "selfSig": "Verifikacija vlastitog potpisa",
+        "rfc2986": "PKCS#10 RFC 2986",
+        "editor": "Interaktivni editor i ponovno potpisivanje",
+        "offline": "100% offline parsiranje"
+      },
       "dropTitle": "Prevucite CSR datoteke ovdje",
       "dropDesc": "Podržava PEM i DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>",
       "trySampleCsr": "Isprobajte primjer CSR",

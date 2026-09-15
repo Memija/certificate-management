@@ -736,15 +736,48 @@ export function TrustStoreInspector({ onNavigate }: { onNavigate?: (mode: AppMod
   return (
     <div className="main-content">
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        {/* Intro panel */}
-        <div className="glass-panel" style={{ marginBottom: '2rem', background: 'rgba(56,189,248,0.06)', borderColor: 'rgba(56,189,248,0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <FolderOpen size={32} color="var(--text-accent)" />
-            <div>
-              <h2 style={{ margin: 0, marginBottom: '0.25rem' }}>{t('app.trustStore.inspector.title', 'Trust Store Inspector')}</h2>
-              <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-                {t('app.trustStore.inspector.subtitle.p1', 'Load any certificate file or keystore to inspect its contents.')} <strong>{t('app.trustStore.inspector.subtitle.p2', '100% client-side, nothing leaves your machine.')}</strong>
-              </p>
+        {/* Premium Header */}
+        <div className="premium-header-panel theme-trust">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap trust">
+              <FolderOpen size={24} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: '#38bdf8' }}>
+                <FolderOpen size={12} />
+                <span>{t('app.trustStore.inspector.eyebrow', 'KeyStore & Archive Inspection')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                {t('app.trustStore.inspector.title', 'Trust Store & Keystore Inspector')}
+              </h2>
+              <div className="premium-header-desc">
+                <span>{t('app.trustStore.inspector.subtitle.p1', 'Inspect X.509 certificates, PKCS#12 archives, Java KeyStores, and PEM/DER bundles.')}</span>
+                <span className="premium-header-note">
+                  {t('app.trustStore.inspector.subtitle.p2', 'Client-side cryptographic parsing: private keys and certificates never leave your browser.')}
+                </span>
+              </div>
+              <div className="premium-header-tags">
+                <span className="premium-header-tag active-pill">
+                  <ShieldCheck size={12} style={{ color: 'var(--success-color)' }} />
+                  <span>{t('app.trustStore.inspector.pills.inMemory', 'In-Memory Parsing')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <Lock size={12} style={{ color: '#fb923c' }} />
+                  <span>{t('app.trustStore.inspector.pills.pkcs12', 'PKCS#12 / PFX')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <FileKey size={12} style={{ color: '#4ade80' }} />
+                  <span>{t('app.trustStore.inspector.pills.jks', 'Java KeyStore (JKS)')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <Archive size={12} style={{ color: '#a78bfa' }} />
+                  <span>{t('app.trustStore.inspector.pills.pemBundle', 'PEM Bundles')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <Shield size={12} style={{ color: '#38bdf8' }} />
+                  <span>{t('app.trustStore.inspector.pills.derPkcs7', 'DER & PKCS#7')}</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>

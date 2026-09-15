@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
-  Upload, FileKey, AlertTriangle, CheckCircle, XCircle,
+  Upload, FileKey, AlertTriangle, CheckCircle, XCircle, ShieldCheck, Lock,
   ChevronDown, ChevronUp, Copy, Download, RefreshCw, X, Eye, EyeOff, Sparkles,
   Edit3, Key
 } from 'lucide-react';
@@ -606,22 +606,52 @@ export function CsrInspector({ onNavigate }: { onNavigate?: (mode: any) => void 
 
   return (
     <div className="main-content">
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
 
-        {/* Info banner */}
-        <div className="glass-panel" style={{ marginBottom: '1.5rem', background: 'rgba(167,139,250,0.08)', borderColor: 'rgba(167,139,250,0.2)', padding: '1rem 1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-            <FileKey size={18} color="var(--text-accent-2)" style={{ flexShrink: 0, marginTop: 1 }} />
-            <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              <Trans
-                i18nKey="app.csr.banner"
-                defaults="<0><1>CSR</1> Inspector</0> — Inspect Certificate Signing Requests before submitting them to a CA. Verifies the self-signature, shows all requested extensions and subject fields. <2>100% offline</2> · no data leaves your machine."
-                components={[
-                  <strong key="0" style={{ color: 'var(--text-primary)' }} />,
-                  <LearningTerm key="1" termId="csr">CSR</LearningTerm>,
-                  <strong key="2" style={{ color: 'var(--text-primary)' }} />
-                ]}
-              />
+        {/* Premium Header */}
+        <div className="premium-header-panel theme-csr">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap csr">
+              <FileKey size={24} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: '#818cf8' }}>
+                <FileKey size={12} />
+                <span>{t('app.csr.eyebrow', 'PKCS#10 Request Inspection')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                <Trans
+                  i18nKey="app.csr.title"
+                  defaults="<0>Certificate Signing Request (CSR)</0> Inspector"
+                  components={[
+                    <LearningTerm key="0" termId="csr">Certificate Signing Request (CSR)</LearningTerm>
+                  ]}
+                />
+              </h2>
+              <div className="premium-header-desc">
+                <span>{t('app.csr.descP1', 'Verify embedded self-signatures, inspect requested Subject DN attributes and SAN extensions.')}</span>
+                <span className="premium-header-note">
+                  {t('app.csr.descP2', 'Client-side cryptographic parsing: modify and re-sign in place without exposing private keys.')}
+                </span>
+              </div>
+              <div className="premium-header-tags">
+                <span className="premium-header-tag active-pill">
+                  <ShieldCheck size={12} style={{ color: 'var(--success-color)' }} />
+                  <span>{t('app.csr.pills.selfSig', 'Self-Signature Verification')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <FileKey size={12} style={{ color: '#818cf8' }} />
+                  <span>{t('app.csr.pills.rfc2986', 'PKCS#10 RFC 2986')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <Edit3 size={12} style={{ color: '#38bdf8' }} />
+                  <span>{t('app.csr.pills.editor', 'Interactive Editor & Re-sign')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <Lock size={12} style={{ color: '#fb923c' }} />
+                  <span>{t('app.csr.pills.offline', '100% Offline Parsing')}</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>

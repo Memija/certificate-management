@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import {
-  Upload, AlertTriangle, CheckCircle, XCircle,
+  Upload, AlertTriangle, CheckCircle, XCircle, ShieldCheck,
   ChevronDown, ChevronUp, Copy, Download, X, Search, ShieldAlert, Calendar, Eye, EyeOff, Sparkles, FileText,
   FolderOpen, FileKey, Info, KeyRound, RefreshCw, Ban, UserX, PauseCircle, ShieldOff, CheckCircle2, HelpCircle
 } from 'lucide-react';
@@ -856,19 +856,46 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-          <Trans i18nKey="app.crl.title" components={[<LearningTerm key="crl" termId="crl">{""}</LearningTerm>]} />
-        </h2>
-        <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
-          <Trans
-            i18nKey="app.crl.description"
-            components={[
-              <LearningTerm key="x509" termId="x509">{""}</LearningTerm>,
-              <LearningTerm key="crl" termId="crl">{""}</LearningTerm>
-            ]}
-          />
-        </p>
+      {/* Premium Header */}
+      <div className="premium-header-panel theme-crl">
+        <div className="premium-header-content">
+          <div className="premium-header-icon-wrap crl">
+            <ShieldAlert size={24} />
+          </div>
+          <div className="premium-header-body">
+            <div className="premium-header-eyebrow" style={{ color: '#f43f5e' }}>
+              <ShieldAlert size={12} />
+              <span>{t('app.crl.eyebrow', 'Revocation Status & RFC 5280')}</span>
+            </div>
+            <h2 className="premium-header-title">
+              <Trans i18nKey="app.crl.title" components={[<LearningTerm key="crl" termId="crl">{""}</LearningTerm>]} />
+            </h2>
+            <div className="premium-header-desc">
+              <span>{t('app.crl.descP1', 'Parse RFC 5280 revocation lists in PEM or DER encoding.')}</span>
+              <span className="premium-header-note">
+                {t('app.crl.descP2', 'Verify issuer validity, inspect next update windows, and search revoked serial numbers and reason codes.')}
+              </span>
+            </div>
+            <div className="premium-header-tags">
+              <span className="premium-header-tag active-pill">
+                <ShieldCheck size={12} style={{ color: 'var(--success-color)' }} />
+                <span>{t('app.crl.pills.rfc5280', 'RFC 5280 Parser')}</span>
+              </span>
+              <span className="premium-header-tag">
+                <FileText size={12} style={{ color: '#38bdf8' }} />
+                <span>{t('app.crl.pills.pemDer', 'PEM & DER Decoders')}</span>
+              </span>
+              <span className="premium-header-tag">
+                <Search size={12} style={{ color: '#f59e0b' }} />
+                <span>{t('app.crl.pills.serialLookup', 'Revoked Serial Lookup')}</span>
+              </span>
+              <span className="premium-header-tag">
+                <Calendar size={12} style={{ color: '#a78bfa' }} />
+                <span>{t('app.crl.pills.updateWindow', 'Update Window Audit')}</span>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {localizedError && errorInfo && (

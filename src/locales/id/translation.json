@@ -547,7 +547,7 @@
       }
     },
     "csr": {
-      "banner": "<0><1>CSR</1> Inspektur</0> — Periksa Permintaan Penandatanganan Sertifikat (CSR) sebelum mengirimkannya ke CA. Memverifikasi tanda tangan mandiri, menampilkan semua ekstensi yang diminta dan bidang subjek. <2>100% offline</2> · tidak ada data yang keluar dari perangkat Anda.",
+      "banner": "<0><1>CSR</1> Inspektur</0>: Periksa Permintaan Penandatanganan Sertifikat (CSR) sebelum mengirimkannya ke CA. Memverifikasi tanda tangan mandiri, menampilkan semua ekstensi yang diminta dan bidang subjek. <2>100% offline</2> · tidak ada data yang keluar dari perangkat Anda.",
       "dropTitle": "Letakkan file CSR di sini",
       "dropDesc": "Mendukung PEM dan DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>",
       "trySampleCsr": "Coba Contoh CSR",

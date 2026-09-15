@@ -361,15 +361,23 @@
         "selectCert": "Select a certificate from the list",
         "dropFilesHere": "Drop certificate files here",
         "orClickToBrowse": "or click to browse",
-        "title": "Trust Store Inspector",
+        "title": "Trust Store & Keystore Inspector",
+        "eyebrow": "KeyStore & Archive Inspection",
+        "pills": {
+          "inMemory": "In-Memory Parsing",
+          "pkcs12": "PKCS#12 / PFX",
+          "jks": "Java KeyStore (JKS)",
+          "pemBundle": "PEM Bundles",
+          "derPkcs7": "DER & PKCS#7"
+        },
         "parsingFiles": "Parsing file(s)…",
         "loadedFiles": "Loaded Files",
         "clearAll": "Clear All",
         "decryptionFailed": "Decryption failed.",
         "unknownError": "Unknown error",
         "subtitle": {
-          "p1": "Load any certificate file or keystore to inspect its contents.",
-          "p2": "100% client-side, nothing leaves your machine."
+          "p1": "Inspect X.509 certificates, PKCS#12 archives, Java KeyStores, and PEM/DER bundles.",
+          "p2": "Client-side cryptographic parsing: private keys and certificates never leave your browser."
         },
         "incorrectPassword": "Incorrect password.",
         "pkcs12RequiresPassword": "This PKCS#12 file requires a password.",
@@ -440,8 +448,17 @@
       "missingParent": "Missing Parent",
       "key": "Key",
       "signsAndIssues": "Signs & Issues",
-      "title": "Certificate Chain Visual Graph & Validator",
-      "subtitle": "Reconstruct and cryptographically verify multi-tier PKI hierarchies (Root CA → Intermediate → Leaf) in an interactive visual tree diagram.",
+      "eyebrow": "Path Validation & Hierarchy",
+      "title": "Certificate Chain Visualizer & Validator",
+      "subtitle": "Reconstruct certification paths from end-entity to trust anchor. Verify cryptographic signatures, inspect Authority Key Identifiers, and detect missing intermediate certificates.",
+      "subtitleP1": "Reconstruct certification paths from end-entity to trust anchor.",
+      "subtitleP2": "Verify cryptographic signatures, inspect Authority Key Identifiers, and detect missing intermediate certificates.",
+      "pills": {
+        "sigVerify": "Signature Verification",
+        "treeGraph": "Interactive Tree Graph",
+        "rootAnchor": "Root Anchor Detection",
+        "brokenChain": "Broken Chain Isolation"
+      },
       "visualGraph": "Visual Graph",
       "classicStack": "Classic Stack",
       "addCerts": "Add Certs",
@@ -471,8 +488,17 @@
       "sampleAlreadyLoaded": "This sample chain is already loaded"
     },
     "crl": {
+      "eyebrow": "Revocation Status & RFC 5280",
       "title": "<0>Certificate Revocation List (CRL)</0> Inspector",
-      "description": "Inspect <0>X.509</0> <1>CRL</1> files (.crl). Check issuer metadata, next update validity dates, and search through revoked certificate entries and reason codes.",
+      "description": "Parse RFC 5280 revocation lists in PEM or DER encoding. Verify issuer validity, inspect next update windows, and search revoked serial numbers and reason codes.",
+      "descP1": "Parse RFC 5280 revocation lists in PEM or DER encoding.",
+      "descP2": "Verify issuer validity, inspect next update windows, and search revoked serial numbers and reason codes.",
+      "pills": {
+        "rfc5280": "RFC 5280 Parser",
+        "pemDer": "PEM & DER Decoders",
+        "serialLookup": "Revoked Serial Lookup",
+        "updateWindow": "Update Window Audit"
+      },
       "expiredBadge": "Expired CRL",
       "activeBadge": "Active CRL",
       "revokedCount": "{{count}} Revoked Certificates",
@@ -548,7 +574,18 @@
       }
     },
     "csr": {
-      "banner": "<0><1>CSR</1> Inspector</0> — Inspect Certificate Signing Requests before submitting them to a CA. Verifies the self-signature, shows all requested extensions and subject fields. <2>100% offline</2> · no data leaves your machine.",
+      "eyebrow": "PKCS#10 Request Inspection",
+      "title": "<0>Certificate Signing Request (CSR)</0> Inspector",
+      "description": "Verify embedded self-signatures, inspect requested Subject DN attributes and SAN extensions, or modify and re-sign in place before CA submission.",
+      "descP1": "Verify embedded self-signatures, inspect requested Subject DN attributes and SAN extensions.",
+      "descP2": "Client-side cryptographic parsing: modify and re-sign in place without exposing private keys.",
+      "banner": "<0><1>CSR</1> Inspector</0>: Inspect Certificate Signing Requests before submitting them to a CA. Verifies the self-signature, shows all requested extensions and subject fields. <2>100% offline</2> · no data leaves your machine.",
+      "pills": {
+        "selfSig": "Self-Signature Verification",
+        "rfc2986": "PKCS#10 RFC 2986",
+        "editor": "Interactive Editor & Re-sign",
+        "offline": "100% Offline Parsing"
+      },
       "dropTitle": "Drop CSR files here",
       "dropDesc": "Supports PEM and DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>",
       "trySampleCsr": "Try Sample CSR",

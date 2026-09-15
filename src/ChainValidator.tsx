@@ -1096,59 +1096,87 @@ export function ChainValidator() {
       )}
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
-        {/* Header */}
-        <div style={{ marginBottom: '1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {t('app.chain.title', 'Certificate Chain Visual Graph & Validator')}
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
-              {t('app.chain.subtitle', 'Reconstruct and cryptographically verify multi-tier PKI hierarchies (Root CA → Intermediate → Leaf) in an interactive visual tree diagram.')}
-            </p>
+        {/* Premium Header */}
+        <div className="premium-header-panel theme-chain">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap chain">
+              <GitFork size={24} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: '#c084fc' }}>
+                <GitFork size={12} />
+                <span>{t('app.chain.eyebrow', 'Path Validation & Hierarchy')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                {t('app.chain.title', 'Certificate Chain Visualizer & Validator')}
+              </h2>
+              <div className="premium-header-desc">
+                <span>{t('app.chain.subtitleP1', 'Reconstruct certification paths from end-entity to trust anchor.')}</span>
+                <span className="premium-header-note">
+                  {t('app.chain.subtitleP2', 'Verify cryptographic signatures, inspect Authority Key Identifiers, and detect missing intermediate certificates.')}
+                </span>
+              </div>
+              <div className="premium-header-tags">
+                <span className="premium-header-tag active-pill">
+                  <ShieldCheck size={12} style={{ color: 'var(--success-color)' }} />
+                  <span>{t('app.chain.pills.sigVerify', 'Signature Verification')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <GitFork size={12} style={{ color: '#c084fc' }} />
+                  <span>{t('app.chain.pills.treeGraph', 'Interactive Tree Graph')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <Shield size={12} style={{ color: '#38bdf8' }} />
+                  <span>{t('app.chain.pills.rootAnchor', 'Root Anchor Detection')}</span>
+                </span>
+                <span className="premium-header-tag">
+                  <AlertTriangle size={12} style={{ color: '#f59e0b' }} />
+                  <span>{t('app.chain.pills.brokenChain', 'Broken Chain Isolation')}</span>
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            {certs.length > 0 && (
-              <>
-                <div style={{ display: 'inline-flex', padding: '0.2rem', borderRadius: 8, background: 'var(--input-bg)', border: '1px solid var(--glass-border-subtle)' }}>
-                  <button
-                    className={`btn btn-sm ${viewMode === 'graph' ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => setViewMode('graph')}
-                    style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-                  >
-                    <GitFork size={13} /> {t('app.chain.visualGraph', 'Visual Graph')}
-                  </button>
-                  <button
-                    className={`btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => setViewMode('list')}
-                    style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-                  >
-                    <List size={13} /> {t('app.chain.classicStack', 'Classic Stack')}
-                  </button>
-                </div>
+          {certs.length > 0 && (
+            <div className="premium-header-actions">
+              <div style={{ display: 'inline-flex', padding: '0.2rem', borderRadius: 8, background: 'var(--input-bg)', border: '1px solid var(--glass-border-subtle)' }}>
+                <button
+                  className={`btn btn-sm ${viewMode === 'graph' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setViewMode('graph')}
+                  style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                >
+                  <GitFork size={13} /> {t('app.chain.visualGraph', 'Visual Graph')}
+                </button>
+                <button
+                  className={`btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setViewMode('list')}
+                  style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                >
+                  <List size={13} /> {t('app.chain.classicStack', 'Classic Stack')}
+                </button>
+              </div>
 
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="btn btn-secondary btn-sm"
-                >
-                  <Upload size={13} /> {t('app.chain.addCerts', 'Add Certs')}
-                </button>
-                <button
-                  onClick={() => {
-                    setCerts([]);
-                    setError(null);
-                    setActiveNodeId(null);
-                    setInspectingNode(null);
-                    setActivePreset(null);
-                    setPendingPfxUnlock(null);
-                  }}
-                  className="btn btn-danger btn-sm"
-                >
-                  <Trash2 size={13} /> {t('common.clear', 'Clear')}
-                </button>
-              </>
-            )}
-          </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="btn btn-secondary btn-sm"
+              >
+                <Upload size={13} /> {t('app.chain.addCerts', 'Add Certs')}
+              </button>
+              <button
+                onClick={() => {
+                  setCerts([]);
+                  setError(null);
+                  setActiveNodeId(null);
+                  setInspectingNode(null);
+                  setActivePreset(null);
+                  setPendingPfxUnlock(null);
+                }}
+                className="btn btn-danger btn-sm"
+              >
+                <Trash2 size={13} /> {t('common.clear', 'Clear')}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Quick Sample Presets Bar */}

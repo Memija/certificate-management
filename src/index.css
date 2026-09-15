@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 /* ════════════════════════════════════════════════════════════
-   DESIGN TOKENS — Dark Theme (Default)
+   DESIGN TOKENS: Dark Theme (Default)
 ════════════════════════════════════════════════════════════ */
 :root,
 [data-theme="dark"] {
@@ -107,7 +107,7 @@
 }
 
 /* ════════════════════════════════════════════════════════════
-   DESIGN TOKENS — Light Theme
+   DESIGN TOKENS: Light Theme
 ════════════════════════════════════════════════════════════ */
 [data-theme="light"] {
   --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -3934,4 +3934,251 @@ pre,
 .chain-cert-tab.active .tab-action-btn:hover {
   opacity: 1;
 }
+
+/* ════════════════════════════════════════════════════════════
+   PREMIUM MODULE HEADERS
+   ════════════════════════════════════════════════════════════ */
+.premium-header-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1.6rem 1.85rem;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow);
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+[data-theme="light"] .premium-header-panel {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+/* Subtle background accent glow */
+.premium-header-panel::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -10%;
+  width: 380px;
+  height: 240px;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(64px);
+  opacity: 0.14;
+  z-index: 0;
+}
+
+[data-theme="light"] .premium-header-panel::before {
+  opacity: 0.08;
+}
+
+/* Specific module themes */
+.premium-header-panel.theme-trust {
+  border-color: rgba(56, 189, 248, 0.24);
+}
+.premium-header-panel.theme-trust::before {
+  background: #38bdf8;
+}
+
+.premium-header-panel.theme-crl {
+  border-color: rgba(244, 63, 94, 0.24);
+}
+.premium-header-panel.theme-crl::before {
+  background: #f43f5e;
+}
+
+.premium-header-panel.theme-chain {
+  border-color: rgba(168, 85, 247, 0.24);
+}
+.premium-header-panel.theme-chain::before {
+  background: #a855f7;
+}
+
+.premium-header-panel.theme-csr {
+  border-color: rgba(129, 140, 248, 0.24);
+}
+.premium-header-panel.theme-csr::before {
+  background: #818cf8;
+}
+
+.premium-header-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  flex: 1;
+  min-width: 280px;
+}
+
+@media (max-width: 640px) {
+  .premium-header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.premium-header-icon-wrap {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: transform 0.2s ease;
+}
+
+.premium-header-icon-wrap:hover {
+  transform: scale(1.04);
+}
+
+.premium-header-icon-wrap.trust {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(6, 182, 212, 0.08) 100%);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+}
+
+.premium-header-icon-wrap.crl {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.2) 0%, rgba(244, 63, 94, 0.06) 100%);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: #f43f5e;
+}
+
+.premium-header-icon-wrap.chain {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(129, 140, 248, 0.08) 100%);
+  border-color: rgba(168, 85, 247, 0.35);
+  color: #c084fc;
+}
+
+.premium-header-icon-wrap.csr {
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.22) 0%, rgba(56, 189, 248, 0.08) 100%);
+  border-color: rgba(129, 140, 248, 0.35);
+  color: #a5b4fc;
+}
+
+.premium-header-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.premium-header-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.45rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+[data-theme="light"] .premium-header-eyebrow {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.premium-header-title {
+  font-family: var(--font-sans);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.45rem 0;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.premium-header-desc {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin: 0 0 1rem 0;
+  max-width: 760px;
+}
+
+.premium-header-note {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  opacity: 0.92;
+}
+
+.premium-header-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.premium-header-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.22rem 0.6rem;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .premium-header-tag {
+  background: rgba(15, 23, 42, 0.035);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: #64748b;
+}
+
+.premium-header-tag:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-secondary);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="light"] .premium-header-tag:hover {
+  background: rgba(15, 23, 42, 0.07);
+  color: var(--text-primary);
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+.premium-header-tag.active-pill {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="light"] .premium-header-tag.active-pill {
+  color: var(--text-primary);
+  border-color: rgba(5, 150, 105, 0.25);
+  background: rgba(5, 150, 105, 0.06);
+}
+
+.premium-header-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
 

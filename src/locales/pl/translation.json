@@ -555,7 +555,7 @@
       }
     },
     "csr": {
-      "banner": "<0><1>CSR</1> Inspektor</0> — Sprawdź żądania podpisania certyfikatu (CSR) przed wysłaniem ich do urzędu certyfikacji (CA). Weryfikuje własny podpis, pokazuje wszystkie żądane rozszerzenia i pola podmiotu. <2>100% offline</2> · żadne dane nie opuszczają Twojego urządzenia.",
+      "banner": "<0><1>CSR</1> Inspektor</0>: Sprawdź żądania podpisania certyfikatu (CSR) przed wysłaniem ich do urzędu certyfikacji (CA). Weryfikuje własny podpis, pokazuje wszystkie żądane rozszerzenia i pola podmiotu. <2>100% offline</2> · żadne dane nie opuszczają Twojego urządzenia.",
       "dropTitle": "Upuść pliki CSR tutaj",
       "dropDesc": "Obsługuje formaty PEM i DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>",
       "trySampleCsr": "Wypróbuj przykładowe CSR",

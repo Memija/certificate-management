@@ -361,15 +361,23 @@
         "selectCert": "Wählen Sie ein Zertifikat aus der Liste",
         "dropFilesHere": "Zertifikatsdateien hier ablegen",
         "orClickToBrowse": "oder zum Durchsuchen klicken",
-        "title": "Trust Store Inspektor",
+        "title": "Trust Store & Keystore Inspektor",
+        "eyebrow": "KeyStore- & Zertifikatsprüfung",
+        "pills": {
+          "inMemory": "In-Memory-Parsing",
+          "pkcs12": "PKCS#12 / PFX",
+          "jks": "Java KeyStore (JKS)",
+          "pemBundle": "PEM-Bündel",
+          "derPkcs7": "DER & PKCS#7"
+        },
         "parsingFiles": "Datei(en) analysieren…",
         "loadedFiles": "Geladene Dateien",
         "clearAll": "Alles löschen",
         "decryptionFailed": "Entschlüsselung fehlgeschlagen.",
         "unknownError": "Unbekannter Fehler",
         "subtitle": {
-          "p1": "Laden Sie eine beliebige Zertifikatsdatei oder einen Keystore, um deren Inhalt zu überprüfen.",
-          "p2": "100 % clientseitig, nichts verlässt Ihren Computer."
+          "p1": "Untersuchen Sie X.509-Zertifikate, PKCS#12-Archive, Java KeyStores und PEM/DER-Bündel.",
+          "p2": "Clientseitige kryptografische Analyse: Private Schlüssel und Zertifikate verlassen niemals Ihren Browser."
         },
         "incorrectPassword": "Falsches Passwort.",
         "pkcs12RequiresPassword": "Diese PKCS#12-Datei erfordert ein Passwort.",
@@ -440,8 +448,17 @@
       "missingParent": "Übergeordnetes Element fehlt",
       "key": "Schlüssel",
       "signsAndIssues": "Signiert & stellt aus",
-      "title": "Visueller Graph & Validator für Zertifikatsketten",
+      "eyebrow": "Pfadvalidierung & Hierarchie",
+      "title": "Zertifikatsketten-Visualisierer & Validator",
       "subtitle": "Rekonstruieren und verifizieren Sie mehrstufige PKI-Hierarchien (Stamm-CA → Zwischen-CA → Endzertifikat) kryptografisch in einem interaktiven visuellen Baumdiagramm.",
+      "subtitleP1": "Zertifizierungspfade von Endzertifikaten bis zum Trust-Anchor rekonstruieren.",
+      "subtitleP2": "Kryptografische Signaturen überprüfen, Authority Key Identifier inspizieren und fehlende Zwischenzertifikate erkennen.",
+      "pills": {
+        "sigVerify": "Signaturüberprüfung",
+        "treeGraph": "Interaktiver Baumgraph",
+        "rootAnchor": "Trust-Anchor-Erkennung",
+        "brokenChain": "Isolierung unterbrochener Ketten"
+      },
       "visualGraph": "Visueller Graph",
       "classicStack": "Klassische Ansicht",
       "addCerts": "Zertifikate hinzufügen",
@@ -471,8 +488,17 @@
       "sampleAlreadyLoaded": "Diese Beispielkette ist bereits geladen"
     },
     "crl": {
+      "eyebrow": "Sperrstatus & RFC 5280",
       "title": "<0>Zertifikatssperrlisten (CRL)</0>-Inspektor",
       "description": "Untersuchen Sie <0>X.509</0>-<1>CRL</1>-Dateien (.crl). Überprüfen Sie Aussteller-Metadaten, Gültigkeitsdaten der nächsten Aktualisierung und durchsuchen Sie gesperrte Zertifikatseinträge und Grundcodes.",
+      "descP1": "RFC 5280-Zertifikatssperrlisten in PEM- oder DER-Kodierung analysieren.",
+      "descP2": "Ausstellergültigkeit prüfen, nächste Aktualisierungsfenster überwachen und gesperrte Seriennummern sowie Grundcodes durchsuchen.",
+      "pills": {
+        "rfc5280": "RFC 5280-Parser",
+        "pemDer": "PEM- & DER-Decoder",
+        "serialLookup": "Suche nach gesperrten Seriennummern",
+        "updateWindow": "Aktualisierungsfenster-Audit"
+      },
       "expiredBadge": "Abgelaufene CRL",
       "activeBadge": "Aktive CRL",
       "revokedCount": "{{count}} gesperrte Zertifikate",
@@ -548,7 +574,18 @@
       }
     },
     "csr": {
-      "banner": "<0><1>CSR</1>-Inspektor</0> — Überprüfen Sie Zertifikatssignierungsanfragen (CSR), bevor Sie sie an eine Zertifizierungsstelle (CA) senden. Prüft die Selbstsignatur und zeigt alle angeforderten Erweiterungen und Inhaberfelder an. <2>100% offline</2> · keine Daten verlassen Ihren Computer.",
+      "eyebrow": "PKCS#10-Anforderungsprüfung",
+      "title": "<0>Zertifikatssignierungsanfrage (CSR)</0>-Inspektor",
+      "description": "Eingebettete Selbstsignaturen verifizieren, angeforderte Subject-DN-Attribute und SAN-Erweiterungen prüfen oder vor Ort bearbeiten und neu signieren.",
+      "descP1": "Eingebettete Selbstsignaturen verifizieren, angeforderte Subject-DN-Attribute und SAN-Erweiterungen prüfen.",
+      "descP2": "Clientseitige kryptografische Analyse: Vor Ort bearbeiten und neu signieren, ohne private Schlüssel offenzulegen.",
+      "banner": "<0><1>CSR</1>-Inspektor</0>: Überprüfen Sie Zertifikatssignierungsanfragen (CSR), bevor Sie sie an eine Zertifizierungsstelle (CA) senden. Prüft die Selbstsignatur und zeigt alle angeforderten Erweiterungen und Inhaberfelder an. <2>100% offline</2> · keine Daten verlassen Ihren Computer.",
+      "pills": {
+        "selfSig": "Selbstsignatur-Überprüfung",
+        "rfc2986": "PKCS#10 RFC 2986",
+        "editor": "Interaktiver Editor & Neusignierung",
+        "offline": "100 % Offline-Parsing"
+      },
       "dropTitle": "CSR-Dateien hier ablegen",
       "dropDesc": "Unterstützt PEM und DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>",
       "trySampleCsr": "Beispiel-CSR ausprobieren",
