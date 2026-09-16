@@ -479,8 +479,17 @@
       "sampleAlreadyLoaded": "Ten przykładowy łańcuch jest już załadowany"
     },
     "crl": {
+      "eyebrow": "Status odwołania i RFC 5280",
       "title": "Inspektor <0>listy odwołanych certyfikatów (CRL)</0>",
-      "description": "Sprawdzaj pliki <0>X.509</0> <1>CRL</1> (.crl). Sprawdzaj metadane wystawcy, terminy ważności kolejnych aktualizacji oraz przeszukuj wpisy odwołanych certyfikatów i kody powodów.",
+      "description": "Przetwarzaj listy odwołanych certyfikatów RFC 5280 w kodowaniu PEM lub DER. Weryfikuj ważność wystawcy, sprawdzaj terminy kolejnych aktualizacji oraz przeszukuj odwołane numery seryjne i kody powodów.",
+      "descP1": "Przetwarzaj listy odwołanych certyfikatów RFC 5280 w kodowaniu PEM lub DER.",
+      "descP2": "Weryfikuj ważność wystawcy, sprawdzaj terminy kolejnych aktualizacji oraz przeszukuj odwołane numery seryjne i kody powodów.",
+      "pills": {
+        "rfc5280": "Parser RFC 5280",
+        "pemDer": "Dekodery PEM i DER",
+        "serialLookup": "Wyszukiwanie odwołanych numerów seryjnych",
+        "updateWindow": "Audyt terminów aktualizacji"
+      },
       "expiredBadge": "Wygasła lista CRL",
       "activeBadge": "Aktywna lista CRL",
       "revokedCount": "{{count}} odwołanych certyfikatów",

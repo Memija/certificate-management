@@ -471,8 +471,17 @@
       "sampleAlreadyLoaded": "Contoh rantai ini sudah dimuat"
     },
     "crl": {
+      "eyebrow": "Status Pencabutan & RFC 5280",
       "title": "Inspektur <0>Daftar Pencabutan Sertifikat (CRL)</0>",
-      "description": "Periksa berkas <0>X.509</0> <1>CRL</1> (.crl). Periksa metadata penerbit, tanggal validitas pembaruan berikutnya, dan cari entri sertifikat yang dicabut beserta kode alasannya.",
+      "description": "Urai daftar pencabutan RFC 5280 dalam pengodean PEM atau DER. Verifikasi validitas penerbit, periksa jendela pembaruan berikutnya, dan cari nomor seri yang dicabut beserta kode alasannya.",
+      "descP1": "Urai daftar pencabutan RFC 5280 dalam pengodean PEM atau DER.",
+      "descP2": "Verifikasi validitas penerbit, periksa jendela pembaruan berikutnya, dan cari nomor seri yang dicabut beserta kode alasannya.",
+      "pills": {
+        "rfc5280": "Pengurai RFC 5280",
+        "pemDer": "Dekoder PEM & DER",
+        "serialLookup": "Pencarian Seri yang Dicabut",
+        "updateWindow": "Audit Jendela Pembaruan"
+      },
       "expiredBadge": "CRL Kedaluwarsa",
       "activeBadge": "CRL Aktif",
       "revokedCount": "{{count}} Sertifikat Dicabut",

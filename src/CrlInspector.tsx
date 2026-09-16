@@ -868,7 +868,13 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
               <span>{t('app.crl.eyebrow', 'Revocation Status & RFC 5280')}</span>
             </div>
             <h2 className="premium-header-title">
-              <Trans i18nKey="app.crl.title" components={[<LearningTerm key="crl" termId="crl">{""}</LearningTerm>]} />
+              <Trans
+                i18nKey="app.crl.title"
+                defaults="<0>Certificate Revocation List (CRL)</0> Inspector"
+                components={[
+                  <LearningTerm key="0" termId="crl">Certificate Revocation List (CRL)</LearningTerm>
+                ]}
+              />
             </h2>
             <div className="premium-header-desc">
               <span>{t('app.crl.descP1', 'Parse RFC 5280 revocation lists in PEM or DER encoding.')}</span>
