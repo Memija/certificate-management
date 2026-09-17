@@ -361,15 +361,23 @@
         "selectCert": "Pilih sertifikat dari daftar",
         "dropFilesHere": "Jatuhkan file sertifikat di sini",
         "orClickToBrowse": "atau klik untuk menelusuri",
-        "title": "Inspektur Trust Store",
+        "eyebrow": "Inspeksi KeyStore & Arsip",
+        "title": "Inspektur Trust Store & Keystore",
         "parsingFiles": "Mem-parsing file…",
         "loadedFiles": "File yang Dimuat",
         "clearAll": "Bersihkan Semua",
         "decryptionFailed": "Dekripsi gagal.",
         "unknownError": "Kesalahan tidak dikenal",
         "subtitle": {
-          "p1": "Muat berkas sertifikat atau keystore apa pun untuk memeriksa isinya.",
-          "p2": "100% sisi klien, tidak ada yang keluar dari komputer Anda."
+          "p1": "Periksa sertifikat X.509, arsip PKCS#12, Java KeyStore, dan bundel PEM/DER.",
+          "p2": "Penguraian kriptografis sisi klien: kunci privat dan sertifikat tidak pernah meninggalkan browser Anda."
+        },
+        "pills": {
+          "inMemory": "Penguraian Dalam Memori",
+          "pkcs12": "PKCS#12 / PFX",
+          "jks": "Java KeyStore (JKS)",
+          "pemBundle": "Bundel PEM",
+          "derPkcs7": "DER & PKCS#7"
         },
         "incorrectPassword": "Kata sandi salah.",
         "pkcs12RequiresPassword": "Berkas PKCS#12 ini memerlukan kata sandi.",
@@ -400,6 +408,7 @@
       "serialNumber": "Nomor Seri",
       "validity": "Masa Berlaku",
       "publicKey": "Kunci Publik",
+      "sha1": "Sidik Jari SHA-1",
       "sha256": "Sidik Jari SHA-256",
       "keyUsages": "Penggunaan Kunci",
       "noneSpecified": "Tidak ditentukan",
@@ -440,8 +449,17 @@
       "missingParent": "Induk Hilang",
       "key": "Kunci",
       "signsAndIssues": "Menandatangani & Menerbitkan",
-      "title": "Grafik Visual & Validator Rantai Sertifikat",
-      "subtitle": "Rekonstruksi dan verifikasi secara kriptografis hierarki PKI multi-tingkat (CA Root → Perantara → Leaf) dalam diagram pohon visual interaktif.",
+      "eyebrow": "Validasi Jalur & Hierarki",
+      "title": "Visualisator & Validator Rantai Sertifikat",
+      "subtitle": "Rekonstruksi jalur sertifikasi dari entitas akhir ke jangkar kepercayaan. Verifikasi tanda tangan kriptografis, periksa Authority Key Identifier, dan deteksi sertifikat perantara yang hilang.",
+      "subtitleP1": "Rekonstruksi jalur sertifikasi dari entitas akhir ke jangkar kepercayaan.",
+      "subtitleP2": "Verifikasi tanda tangan kriptografis, periksa Authority Key Identifier, dan deteksi sertifikat perantara yang hilang.",
+      "pills": {
+        "sigVerify": "Verifikasi Tanda Tangan",
+        "treeGraph": "Grafik Pohon Interaktif",
+        "rootAnchor": "Deteksi Jangkar Root",
+        "brokenChain": "Isolasi Rantai Terputus"
+      },
       "visualGraph": "Grafik Visual",
       "classicStack": "Tumpukan Klasik",
       "addCerts": "Tambah Sertifikat",
@@ -515,6 +533,7 @@
       "tabsLabel": "CRL",
       "addCrl": "Tambah CRL",
       "sampleTag": "Contoh",
+      "sampleBadge": "Contoh CRL",
       "loadedCrls": "CRL Termuat ({{count}})",
       "addMore": "+ Tambah Lagi",
       "itemSummary": "{{count}} dicabut · {{status}}",
@@ -556,7 +575,18 @@
       }
     },
     "csr": {
+      "eyebrow": "Inspeksi Permintaan PKCS#10",
+      "title": "Inspektur <0>Permintaan Penandatanganan Sertifikat (CSR)</0>",
+      "description": "Verifikasi tanda tangan mandiri yang disematkan, periksa atribut Subject DN dan ekstensi SAN yang diminta, atau ubah dan tandatangani ulang di tempat sebelum pengiriman ke CA.",
+      "descP1": "Verifikasi tanda tangan mandiri yang disematkan, periksa atribut Subject DN dan ekstensi SAN yang diminta.",
+      "descP2": "Penguraian kriptografis sisi klien: ubah dan tandatangani ulang di tempat tanpa mengekspos kunci pribadi.",
       "banner": "<0><1>CSR</1> Inspektur</0>: Periksa Permintaan Penandatanganan Sertifikat (CSR) sebelum mengirimkannya ke CA. Memverifikasi tanda tangan mandiri, menampilkan semua ekstensi yang diminta dan bidang subjek. <2>100% offline</2> · tidak ada data yang keluar dari perangkat Anda.",
+      "pills": {
+        "selfSig": "Verifikasi Tanda Tangan Mandiri",
+        "rfc2986": "PKCS#10 RFC 2986",
+        "editor": "Editor Interaktif & Tanda Tangani Ulang",
+        "offline": "100% Penguraian Offline"
+      },
       "dropTitle": "Letakkan file CSR di sini",
       "dropDesc": "Mendukung PEM dan DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>",
       "trySampleCsr": "Coba Contoh CSR",

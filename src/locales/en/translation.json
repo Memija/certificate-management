@@ -408,6 +408,7 @@
       "serialNumber": "Serial Number",
       "validity": "Validity",
       "publicKey": "Public Key",
+      "sha1": "SHA-1 Fingerprint",
       "sha256": "SHA-256 Fingerprint",
       "keyUsages": "Key Usages",
       "noneSpecified": "None specified",

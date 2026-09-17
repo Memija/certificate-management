@@ -408,6 +408,7 @@
       "serialNumber": "Seriennummer",
       "validity": "Gültigkeit",
       "publicKey": "Öffentlicher Schlüssel",
+      "sha1": "SHA-1-Fingerabdruck",
       "sha256": "SHA-256-Fingerabdruck",
       "keyUsages": "Schlüsselverwendungen",
       "noneSpecified": "Nicht angegeben",

@@ -367,15 +367,23 @@
         "selectCert": "Wybierz certyfikat z listy",
         "dropFilesHere": "Upuść pliki certyfikatów tutaj",
         "orClickToBrowse": "lub kliknij, aby przeglądać",
-        "title": "Inspektor Trust Store",
+        "eyebrow": "Inspekcja KeyStore i archiwów",
+        "title": "Inspektor Trust Store i KeyStore",
         "parsingFiles": "Analizowanie plików…",
         "loadedFiles": "Załadowane pliki",
         "clearAll": "Wyczyść wszystko",
         "decryptionFailed": "Odszyfrowanie nie powiodło się.",
         "unknownError": "Nieznany błąd",
         "subtitle": {
-          "p1": "Załaduj dowolny plik certyfikatu lub magazyn kluczy (keystore), aby sprawdzić jego zawartość.",
-          "p2": "100% po stronie klienta, nic nie opuszcza Twojego komputera."
+          "p1": "Zbadaj certyfikaty X.509, archiwa PKCS#12, Java KeyStore i pakiety PEM/DER.",
+          "p2": "Kryptograficzne przetwarzanie po stronie klienta: klucze prywatne i certyfikaty nigdy nie opuszczają Twojej przeglądarki."
+        },
+        "pills": {
+          "inMemory": "Przetwarzanie w pamięci",
+          "pkcs12": "PKCS#12 / PFX",
+          "jks": "Java KeyStore (JKS)",
+          "pemBundle": "Pakiety PEM",
+          "derPkcs7": "DER i PKCS#7"
         },
         "incorrectPassword": "Nieprawidłowe hasło.",
         "pkcs12RequiresPassword": "Ten plik PKCS#12 wymaga hasła.",
@@ -406,6 +414,7 @@
       "serialNumber": "Numer seryjny",
       "validity": "Ważność",
       "publicKey": "Klucz publiczny",
+      "sha1": "Odcisk palca SHA-1",
       "sha256": "Odcisk palca SHA-256",
       "keyUsages": "Użycie klucza",
       "noneSpecified": "Nie określono",
@@ -446,8 +455,17 @@
       "missingParent": "Brak nadrzędnego",
       "key": "Klucz",
       "signsAndIssues": "Podpisuje i wystawia",
-      "title": "Wizualny graf i walidator łańcucha certyfikatów",
-      "subtitle": "Rekonstruuj i weryfikuj kryptograficznie wielopoziomowe hierarchie PKI (Główny CA → Pośredni → Końcowy) na interaktywnym diagramie drzewa.",
+      "eyebrow": "Walidacja ścieżki i hierarchia",
+      "title": "Wizualizator i walidator łańcucha certyfikatów",
+      "subtitle": "Zrekonstruuj ścieżki certyfikacji od jednostki końcowej do punktu zaufania. Weryfikuj podpisy kryptograficzne, sprawdzaj identyfikatory kluczy urzędu i wykrywaj brakujące certyfikaty pośrednie.",
+      "subtitleP1": "Zrekonstruuj ścieżki certyfikacji od jednostki końcowej do punktu zaufania.",
+      "subtitleP2": "Weryfikuj podpisy kryptograficzne, sprawdzaj identyfikatory kluczy urzędu i wykrywaj brakujące certyfikaty pośrednie.",
+      "pills": {
+        "sigVerify": "Weryfikacja podpisu",
+        "treeGraph": "Interaktywny graf drzewa",
+        "rootAnchor": "Wykrywanie punktu zaufania",
+        "brokenChain": "Izolacja przerwanego łańcucha"
+      },
       "visualGraph": "Graf wizualny",
       "classicStack": "Klasyczny widok",
       "addCerts": "Dodaj certyfikaty",
@@ -523,6 +541,7 @@
       "tabsLabel": "Listy CRL",
       "addCrl": "Dodaj CRL",
       "sampleTag": "Przykładowa",
+      "sampleBadge": "Przykładowy CRL",
       "loadedCrls": "Załadowane listy CRL ({{count}})",
       "addMore": "+ Dodaj więcej",
       "itemSummary": "{{count}} odwołanych · {{status}}",
@@ -564,7 +583,18 @@
       }
     },
     "csr": {
+      "eyebrow": "Inspekcja żądań PKCS#10",
+      "title": "<0>Inspektor żądań podpisania certyfikatu (CSR)</0>",
+      "description": "Weryfikuj wbudowane własne podpisy, sprawdzaj atrybuty podmiotu i żądane rozszerzenia SAN lub edytuj i ponownie podpisuj na miejscu przed wysłaniem do CA.",
+      "descP1": "Weryfikuj wbudowane własne podpisy, sprawdzaj atrybuty podmiotu i żądane rozszerzenia SAN.",
+      "descP2": "Kryptograficzne przetwarzanie po stronie klienta: modyfikuj i podpisuj ponownie na miejscu bez ujawniania kluczy prywatnych.",
       "banner": "<0><1>CSR</1> Inspektor</0>: Sprawdź żądania podpisania certyfikatu (CSR) przed wysłaniem ich do urzędu certyfikacji (CA). Weryfikuje własny podpis, pokazuje wszystkie żądane rozszerzenia i pola podmiotu. <2>100% offline</2> · żadne dane nie opuszczają Twojego urządzenia.",
+      "pills": {
+        "selfSig": "Weryfikacja własnego podpisu",
+        "rfc2986": "PKCS#10 RFC 2986",
+        "editor": "Interaktywny edytor i ponowne podpisywanie",
+        "offline": "100% przetwarzanie offline"
+      },
       "dropTitle": "Upuść pliki CSR tutaj",
       "dropDesc": "Obsługuje formaty PEM i DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>",
       "trySampleCsr": "Wypróbuj przykładowe CSR",
