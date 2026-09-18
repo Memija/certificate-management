@@ -690,6 +690,32 @@
           "timeStamping": "Time Stamping"
         }
       }
+    },
+    "keyMatcher": {
+      "title": "Key Pair Modulus Matcher",
+      "subtitle": "Paste a Certificate (or CSR) and a Private Key in PEM format to mathematically verify if their RSA public key moduli match.",
+      "description": "Paste a Certificate (or CSR) and a Private Key in PEM format to mathematically verify if their RSA public key moduli match.",
+      "tryExamples": "Try Test Examples:",
+      "clearInputs": "Clear both inputs",
+      "certOrCsr": "Certificate or CSR (PEM)",
+      "privateKey": "Private Key (PEM)",
+      "verifyMatch": "Verify Modulus Match",
+      "modulusSha256": "Modulus SHA-256:",
+      "matchSuccess": "The Private Key matches the Certificate/CSR!",
+      "matchFailed": "The Private Key DOES NOT match the Certificate/CSR.",
+      "matchSuccessDesc": "Both the public key modulus in the certificate/CSR and the private key modulus match bit-for-bit.",
+      "matchFailedDesc": "The cryptographic modulus differs. This private key cannot be used with this certificate.",
+      "comparisonTitle": "Cryptographic Modulus Comparison",
+      "certHash": "Cert/CSR Hash:",
+      "keyHash": "Private Key Hash:",
+      "bitLength": "Bit Length:",
+      "validCsrParsed": "Valid CSR parsed (RSA {{bits}} bits).",
+      "validCertParsed": "Valid Certificate parsed (RSA {{bits}} bits).",
+      "validKeyParsed": "Valid RSA Private Key parsed ({{bits}} bits).",
+      "rsaOnlySupported": "Only RSA keys are currently supported for matching.",
+      "invalidPem": "Invalid PEM formatted message.",
+      "noRsaInCsr": "No RSA public key found in CSR.",
+      "noRsaInCert": "No RSA public key found in Certificate."
     }
   },
   "common": {

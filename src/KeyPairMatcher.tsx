@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Key, Shield, CheckCircle, XCircle, FileKey, Sparkles, Trash2, Hash } from 'lucide-react';
 import * as forge from 'node-forge';
 import { KEY_MATCHER_PRESETS } from './utils/keyMatcherSamples';
@@ -22,17 +23,41 @@ function computeModulusSha256(hex: string): string {
 }
 
 export function KeyPairMatcher() {
+  const { t } = useTranslation();
   const [certInput, setCertInput] = useState('');
   const [keyInput, setKeyInput] = useState('');
   const [activePreset, setActivePreset] = useState<string | null>(null);
   
   const [certStatus, setCertStatus] = useState<string | null>(null);
+  const [certIsError, setCertIsError] = useState(false);
   const [keyStatus, setKeyStatus] = useState<string | null>(null);
+  const [keyIsError, setKeyIsError] = useState(false);
   const [certInfo, setCertInfo] = useState<KeyModulusInfo | null>(null);
   const [keyInfo, setKeyInfo] = useState<KeyModulusInfo | null>(null);
 
   const [matchResult, setMatchResult] = useState<boolean | null>(null);
-  const [matchMessage, setMatchMessage] = useState('');
+
+  const formatErrorMessage = (rawMsg?: string) => {
+    const msg = rawMsg || '';
+    if (
+      !msg ||
+      msg.includes('Invalid PEM formatted message') ||
+      msg.includes('header') ||
+      msg.includes('base64') ||
+      msg.includes('ASN.1') ||
+      msg.includes('DER') ||
+      msg.includes('Cannot read')
+    ) {
+      return t('app.keyMatcher.invalidPem', 'Invalid PEM formatted message.');
+    }
+    if (msg.includes('No RSA public key found in CSR')) {
+      return t('app.keyMatcher.noRsaInCsr', 'No RSA public key found in CSR.');
+    }
+    if (msg.includes('No RSA public key found in Certificate')) {
+      return t('app.keyMatcher.noRsaInCert', 'No RSA public key found in Certificate.');
+    }
+    return msg;
+  };
 
   const executeMatch = (certText: string, keyText: string) => {
     let certModulus = '';
@@ -41,7 +66,9 @@ export function KeyPairMatcher() {
     let kInfo: KeyModulusInfo | null = null;
     
     setCertStatus(null);
+    setCertIsError(false);
     setKeyStatus(null);
+    setKeyIsError(false);
     setCertInfo(null);
     setKeyInfo(null);
     setMatchResult(null);
@@ -60,9 +87,10 @@ export function KeyPairMatcher() {
             sha256: computeModulusSha256(certModulus),
           };
           setCertInfo(cInfo);
-          setCertStatus(`Valid CSR parsed (RSA ${bits} bits).`);
+          setCertIsError(false);
+          setCertStatus(t('app.keyMatcher.validCsrParsed', { bits, defaultValue: `Valid CSR parsed (RSA ${bits} bits).` }));
         } else {
-          throw new Error('No RSA public key found in CSR.');
+          throw new Error(t('app.keyMatcher.noRsaInCsr', 'No RSA public key found in CSR.'));
         }
       } else {
         const cert = forge.pki.certificateFromPem(certText);
@@ -76,13 +104,15 @@ export function KeyPairMatcher() {
             sha256: computeModulusSha256(certModulus),
           };
           setCertInfo(cInfo);
-          setCertStatus(`Valid Certificate parsed (RSA ${bits} bits).`);
+          setCertIsError(false);
+          setCertStatus(t('app.keyMatcher.validCertParsed', { bits, defaultValue: `Valid Certificate parsed (RSA ${bits} bits).` }));
         } else {
-          throw new Error('No RSA public key found in Certificate.');
+          throw new Error(t('app.keyMatcher.noRsaInCert', 'No RSA public key found in Certificate.'));
         }
       }
     } catch (e: any) {
-      setCertStatus(`Error: ${e.message}`);
+      setCertIsError(true);
+      setCertStatus(`${t('common.error', 'Error')}: ${formatErrorMessage(e?.message)}`);
       return;
     }
 
@@ -99,21 +129,21 @@ export function KeyPairMatcher() {
           sha256: computeModulusSha256(keyModulus),
         };
         setKeyInfo(kInfo);
-        setKeyStatus(`Valid RSA Private Key parsed (${bits} bits).`);
+        setKeyIsError(false);
+        setKeyStatus(t('app.keyMatcher.validKeyParsed', { bits, defaultValue: `Valid RSA Private Key parsed (${bits} bits).` }));
       } else {
-        throw new Error('Only RSA keys are currently supported for matching.');
+        throw new Error(t('app.keyMatcher.rsaOnlySupported', 'Only RSA keys are currently supported for matching.'));
       }
     } catch (e: any) {
-      setKeyStatus(`Error: ${e.message}`);
+      setKeyIsError(true);
+      setKeyStatus(`${t('common.error', 'Error')}: ${formatErrorMessage(e?.message)}`);
       return;
     }
 
     if (certModulus === keyModulus) {
       setMatchResult(true);
-      setMatchMessage('The Private Key matches the Certificate/CSR!');
     } else {
       setMatchResult(false);
-      setMatchMessage('The Private Key DOES NOT match the Certificate/CSR.');
     }
   };
 
@@ -133,11 +163,12 @@ export function KeyPairMatcher() {
     setCertInput('');
     setKeyInput('');
     setCertStatus(null);
+    setCertIsError(false);
     setKeyStatus(null);
+    setKeyIsError(false);
     setCertInfo(null);
     setKeyInfo(null);
     setMatchResult(null);
-    setMatchMessage('');
   };
 
   return (
@@ -145,10 +176,10 @@ export function KeyPairMatcher() {
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{ marginBottom: '1.5rem' }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            Key Pair Modulus Matcher
+            {t('app.keyMatcher.title', 'Key Pair Modulus Matcher')}
           </h2>
           <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
-            Paste a Certificate (or CSR) and a Private Key in PEM format to mathematically verify if their RSA public key moduli match.
+            {t('app.keyMatcher.subtitle', 'Paste a Certificate (or CSR) and a Private Key in PEM format to mathematically verify if their RSA public key moduli match.')}
           </p>
         </div>
 
@@ -167,7 +198,7 @@ export function KeyPairMatcher() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginRight: '0.25rem' }}>
             <Sparkles size={15} style={{ color: 'var(--accent-color)' }} />
-            Try Test Examples:
+            {t('app.keyMatcher.tryExamples', 'Try Test Examples:')}
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', flex: 1 }}>
@@ -204,10 +235,10 @@ export function KeyPairMatcher() {
               className="chain-sample-pill"
               onClick={handleClear}
               style={{ color: 'var(--danger-color)' }}
-              title="Clear both inputs"
+              title={t('app.keyMatcher.clearInputs', 'Clear both inputs')}
             >
               <Trash2 size={13} />
-              Clear
+              {t('common.clear', 'Clear')}
             </button>
           )}
         </div>
@@ -217,7 +248,7 @@ export function KeyPairMatcher() {
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>
-                <Shield size={18} style={{ color: 'var(--accent-color)' }} /> Certificate or CSR (PEM)
+                <Shield size={18} style={{ color: 'var(--accent-color)' }} /> {t('app.keyMatcher.certOrCsr', 'Certificate or CSR (PEM)')}
               </h3>
               {certInfo && (
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.12)', color: 'var(--accent-color)' }}>
@@ -237,14 +268,14 @@ export function KeyPairMatcher() {
               style={{ height: '240px', fontSize: '0.82rem' }}
             />
             {certStatus && (
-              <div style={{ marginTop: '0.6rem', fontSize: '0.82rem', fontWeight: 500, color: certStatus.startsWith('Error') ? 'var(--danger-color)' : 'var(--success-color)' }}>
+              <div style={{ marginTop: '0.6rem', fontSize: '0.82rem', fontWeight: 500, color: certIsError ? 'var(--danger-color)' : 'var(--success-color)' }}>
                 {certStatus}
               </div>
             )}
             {certInfo && (
               <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: 'var(--input-bg)', borderRadius: '6px', fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.2rem', color: 'var(--text-primary)', fontWeight: 600 }}>
-                  <Hash size={12} /> Modulus SHA-256:
+                  <Hash size={12} /> {t('app.keyMatcher.modulusSha256', 'Modulus SHA-256:')}
                 </div>
                 <div style={{ wordBreak: 'break-all' }}>{certInfo.sha256}</div>
               </div>
@@ -255,7 +286,7 @@ export function KeyPairMatcher() {
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>
-                <FileKey size={18} style={{ color: 'var(--warning-color)' }} /> Private Key (PEM)
+                <FileKey size={18} style={{ color: 'var(--warning-color)' }} /> {t('app.keyMatcher.privateKey', 'Private Key (PEM)')}
               </h3>
               {keyInfo && (
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'rgba(234, 179, 8, 0.12)', color: 'var(--warning-color)' }}>
@@ -275,14 +306,14 @@ export function KeyPairMatcher() {
               style={{ height: '240px', fontSize: '0.82rem' }}
             />
             {keyStatus && (
-              <div style={{ marginTop: '0.6rem', fontSize: '0.82rem', fontWeight: 500, color: keyStatus.startsWith('Error') ? 'var(--danger-color)' : 'var(--success-color)' }}>
+              <div style={{ marginTop: '0.6rem', fontSize: '0.82rem', fontWeight: 500, color: keyIsError ? 'var(--danger-color)' : 'var(--success-color)' }}>
                 {keyStatus}
               </div>
             )}
             {keyInfo && (
               <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: 'var(--input-bg)', borderRadius: '6px', fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.2rem', color: 'var(--text-primary)', fontWeight: 600 }}>
-                  <Hash size={12} /> Modulus SHA-256:
+                  <Hash size={12} /> {t('app.keyMatcher.modulusSha256', 'Modulus SHA-256:')}
                 </div>
                 <div style={{ wordBreak: 'break-all' }}>{keyInfo.sha256}</div>
               </div>
@@ -292,7 +323,7 @@ export function KeyPairMatcher() {
 
         <div style={{ textAlign: 'center', marginTop: '2rem' }}>
           <button className="btn" onClick={handleMatch} disabled={!certInput || !keyInput} style={{ height: '44px', padding: '0 2rem' }}>
-            <Key size={18} /> Verify Modulus Match
+            <Key size={18} /> {t('app.keyMatcher.verifyMatch', 'Verify Modulus Match')}
           </button>
         </div>
 
@@ -312,12 +343,14 @@ export function KeyPairMatcher() {
               )}
             </div>
             <h3 style={{ color: matchResult ? 'var(--success-color)' : 'var(--danger-color)', fontSize: '1.3rem', margin: '0 0 0.5rem 0' }}>
-              {matchMessage}
+              {matchResult
+                ? t('app.keyMatcher.matchSuccess', 'The Private Key matches the Certificate/CSR!')
+                : t('app.keyMatcher.matchFailed', 'The Private Key DOES NOT match the Certificate/CSR.')}
             </h3>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 1.5rem 0', fontSize: '0.9rem' }}>
               {matchResult
-                ? 'Both the public key modulus in the certificate/CSR and the private key modulus match bit-for-bit.'
-                : 'The cryptographic modulus differs. This private key cannot be used with this certificate.'}
+                ? t('app.keyMatcher.matchSuccessDesc', 'Both the public key modulus in the certificate/CSR and the private key modulus match bit-for-bit.')
+                : t('app.keyMatcher.matchFailedDesc', 'The cryptographic modulus differs. This private key cannot be used with this certificate.')}
             </p>
 
             {/* Cryptographic Comparison Details */}
@@ -335,18 +368,18 @@ export function KeyPairMatcher() {
                 }}
               >
                 <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.6rem' }}>
-                  Cryptographic Modulus Comparison
+                  {t('app.keyMatcher.comparisonTitle', 'Cryptographic Modulus Comparison')}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '0.4rem', fontFamily: 'monospace' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Cert/CSR Hash:</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{t('app.keyMatcher.certHash', 'Cert/CSR Hash:')}</span>
                   <span style={{ wordBreak: 'break-all', color: matchResult ? 'var(--success-color)' : 'var(--danger-color)' }}>
                     {certInfo.sha256}
                   </span>
-                  <span style={{ color: 'var(--text-secondary)' }}>Private Key Hash:</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{t('app.keyMatcher.keyHash', 'Private Key Hash:')}</span>
                   <span style={{ wordBreak: 'break-all', color: matchResult ? 'var(--success-color)' : 'var(--danger-color)' }}>
                     {keyInfo.sha256}
                   </span>
-                  <span style={{ color: 'var(--text-secondary)' }}>Bit Length:</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{t('app.keyMatcher.bitLength', 'Bit Length:')}</span>
                   <span style={{ color: 'var(--text-primary)' }}>
                     {certInfo.bits} bits (Cert) vs {keyInfo.bits} bits (Key)
                   </span>

@@ -690,6 +690,32 @@
           "timeStamping": "Stempel Waktu"
         }
       }
+    },
+    "keyMatcher": {
+      "title": "Pencocok Modulus Pasangan Kunci",
+      "subtitle": "Tempelkan Sertifikat (atau CSR) dan Kunci Privat dalam format PEM untuk memverifikasi secara matematis apakah modulus kunci publik RSA cocok.",
+      "description": "Tempelkan Sertifikat (atau CSR) dan Kunci Privat dalam format PEM untuk memverifikasi secara matematis apakah modulus kunci publik RSA cocok.",
+      "tryExamples": "Coba Contoh Uji:",
+      "clearInputs": "Bersihkan kedua input",
+      "certOrCsr": "Sertifikat atau CSR (PEM)",
+      "privateKey": "Kunci Privat (PEM)",
+      "verifyMatch": "Verifikasi Kecocokan Modulus",
+      "modulusSha256": "Modulus SHA-256:",
+      "matchSuccess": "Kunci Privat cocok dengan Sertifikat/CSR!",
+      "matchFailed": "Kunci Privat TIDAK cocok dengan Sertifikat/CSR.",
+      "matchSuccessDesc": "Modulus kunci publik pada sertifikat/CSR dan modulus kunci privat cocok bit demi bit.",
+      "matchFailedDesc": "Modulus kriptografi berbeda. Kunci privat ini tidak dapat digunakan dengan sertifikat ini.",
+      "comparisonTitle": "Perbandingan Modulus Kriptografi",
+      "certHash": "Hash Sertifikat/CSR:",
+      "keyHash": "Hash Kunci Privat:",
+      "bitLength": "Panjang Bit:",
+      "validCsrParsed": "CSR valid berhasil diurai (RSA {{bits}} bit).",
+      "validCertParsed": "Sertifikat valid berhasil diurai (RSA {{bits}} bit).",
+      "validKeyParsed": "Kunci Privat RSA valid berhasil diurai ({{bits}} bit).",
+      "rsaOnlySupported": "Saat ini hanya kunci RSA yang didukung untuk pencocokan.",
+      "invalidPem": "Pesan berformat PEM tidak valid.",
+      "noRsaInCsr": "Kunci publik RSA tidak ditemukan dalam CSR.",
+      "noRsaInCert": "Kunci publik RSA tidak ditemukan dalam Sertifikat."
     }
   },
   "common": {

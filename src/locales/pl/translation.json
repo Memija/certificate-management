@@ -73,9 +73,9 @@
       "whyReplacedTitle": "Dlaczego certyfikaty z 2011 roku zostały wymienione?",
       "whyReplacedDesc": "Oryginalne certyfikaty <0>Microsoft Corporation UEFI CA 2011</0> i <1>Windows Production PCA 2011</1> wygasają w 2026 roku. Aby zapobiec awariom milionów urządzeń podczas rozruchu, firma Microsoft udostępniła zastępcze certyfikaty „2023” za pośrednictwem usługi Windows Update i aktualizacji oprogramowania układowego. Stare certyfikaty w bezpieczny sposób pozostaną wygasłe, a nowe przejmą ich funkcje.",
       "impactWindowsTitle": "Wpływ Windows Production PCA:",
-      "impactWindowsDesc": "Ten certyfikat weryfikuje standardowy program ładujący system Microsoft Windows. Bez niego standardowe instalacje systemu Windows OS odmówią uruchomienia w ramach Bezpiecznego Rozruchu.",
+      "impactWindowsDesc": "Ten certyfikat weryfikuje standardowy program ładujący system Microsoft Windows. Bez niego standardowe instalacje systemu Windows OS odmówią uruchomienia w trybie Secure Boot.",
       "impactUefiTitle": "Wpływ Microsoft UEFI CA:",
-      "impactUefiDesc": "Certyfikat ten zatwierdza zewnętrzne programy ładujące (np. dystrybucje systemu Linux) i oprogramowanie wbudowane Opcjonalnych Pamięci ROM w urządzeniach PCIe (np. kartach graficznych). Bez niego nie można uruchomić systemu Linux, a karta graficzna może nie zainicjować się podczas bezpiecznego uruchamiania.",
+      "impactUefiDesc": "Certyfikat ten zatwierdza zewnętrzne programy ładujące (np. dystrybucje systemu Linux) i oprogramowanie wbudowane Opcjonalnych Pamięci ROM w urządzeniach PCIe (np. kartach graficznych). Bez niego nie można uruchomić systemu Linux, a karta graficzna może nie zainicjować się podczas rozruchu w trybie Secure Boot.",
       "functionalTitle": "Czy funkcja Secure Boot działa?",
       "windowsBoot": "Rozruch systemu Windows:",
       "thirdPartyBoot": "System operacyjny i sprzęt innych firm:",
@@ -85,7 +85,7 @@
       "warnExpiringSoon": "Certyfikat wygaśnie wkrótce (w ciągu 30 dni): {{subject}}",
       "critNoValidDb": "Nie znaleziono ważnych, niewygasłych certyfikatów w Bazie podpisów (db). Uruchomienie dowolnego systemu operacyjnego na Twoim systemie może się nie powieść.",
       "critExpiredWindowsPca": "Certyfikat Windows Production PCA wygasł i nie znaleziono dla niego ważnego zastępstwa.",
-      "warnMissingWindowsPca": "Nie udało się znaleźć ważnego certyfikatu Windows Production PCA. Jeśli korzystasz z systemu Windows, system może się nie uruchomić, jeśli polega on wyłącznie na standardowych kluczach Bezpiecznego Rozruchu.",
+      "warnMissingWindowsPca": "Nie udało się znaleźć ważnego certyfikatu Windows Production PCA. Jeśli korzystasz z systemu Windows, system może się nie uruchomić, jeśli polega on wyłącznie na standardowych kluczach Secure Boot.",
       "critExpiredUefiCa": "Certyfikat Microsoft/Windows UEFI CA wygasł i nie znaleziono dla niego ważnego zastępstwa."
     },
     "certDetails": {
@@ -698,6 +698,32 @@
           "timeStamping": "Znakowanie czasem"
         }
       }
+    },
+    "keyMatcher": {
+      "title": "Dopasowywanie Modułów Par Kluczy",
+      "subtitle": "Wklej certyfikat (lub CSR) i klucz prywatny w formacie PEM, aby matematycznie zweryfikować, czy ich moduły klucza publicznego RSA są zgodne.",
+      "description": "Wklej certyfikat (lub CSR) i klucz prywatny w formacie PEM, aby matematycznie zweryfikować, czy ich moduły klucza publicznego RSA są zgodne.",
+      "tryExamples": "Wypróbuj przykłady testowe:",
+      "clearInputs": "Wyczyść oba pola",
+      "certOrCsr": "Certyfikat lub CSR (PEM)",
+      "privateKey": "Klucz prywatny (PEM)",
+      "verifyMatch": "Sprawdź zgodność modułów",
+      "modulusSha256": "Moduł SHA-256:",
+      "matchSuccess": "Klucz prywatny pasuje do certyfikatu/CSR!",
+      "matchFailed": "Klucz prywatny NIE pasuje do certyfikatu/CSR.",
+      "matchSuccessDesc": "Zarówno moduł klucza publicznego w certyfikacie/CSR, jak i moduł klucza prywatnego są bitowo identyczne.",
+      "matchFailedDesc": "Moduł kryptograficzny się różni. Ten klucz prywatny nie może być używany z tym certyfikatem.",
+      "comparisonTitle": "Kryptograficzne porównanie modułów",
+      "certHash": "Skrót certyfikatu/CSR:",
+      "keyHash": "Skrót klucza prywatnego:",
+      "bitLength": "Długość w bitach:",
+      "validCsrParsed": "Poprawnie sparsowano CSR (RSA {{bits}} bitów).",
+      "validCertParsed": "Poprawnie sparsowano certyfikat (RSA {{bits}} bitów).",
+      "validKeyParsed": "Poprawnie sparsowano klucz prywatny RSA ({{bits}} bitów).",
+      "rsaOnlySupported": "Obecnie do dopasowywania obsługiwane są tylko klucze RSA.",
+      "invalidPem": "Nieprawidłowo sformatowana wiadomość PEM.",
+      "noRsaInCsr": "Nie znaleziono klucza publicznego RSA w CSR.",
+      "noRsaInCert": "Nie znaleziono klucza publicznego RSA w certyfikacie."
     }
   },
   "common": {

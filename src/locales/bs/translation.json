@@ -10,9 +10,9 @@
     },
     "nav": {
       "secure-boot": "Secure Boot NVRAM",
-      "win-cert-store": "Windows Prodavnica Certifikata",
+      "win-cert-store": "Windows Certificate Store",
       "expiry-dashboard": "Nadzorna Ploča Isteka",
-      "trust-store": "Prodavnica Povjerenja",
+      "trust-store": "Trust Store",
       "crl-inspector": "CRL Inspektor",
       "chain-validator": "Validator Lanca",
       "csr-inspector": "CSR Inspektor",
@@ -21,7 +21,7 @@
       "format-converter": "Konverter Formata",
       "tls-scanner": "Udaljeni TLS Skener",
       "ocsp-checker": "OCSP Provjera",
-      "ct-log-search": "Pretraga CT Dnevnika",
+      "ct-log-search": "Pretraga CT logova",
       "education-center": "Edukativni Centar"
     },
     "aria": {
@@ -53,7 +53,7 @@
       "crl": "Lista Opozvanih Certifikata (CRL). Lista digitalnih certifikata koje je opozvalo certifikacijsko tijelo (CA) prije njihovog isteka i kojima se više ne bi trebalo vjerovati.",
       "csr": "Zahtjev za Potpisivanje Certifikata (CSR). Blok kodiranog teksta koji se predaje certifikacijskom tijelu prilikom podnošenja zahtjeva za certifikat. Sadrži informacije o podnosiocu i njegov javni ključ.",
       "ocsp": "Online Protokol o Statusu Certifikata (OCSP). Internet protokol koji se koristi za dobijanje statusa opoziva X.509 digitalnog certifikata, nudeći bržu alternativu CRL-ovima.",
-      "ctlog": "Certificate Transparency (CT) Dnevnik. Kriptografski osiguran, javno provjerljiv zapis izdanih certifikata. Pomaže u otkrivanju pogrešno izdanih ili zlonamjernih certifikata.",
+      "ctlog": "Certificate Transparency (CT) Log. Kriptografski osiguran, javno provjerljiv zapis izdanih certifikata. Pomaže u otkrivanju pogrešno izdanih ili zlonamjernih certifikata.",
       "pem": "Privacy Enhanced Mail (PEM). Uobičajeni format datoteke za pohranu kriptografskih ključeva i certifikata, karakteriziran Base64 kodiranim podacima uokvirenim između '---BEGIN...' i '---END...'.",
       "der": "Distinguished Encoding Rules (DER). Binarni format za certifikate i ključeve, nečitljiv kao običan tekst. Često se koristi u Windows okruženjima ili Java keystore-ovima."
     },
@@ -62,9 +62,9 @@
       "waiting": "Čekanje na Odobrenje Administratora…",
       "checkTaskbar": "Provjerite traku zadataka za Windows UAC upit.",
       "secureBootDesc": "Čitanje <0>Secure Boot NVRAM</0> varijabli zahtijeva administratorska prava. Kliknite ispod da otključate sistemsku bazu podataka. Bićete upitani samo jednom po sesiji.",
-      "localMachineDesc": "Čitanje <0>LocalMachine</0> prodavnice certifikata zahtijeva administratorska prava. Kliknite ispod za povišenje nivoa pristupa - bićete upitani samo jednom po sesiji.",
+      "localMachineDesc": "Čitanje <0>LocalMachine</0> skladišta certifikata zahtijeva administratorska prava. Kliknite ispod za povišenje nivoa pristupa - bićete upitani samo jednom po sesiji.",
       "unlockSecureBoot": "Otključaj Secure Boot Varijable",
-      "unlockLocalMachine": "Otključaj LocalMachine Prodavnicu",
+      "unlockLocalMachine": "Otključaj LocalMachine skladište",
       "checkTaskbarUac": "Molimo provjerite traku zadataka za Windows <0>UAC</0> upit. Ovo moramo uraditi samo jednom kako bismo učitali sigurne varijable u memoriju.",
       "userCanceled": "Otkazali ste upit za Administratora. Ne možemo pristupiti sigurnim podacima bez toga. Molimo pokušajte ponovo ako želite nastaviti."
     },
@@ -278,17 +278,17 @@
       }
     },
     "dashboard": {
-      "subtitle": "Pregled certifikata koji su istekli ili ističu unutar 30 dana u vašim CurrentUser i LocalMachine prodavnicama.",
+      "subtitle": "Pregled certifikata koji su istekli ili ističu unutar 30 dana u vašim CurrentUser i LocalMachine skladištima.",
       "expiredCount": "Istekli Certifikati",
       "expiringSoonCount": "Ističu Uskoro (<30 dana)",
       "totalActionItems": "Ukupno Stavki za Akciju",
       "totalActionItemsSub": "Istekli + Uskoro ističu",
       "refresh": "Osveži",
       "actionItems": "Stavke za Akciju",
-      "scanning": "Skeniranje prodavnica certifikata...",
+      "scanning": "Skeniranje skladišta certifikata...",
       "allClear": "Sve Čisto!",
-      "noCertsDesc": "Nisu pronađeni istekli certifikati niti certifikati koji ističu u vašim CurrentUser ili LocalMachine prodavnicama.",
-      "colStore": "Prodavnica",
+      "noCertsDesc": "Nisu pronađeni istekli certifikati niti certifikati koji ističu u vašim CurrentUser ili LocalMachine skladištima.",
+      "colStore": "Skladište",
       "colExpiryDate": "Datum Isteka",
       "colStatus": "Status",
       "colCertificate": "Certifikat",
@@ -495,7 +495,7 @@
     "crl": {
       "eyebrow": "Status opoziva i RFC 5280",
       "title": "Inspektor <0>liste opozvanih certifikata (CRL)</0>",
-      "description": "Pregledajte <0>X.509</0> <1>CRL</1> datoteke (.crl). Provjerite metapodatke izdavača, datume važenja sljedećeg ažuriranja i pretražite stavke opozvanih certifikata i kodove razloga.",
+      "description": "Parsirajte RFC 5280 liste opoziva u PEM ili DER formatu. Provjerite validnost izdavača, intervale ažuriranja i pretražujte opozvane serijske brojeve i razloge opoziva.",
       "descP1": "Parsirajte RFC 5280 liste opoziva u PEM ili DER formatu.",
       "descP2": "Provjerite validnost izdavača, intervale ažuriranja i pretražujte opozvane serijske brojeve i razloge opoziva.",
       "pills": {
@@ -581,8 +581,8 @@
     "csr": {
       "eyebrow": "Inspekcija PKCS#10 zahtjeva",
       "title": "<0>Inspektor zahtjeva za potpisivanje certifikata (CSR)</0>",
-      "description": "Verifikujte ugrađene vlastite potpise, pregledajte atribute subjekta i zatražena SAN proširenja ili uredite i ponovo potpišite na licu mjesta.",
-      "descP1": "Verifikujte ugrađene vlastite potpise, pregledajte atribute subjekta i zatražena SAN proširenja.",
+      "description": "Verifikujte ugrađene vlastite potpise, pregledajte atribute Subject DN i zatražena SAN proširenja ili uredite i ponovo potpišite na licu mjesta prije slanja CA tijelu.",
+      "descP1": "Verifikujte ugrađene vlastite potpise, pregledajte atribute Subject DN i zatražena SAN proširenja.",
       "descP2": "Klijentsko kriptografsko parsiranje: uredite i ponovo potpišite na licu mjesta bez izlaganja privatnih ključeva.",
       "banner": "<0><1>CSR</1> Inspektor</0>: Pregledajte zahtjeve za potpisivanje certifikata (CSR) prije slanja certifikacijskom tijelu (CA). Provjerava vlastiti potpis, prikazuje sva zatražena proširenja i polja subjekta. <2>100% offline</2> · podaci ne napuštaju vaš računar.",
       "pills": {
@@ -694,6 +694,32 @@
           "timeStamping": "Vremensko žigosanje"
         }
       }
+    },
+    "keyMatcher": {
+      "title": "Upoređivač Modula Parova Ključeva",
+      "subtitle": "Zalijepite certifikat (ili CSR) i privatni ključ u PEM formatu kako biste matematički provjerili da li se njihovi moduli RSA javnog ključa podudaraju.",
+      "description": "Zalijepite certifikat (ili CSR) i privatni ključ u PEM formatu kako biste matematički provjerili da li se njihovi moduli RSA javnog ključa podudaraju.",
+      "tryExamples": "Isprobajte testne primjere:",
+      "clearInputs": "Očisti oba unosa",
+      "certOrCsr": "Certifikat ili CSR (PEM)",
+      "privateKey": "Privatni ključ (PEM)",
+      "verifyMatch": "Provjeri podudaranje modula",
+      "modulusSha256": "Modulus SHA-256:",
+      "matchSuccess": "Privatni ključ odgovara certifikatu/CSR-u!",
+      "matchFailed": "Privatni ključ NE ODGOVARA certifikatu/CSR-u.",
+      "matchSuccessDesc": "I modulus javnog ključa u certifikatu/CSR-u i modulus privatnog ključa se podudaraju bit po bit.",
+      "matchFailedDesc": "Kriptografski modulus se razlikuje. Ovaj privatni ključ se ne može koristiti s ovim certifikatom.",
+      "comparisonTitle": "Kriptografsko poređenje modula",
+      "certHash": "Hash certifikata/CSR-a:",
+      "keyHash": "Hash privatnog ključa:",
+      "bitLength": "Dužina u bitovima:",
+      "validCsrParsed": "Validan CSR parsiran (RSA {{bits}} bita).",
+      "validCertParsed": "Validan certifikat parsiran (RSA {{bits}} bita).",
+      "validKeyParsed": "Validan RSA privatni ključ parsiran ({{bits}} bita).",
+      "rsaOnlySupported": "Trenutno su podržani samo RSA ključevi za upoređivanje.",
+      "invalidPem": "Neispravno formatirana PEM poruka.",
+      "noRsaInCsr": "Nije pronađen RSA javni ključ u CSR-u.",
+      "noRsaInCert": "Nije pronađen RSA javni ključ u certifikatu."
     }
   },
   "common": {

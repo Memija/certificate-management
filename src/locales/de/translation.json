@@ -491,7 +491,7 @@
     "crl": {
       "eyebrow": "Sperrstatus & RFC 5280",
       "title": "<0>Zertifikatssperrlisten (CRL)</0>-Inspektor",
-      "description": "Untersuchen Sie <0>X.509</0>-<1>CRL</1>-Dateien (.crl). Überprüfen Sie Aussteller-Metadaten, Gültigkeitsdaten der nächsten Aktualisierung und durchsuchen Sie gesperrte Zertifikatseinträge und Grundcodes.",
+      "description": "RFC 5280-Zertifikatssperrlisten in PEM- oder DER-Kodierung analysieren. Ausstellergültigkeit prüfen, nächste Aktualisierungsfenster überwachen und gesperrte Seriennummern sowie Grundcodes durchsuchen.",
       "descP1": "RFC 5280-Zertifikatssperrlisten in PEM- oder DER-Kodierung analysieren.",
       "descP2": "Ausstellergültigkeit prüfen, nächste Aktualisierungsfenster überwachen und gesperrte Seriennummern sowie Grundcodes durchsuchen.",
       "pills": {
@@ -690,6 +690,32 @@
           "timeStamping": "Zeitstempel"
         }
       }
+    },
+    "keyMatcher": {
+      "title": "Schlüsselpaar-Modulus-Zuordner",
+      "subtitle": "Fügen Sie ein Zertifikat (oder CSR) und einen privaten Schlüssel im PEM-Format ein, um mathematisch zu überprüfen, ob ihre RSA-Public-Key-Moduli übereinstimmen.",
+      "description": "Fügen Sie ein Zertifikat (oder CSR) und einen privaten Schlüssel im PEM-Format ein, um mathematisch zu überprüfen, ob ihre RSA-Public-Key-Moduli übereinstimmen.",
+      "tryExamples": "Testbeispiele ausprobieren:",
+      "clearInputs": "Beide Eingaben löschen",
+      "certOrCsr": "Zertifikat oder CSR (PEM)",
+      "privateKey": "Privater Schlüssel (PEM)",
+      "verifyMatch": "Modulus-Übereinstimmung prüfen",
+      "modulusSha256": "Modulus SHA-256:",
+      "matchSuccess": "Der private Schlüssel stimmt mit dem Zertifikat/CSR überein!",
+      "matchFailed": "Der private Schlüssel stimmt NICHT mit dem Zertifikat/CSR überein.",
+      "matchSuccessDesc": "Sowohl der Public-Key-Modulus im Zertifikat/CSR als auch der Modulus des privaten Schlüssels stimmen bitgenau überein.",
+      "matchFailedDesc": "Der kryptografische Modulus weicht ab. Dieser private Schlüssel kann nicht mit diesem Zertifikat verwendet werden.",
+      "comparisonTitle": "Kryptografischer Modulus-Vergleich",
+      "certHash": "Zertifikat/CSR-Hash:",
+      "keyHash": "Privater Schlüssel-Hash:",
+      "bitLength": "Bitlänge:",
+      "validCsrParsed": "Gültiger CSR analysiert (RSA {{bits}} Bits).",
+      "validCertParsed": "Gültiges Zertifikat analysiert (RSA {{bits}} Bits).",
+      "validKeyParsed": "Gültiger privater RSA-Schlüssel analysiert ({{bits}} Bits).",
+      "rsaOnlySupported": "Aktuell werden nur RSA-Schlüssel für den Abgleich unterstützt.",
+      "invalidPem": "Ungültig formatierte PEM-Nachricht.",
+      "noRsaInCsr": "Kein öffentlicher RSA-Schlüssel im CSR gefunden.",
+      "noRsaInCert": "Kein öffentlicher RSA-Schlüssel im Zertifikat gefunden."
     }
   },
   "common": {
