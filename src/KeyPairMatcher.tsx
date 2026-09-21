@@ -184,42 +184,42 @@ export function KeyPairMatcher() {
         </div>
 
         {/* ─── Test Sample Presets Bar ─── */}
-        <div
-          className="glass-panel"
-          style={{
-            padding: '0.85rem 1.25rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-            background: 'var(--card-bg)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginRight: '0.25rem' }}>
-            <Sparkles size={15} style={{ color: 'var(--accent-color)' }} />
-            {t('app.keyMatcher.tryExamples', 'Try Test Examples:')}
+        <div className="glass-panel key-matcher-presets-panel">
+          <div className="key-matcher-presets-header">
+            <div className="key-matcher-presets-title">
+              <Sparkles size={15} style={{ color: 'var(--accent-color)' }} />
+              <span>{t('app.keyMatcher.tryExamples', 'Try Test Examples:')}</span>
+            </div>
+
+            {(certInput || keyInput) && (
+              <button
+                type="button"
+                className="chain-sample-pill key-matcher-clear-btn key-matcher-clear-mobile"
+                onClick={handleClear}
+                title={t('app.keyMatcher.clearInputs', 'Clear both inputs')}
+              >
+                <Trash2 size={13} />
+                <span>{t('common.clear', 'Clear')}</span>
+              </button>
+            )}
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', flex: 1 }}>
+          <div className="key-matcher-presets-list">
             {KEY_MATCHER_PRESETS.map((preset) => (
               <button
                 key={preset.id}
                 type="button"
-                className={`chain-sample-pill${activePreset === preset.id ? ' active' : ''}`}
+                className={`chain-sample-pill key-matcher-preset-pill${activePreset === preset.id ? ' active' : ''}`}
                 onClick={() => loadPreset(preset)}
                 title={preset.description}
               >
-                <span>{preset.name}</span>
+                <span className="key-matcher-preset-name">{preset.name}</span>
                 {preset.badge && (
                   <span
+                    className="key-matcher-preset-badge"
                     style={{
-                      fontSize: '0.7rem',
-                      padding: '0.1rem 0.4rem',
-                      borderRadius: '4px',
                       background: preset.expectedMatch ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
                       color: preset.expectedMatch ? 'var(--success-color)' : 'var(--danger-color)',
-                      fontWeight: 600,
                     }}
                   >
                     {preset.badge}
@@ -232,13 +232,12 @@ export function KeyPairMatcher() {
           {(certInput || keyInput) && (
             <button
               type="button"
-              className="chain-sample-pill"
+              className="chain-sample-pill key-matcher-clear-btn key-matcher-clear-desktop"
               onClick={handleClear}
-              style={{ color: 'var(--danger-color)' }}
               title={t('app.keyMatcher.clearInputs', 'Clear both inputs')}
             >
               <Trash2 size={13} />
-              {t('common.clear', 'Clear')}
+              <span>{t('common.clear', 'Clear')}</span>
             </button>
           )}
         </div>

@@ -1,15 +1,79 @@
 import { useState } from 'react';
-import { Zap, Copy, FileKey, Shield, RefreshCw, Download } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Zap, Copy, FileKey, Shield, RefreshCw, Download, AlertTriangle } from 'lucide-react';
 import * as forge from 'node-forge';
 import { useToast } from './ToastContext';
 
+const PLACEHOLDER_CN_LIST = [
+  'example.com',
+  'e.g. example.com',
+  'www.example.com',
+  'beispiel.de',
+  'z. b. beispiel.de',
+  'primjer.ba',
+  'npr. primjer.ba',
+  'primer.rs',
+  'нпр. primer.rs',
+  'mis. example.com',
+  'np. example.com',
+  'example.org',
+  'example.net',
+  'test.com',
+  'placeholder',
+  'example'
+];
+
+const PLACEHOLDER_ORG_LIST = [
+  'my company',
+  'organization',
+  'organisation',
+  'organizacija',
+  'организација',
+  'organisasi',
+  'moja firma',
+  'e.g. organization',
+  'e.g. my company',
+  'np. moja firma',
+  'npr. moja kompanija'
+];
+
+const PLACEHOLDER_OU_LIST = [
+  'it',
+  'it dept',
+  'it department',
+  'it-abteilung',
+  'it odjel',
+  'ит одељење',
+  'dept it',
+  'dział it'
+];
+
+const PLACEHOLDER_LOC_LIST = [
+  'city',
+  'stadt',
+  'grad',
+  'град',
+  'kota',
+  'miejscowość'
+];
+
+const PLACEHOLDER_STATE_LIST = [
+  'state',
+  'bundesland',
+  'regija',
+  'регион',
+  'provinsi',
+  'województwo'
+];
+
 export function KeyGenerator() {
-  const [cn, setCn] = useState('example.com');
-  const [org, setOrg] = useState('My Company');
-  const [ou, setOu] = useState('IT');
-  const [locality, setLocality] = useState('City');
-  const [state, setState] = useState('State');
-  const [country, setCountry] = useState('US');
+  const { t } = useTranslation();
+  const [cn, setCn] = useState('');
+  const [org, setOrg] = useState('');
+  const [ou, setOu] = useState('');
+  const [locality, setLocality] = useState('');
+  const [state, setState] = useState('');
+  const [country, setCountry] = useState('');
   const [keySize, setKeySize] = useState(2048);
 
   const [outputType, setOutputType] = useState<'csr' | 'self-signed'>('csr');
@@ -19,9 +83,48 @@ export function KeyGenerator() {
   const [error, setError] = useState('');
   const { showToast } = useToast();
 
+  const isCnPlaceholder = (val: string) => {
+    const clean = val.trim().toLowerCase();
+    return clean.length > 0 && PLACEHOLDER_CN_LIST.includes(clean);
+  };
+
+  const isOnlyPlaceholderSetup = () => {
+    const cleanCn = cn.trim().toLowerCase();
+    if (!cleanCn) return true;
+    if (isCnPlaceholder(cleanCn)) return true;
+
+    const nonCnFields = [
+      { val: org.trim().toLowerCase(), list: PLACEHOLDER_ORG_LIST },
+      { val: ou.trim().toLowerCase(), list: PLACEHOLDER_OU_LIST },
+      { val: locality.trim().toLowerCase(), list: PLACEHOLDER_LOC_LIST },
+      { val: state.trim().toLowerCase(), list: PLACEHOLDER_STATE_LIST },
+    ];
+
+    // Check if user entered non-empty fields that are all placeholders
+    const allFilledArePlaceholders = nonCnFields.every(
+      f => !f.val || f.list.includes(f.val)
+    );
+
+    if (allFilledArePlaceholders && isCnPlaceholder(cleanCn)) {
+      return true;
+    }
+
+    return false;
+  };
+
   const generate = () => {
-    setGenerating(true);
     setError('');
+
+    if (isOnlyPlaceholderSetup()) {
+      const msg = !cn.trim()
+        ? t('app.keyGenerator.cnRequired', 'Common Name (CN) is required.')
+        : t('app.keyGenerator.placeholderSetup', 'Cannot create a setup using only placeholder values. Please provide real subject details.');
+      setError(msg);
+      showToast(msg, 'error');
+      return;
+    }
+
+    setGenerating(true);
     
     // Use setTimeout so the UI can update before blocking key generation
     setTimeout(() => {
@@ -29,14 +132,20 @@ export function KeyGenerator() {
         const keys = forge.pki.rsa.generateKeyPair(keySize);
         const privateKeyPem = forge.pki.privateKeyToPem(keys.privateKey);
         
-        const attrs = [
-          { name: 'commonName', value: cn },
-          { name: 'countryName', value: country },
-          { name: 'stateOrProvinceName', value: state },
-          { name: 'localityName', value: locality },
-          { name: 'organizationName', value: org },
-          { name: 'organizationalUnitName', value: ou }
-        ];
+        const trimmedCn = cn.trim();
+        const trimmedCountry = country.trim();
+        const trimmedState = state.trim();
+        const trimmedLocality = locality.trim();
+        const trimmedOrg = org.trim();
+        const trimmedOu = ou.trim();
+
+        const attrs: any[] = [];
+        if (trimmedCn) attrs.push({ name: 'commonName', value: trimmedCn });
+        if (trimmedCountry) attrs.push({ name: 'countryName', value: trimmedCountry });
+        if (trimmedState) attrs.push({ name: 'stateOrProvinceName', value: trimmedState });
+        if (trimmedLocality) attrs.push({ name: 'localityName', value: trimmedLocality });
+        if (trimmedOrg) attrs.push({ name: 'organizationName', value: trimmedOrg });
+        if (trimmedOu) attrs.push({ name: 'organizationalUnitName', value: trimmedOu });
 
         let outputStr = '';
 
@@ -60,7 +169,7 @@ export function KeyGenerator() {
             { name: 'keyUsage', keyCertSign: true, digitalSignature: true, nonRepudiation: true, keyEncipherment: true, dataEncipherment: true },
             { name: 'extKeyUsage', serverAuth: true, clientAuth: true, codeSigning: true, emailProtection: true, timeStamping: true },
             { name: 'nsCertType', client: true, server: true, email: true, objsign: true, sslCA: true, emailCA: true, objCA: true },
-            { name: 'subjectAltName', altNames: [{ type: 2, value: cn }] },
+            { name: 'subjectAltName', altNames: [{ type: 2, value: trimmedCn }] },
             { name: 'subjectKeyIdentifier' }
           ]);
           cert.sign(keys.privateKey, forge.md.sha256.create());
@@ -69,10 +178,17 @@ export function KeyGenerator() {
         
         setGeneratedKey(privateKeyPem);
         setGeneratedOutput(outputStr);
-        showToast(outputType === 'csr' ? 'Generated RSA Key Pair & CSR' : 'Generated RSA Key Pair & Certificate', 'success');
+        showToast(
+          outputType === 'csr'
+            ? t('app.keyGenerator.successToastCsr', 'Generated RSA Key Pair & CSR')
+            : t('app.keyGenerator.successToastCert', 'Generated RSA Key Pair & Certificate'),
+          'success'
+        );
       } catch (err: any) {
-        setError(`Failed to generate: ${err.message}`);
-        showToast(`Generation failed: ${err.message}`, 'error');
+        const failMsg = t('app.keyGenerator.failedToGenerate', { error: err.message, defaultValue: `Failed to generate: ${err.message}` });
+        const toastFailMsg = t('app.keyGenerator.generationFailedToast', { error: err.message, defaultValue: `Generation failed: ${err.message}` });
+        setError(failMsg);
+        showToast(toastFailMsg, 'error');
       } finally {
         setGenerating(false);
       }
@@ -81,7 +197,7 @@ export function KeyGenerator() {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    showToast(`Copied ${label} to clipboard`, 'success');
+    showToast(t('app.keyGenerator.copiedToast', { label, defaultValue: `Copied ${label} to clipboard` }), 'success');
   };
 
   const downloadFile = (content: string, filename: string, mime: string) => {
@@ -92,20 +208,22 @@ export function KeyGenerator() {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    showToast(`Downloaded ${filename}`, 'success');
+    showToast(t('app.keyGenerator.downloadedToast', { filename, defaultValue: `Downloaded ${filename}` }), 'success');
   };
 
-  const safeName = cn.replace(/[^a-zA-Z0-9_-]/g, '_') || 'certificate';
+  const safeName = cn.trim().replace(/[^a-zA-Z0-9_-]/g, '_') || 'certificate';
+  const hasCnPlaceholder = isCnPlaceholder(cn);
+  const isInvalidSetup = isOnlyPlaceholderSetup();
 
   return (
     <div className="main-content">
       <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
         <div style={{ marginBottom: '2rem' }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            Key Pair &amp; CSR / Self-Signed Generator
+            {t('app.keyGenerator.title', 'Key Pair & CSR / Self-Signed Generator')}
           </h2>
           <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
-            Generate a new RSA Key Pair and a Certificate Signing Request (CSR) or Self-Signed Certificate entirely in your browser using pure cryptography.
+            {t('app.keyGenerator.subtitle', 'Generate a new RSA Key Pair and a Certificate Signing Request (CSR) or Self-Signed Certificate entirely in your browser using pure cryptography.')}
           </p>
         </div>
 
@@ -113,62 +231,152 @@ export function KeyGenerator() {
           
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
             <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
-              <Zap size={18} style={{ color: 'var(--accent-color)' }} /> Subject Details &amp; Parameters
+              <Zap size={18} style={{ color: 'var(--accent-color)' }} /> {t('app.keyGenerator.subjectDetailsTitle', 'Subject Details & Parameters')}
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Common Name (CN)</label>
-                <input type="text" value={cn} onChange={e => setCn(e.target.value)} className="form-input" placeholder="e.g. example.com" />
+                <label className="form-label">
+                  {t('app.keyGenerator.commonName', 'Common Name (CN)')} <span style={{ color: 'var(--accent-color)' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={cn}
+                  onChange={e => {
+                    setCn(e.target.value);
+                    if (error) setError('');
+                  }}
+                  className="form-input"
+                  placeholder={t('app.keyGenerator.commonNamePlaceholder', 'e.g. example.com')}
+                />
+                {hasCnPlaceholder && (
+                  <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={14} />
+                    <span>{t('app.keyGenerator.placeholderSetup', 'Cannot create a setup using only placeholder values. Please provide real subject details.')}</span>
+                  </div>
+                )}
               </div>
 
               <div className="key-gen-row-2">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Organization (O)</label>
-                  <input type="text" value={org} onChange={e => setOrg(e.target.value)} className="form-input" placeholder="Organization" />
+                  <label className="form-label">{t('app.keyGenerator.organization', 'Organization (O)')}</label>
+                  <input
+                    type="text"
+                    value={org}
+                    onChange={e => {
+                      setOrg(e.target.value);
+                      if (error) setError('');
+                    }}
+                    className="form-input"
+                    placeholder={t('app.keyGenerator.organizationPlaceholder', 'Organization')}
+                  />
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Unit (OU)</label>
-                  <input type="text" value={ou} onChange={e => setOu(e.target.value)} className="form-input" placeholder="IT Dept" />
+                  <label className="form-label">{t('app.keyGenerator.organizationalUnit', 'Unit (OU)')}</label>
+                  <input
+                    type="text"
+                    value={ou}
+                    onChange={e => {
+                      setOu(e.target.value);
+                      if (error) setError('');
+                    }}
+                    className="form-input"
+                    placeholder={t('app.keyGenerator.organizationalUnitPlaceholder', 'IT Dept')}
+                  />
                 </div>
               </div>
 
               <div className="key-gen-row-3">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">City (L)</label>
-                  <input type="text" value={locality} onChange={e => setLocality(e.target.value)} className="form-input" placeholder="City" />
+                  <label className="form-label">{t('app.keyGenerator.locality', 'City (L)')}</label>
+                  <input
+                    type="text"
+                    value={locality}
+                    onChange={e => {
+                      setLocality(e.target.value);
+                      if (error) setError('');
+                    }}
+                    className="form-input"
+                    placeholder={t('app.keyGenerator.localityPlaceholder', 'City')}
+                  />
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">State (ST)</label>
-                  <input type="text" value={state} onChange={e => setState(e.target.value)} className="form-input" placeholder="State" />
+                  <label className="form-label">{t('app.keyGenerator.state', 'State (ST)')}</label>
+                  <input
+                    type="text"
+                    value={state}
+                    onChange={e => {
+                      setState(e.target.value);
+                      if (error) setError('');
+                    }}
+                    className="form-input"
+                    placeholder={t('app.keyGenerator.statePlaceholder', 'State')}
+                  />
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Country (C)</label>
-                  <input type="text" value={country} onChange={e => setCountry(e.target.value)} maxLength={2} className="form-input" placeholder="US" />
+                  <label className="form-label">{t('app.keyGenerator.country', 'Country (C)')}</label>
+                  <input
+                    type="text"
+                    value={country}
+                    onChange={e => {
+                      setCountry(e.target.value);
+                      if (error) setError('');
+                    }}
+                    maxLength={2}
+                    className="form-input"
+                    placeholder={t('app.keyGenerator.countryPlaceholder', 'US')}
+                  />
                 </div>
               </div>
 
               <div className="key-gen-row-2">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Key Size</label>
+                  <label className="form-label">{t('app.keyGenerator.keySize', 'Key Size')}</label>
                   <select value={keySize} onChange={e => setKeySize(Number(e.target.value))} className="form-select">
-                    <option value={2048}>2048-bit (Standard)</option>
-                    <option value={4096}>4096-bit (High Security)</option>
+                    <option value={2048}>{t('app.keyGenerator.keySize2048', '2048-bit (Standard)')}</option>
+                    <option value={4096}>{t('app.keyGenerator.keySize4096', '4096-bit (High Security)')}</option>
                   </select>
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Output Type</label>
+                  <label className="form-label">{t('app.keyGenerator.outputType', 'Output Type')}</label>
                   <select value={outputType} onChange={e => setOutputType(e.target.value as any)} className="form-select">
-                    <option value="csr">CSR (Signing Request)</option>
-                    <option value="self-signed">Self-Signed Certificate</option>
+                    <option value="csr">{t('app.keyGenerator.outputCsr', 'CSR (Signing Request)')}</option>
+                    <option value="self-signed">{t('app.keyGenerator.outputSelfSigned', 'Self-Signed Certificate')}</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            <button className="btn" onClick={generate} disabled={generating} style={{ width: '100%', justifyContent: 'center', marginTop: '1.5rem', height: '44px' }}>
+            <button
+              className="btn"
+              onClick={generate}
+              disabled={generating || isInvalidSetup}
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                marginTop: '1.5rem',
+                height: '44px',
+                opacity: isInvalidSetup && !generating ? 0.6 : 1,
+                cursor: isInvalidSetup && !generating ? 'not-allowed' : 'pointer'
+              }}
+              title={
+                isInvalidSetup
+                  ? (!cn.trim()
+                      ? t('app.keyGenerator.cnRequired', 'Common Name (CN) is required.')
+                      : t('app.keyGenerator.placeholderSetup', 'Cannot create a setup using only placeholder values. Please provide real subject details.'))
+                  : undefined
+              }
+            >
               {generating ? <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Zap size={18} />}
-              <span>{generating ? (outputType === 'csr' ? 'Generating Keys & CSR...' : 'Generating Keys & Cert...') : (outputType === 'csr' ? 'Generate Key Pair & CSR' : 'Generate Key Pair & Cert')}</span>
+              <span>
+                {generating
+                  ? (outputType === 'csr'
+                      ? t('app.keyGenerator.generatingCsr', 'Generating Keys & CSR...')
+                      : t('app.keyGenerator.generatingCert', 'Generating Keys & Cert...'))
+                  : (outputType === 'csr'
+                      ? t('app.keyGenerator.generateCsr', 'Generate Key Pair & CSR')
+                      : t('app.keyGenerator.generateCert', 'Generate Key Pair & Cert'))}
+              </span>
             </button>
             
             {error && (
@@ -180,15 +388,15 @@ export function KeyGenerator() {
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                  <h3 style={{ margin: 0, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
-                   <FileKey size={16} style={{ color: 'var(--accent-color)' }} /> Generated Private Key
+                   <FileKey size={16} style={{ color: 'var(--accent-color)' }} /> {t('app.keyGenerator.generatedPrivateKey', 'Generated Private Key')}
                  </h3>
                  {generatedKey && (
                    <div style={{ display: 'flex', gap: '0.4rem' }}>
                      <button className="btn btn-download-pem btn-sm" onClick={() => downloadFile(generatedKey, `${safeName}_private.key`, 'application/x-pem-file')}>
-                       <Download size={12} /> .key
+                       <Download size={12} /> {t('app.keyGenerator.downloadKey', '.key')}
                      </button>
-                     <button className="btn btn-secondary btn-sm" onClick={() => copyToClipboard(generatedKey, 'Private Key')}>
-                       <Copy size={12} /> Copy
+                     <button className="btn btn-secondary btn-sm" onClick={() => copyToClipboard(generatedKey, t('app.keyGenerator.privateKeyLabel', 'Private Key'))}>
+                       <Copy size={12} /> {t('app.keyGenerator.copy', 'Copy')}
                      </button>
                    </div>
                  )}
@@ -197,7 +405,7 @@ export function KeyGenerator() {
                  value={generatedKey}
                  readOnly
                  className="form-textarea mono"
-                 placeholder="Generated RSA private key will appear here..."
+                 placeholder={t('app.keyGenerator.privateKeyPlaceholder', 'Generated RSA private key will appear here...')}
                  style={{ height: '140px', fontSize: '0.82rem' }}
                />
             </div>
@@ -205,15 +413,15 @@ export function KeyGenerator() {
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                  <h3 style={{ margin: 0, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
-                   <Shield size={16} style={{ color: 'var(--success-color)' }} /> Generated {outputType === 'csr' ? 'CSR' : 'Certificate'}
+                   <Shield size={16} style={{ color: 'var(--success-color)' }} /> {outputType === 'csr' ? t('app.keyGenerator.generatedCsr', 'Generated CSR') : t('app.keyGenerator.generatedCert', 'Generated Certificate')}
                  </h3>
                  {generatedOutput && (
                    <div style={{ display: 'flex', gap: '0.4rem' }}>
                      <button className="btn btn-download-pem btn-sm" onClick={() => downloadFile(generatedOutput, `${safeName}.${outputType === 'csr' ? 'csr' : 'crt'}`, 'application/x-pem-file')}>
-                       <Download size={12} /> {outputType === 'csr' ? '.csr' : '.crt'}
+                       <Download size={12} /> {outputType === 'csr' ? t('app.keyGenerator.downloadCsr', '.csr') : t('app.keyGenerator.downloadCert', '.crt')}
                      </button>
-                     <button className="btn btn-secondary btn-sm" onClick={() => copyToClipboard(generatedOutput, outputType === 'csr' ? 'CSR' : 'Certificate')}>
-                       <Copy size={12} /> Copy
+                     <button className="btn btn-secondary btn-sm" onClick={() => copyToClipboard(generatedOutput, outputType === 'csr' ? t('app.keyGenerator.csrLabel', 'CSR') : t('app.keyGenerator.certLabel', 'Certificate'))}>
+                       <Copy size={12} /> {t('app.keyGenerator.copy', 'Copy')}
                      </button>
                    </div>
                  )}
@@ -222,7 +430,7 @@ export function KeyGenerator() {
                  value={generatedOutput}
                  readOnly
                  className="form-textarea mono"
-                 placeholder={outputType === 'csr' ? "Generated CSR will appear here..." : "Generated Self-Signed Certificate will appear here..."}
+                 placeholder={outputType === 'csr' ? t('app.keyGenerator.csrPlaceholder', 'Generated CSR will appear here...') : t('app.keyGenerator.certPlaceholder', 'Generated Self-Signed Certificate will appear here...')}
                  style={{ height: '140px', fontSize: '0.82rem' }}
                />
             </div>
