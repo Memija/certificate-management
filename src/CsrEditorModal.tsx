@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import * as forge from 'node-forge';
 import type { ParsedCSR } from './utils/csrParser';
 import { parseCSRFromText } from './utils/csrParser';
+import { validateCsr, validatePrivateKeyPem } from './utils/csrValidation';
+import type { CsrFieldErrors } from './utils/csrValidation';
 
 export interface CsrEditorModalProps {
   isOpen: boolean;
@@ -59,8 +61,11 @@ export function CsrEditorModal({
   const [keySize, setKeySize] = useState<number>(2048);
   const [existingKeyPem, setExistingKeyPem] = useState('');
   const [existingKeyValid, setExistingKeyValid] = useState<boolean | null>(null);
+  const [existingKeyBits, setExistingKeyBits] = useState<number | undefined>(undefined);
+  const [keyErrorDetail, setKeyErrorDetail] = useState('');
 
-  // ── Submission state ──────────────────────────────────────────────────────
+  // ── Validation and submission state ───────────────────────────────────────
+  const [fieldErrors, setFieldErrors] = useState<CsrFieldErrors>({});
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
 
@@ -157,7 +162,10 @@ export function CsrEditorModal({
 
     setExistingKeyPem('');
     setExistingKeyValid(null);
+    setExistingKeyBits(undefined);
+    setKeyErrorDetail('');
     setKeyMode('generate');
+    setFieldErrors({});
     setError('');
   }, [isOpen, csr]);
 
@@ -165,15 +173,22 @@ export function CsrEditorModal({
   useEffect(() => {
     if (!existingKeyPem.trim()) {
       setExistingKeyValid(null);
+      setExistingKeyBits(undefined);
+      setKeyErrorDetail('');
       return;
     }
-    try {
-      forge.pki.privateKeyFromPem(existingKeyPem.trim());
+    const res = validatePrivateKeyPem(existingKeyPem, t);
+    if (res.valid) {
       setExistingKeyValid(true);
-    } catch {
+      setExistingKeyBits(res.bitLength);
+      setKeyErrorDetail('');
+      setFieldErrors(prev => ({ ...prev, existingKey: undefined }));
+    } else {
       setExistingKeyValid(false);
+      setExistingKeyBits(res.bitLength);
+      setKeyErrorDetail(res.error || t('app.csr.editor.keyInvalid', 'Invalid private key format'));
     }
-  }, [existingKeyPem]);
+  }, [existingKeyPem, t]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -190,6 +205,27 @@ export function CsrEditorModal({
   };
 
   const handleGenerateAndSign = () => {
+    // Validate inputs
+    const valResult = validateCsr(
+      { cn, org, ou, country, state, locality, email },
+      {
+        requireCn: false, // In standard PKCS#10, either CN or at least one SAN is required
+        sans,
+        serverAuthEnabled: extKeyUsages.serverAuth,
+        existingKeyPem: keyMode === 'existing' ? existingKeyPem : undefined,
+        checkPlaceholders: true,
+        t,
+      }
+    );
+
+    if (!valResult.isValid) {
+      setFieldErrors(valResult.errors);
+      const firstError = Object.values(valResult.errors)[0] || t('app.csr.editor.cnOrSanRequired', 'Common Name (CN) or at least one Subject Alternative Name (SAN) is required.');
+      setError(firstError);
+      return;
+    }
+
+    setFieldErrors({});
     setGenerating(true);
     setError('');
 
@@ -372,9 +408,21 @@ export function CsrEditorModal({
                   type="text"
                   className="form-input"
                   value={cn}
-                  onChange={e => setCn(e.target.value)}
+                  maxLength={64}
+                  style={{ borderColor: fieldErrors.cn ? 'var(--danger-color, #ef4444)' : undefined }}
+                  onChange={e => {
+                    setCn(e.target.value);
+                    if (fieldErrors.cn) setFieldErrors(prev => ({ ...prev, cn: undefined }));
+                    if (error) setError('');
+                  }}
                   placeholder={t('app.csr.editor.commonNamePlaceholder', 'e.g. example.com')}
                 />
+                {fieldErrors.cn && (
+                  <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                    <span>{fieldErrors.cn}</span>
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -383,9 +431,20 @@ export function CsrEditorModal({
                   type="text"
                   className="form-input"
                   value={org}
-                  onChange={e => setOrg(e.target.value)}
+                  maxLength={64}
+                  style={{ borderColor: fieldErrors.org ? 'var(--danger-color, #ef4444)' : undefined }}
+                  onChange={e => {
+                    setOrg(e.target.value);
+                    if (fieldErrors.org) setFieldErrors(prev => ({ ...prev, org: undefined }));
+                  }}
                   placeholder={t('app.csr.editor.organizationPlaceholder', 'e.g. Acme Corp')}
                 />
+                {fieldErrors.org && (
+                  <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                    <span>{fieldErrors.org}</span>
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -394,9 +453,20 @@ export function CsrEditorModal({
                   type="text"
                   className="form-input"
                   value={ou}
-                  onChange={e => setOu(e.target.value)}
+                  maxLength={64}
+                  style={{ borderColor: fieldErrors.ou ? 'var(--danger-color, #ef4444)' : undefined }}
+                  onChange={e => {
+                    setOu(e.target.value);
+                    if (fieldErrors.ou) setFieldErrors(prev => ({ ...prev, ou: undefined }));
+                  }}
                   placeholder={t('app.csr.editor.organizationalUnitPlaceholder', 'e.g. IT Security')}
                 />
+                {fieldErrors.ou && (
+                  <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                    <span>{fieldErrors.ou}</span>
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -405,10 +475,21 @@ export function CsrEditorModal({
                   type="text"
                   className="form-input"
                   maxLength={2}
+                  style={{ borderColor: fieldErrors.country ? 'var(--danger-color, #ef4444)' : undefined }}
                   value={country}
-                  onChange={e => setCountry(e.target.value.toUpperCase())}
+                  onChange={e => {
+                    setCountry(e.target.value.toUpperCase());
+                    if (fieldErrors.country) setFieldErrors(prev => ({ ...prev, country: undefined }));
+                    if (error) setError('');
+                  }}
                   placeholder={t('app.csr.editor.countryPlaceholder', 'e.g. US (2 letters)')}
                 />
+                {fieldErrors.country && (
+                  <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                    <span>{fieldErrors.country}</span>
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -417,9 +498,20 @@ export function CsrEditorModal({
                   type="text"
                   className="form-input"
                   value={state}
-                  onChange={e => setState(e.target.value)}
+                  maxLength={128}
+                  style={{ borderColor: fieldErrors.state ? 'var(--danger-color, #ef4444)' : undefined }}
+                  onChange={e => {
+                    setState(e.target.value);
+                    if (fieldErrors.state) setFieldErrors(prev => ({ ...prev, state: undefined }));
+                  }}
                   placeholder={t('app.csr.editor.statePlaceholder', 'e.g. California')}
                 />
+                {fieldErrors.state && (
+                  <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                    <span>{fieldErrors.state}</span>
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -428,9 +520,20 @@ export function CsrEditorModal({
                   type="text"
                   className="form-input"
                   value={locality}
-                  onChange={e => setLocality(e.target.value)}
+                  maxLength={128}
+                  style={{ borderColor: fieldErrors.locality ? 'var(--danger-color, #ef4444)' : undefined }}
+                  onChange={e => {
+                    setLocality(e.target.value);
+                    if (fieldErrors.locality) setFieldErrors(prev => ({ ...prev, locality: undefined }));
+                  }}
                   placeholder={t('app.csr.editor.localityPlaceholder', 'e.g. San Francisco')}
                 />
+                {fieldErrors.locality && (
+                  <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                    <span>{fieldErrors.locality}</span>
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
@@ -439,9 +542,20 @@ export function CsrEditorModal({
                   type="email"
                   className="form-input"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  style={{ borderColor: fieldErrors.email ? 'var(--danger-color, #ef4444)' : undefined }}
+                  onChange={e => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: undefined }));
+                    if (error) setError('');
+                  }}
                   placeholder={t('app.csr.editor.emailPlaceholder', 'e.g. admin@example.com')}
                 />
+                {fieldErrors.email && (
+                  <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                    <span>{fieldErrors.email}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -458,10 +572,39 @@ export function CsrEditorModal({
               className="form-textarea"
               rows={2}
               value={sans}
-              onChange={e => setSans(e.target.value)}
+              style={{ fontSize: '0.85rem', borderColor: fieldErrors.sans ? 'var(--danger-color, #ef4444)' : undefined }}
+              onChange={e => {
+                setSans(e.target.value);
+                if (fieldErrors.sans) setFieldErrors(prev => ({ ...prev, sans: undefined }));
+                if (error) setError('');
+              }}
               placeholder={t('app.csr.editor.sansPlaceholder', 'e.g. example.com, *.example.com, 192.168.1.1')}
-              style={{ fontSize: '0.85rem' }}
             />
+            {fieldErrors.sans && (
+              <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                <span>{fieldErrors.sans}</span>
+              </div>
+            )}
+            {extKeyUsages.serverAuth && !sans.trim() && (
+              <div
+                style={{
+                  marginTop: '0.6rem',
+                  padding: '0.6rem 0.8rem',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                  borderRadius: '6px',
+                  color: '#f59e0b',
+                  fontSize: '0.82rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <AlertTriangle size={15} style={{ flexShrink: 0 }} />
+                <span>{t('app.csr.editor.sanMissingWarning', 'Warning: TLS Server Authentication is selected, but no Subject Alternative Names (SANs) are defined. Modern browsers (RFC 2818) ignore Common Name and will reject this certificate.')}</span>
+              </div>
+            )}
           </div>
 
           {/* Section 3: Key Usages & EKU */}
@@ -652,13 +795,17 @@ export function CsrEditorModal({
                 {existingKeyValid === true && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontSize: '0.82rem', marginTop: '0.4rem' }}>
                     <CheckCircle size={14} />
-                    <span>{t('app.csr.editor.keyValid', 'Valid private key loaded')}</span>
+                    <span>
+                      {existingKeyBits
+                        ? t('app.csr.editor.keyValidWithBits', { bits: existingKeyBits, defaultValue: `Valid ${existingKeyBits}-bit RSA private key loaded` })
+                        : t('app.csr.editor.keyValid', 'Valid private key loaded')}
+                    </span>
                   </div>
                 )}
                 {existingKeyValid === false && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#ef4444', fontSize: '0.82rem', marginTop: '0.4rem' }}>
-                    <AlertTriangle size={14} />
-                    <span>{t('app.csr.editor.keyInvalid', 'Invalid private key format')}</span>
+                    <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                    <span>{keyErrorDetail || t('app.csr.editor.keyInvalid', 'Invalid private key format')}</span>
                   </div>
                 )}
               </div>
@@ -680,7 +827,7 @@ export function CsrEditorModal({
             type="button"
             className="btn btn-primary"
             onClick={handleGenerateAndSign}
-            disabled={generating || (keyMode === 'existing' && !existingKeyValid)}
+            disabled={generating || (keyMode === 'existing' && existingKeyValid !== true)}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
           >
             {generating ? (

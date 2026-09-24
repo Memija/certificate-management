@@ -3,68 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Zap, Copy, FileKey, Shield, RefreshCw, Download, AlertTriangle } from 'lucide-react';
 import * as forge from 'node-forge';
 import { useToast } from './ToastContext';
-
-const PLACEHOLDER_CN_LIST = [
-  'example.com',
-  'e.g. example.com',
-  'www.example.com',
-  'beispiel.de',
-  'z. b. beispiel.de',
-  'primjer.ba',
-  'npr. primjer.ba',
-  'primer.rs',
-  'нпр. primer.rs',
-  'mis. example.com',
-  'np. example.com',
-  'example.org',
-  'example.net',
-  'test.com',
-  'placeholder',
-  'example'
-];
-
-const PLACEHOLDER_ORG_LIST = [
-  'my company',
-  'organization',
-  'organisation',
-  'organizacija',
-  'организација',
-  'organisasi',
-  'moja firma',
-  'e.g. organization',
-  'e.g. my company',
-  'np. moja firma',
-  'npr. moja kompanija'
-];
-
-const PLACEHOLDER_OU_LIST = [
-  'it',
-  'it dept',
-  'it department',
-  'it-abteilung',
-  'it odjel',
-  'ит одељење',
-  'dept it',
-  'dział it'
-];
-
-const PLACEHOLDER_LOC_LIST = [
-  'city',
-  'stadt',
-  'grad',
-  'град',
-  'kota',
-  'miejscowość'
-];
-
-const PLACEHOLDER_STATE_LIST = [
-  'state',
-  'bundesland',
-  'regija',
-  'регион',
-  'provinsi',
-  'województwo'
-];
+import { validateCsr, PLACEHOLDER_CN_LIST, isOnlyPlaceholderSubject, isPlaceholderValue } from './utils/csrValidation';
 
 export function KeyGenerator() {
   const { t } = useTranslation();
@@ -89,36 +28,23 @@ export function KeyGenerator() {
   };
 
   const isOnlyPlaceholderSetup = () => {
-    const cleanCn = cn.trim().toLowerCase();
-    if (!cleanCn) return true;
-    if (isCnPlaceholder(cleanCn)) return true;
-
-    const nonCnFields = [
-      { val: org.trim().toLowerCase(), list: PLACEHOLDER_ORG_LIST },
-      { val: ou.trim().toLowerCase(), list: PLACEHOLDER_OU_LIST },
-      { val: locality.trim().toLowerCase(), list: PLACEHOLDER_LOC_LIST },
-      { val: state.trim().toLowerCase(), list: PLACEHOLDER_STATE_LIST },
-    ];
-
-    // Check if user entered non-empty fields that are all placeholders
-    const allFilledArePlaceholders = nonCnFields.every(
-      f => !f.val || f.list.includes(f.val)
-    );
-
-    if (allFilledArePlaceholders && isCnPlaceholder(cleanCn)) {
-      return true;
-    }
-
-    return false;
+    return isOnlyPlaceholderSubject({ cn, org, ou, locality, state });
   };
 
   const generate = () => {
     setError('');
 
-    if (isOnlyPlaceholderSetup()) {
-      const msg = !cn.trim()
+    const valResult = validateCsr(
+      { cn, country, state, locality, org, ou },
+      { requireCn: true, checkPlaceholders: true, t }
+    );
+
+    if (!valResult.isValid) {
+      const msg = valResult.errors.country
+        ? valResult.errors.country
+        : !cn.trim()
         ? t('app.keyGenerator.cnRequired', 'Common Name (CN) is required.')
-        : t('app.keyGenerator.placeholderSetup', 'Cannot create a setup using only placeholder values. Please provide real subject details.');
+        : valResult.errors.general || Object.values(valResult.errors)[0] || t('common.error', 'Invalid inputs.');
       setError(msg);
       showToast(msg, 'error');
       return;
@@ -213,7 +139,12 @@ export function KeyGenerator() {
 
   const safeName = cn.trim().replace(/[^a-zA-Z0-9_-]/g, '_') || 'certificate';
   const hasCnPlaceholder = isCnPlaceholder(cn);
+  const hasLocPlaceholder = isPlaceholderValue('locality', locality);
+  const hasOrgPlaceholder = isPlaceholderValue('org', org);
+  const hasOuPlaceholder = isPlaceholderValue('ou', ou);
+  const hasStatePlaceholder = isPlaceholderValue('state', state);
   const isInvalidSetup = isOnlyPlaceholderSetup();
+  const isCountryInvalid = country.trim().length > 0 && !/^[A-Za-z]{2}$/.test(country.trim());
 
   return (
     <div className="main-content">
@@ -251,7 +182,7 @@ export function KeyGenerator() {
                 />
                 {hasCnPlaceholder && (
                   <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <AlertTriangle size={14} />
+                    <AlertTriangle size={14} style={{ flexShrink: 0 }} />
                     <span>{t('app.keyGenerator.placeholderSetup', 'Cannot create a setup using only placeholder values. Please provide real subject details.')}</span>
                   </div>
                 )}
@@ -270,6 +201,12 @@ export function KeyGenerator() {
                     className="form-input"
                     placeholder={t('app.keyGenerator.organizationPlaceholder', 'Organization')}
                   />
+                  {hasOrgPlaceholder && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.placeholderOrg', 'Generic placeholder detected for Organization. Real organization name required.')}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">{t('app.keyGenerator.organizationalUnit', 'Unit (OU)')}</label>
@@ -283,6 +220,12 @@ export function KeyGenerator() {
                     className="form-input"
                     placeholder={t('app.keyGenerator.organizationalUnitPlaceholder', 'IT Dept')}
                   />
+                  {hasOuPlaceholder && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.placeholderOu', 'Generic placeholder detected for Organizational Unit. Real unit name required.')}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -299,6 +242,12 @@ export function KeyGenerator() {
                     className="form-input"
                     placeholder={t('app.keyGenerator.localityPlaceholder', 'City')}
                   />
+                  {hasLocPlaceholder && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.placeholderLoc', 'Generic placeholder detected for City ("{{value}}"). Real locality required.', { value: locality.trim() })}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">{t('app.keyGenerator.state', 'State (ST)')}</label>
@@ -312,6 +261,12 @@ export function KeyGenerator() {
                     className="form-input"
                     placeholder={t('app.keyGenerator.statePlaceholder', 'State')}
                   />
+                  {hasStatePlaceholder && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.placeholderState', 'Generic placeholder detected for State. Real state name required.')}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">{t('app.keyGenerator.country', 'Country (C)')}</label>
@@ -319,13 +274,19 @@ export function KeyGenerator() {
                     type="text"
                     value={country}
                     onChange={e => {
-                      setCountry(e.target.value);
+                      setCountry(e.target.value.toUpperCase());
                       if (error) setError('');
                     }}
                     maxLength={2}
                     className="form-input"
                     placeholder={t('app.keyGenerator.countryPlaceholder', 'US')}
                   />
+                  {country.trim().length > 0 && !/^[A-Za-z]{2}$/.test(country.trim()) && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.countryInvalid', 'Country Code must be a 2-letter ISO 3166-1 alpha-2 code (e.g. US, DE, GB).')}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -350,7 +311,16 @@ export function KeyGenerator() {
             <button
               className="btn"
               onClick={generate}
-              disabled={generating || isInvalidSetup}
+              disabled={
+                generating ||
+                isInvalidSetup ||
+                hasCnPlaceholder ||
+                hasLocPlaceholder ||
+                hasOrgPlaceholder ||
+                hasOuPlaceholder ||
+                hasStatePlaceholder ||
+                isCountryInvalid
+              }
               style={{
                 width: '100%',
                 justifyContent: 'center',
