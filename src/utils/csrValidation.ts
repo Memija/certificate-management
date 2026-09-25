@@ -1,4 +1,5 @@
 import forge from 'node-forge';
+import { isValidCountryCode } from './countryCodes';
 
 const pki = forge.pki || (forge as any).default?.pki;
 
@@ -414,7 +415,7 @@ export function validateCsr(
 
   // 3. Country Code (C) - strictly 2 letters ISO 3166-1 alpha-2
   if (trimmedCountry) {
-    if (!/^[A-Za-z]{2}$/.test(trimmedCountry)) {
+    if (!isValidCountryCode(trimmedCountry)) {
       errors.country = tr(options.t, 'app.csr.validation.countryInvalid', `Country Code must be a 2-letter ISO 3166-1 alpha-2 code (e.g. US, DE, GB). Received "${trimmedCountry}".`, { code: trimmedCountry });
     }
   }

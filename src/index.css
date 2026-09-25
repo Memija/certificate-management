@@ -4271,7 +4271,8 @@ pre,
 }
 
 @media (max-width: 768px) {
-  .key-matcher-presets-panel {
+  .key-matcher-presets-panel,
+  .format-converter-presets-panel {
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -4318,6 +4319,103 @@ pre,
     grid-template-columns: 1fr;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   FORMAT CONVERTER STYLES
+   ════════════════════════════════════════════════════════════ */
+.format-converter-presets-panel {
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.format-staged-file-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: 8px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.format-staged-file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.format-staged-file-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.format-staged-file-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.format-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.format-badge-pem {
+  background: rgba(14, 165, 233, 0.15);
+  color: var(--accent-color);
+}
+
+.format-badge-der {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning-color);
+}
+
+.pfx-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pfx-password-toggle {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.pfx-password-toggle:hover {
+  color: var(--text-primary);
+}
+
 
 
 

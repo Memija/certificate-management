@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Zap, Copy, FileKey, Shield, RefreshCw, Download, AlertTriangle } from 'lucide-react';
+import { Zap, Copy, FileKey, Shield, RefreshCw, Download, AlertTriangle, Check } from 'lucide-react';
 import * as forge from 'node-forge';
 import { useToast } from './ToastContext';
 import { validateCsr, PLACEHOLDER_CN_LIST, isOnlyPlaceholderSubject, isPlaceholderValue } from './utils/csrValidation';
+import { isValidCountryCode, getCountryName } from './utils/countryCodes';
 
 export function KeyGenerator() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [cn, setCn] = useState('');
   const [org, setOrg] = useState('');
   const [ou, setOu] = useState('');
@@ -44,7 +45,14 @@ export function KeyGenerator() {
         ? valResult.errors.country
         : !cn.trim()
         ? t('app.keyGenerator.cnRequired', 'Common Name (CN) is required.')
-        : valResult.errors.general || Object.values(valResult.errors)[0] || t('common.error', 'Invalid inputs.');
+        : valResult.errors.cn ||
+          valResult.errors.org ||
+          valResult.errors.ou ||
+          valResult.errors.state ||
+          valResult.errors.locality ||
+          valResult.errors.general ||
+          Object.values(valResult.errors)[0] ||
+          t('common.error', 'Invalid inputs.');
       setError(msg);
       showToast(msg, 'error');
       return;
@@ -144,7 +152,29 @@ export function KeyGenerator() {
   const hasOuPlaceholder = isPlaceholderValue('ou', ou);
   const hasStatePlaceholder = isPlaceholderValue('state', state);
   const isInvalidSetup = isOnlyPlaceholderSetup();
-  const isCountryInvalid = country.trim().length > 0 && !/^[A-Za-z]{2}$/.test(country.trim());
+  const trimmedCountry = country.trim().toUpperCase();
+  const hasCountryValue = trimmedCountry.length > 0;
+  const isCountryValid = hasCountryValue && isValidCountryCode(trimmedCountry);
+  const countryName = hasCountryValue ? getCountryName(trimmedCountry, i18n.language) : undefined;
+  const isCountryInvalid = hasCountryValue && !isCountryValid;
+
+  const isCnLimitReached = cn.length >= 64;
+  const isOrgLimitReached = org.length >= 64;
+  const isOuLimitReached = ou.length >= 64;
+  const isLocLimitReached = locality.length >= 128;
+  const isStateLimitReached = state.length >= 128;
+
+  const hasCnLengthExceeded = cn.length > 64;
+  const hasOrgLengthExceeded = org.length > 64;
+  const hasOuLengthExceeded = ou.length > 64;
+  const hasLocLengthExceeded = locality.length > 128;
+  const hasStateLengthExceeded = state.length > 128;
+  const hasAnyLengthExceeded =
+    hasCnLengthExceeded ||
+    hasOrgLengthExceeded ||
+    hasOuLengthExceeded ||
+    hasLocLengthExceeded ||
+    hasStateLengthExceeded;
 
   return (
     <div className="main-content">
@@ -173,10 +203,12 @@ export function KeyGenerator() {
                 <input
                   type="text"
                   value={cn}
+                  maxLength={64}
                   onChange={e => {
                     setCn(e.target.value);
                     if (error) setError('');
                   }}
+                  style={{ borderColor: isCnLimitReached ? 'var(--danger-color, #ef4444)' : undefined }}
                   className="form-input"
                   placeholder={t('app.keyGenerator.commonNamePlaceholder', 'e.g. example.com')}
                 />
@@ -186,18 +218,28 @@ export function KeyGenerator() {
                     <span>{t('app.keyGenerator.placeholderSetup', 'Cannot create a setup using only placeholder values. Please provide real subject details.')}</span>
                   </div>
                 )}
+                {isCnLimitReached && (
+                  <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                    <span>{t('app.keyGenerator.limitReached', 'Maximum limit of {{count}} characters reached (RFC 5280).', { count: 64 })}</span>
+                  </div>
+                )}
               </div>
 
               <div className="key-gen-row-2">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">{t('app.keyGenerator.organization', 'Organization (O)')}</label>
+                  <label className="form-label">
+                    {t('app.keyGenerator.organization', 'Organization (O)')}
+                  </label>
                   <input
                     type="text"
                     value={org}
+                    maxLength={64}
                     onChange={e => {
                       setOrg(e.target.value);
                       if (error) setError('');
                     }}
+                    style={{ borderColor: isOrgLimitReached ? 'var(--danger-color, #ef4444)' : undefined }}
                     className="form-input"
                     placeholder={t('app.keyGenerator.organizationPlaceholder', 'Organization')}
                   />
@@ -207,16 +249,26 @@ export function KeyGenerator() {
                       <span>{t('app.keyGenerator.placeholderOrg', 'Generic placeholder detected for Organization. Real organization name required.')}</span>
                     </div>
                   )}
+                  {isOrgLimitReached && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.limitReached', 'Maximum limit of {{count}} characters reached (RFC 5280).', { count: 64 })}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">{t('app.keyGenerator.organizationalUnit', 'Unit (OU)')}</label>
+                  <label className="form-label">
+                    {t('app.keyGenerator.organizationalUnit', 'Unit (OU)')}
+                  </label>
                   <input
                     type="text"
                     value={ou}
+                    maxLength={64}
                     onChange={e => {
                       setOu(e.target.value);
                       if (error) setError('');
                     }}
+                    style={{ borderColor: isOuLimitReached ? 'var(--danger-color, #ef4444)' : undefined }}
                     className="form-input"
                     placeholder={t('app.keyGenerator.organizationalUnitPlaceholder', 'IT Dept')}
                   />
@@ -226,19 +278,29 @@ export function KeyGenerator() {
                       <span>{t('app.keyGenerator.placeholderOu', 'Generic placeholder detected for Organizational Unit. Real unit name required.')}</span>
                     </div>
                   )}
+                  {isOuLimitReached && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.limitReached', 'Maximum limit of {{count}} characters reached (RFC 5280).', { count: 64 })}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="key-gen-row-3">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">{t('app.keyGenerator.locality', 'City (L)')}</label>
+                  <label className="form-label">
+                    {t('app.keyGenerator.locality', 'City (L)')}
+                  </label>
                   <input
                     type="text"
                     value={locality}
+                    maxLength={128}
                     onChange={e => {
                       setLocality(e.target.value);
                       if (error) setError('');
                     }}
+                    style={{ borderColor: isLocLimitReached ? 'var(--danger-color, #ef4444)' : undefined }}
                     className="form-input"
                     placeholder={t('app.keyGenerator.localityPlaceholder', 'City')}
                   />
@@ -248,16 +310,26 @@ export function KeyGenerator() {
                       <span>{t('app.keyGenerator.placeholderLoc', 'Generic placeholder detected for City ("{{value}}"). Real locality required.', { value: locality.trim() })}</span>
                     </div>
                   )}
+                  {isLocLimitReached && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.limitReached', 'Maximum limit of {{count}} characters reached (RFC 5280).', { count: 128 })}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">{t('app.keyGenerator.state', 'State (ST)')}</label>
+                  <label className="form-label">
+                    {t('app.keyGenerator.state', 'State (ST)')}
+                  </label>
                   <input
                     type="text"
                     value={state}
+                    maxLength={128}
                     onChange={e => {
                       setState(e.target.value);
                       if (error) setError('');
                     }}
+                    style={{ borderColor: isStateLimitReached ? 'var(--danger-color, #ef4444)' : undefined }}
                     className="form-input"
                     placeholder={t('app.keyGenerator.statePlaceholder', 'State')}
                   />
@@ -267,9 +339,17 @@ export function KeyGenerator() {
                       <span>{t('app.keyGenerator.placeholderState', 'Generic placeholder detected for State. Real state name required.')}</span>
                     </div>
                   )}
+                  {isStateLimitReached && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                      <span>{t('app.keyGenerator.limitReached', 'Maximum limit of {{count}} characters reached (RFC 5280).', { count: 128 })}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">{t('app.keyGenerator.country', 'Country (C)')}</label>
+                  <label className="form-label">
+                    {t('app.keyGenerator.country', 'Country (C)')}
+                  </label>
                   <input
                     type="text"
                     value={country}
@@ -278,13 +358,30 @@ export function KeyGenerator() {
                       if (error) setError('');
                     }}
                     maxLength={2}
+                    style={{
+                      borderColor: isCountryInvalid
+                        ? 'var(--danger-color, #ef4444)'
+                        : isCountryValid
+                        ? 'var(--success-color, #10b981)'
+                        : undefined
+                    }}
                     className="form-input"
                     placeholder={t('app.keyGenerator.countryPlaceholder', 'US')}
                   />
-                  {country.trim().length > 0 && !/^[A-Za-z]{2}$/.test(country.trim()) && (
+                  {isCountryInvalid && (
                     <div style={{ marginTop: '0.4rem', color: 'var(--danger-color)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <AlertTriangle size={14} style={{ flexShrink: 0 }} />
-                      <span>{t('app.keyGenerator.countryInvalid', 'Country Code must be a 2-letter ISO 3166-1 alpha-2 code (e.g. US, DE, GB).')}</span>
+                      <span>
+                        {trimmedCountry.length < 2
+                          ? t('app.keyGenerator.countryLengthError', 'Country Code must be a 2-letter ISO 3166-1 alpha-2 code (e.g. US, DE, GB).')
+                          : t('app.keyGenerator.countryUnrecognized', 'Unknown country code "{{code}}". Must be a valid ISO 3166-1 alpha-2 code.', { code: trimmedCountry })}
+                      </span>
+                    </div>
+                  )}
+                  {isCountryValid && countryName && (
+                    <div style={{ marginTop: '0.4rem', color: 'var(--success-color, #10b981)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Check size={14} style={{ flexShrink: 0 }} />
+                      <span>{countryName}</span>
                     </div>
                   )}
                 </div>
@@ -319,7 +416,8 @@ export function KeyGenerator() {
                 hasOrgPlaceholder ||
                 hasOuPlaceholder ||
                 hasStatePlaceholder ||
-                isCountryInvalid
+                isCountryInvalid ||
+                hasAnyLengthExceeded
               }
               style={{
                 width: '100%',

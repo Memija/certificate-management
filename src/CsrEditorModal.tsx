@@ -6,6 +6,7 @@ import type { ParsedCSR } from './utils/csrParser';
 import { parseCSRFromText } from './utils/csrParser';
 import { validateCsr, validatePrivateKeyPem } from './utils/csrValidation';
 import type { CsrFieldErrors } from './utils/csrValidation';
+import { isValidCountryCode, getCountryName } from './utils/countryCodes';
 
 export interface CsrEditorModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export function CsrEditorModal({
   onClose,
   onSave,
 }: CsrEditorModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // ── Subject state ─────────────────────────────────────────────────────────
   const [cn, setCn] = useState('');
@@ -488,6 +489,12 @@ export function CsrEditorModal({
                   <div style={{ marginTop: '0.35rem', color: 'var(--danger-color, #ef4444)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <AlertTriangle size={13} style={{ flexShrink: 0 }} />
                     <span>{fieldErrors.country}</span>
+                  </div>
+                )}
+                {!fieldErrors.country && isValidCountryCode(country.trim()) && (
+                  <div style={{ marginTop: '0.35rem', color: 'var(--success-color, #10b981)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <CheckCircle size={13} style={{ flexShrink: 0 }} />
+                    <span>{getCountryName(country.trim(), i18n.language)}</span>
                   </div>
                 )}
               </div>
