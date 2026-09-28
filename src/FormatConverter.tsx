@@ -27,6 +27,23 @@ import {
 
 type ConvertMode = 'pem-der' | 'pfx';
 
+interface StatusFeedback {
+  code:
+    | 'INVALID_FILE_TYPE'
+    | 'EMPTY_FILE'
+    | 'INVALID_FORMAT'
+    | 'CONVERSION_FAILED'
+    | 'PFX_FAILED'
+    | 'CERT_AND_KEY_REQUIRED'
+    | 'PASSWORD_REQUIRED'
+    | 'DER_DOWNLOADED'
+    | 'PEM_DOWNLOADED'
+    | 'PFX_DOWNLOADED'
+    | 'CUSTOM';
+  details?: string;
+  customMessage?: string;
+}
+
 export function FormatConverter() {
   const { t } = useTranslation();
   const { showToast } = useToast();
@@ -47,8 +64,75 @@ export function FormatConverter() {
   const [showPassword, setShowPassword] = useState(false);
   const [activePfxPreset, setActivePfxPreset] = useState<string | null>(null);
 
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState<StatusFeedback | null>(null);
+  const [error, setError] = useState<StatusFeedback | null>(null);
+
+  const getLocalizedError = (err: StatusFeedback | null): string => {
+    if (!err) return '';
+    switch (err.code) {
+      case 'INVALID_FILE_TYPE':
+        return t(
+          'app.formatConverter.invalidFileType',
+          'Unsupported file type. Please select a valid PEM or DER certificate or private key file (.pem, .der, .crt, .cer, .key).'
+        );
+      case 'EMPTY_FILE':
+        return t('app.formatConverter.emptyFile', 'The selected file is empty.');
+      case 'INVALID_FORMAT':
+        return t(
+          'app.formatConverter.invalidFormat',
+          'File is not a valid PEM or DER certificate or private key.'
+        );
+      case 'CONVERSION_FAILED':
+        return t('app.formatConverter.conversionFailed', `Conversion failed: ${err.details || ''}`, {
+          error: err.details || '',
+        });
+      case 'CERT_AND_KEY_REQUIRED':
+        return t('app.formatConverter.certAndKeyRequired', 'Certificate and Private Key are required.');
+      case 'PASSWORD_REQUIRED':
+        return t('app.formatConverter.passwordRequired', 'PFX export password is required.');
+      case 'PFX_FAILED':
+        return t('app.formatConverter.pfxFailed', `PFX generation failed: ${err.details || ''}`, {
+          error: err.details || '',
+        });
+      case 'CUSTOM':
+        return err.customMessage || '';
+      default:
+        return '';
+    }
+  };
+
+  const getLocalizedMessage = (msg: StatusFeedback | null): string => {
+    if (!msg) return '';
+    switch (msg.code) {
+      case 'DER_DOWNLOADED':
+        return t('app.formatConverter.derDownloaded', 'DER file downloaded!');
+      case 'PEM_DOWNLOADED':
+        return t('app.formatConverter.pemDownloaded', 'PEM file downloaded!');
+      case 'PFX_DOWNLOADED':
+        return t('app.formatConverter.pfxDownloaded', 'PFX file downloaded!');
+      case 'CUSTOM':
+        return msg.customMessage || '';
+      default:
+        return '';
+    }
+  };
+
+  const setFeedbackError = (feedback: StatusFeedback) => {
+    setError(feedback);
+    setMessage(null);
+    showToast(getLocalizedError(feedback), 'error');
+  };
+
+  const setFeedbackMessage = (feedback: StatusFeedback) => {
+    setMessage(feedback);
+    setError(null);
+    showToast(getLocalizedMessage(feedback), 'success');
+  };
+
+  const clearFeedback = () => {
+    setError(null);
+    setMessage(null);
+  };
 
   // ─── Format File Size Helper ────────────────────────────────────────────────
   const formatFileSize = (bytes: number): string => {
@@ -66,14 +150,13 @@ export function FormatConverter() {
       setConvertType(preset.contentType);
       setOutputFormat(preset.outputFormat);
       setActivePemDerPreset(preset.id);
-      setError('');
-      setMessage('');
+      clearFeedback();
       if (file1InputRef.current) file1InputRef.current.value = '';
 
       const localizedName = getLocalizedPemDerPresetName(preset);
       showToast(t('app.formatConverter.presetLoaded', `Loaded "${localizedName}" preset`, { name: localizedName }), 'info');
     } catch (e: any) {
-      setError(t('app.formatConverter.conversionFailed', `Conversion failed: ${e.message}`, { error: e.message }));
+      setFeedbackError({ code: 'CONVERSION_FAILED', details: e.message });
     }
   };
 
@@ -81,8 +164,7 @@ export function FormatConverter() {
     setFile1(null);
     setFile1Content(null);
     setActivePemDerPreset(null);
-    setError('');
-    setMessage('');
+    clearFeedback();
     if (file1InputRef.current) file1InputRef.current.value = '';
   };
 
@@ -91,8 +173,7 @@ export function FormatConverter() {
     setKeyInput(preset.keyPem);
     setPfxPassword(preset.defaultPassword);
     setActivePfxPreset(preset.id);
-    setError('');
-    setMessage('');
+    clearFeedback();
 
     const localizedName = getLocalizedPfxPresetName(preset);
     showToast(t('app.formatConverter.presetLoaded', `Loaded "${localizedName}" preset`, { name: localizedName }), 'info');
@@ -103,8 +184,7 @@ export function FormatConverter() {
     setKeyInput('');
     setPfxPassword('');
     setActivePfxPreset(null);
-    setError('');
-    setMessage('');
+    clearFeedback();
   };
 
   const getLocalizedPemDerPresetName = (preset: PemDerSamplePreset) => {
@@ -133,60 +213,221 @@ export function FormatConverter() {
     }
   };
 
-  // ─── File Upload Handler ────────────────────────────────────────────────────
-  const handleFile1Upload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const f = e.target.files[0];
-      setFile1(f);
-      setActivePemDerPreset(null);
-      setError('');
-      setMessage('');
+  const [isDragging, setIsDragging] = useState(false);
 
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        if (evt.target?.result) {
-          const buffer = evt.target.result as ArrayBuffer;
-          const bytes = new Uint8Array(buffer);
-          let preview = '';
-          for (let i = 0; i < Math.min(bytes.length, 120); i++) {
-            preview += String.fromCharCode(bytes[i]);
-          }
+  // ─── File Upload & Validation Handler ───────────────────────────────────────
+  const processSourceFile = (f: File) => {
+    clearFeedback();
 
-          if (preview.includes('-----BEGIN')) {
-            // It's ASCII PEM
-            const text = new TextDecoder('utf-8').decode(buffer);
-            setFile1Content(text);
-            setOutputFormat('der');
-            if (text.includes('PRIVATE KEY') || f.name.toLowerCase().includes('key')) {
-              setConvertType('key');
-            } else {
+    const ALLOWED_EXTENSIONS = ['.pem', '.der', '.crt', '.cer', '.key', '.p8'];
+    const fileName = f.name.toLowerCase();
+    const hasValidExt = ALLOWED_EXTENSIONS.some((ext) => fileName.endsWith(ext));
+
+    if (!hasValidExt) {
+      setFile1(null);
+      setFile1Content(null);
+      if (file1InputRef.current) file1InputRef.current.value = '';
+      setFeedbackError({ code: 'INVALID_FILE_TYPE' });
+      return;
+    }
+
+    if (f.size === 0) {
+      setFile1(null);
+      setFile1Content(null);
+      if (file1InputRef.current) file1InputRef.current.value = '';
+      setFeedbackError({ code: 'EMPTY_FILE' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      if (!evt.target?.result) return;
+      const buffer = evt.target.result as ArrayBuffer;
+      const bytes = new Uint8Array(buffer);
+
+      if (bytes.length === 0) {
+        setFile1(null);
+        setFile1Content(null);
+        if (file1InputRef.current) file1InputRef.current.value = '';
+        setFeedbackError({ code: 'EMPTY_FILE' });
+        return;
+      }
+
+      // Check for ASCII PEM text
+      let text = '';
+      try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      } catch {
+        // Binary content
+      }
+
+      if (text && text.includes('-----BEGIN')) {
+        const isCertHeader = text.includes('CERTIFICATE');
+        const isKeyHeader = text.includes('PRIVATE KEY');
+
+        if (!isCertHeader && !isKeyHeader) {
+          setFile1(null);
+          setFile1Content(null);
+          if (file1InputRef.current) file1InputRef.current.value = '';
+          setFeedbackError({ code: 'INVALID_FORMAT' });
+          return;
+        }
+
+        if (isCertHeader) {
+          try {
+            const cert = forge.pki.certificateFromPem(text);
+            if (cert && cert.subject) {
+              setFile1(f);
+              setFile1Content(text);
+              setOutputFormat('der');
               setConvertType('cert');
+              setActivePemDerPreset(null);
+              clearFeedback();
+              return;
             }
-          } else {
-            // It's binary DER
-            setFile1Content(buffer);
-            setOutputFormat('pem');
-            if (f.name.toLowerCase().includes('key')) {
-              setConvertType('key');
-            } else {
-              setConvertType('cert');
-            }
+          } catch {
+            setFile1(null);
+            setFile1Content(null);
+            if (file1InputRef.current) file1InputRef.current.value = '';
+            setFeedbackError({ code: 'INVALID_FORMAT' });
+            return;
           }
         }
-      };
-      reader.readAsArrayBuffer(f);
+
+        if (isKeyHeader) {
+          let validKey = false;
+          try {
+            const key = forge.pki.privateKeyFromPem(text);
+            if (key && (key as any).n) {
+              validKey = true;
+            }
+          } catch {
+            try {
+              const pemMsg = forge.pem.decode(text)[0];
+              if (pemMsg && pemMsg.body && pemMsg.type.includes('PRIVATE KEY')) {
+                validKey = true;
+              }
+            } catch {
+              validKey = false;
+            }
+          }
+
+          if (validKey) {
+            setFile1(f);
+            setFile1Content(text);
+            setOutputFormat('der');
+            setConvertType('key');
+            setActivePemDerPreset(null);
+            clearFeedback();
+            return;
+          }
+
+          setFile1(null);
+          setFile1Content(null);
+          if (file1InputRef.current) file1InputRef.current.value = '';
+          setFeedbackError({ code: 'INVALID_FORMAT' });
+          return;
+        }
+      }
+
+      // Check for binary DER: must begin with ASN.1 SEQUENCE (0x30)
+      if (bytes[0] === 0x30) {
+        let binaryStr = '';
+        for (let i = 0; i < bytes.length; i++) binaryStr += String.fromCharCode(bytes[i]);
+        try {
+          const asn1Obj = forge.asn1.fromDer(binaryStr);
+          let detectedType: 'cert' | 'key' | null = null;
+
+          try {
+            const cert = forge.pki.certificateFromAsn1(asn1Obj);
+            if (cert && cert.subject) {
+              detectedType = 'cert';
+            }
+          } catch {}
+
+          if (!detectedType) {
+            try {
+              const key = forge.pki.privateKeyFromAsn1(asn1Obj);
+              if (key && (key as any).n) {
+                detectedType = 'key';
+              }
+            } catch {}
+          }
+
+          if (!detectedType && asn1Obj.type === forge.asn1.Type.SEQUENCE && Array.isArray(asn1Obj.value)) {
+            detectedType = fileName.includes('key') ? 'key' : 'cert';
+          }
+
+          if (detectedType) {
+            setFile1(f);
+            setFile1Content(buffer);
+            setOutputFormat('pem');
+            setConvertType(detectedType);
+            setActivePemDerPreset(null);
+            clearFeedback();
+            return;
+          }
+        } catch {
+          // DER parsing failed
+        }
+      }
+
+      // Neither valid PEM nor valid DER
+      setFile1(null);
+      setFile1Content(null);
+      if (file1InputRef.current) file1InputRef.current.value = '';
+      setFeedbackError({ code: 'INVALID_FORMAT' });
+    };
+
+    reader.readAsArrayBuffer(f);
+  };
+
+  const handleFile1Upload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processSourceFile(e.target.files[0]);
+    }
+    e.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processSourceFile(e.dataTransfer.files[0]);
     }
   };
 
   // ─── PEM <-> DER Conversion ─────────────────────────────────────────────────
   const handlePemDerConvert = () => {
-    setError('');
-    setMessage('');
+    clearFeedback();
     if (!file1 || !file1Content) return;
 
     try {
       const isInputBinary = file1Content instanceof ArrayBuffer;
       let asn1Obj: any = null;
+
+      // Inferred effective type from content
+      let effectiveType: 'cert' | 'key' = convertType;
+      if (!isInputBinary && typeof file1Content === 'string') {
+        if (file1Content.includes('CERTIFICATE')) {
+          effectiveType = 'cert';
+        } else if (file1Content.includes('PRIVATE KEY')) {
+          effectiveType = 'key';
+        }
+      }
 
       // Handle Input
       if (isInputBinary) {
@@ -197,7 +438,7 @@ export function FormatConverter() {
       } else {
         const text = file1Content as string;
         if (text.includes('BEGIN')) {
-          if (convertType === 'cert') {
+          if (effectiveType === 'cert') {
             const cert = forge.pki.certificateFromPem(text);
             asn1Obj = forge.pki.certificateToAsn1(cert);
           } else {
@@ -213,19 +454,18 @@ export function FormatConverter() {
 
       // Safe base name
       const baseName = file1.name.replace(/\.[^/.]+$/, '') || 'converted_file';
+      const effectiveOutputFormat = isInputBinary ? 'pem' : 'der';
 
       // Handle Output
-      if (outputFormat === 'der') {
+      if (effectiveOutputFormat === 'der') {
         const derStr = forge.asn1.toDer(asn1Obj).getBytes();
         const bytes = new Uint8Array(derStr.length);
         for (let i = 0; i < derStr.length; i++) bytes[i] = derStr.charCodeAt(i);
         downloadBlob(new Blob([bytes], { type: 'application/octet-stream' }), `converted_${baseName}.der`);
-        const msg = t('app.formatConverter.derDownloaded', 'DER file downloaded!');
-        setMessage(msg);
-        showToast(msg, 'success');
+        setFeedbackMessage({ code: 'DER_DOWNLOADED' });
       } else {
         let pem = '';
-        if (convertType === 'cert') {
+        if (effectiveType === 'cert') {
           const cert = forge.pki.certificateFromAsn1(asn1Obj);
           pem = forge.pki.certificateToPem(cert);
         } else {
@@ -233,31 +473,22 @@ export function FormatConverter() {
           pem = forge.pki.privateKeyToPem(key as any);
         }
         downloadBlob(new Blob([pem], { type: 'text/plain' }), `converted_${baseName}.pem`);
-        const msg = t('app.formatConverter.pemDownloaded', 'PEM file downloaded!');
-        setMessage(msg);
-        showToast(msg, 'success');
+        setFeedbackMessage({ code: 'PEM_DOWNLOADED' });
       }
     } catch (e: any) {
-      const errText = t('app.formatConverter.conversionFailed', `Conversion failed: ${e.message}`, { error: e.message });
-      setError(errText);
-      showToast(errText, 'error');
+      setFeedbackError({ code: 'CONVERSION_FAILED', details: e.message });
     }
   };
 
   // ─── PFX Builder ────────────────────────────────────────────────────────────
   const handlePfxBuild = () => {
-    setError('');
-    setMessage('');
+    clearFeedback();
     if (!certInput.trim() || !keyInput.trim()) {
-      const errText = t('app.formatConverter.certAndKeyRequired', 'Certificate and Private Key are required.');
-      setError(errText);
-      showToast(errText, 'error');
+      setFeedbackError({ code: 'CERT_AND_KEY_REQUIRED' });
       return;
     }
     if (!pfxPassword) {
-      const errText = t('app.formatConverter.passwordRequired', 'PFX export password is required.');
-      setError(errText);
-      showToast(errText, 'error');
+      setFeedbackError({ code: 'PASSWORD_REQUIRED' });
       return;
     }
 
@@ -285,13 +516,9 @@ export function FormatConverter() {
       }
 
       downloadBlob(new Blob([bytes], { type: 'application/x-pkcs12' }), filename);
-      const msg = t('app.formatConverter.pfxDownloaded', 'PFX file downloaded!');
-      setMessage(msg);
-      showToast(msg, 'success');
+      setFeedbackMessage({ code: 'PFX_DOWNLOADED' });
     } catch (e: any) {
-      const errText = t('app.formatConverter.pfxFailed', `PFX generation failed: ${e.message}`, { error: e.message });
-      setError(errText);
-      showToast(errText, 'error');
+      setFeedbackError({ code: 'PFX_FAILED', details: e.message });
     }
   };
 
@@ -307,6 +534,8 @@ export function FormatConverter() {
   };
 
   const isCurrentFileBinary = file1Content instanceof ArrayBuffer;
+  const activeErrorText = getLocalizedError(error);
+  const activeMessageText = getLocalizedMessage(message);
 
   return (
     <div className="main-content">
@@ -330,8 +559,7 @@ export function FormatConverter() {
             className={`format-tab-btn ${mode === 'pem-der' ? 'active' : ''}`}
             onClick={() => {
               setMode('pem-der');
-              setError('');
-              setMessage('');
+              clearFeedback();
             }}
           >
             <FileArchive size={16} /> {t('app.formatConverter.tabPemDer', 'PEM ↔ DER Converter')}
@@ -341,8 +569,7 @@ export function FormatConverter() {
             className={`format-tab-btn ${mode === 'pfx' ? 'active' : ''}`}
             onClick={() => {
               setMode('pfx');
-              setError('');
-              setMessage('');
+              clearFeedback();
             }}
           >
             <Shield size={16} /> {t('app.formatConverter.tabPfx', 'Build PFX (PKCS#12)')}
@@ -470,7 +697,7 @@ export function FormatConverter() {
 
         {/* ─── PEM ↔ DER Mode Panel ─── */}
         {mode === 'pem-der' && (
-          <div className="glass-panel animate-fade-in" style={{ maxWidth: '680px', margin: '0 auto', padding: '1.75rem' }}>
+          <div className="glass-panel animate-fade-in" style={{ maxWidth: '720px', margin: '0 auto', padding: '1.75rem' }}>
             <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.15rem', color: 'var(--text-primary)' }}>
               {t('app.formatConverter.pemDerTitle', 'PEM ↔ DER File Converter')}
             </h3>
@@ -478,9 +705,27 @@ export function FormatConverter() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">{t('app.formatConverter.selectSourceFile', 'Select Source File')}</label>
-                <div>
-                  <input type="file" ref={file1InputRef} onChange={handleFile1Upload} style={{ display: 'none' }} />
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  style={{
+                    borderRadius: '8px',
+                    transition: 'all 0.2s ease',
+                    outline: isDragging ? '2px dashed var(--accent-color)' : 'none',
+                    outlineOffset: '2px',
+                    background: isDragging ? 'rgba(56, 189, 248, 0.06)' : undefined,
+                  }}
+                >
+                  <input
+                    type="file"
+                    ref={file1InputRef}
+                    accept=".pem,.der,.crt,.cer,.key,.p8"
+                    onChange={handleFile1Upload}
+                    style={{ display: 'none' }}
+                  />
                   <button
+                    type="button"
                     className="btn btn-secondary"
                     onClick={() => file1InputRef.current?.click()}
                     style={{ width: '100%', justifyContent: 'center' }}
@@ -507,7 +752,17 @@ export function FormatConverter() {
                             <span
                               className={`format-badge ${isCurrentFileBinary ? 'format-badge-der' : 'format-badge-pem'}`}
                             >
-                              {isCurrentFileBinary ? 'DER (Binary)' : 'PEM (Text)'}
+                              {isCurrentFileBinary
+                                ? t('app.formatConverter.badgeDer', 'DER (Binary)')
+                                : t('app.formatConverter.badgePem', 'PEM (Text)')}
+                            </span>
+                            <span>•</span>
+                            <span
+                              className={`format-badge ${convertType === 'cert' ? 'format-badge-cert' : 'format-badge-key'}`}
+                            >
+                              {convertType === 'cert'
+                                ? t('app.formatConverter.typeCert', 'Certificate (X.509)')
+                                : t('app.formatConverter.typeKey', 'Private Key (RSA)')}
                             </span>
                           </div>
                         </div>
@@ -527,28 +782,72 @@ export function FormatConverter() {
                 </div>
               </div>
 
-              <div className="format-converter-row">
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">{t('app.formatConverter.contentType', 'Content Type')}</label>
+              <div className="format-converter-grid">
+                {/* Column 1 Header */}
+                <div className="format-converter-col-header format-converter-header-1">
+                  <label className="form-label format-col-label">{t('app.formatConverter.contentType', 'Content Type')}</label>
+                  {file1 && (
+                    <span className="format-auto-detected-badge">
+                      <CheckCircle2 size={11} /> {t('app.formatConverter.autoDetected', 'Auto-detected')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Column 2 Header */}
+                <div className="format-converter-col-header format-converter-header-2">
+                  <label className="form-label format-col-label">{t('app.formatConverter.targetFormat', 'Target Output Format')}</label>
+                  {file1 && (
+                    <span className="format-auto-detected-badge">
+                      <CheckCircle2 size={11} /> {t('app.formatConverter.autoSelected', 'Auto-selected')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Column 1 Input */}
+                <div className="format-converter-input-col format-converter-input-1">
                   <select
                     className="form-select"
-                    value={convertType}
-                    onChange={(e) => setConvertType(e.target.value as any)}
+                    value={file1 ? convertType : ''}
+                    disabled
+                    style={{
+                      cursor: 'default',
+                      opacity: file1 ? 0.95 : 0.65,
+                      background: 'var(--bg-secondary)',
+                      borderColor: file1 ? 'rgba(56, 189, 248, 0.3)' : undefined,
+                      width: '100%',
+                    }}
                   >
-                    <option value="cert">{t('app.formatConverter.typeCert', 'Certificate (X.509)')}</option>
-                    <option value="key">{t('app.formatConverter.typeKey', 'Private Key (RSA)')}</option>
+                    {!file1 ? (
+                      <option value="">{t('app.formatConverter.autoDetectWaiting', 'Auto-detected on upload')}</option>
+                    ) : convertType === 'cert' ? (
+                      <option value="cert">{t('app.formatConverter.typeCert', 'Certificate (X.509)')}</option>
+                    ) : (
+                      <option value="key">{t('app.formatConverter.typeKey', 'Private Key (RSA)')}</option>
+                    )}
                   </select>
                 </div>
 
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">{t('app.formatConverter.targetFormat', 'Target Output Format')}</label>
+                {/* Column 2 Input */}
+                <div className="format-converter-input-col format-converter-input-2">
                   <select
                     className="form-select"
-                    value={outputFormat}
-                    onChange={(e) => setOutputFormat(e.target.value as any)}
+                    value={file1 ? outputFormat : ''}
+                    disabled
+                    style={{
+                      cursor: 'default',
+                      opacity: file1 ? 0.95 : 0.65,
+                      background: 'var(--bg-secondary)',
+                      borderColor: file1 ? 'rgba(56, 189, 248, 0.3)' : undefined,
+                      width: '100%',
+                    }}
                   >
-                    <option value="der">{t('app.formatConverter.formatDer', 'DER (Raw Binary)')}</option>
-                    <option value="pem">{t('app.formatConverter.formatPem', 'PEM (Base64 ASCII)')}</option>
+                    {!file1 ? (
+                      <option value="">{t('app.formatConverter.autoTargetWaiting', 'Auto-selected on upload')}</option>
+                    ) : outputFormat === 'der' ? (
+                      <option value="der">{t('app.formatConverter.formatDer', 'DER (Raw Binary)')}</option>
+                    ) : (
+                      <option value="pem">{t('app.formatConverter.formatPem', 'PEM (Base64 ASCII)')}</option>
+                    )}
                   </select>
                 </div>
               </div>
@@ -657,7 +956,7 @@ export function FormatConverter() {
         )}
 
         {/* ─── Feedback Alert ─── */}
-        {(error || message) && (
+        {(activeErrorText || activeMessageText) && (
           <div
             className="glass-panel"
             style={{
@@ -667,15 +966,15 @@ export function FormatConverter() {
               justifyContent: 'center',
               gap: '0.65rem',
               padding: '1rem 1.25rem',
-              background: error ? 'var(--danger-bg)' : 'var(--success-bg)',
-              borderColor: error ? 'var(--danger-border)' : 'var(--success-border)',
-              color: error ? 'var(--danger-color)' : 'var(--success-color)',
+              background: activeErrorText ? 'var(--danger-bg)' : 'var(--success-bg)',
+              borderColor: activeErrorText ? 'var(--danger-border)' : 'var(--success-border)',
+              color: activeErrorText ? 'var(--danger-color)' : 'var(--success-color)',
               fontWeight: 500,
               fontSize: '0.9rem',
             }}
           >
-            {error ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
-            <span>{error || message}</span>
+            {activeErrorText ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
+            <span>{activeErrorText || activeMessageText}</span>
           </div>
         )}
       </div>
