@@ -871,6 +871,42 @@
       "presetKeyDerToPem": "Kunci (DER → PEM)",
       "presetPfxRsa2048": "Server Web (RSA 2048)",
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
+    },
+    "tlsScanner": {
+      "title": "Pemindai Titik Akhir TLS Jarak Jauh",
+      "subtitle": "Hubungkan ke titik akhir TLS/SSL jarak jauh mana pun untuk memeriksa rantai sertifikat aktif, cipher suite, negosiasi protokol, dan validasi kepercayaan.",
+      "hostLabel": "Nama Host / Domain / IP",
+      "portLabel": "Port",
+      "scanButton": "Pindai Titik Akhir",
+      "scanning": "Memindai...",
+      "quickPresets": "Preset Cepat:",
+      "errors": {
+        "hostRequired": "Host wajib diisi",
+        "scanFailed": "Gagal memindai titik akhir"
+      },
+      "metrics": {
+        "protocol": "Protokol yang Dinegosiasikan",
+        "cipher": "Cipher Suite yang Dinegosiasikan",
+        "trustValidation": "Validasi Kepercayaan TLS",
+        "trusted": "Dipercaya oleh Penyimpanan Sistem",
+        "untrusted": "Masalah Validasi",
+        "chainLength": "Kedalaman Rantai",
+        "certs": "Sertifikat"
+      },
+      "presentedChain": "Rantai Sertifikat yang Ditampilkan",
+      "issuer": "Penerbit",
+      "subject": "Subjek",
+      "validFrom": "Berlaku Dari",
+      "validTo": "Berlaku Hingga",
+      "publicKey": "Kunci Publik",
+      "serialNumber": "Nomor Seri",
+      "fingerprint256": "Sidik Jari SHA-256",
+      "sanTitle": "Nama Alternatif Subjek (SAN)",
+      "viewExtensions": "Lihat Ekstensi",
+      "viewPem": "Lihat PEM",
+      "copyPem": "Salin PEM",
+      "copied": "Tersalin!",
+      "downloadPem": "Unduh PEM"
     }
   },
   "common": {

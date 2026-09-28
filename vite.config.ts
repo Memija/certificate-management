@@ -359,99 +359,262 @@ function tlsScannerApiPlugin() {
     name: 'tls-scanner-api',
     configureServer(server: any) {
       server.middlewares.use('/api/tlsscanner', async (req: any, res: any) => {
+        const sendJson = (statusCode: number, payload: any) => {
+          if (res.writableEnded) return;
+          res.statusCode = statusCode;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(payload));
+        };
+
         const url = new URL(req.url || '', `http://${req.headers.host}`);
-        const host = url.searchParams.get('host');
-        const portStr = url.searchParams.get('port') || '443';
-        
-        if (!host) {
-          res.statusCode = 400;
-          res.end(JSON.stringify({ error: 'Missing "host" query parameter' }));
+        const rawHost = url.searchParams.get('host') || '';
+        const rawPort = url.searchParams.get('port') || '443';
+
+        if (!rawHost.trim()) {
+          sendJson(400, { error: 'Missing "host" query parameter' });
           return;
         }
 
-        const port = parseInt(portStr, 10);
+        // Sanitize host and port
+        let host = rawHost.trim();
+        let port = parseInt(rawPort, 10);
+        if (isNaN(port) || port <= 0 || port > 65535) port = 443;
+
+        if (host.includes('://')) {
+          try {
+            const parsed = new URL(host);
+            host = parsed.hostname;
+            if (parsed.port) port = parseInt(parsed.port, 10);
+          } catch {
+            host = host.replace(/^[a-zA-Z]+:\/\//, '');
+            const slash = host.indexOf('/');
+            if (slash !== -1) host = host.substring(0, slash);
+          }
+        }
+        const slashIdx = host.indexOf('/');
+        if (slashIdx !== -1) host = host.substring(0, slashIdx);
+
+        if (host.startsWith('[')) {
+          const endBracket = host.indexOf(']');
+          if (endBracket !== -1) {
+            const portPart = host.substring(endBracket + 1);
+            if (portPart.startsWith(':')) {
+              const p = parseInt(portPart.substring(1), 10);
+              if (!isNaN(p)) port = p;
+            }
+            host = host.substring(1, endBracket);
+          }
+        } else if (host.includes(':')) {
+          const parts = host.split(':');
+          if (parts.length === 2 && !isNaN(Number(parts[1]))) {
+            host = parts[0];
+            port = parseInt(parts[1], 10);
+          }
+        }
+
+        host = host.trim().toLowerCase();
+
+        if (!host) {
+          sendJson(400, { error: 'Invalid hostname provided' });
+          return;
+        }
 
         try {
           const tls = await import('tls');
-          
-          const options = {
+          const crypto = await import('crypto');
+          const net = await import('net');
+          const forgeModule = await import('node-forge');
+          const forge = forgeModule.default || forgeModule;
+
+          const isIp = net.isIP(host) !== 0;
+
+          const options: any = {
             host,
             port,
-            servername: host,
             rejectUnauthorized: false,
           };
+          if (!isIp) {
+            options.servername = host;
+          }
+
+          let finished = false;
 
           const socket = tls.connect(options, () => {
-             try {
-                const peerCert = socket.getPeerCertificate(true);
-                
-                const processCert = (cert: any): any => {
-                   if (!cert || !cert.raw) return null;
-                   
-                   const seen = new Set<string>();
-                   
-                   const getChain = (c: any): any[] => {
-                      if (!c || !c.raw) return [];
-                      if (seen.has(c.fingerprint256)) return [];
-                      seen.add(c.fingerprint256);
-                      
-                      const current = {
-                         subject: c.subject,
-                         issuer: c.issuer,
-                         valid_from: c.valid_from,
-                         valid_to: c.valid_to,
-                         fingerprint: c.fingerprint,
-                         fingerprint256: c.fingerprint256,
-                         serialNumber: c.serialNumber,
-                         rawB64: c.raw.toString('base64')
+            if (finished) return;
+            finished = true;
+
+            try {
+              const peerCert = socket.getPeerCertificate(true);
+              if (!peerCert || !peerCert.raw) {
+                socket.destroy();
+                sendJson(500, { error: 'Remote server did not present a certificate' });
+                return;
+              }
+
+              const parseExtensionsFromRaw = (rawBuffer: Buffer) => {
+                try {
+                  const asn1: any = forge.asn1.fromDer(rawBuffer.toString('binary'));
+                  const tbsCert = asn1.value[0];
+                  const extWrapper = tbsCert.value.find(
+                    (el: any) => el.tagClass === forge.asn1.Class.CONTEXT_SPECIFIC && el.type === 3
+                  );
+                  if (!extWrapper || !extWrapper.value || !extWrapper.value[0]) return [];
+                  const extSeq = extWrapper.value[0];
+                  return extSeq.value.map((e: any) => {
+                    try {
+                      const ext = (forge.pki as any).certificateExtensionFromAsn1(e);
+                      return {
+                        id: ext.id,
+                        oid: ext.id,
+                        name: ext.name || ext.id,
+                        critical: !!ext.critical,
+                        value: typeof ext.value === 'string' ? ext.value : JSON.stringify(ext.value),
                       };
-                      
-                      if (c.issuerCertificate && c.issuerCertificate !== c) {
-                          return [current, ...getChain(c.issuerCertificate)];
+                    } catch {
+                      const oid = forge.asn1.derToOid(e.value[0].value);
+                      const critical = e.value.length === 3 ? !!e.value[1].value : false;
+                      const valObj = e.value.length === 3 ? e.value[2] : e.value[1];
+                      let valStr = '';
+                      try {
+                        valStr = forge.util.bytesToHex(valObj.value);
+                      } catch {
+                        valStr = '';
                       }
-                      
-                      return [current];
-                   };
-                   
-                   return getChain(cert);
-                };
+                      return {
+                        id: oid,
+                        oid,
+                        name: (forge.pki.oids as any)[oid] || oid,
+                        critical,
+                        value: valStr,
+                      };
+                    }
+                  });
+                } catch {
+                  return [];
+                }
+              };
 
-                const chain = processCert(peerCert);
-                const protocol = socket.getProtocol();
-                const cipher = socket.getCipher();
-                
-                socket.end();
+              const serializeKeyDetails = (details: any) => {
+                if (!details) return null;
+                const clean: any = {};
+                for (const [k, v] of Object.entries(details)) {
+                  clean[k] = typeof v === 'bigint' ? v.toString() : v;
+                }
+                return clean;
+              };
 
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ 
-                   data: {
-                      chain,
-                      protocol,
-                      cipher
-                   }
-                }));
+              const seen = new Set<string>();
+              const chain: any[] = [];
+              let currentCert = peerCert;
 
-             } catch (e: any) {
-                socket.end();
-                res.statusCode = 500;
-                res.end(JSON.stringify({ error: `Failed to process certificate: ${e.message}` }));
-             }
+              while (currentCert && currentCert.raw) {
+                if (seen.has(currentCert.fingerprint256)) break;
+                seen.add(currentCert.fingerprint256);
+
+                let x509: any = null;
+                let pem = '';
+                let subjectStr = '';
+                let issuerStr = '';
+                let keyType = '';
+                let keyDetails: any = null;
+
+                try {
+                  x509 = new crypto.X509Certificate(currentCert.raw);
+                  pem = x509.toString();
+                  subjectStr = x509.subject ? x509.subject.split('\n').filter(Boolean).join(', ') : '';
+                  issuerStr = x509.issuer ? x509.issuer.split('\n').filter(Boolean).join(', ') : '';
+                  keyType = x509.publicKey?.asymmetricKeyType || '';
+                  keyDetails = serializeKeyDetails(x509.publicKey?.asymmetricKeyDetails);
+                } catch {}
+
+                if (!subjectStr && currentCert.subject) {
+                  subjectStr = typeof currentCert.subject === 'object'
+                    ? Object.entries(currentCert.subject).map(([k, v]) => `${k}=${v}`).join(', ')
+                    : String(currentCert.subject);
+                }
+
+                if (!issuerStr && currentCert.issuer) {
+                  issuerStr = typeof currentCert.issuer === 'object'
+                    ? Object.entries(currentCert.issuer).map(([k, v]) => `${k}=${v}`).join(', ')
+                    : String(currentCert.issuer);
+                }
+
+                const subjectCN = currentCert.subject?.CN || (subjectStr.match(/CN=([^,]+)/)?.[1]) || subjectStr || 'Unknown';
+                const issuerCN = currentCert.issuer?.CN || (issuerStr.match(/CN=([^,]+)/)?.[1]) || issuerStr || 'Unknown';
+                const extensions = parseExtensionsFromRaw(currentCert.raw);
+
+                let sans: string[] = [];
+                if (x509?.subjectAltName) {
+                  sans = x509.subjectAltName.split(',').map((s: string) => s.trim()).filter(Boolean);
+                } else if (currentCert.subjectaltname) {
+                  sans = currentCert.subjectaltname.split(',').map((s: string) => s.trim()).filter(Boolean);
+                }
+
+                chain.push({
+                  subject: subjectStr,
+                  issuer: issuerStr,
+                  subjectCN,
+                  issuerCN,
+                  valid_from: currentCert.valid_from || (x509 ? x509.validFrom : ''),
+                  valid_to: currentCert.valid_to || (x509 ? x509.validTo : ''),
+                  fingerprint: currentCert.fingerprint || (x509 ? x509.fingerprint : ''),
+                  fingerprint256: currentCert.fingerprint256 || (x509 ? x509.fingerprint256 : ''),
+                  serialNumber: currentCert.serialNumber || (x509 ? x509.serialNumber : ''),
+                  rawB64: currentCert.raw.toString('base64'),
+                  pem,
+                  keyType,
+                  keyDetails,
+                  ca: x509 ? x509.ca : !!currentCert.ca,
+                  subjectAltNames: sans,
+                  extensions,
+                });
+
+                if (!currentCert.issuerCertificate || currentCert.issuerCertificate === currentCert) {
+                  break;
+                }
+                currentCert = currentCert.issuerCertificate;
+              }
+
+              const protocol = socket.getProtocol();
+              const cipher = socket.getCipher();
+              const authorized = socket.authorized;
+              const authorizationError = socket.authorizationError ? String(socket.authorizationError) : null;
+
+              socket.end();
+
+              sendJson(200, {
+                data: {
+                  chain,
+                  protocol,
+                  cipher,
+                  authorized,
+                  authorizationError,
+                  host,
+                  port,
+                },
+              });
+            } catch (e: any) {
+              socket.destroy();
+              sendJson(500, { error: `Failed to process certificate: ${e.message}` });
+            }
           });
 
           socket.on('error', (err: any) => {
-             res.statusCode = 500;
-             res.end(JSON.stringify({ error: `Connection failed: ${err.message}` }));
+            if (finished) return;
+            finished = true;
+            socket.destroy();
+            sendJson(500, { error: `Connection failed: ${err.message}` });
           });
-          
+
           socket.setTimeout(10000, () => {
-             socket.destroy();
-             res.statusCode = 504;
-             res.end(JSON.stringify({ error: 'Connection timed out' }));
+            if (finished) return;
+            finished = true;
+            socket.destroy();
+            sendJson(504, { error: `Connection to ${host}:${port} timed out after 10s` });
           });
 
         } catch (error: any) {
-          res.statusCode = 500;
-          res.end(JSON.stringify({ error: `Failed to scan TLS. ${error.message}` }));
+          sendJson(500, { error: `Failed to scan TLS. ${error.message}` });
         }
       });
     }

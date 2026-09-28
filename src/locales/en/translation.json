@@ -871,6 +871,42 @@
       "presetKeyDerToPem": "Key (DER → PEM)",
       "presetPfxRsa2048": "Web Server (RSA 2048)",
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
+    },
+    "tlsScanner": {
+      "title": "Remote TLS Endpoint Scanner",
+      "subtitle": "Connect to any remote TLS/SSL endpoint to inspect its active certificate chain, cipher suite, protocol negotiation, and trust validation.",
+      "hostLabel": "Hostname / Domain / IP",
+      "portLabel": "Port",
+      "scanButton": "Scan Endpoint",
+      "scanning": "Scanning...",
+      "quickPresets": "Quick Presets:",
+      "errors": {
+        "hostRequired": "Host is required",
+        "scanFailed": "Failed to scan endpoint"
+      },
+      "metrics": {
+        "protocol": "Negotiated Protocol",
+        "cipher": "Negotiated Cipher Suite",
+        "trustValidation": "TLS Trust Validation",
+        "trusted": "Trusted by System Store",
+        "untrusted": "Validation Issue",
+        "chainLength": "Chain Depth",
+        "certs": "Certificates"
+      },
+      "presentedChain": "Presented Certificate Chain",
+      "issuer": "Issuer",
+      "subject": "Subject",
+      "validFrom": "Valid From",
+      "validTo": "Valid To",
+      "publicKey": "Public Key",
+      "serialNumber": "Serial Number",
+      "fingerprint256": "SHA-256 Fingerprint",
+      "sanTitle": "Subject Alternative Names (SANs)",
+      "viewExtensions": "View Extensions",
+      "viewPem": "View PEM",
+      "copyPem": "Copy PEM",
+      "copied": "Copied!",
+      "downloadPem": "Download PEM"
     }
   },
   "common": {

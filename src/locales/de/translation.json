@@ -871,6 +871,42 @@
       "presetKeyDerToPem": "Schlüssel (DER → PEM)",
       "presetPfxRsa2048": "Webserver (RSA 2048)",
       "presetPfxRsa4096": "Enterprise-Tresor (RSA 4096)"
+    },
+    "tlsScanner": {
+      "title": "Remote-TLS-Endpunkt-Scanner",
+      "subtitle": "Verbinden Sie sich mit einem beliebigen Remote-TLS/SSL-Endpunkt, um die aktive Zertifikatskette, Cipher Suite, Protokollaushandlung und Vertrauensprüfung zu überprüfen.",
+      "hostLabel": "Hostname / Domain / IP",
+      "portLabel": "Port",
+      "scanButton": "Endpunkt Scannen",
+      "scanning": "Scannen...",
+      "quickPresets": "Schnellvorlagen:",
+      "errors": {
+        "hostRequired": "Host ist erforderlich",
+        "scanFailed": "Endpunkt-Scan fehlgeschlagen"
+      },
+      "metrics": {
+        "protocol": "Ausgehandeltes Protokoll",
+        "cipher": "Ausgehandelte Cipher-Suite",
+        "trustValidation": "TLS-Vertrauensprüfung",
+        "trusted": "Vom Systemspeicher als vertrauenswürdig eingestuft",
+        "untrusted": "Validierungsproblem",
+        "chainLength": "Kettentiefe",
+        "certs": "Zertifikate"
+      },
+      "presentedChain": "Präsentierte Zertifikatskette",
+      "issuer": "Aussteller",
+      "subject": "Inhaber",
+      "validFrom": "Gültig ab",
+      "validTo": "Gültig bis",
+      "publicKey": "Öffentlicher Schlüssel",
+      "serialNumber": "Seriennummer",
+      "fingerprint256": "SHA-256-Fingerabdruck",
+      "sanTitle": "Alternative Inhabernamen (SANs)",
+      "viewExtensions": "Erweiterungen anzeigen",
+      "viewPem": "PEM anzeigen",
+      "copyPem": "PEM kopieren",
+      "copied": "Kopiert!",
+      "downloadPem": "PEM herunterladen"
     }
   },
   "common": {

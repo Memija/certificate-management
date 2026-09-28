@@ -879,6 +879,42 @@
       "presetKeyDerToPem": "Klucz (DER → PEM)",
       "presetPfxRsa2048": "Serwer WWW (RSA 2048)",
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
+    },
+    "tlsScanner": {
+      "title": "Zdalny Skaner Punktów Końcowych TLS",
+      "subtitle": "Połącz się z dowolnym zdalnym punktem końcowym TLS/SSL, aby sprawdzić aktywny łańcuch certyfikatów, zestaw szyfrów, negocjację protokołu i walidację zaufania.",
+      "hostLabel": "Nazwa hosta / Domena / IP",
+      "portLabel": "Port",
+      "scanButton": "Skanuj Punkt Końcowy",
+      "scanning": "Skanowanie...",
+      "quickPresets": "Szybkie szablony:",
+      "errors": {
+        "hostRequired": "Host jest wymagany",
+        "scanFailed": "Nie udało się przeskanować punktu końcowego"
+      },
+      "metrics": {
+        "protocol": "Wynegocjowany Protokół",
+        "cipher": "Wynegocjowany Zestaw Szyfrów",
+        "trustValidation": "Walidacja Zaufania TLS",
+        "trusted": "Zaufany przez magazyn systemowy",
+        "untrusted": "Problem z walidacją",
+        "chainLength": "Głębokość Łańcucha",
+        "certs": "Certyfikatów"
+      },
+      "presentedChain": "Przedstawiony Łańcuch Certyfikatów",
+      "issuer": "Wystawca",
+      "subject": "Podmiot",
+      "validFrom": "Ważny Od",
+      "validTo": "Ważny Do",
+      "publicKey": "Klucz Publiczny",
+      "serialNumber": "Numer Seryjny",
+      "fingerprint256": "Odcisk Palca SHA-256",
+      "sanTitle": "Alternatywne Nazwy Podmiotu (SAN)",
+      "viewExtensions": "Pokaż Rozszerzenia",
+      "viewPem": "Pokaż PEM",
+      "copyPem": "Kopiuj PEM",
+      "copied": "Skopiowano!",
+      "downloadPem": "Pobierz PEM"
     }
   },
   "common": {

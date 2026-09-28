@@ -875,6 +875,42 @@
       "presetKeyDerToPem": "Кључ (DER → PEM)",
       "presetPfxRsa2048": "Веб Сервер (RSA 2048)",
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
+    },
+    "tlsScanner": {
+      "title": "Удаљени TLS Скенер Крајњих Тачака",
+      "subtitle": "Повежите се на било коју удаљену TLS/SSL крајњу тачку да бисте прегледали активан ланац сертификата, cipher suite, преговарање протокола и проверу поверења.",
+      "hostLabel": "Назив хоста / Домен / IP",
+      "portLabel": "Порт",
+      "scanButton": "Скенирај Крајњу Тачку",
+      "scanning": "Скенирање...",
+      "quickPresets": "Брзи шаблони:",
+      "errors": {
+        "hostRequired": "Хост је обавезан",
+        "scanFailed": "Неуспешно скенирање крајње тачке"
+      },
+      "metrics": {
+        "protocol": "Преговорени Протокол",
+        "cipher": "Преговорени Cipher Suite",
+        "trustValidation": "Провера TLS Поверења",
+        "trusted": "Поуздан од стране системског складишта",
+        "untrusted": "Проблем са валидацијом",
+        "chainLength": "Дубина Ланца",
+        "certs": "Сертификата"
+      },
+      "presentedChain": "Представљени Ланац Сертификата",
+      "issuer": "Издавалац",
+      "subject": "Субјекат",
+      "validFrom": "Важи Од",
+      "validTo": "Важи До",
+      "publicKey": "Јавни Кључ",
+      "serialNumber": "Серијски Број",
+      "fingerprint256": "SHA-256 Отисак",
+      "sanTitle": "Алтернативна Имена Субјекта (SAN)",
+      "viewExtensions": "Прикажи Екстензије",
+      "viewPem": "Прикажи PEM",
+      "copyPem": "Копирај PEM",
+      "copied": "Копирано!",
+      "downloadPem": "Преузми PEM"
     }
   },
   "common": {
