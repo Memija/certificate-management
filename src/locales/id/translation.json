@@ -12,14 +12,14 @@
       "secure-boot": "Secure Boot NVRAM",
       "win-cert-store": "Penyimpanan Sertifikat Windows",
       "expiry-dashboard": "Dasbor Kedaluwarsa",
-      "trust-store": "Penyimpanan Kepercayaan",
+      "trust-store": "Trust Store",
       "crl-inspector": "Inspektur CRL",
       "chain-validator": "Validator Rantai",
       "csr-inspector": "Inspektur CSR",
       "key-matcher": "Pencocok Pasangan Kunci",
       "key-generator": "Pembuat Kunci",
       "format-converter": "Pengonversi Format",
-      "tls-scanner": "Pemindai TLS Jarak Jauh",
+      "tls-scanner": "Remote TLS Scanner",
       "ocsp-checker": "Pemeriksa OCSP",
       "ct-log-search": "Pencarian Log CT",
       "education-center": "Pusat Pendidikan"
@@ -223,7 +223,19 @@
         "authorityInformationAccess": "Akses Informasi Otoritas",
         "authorityinformationaccess": "Akses Informasi Otoritas",
         "subjectAlternativeName": "Nama Alternatif Subjek",
-        "subjectalternativename": "Nama Alternatif Subjek"
+        "subjectalternativename": "Nama Alternatif Subjek",
+        "extKeyUsage": "Penggunaan Kunci yang Ditingkatkan",
+        "extkeyusage": "Penggunaan Kunci yang Ditingkatkan",
+        "extendedKeyUsage": "Penggunaan Kunci yang Ditingkatkan",
+        "extendedkeyusage": "Penggunaan Kunci yang Ditingkatkan",
+        "subjectAltName": "Nama Alternatif Subjek",
+        "subjectaltname": "Nama Alternatif Subjek",
+        "timestampList": "Transparansi Sertifikat (SCT)",
+        "timestamplist": "Transparansi Sertifikat (SCT)",
+        "CertificateTransparencySCTs": "Transparansi Sertifikat (SCT)",
+        "certificateTransparencySCTs": "Transparansi Sertifikat (SCT)",
+        "authorityInfoAccess": "Akses Informasi Otoritas",
+        "authorityinfoaccess": "Akses Informasi Otoritas"
       },
       "purposes": {
         "digitalsignature": "Tanda Tangan Digital",
@@ -486,7 +498,8 @@
       "unlockPfxTitle": "Buka Kunci Keystore PKCS#12 / PFX",
       "pfxPasswordPrompt": "File \"{{fileName}}\" dilindungi kata sandi. Masukkan kata sandi untuk mengekstrak sertifikat ke pool validasi rantai.",
       "unlocking": "Membuka kunci…",
-      "sampleAlreadyLoaded": "Contoh rantai ini sudah dimuat"
+      "sampleAlreadyLoaded": "Contoh rantai ini sudah dimuat",
+      "pathLenConstraint": "Batasan Panjang Jalur"
     },
     "crl": {
       "eyebrow": "Status Pencabutan & RFC 5280",
@@ -547,7 +560,7 @@
       "certNotCrl": "Berkas ini berisi Sertifikat X.509, bukan Daftar Pencabutan Sertifikat (CRL). Silakan unggah berkas .crl yang valid, atau periksa sertifikat ini di Inspektur Trust Store.",
       "csrNotCrl": "Berkas ini berisi Permintaan Penandatanganan Sertifikat (CSR), bukan Daftar Pencabutan Sertifikat (CRL). Silakan periksa di Inspektur CSR.",
       "keyNotCrl": "Berkas ini berisi Kunci Privat, bukan Daftar Pencabutan Sertifikat (CRL).",
-      "trustStoreNotCrl": "Berkas ini adalah Penyimpanan Kunci / Kepercayaan, bukan Daftar Pencabutan Sertifikat (CRL). Silakan periksa di Inspektur Trust Store.",
+      "trustStoreNotCrl": "Berkas ini adalah KeyStore / Trust Store, bukan Daftar Pencabutan Sertifikat (CRL). Silakan periksa di Inspektur Trust Store.",
       "goToTrustStore": "Buka di Inspektur Trust Store",
       "goToCsrInspector": "Buka di Inspektur CSR",
       "goToCertificateInspector": "Buka di Inspektur Sertifikat",
@@ -873,7 +886,7 @@
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Pemindai Titik Akhir TLS Jarak Jauh",
+      "title": "Remote TLS Scanner",
       "subtitle": "Hubungkan ke titik akhir TLS/SSL jarak jauh mana pun untuk memeriksa rantai sertifikat aktif, cipher suite, negosiasi protokol, dan validasi kepercayaan.",
       "hostLabel": "Nama Host / Domain / IP",
       "portLabel": "Port",
@@ -918,7 +931,7 @@
       "issuedBy": "Ditandatangani oleh",
       "signedAndIssuedBy": "Ditandatangani & Diterbitkan oleh CA",
       "selfSignedRoot": "Root CA Ditandatangani Sendiri · Jangkar Kepercayaan",
-      "trustedAnchor": "Jangkar Rantai · Penyimpanan Sistem",
+      "trustedAnchor": "Jangkar Rantai · Trust Store",
       "selfSigned": "Ditandatangani Sendiri",
       "lifespan": "Masa Berlaku Sertifikat",
       "elapsed": "berlalu",
@@ -974,7 +987,9 @@
         "postalCode": "Kode Pos",
         "serialNumber": "Nomor Seri",
         "email": "Email"
-      }
+      },
+      "embeddedSct": "Stempel Waktu Sertifikat Tertandatangani Tertanam (SCT)",
+      "specialPresetBadge": "Dev"
     }
   },
   "common": {

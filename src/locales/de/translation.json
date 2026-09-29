@@ -12,14 +12,14 @@
       "secure-boot": "Secure Boot NVRAM",
       "win-cert-store": "Windows-Zertifikatsspeicher",
       "expiry-dashboard": "Ablauf-Dashboard",
-      "trust-store": "Vertrauensspeicher",
+      "trust-store": "Trust Store",
       "crl-inspector": "CRL-Inspektor",
       "chain-validator": "Ketten-Validierer",
       "csr-inspector": "CSR-Inspektor",
       "key-matcher": "Schlüsselpaar-Zuordner",
       "key-generator": "Schlüsselgenerator",
       "format-converter": "Formatkonverter",
-      "tls-scanner": "Remote-TLS-Scanner",
+      "tls-scanner": "Remote TLS Scanner",
       "ocsp-checker": "OCSP-Prüfer",
       "ct-log-search": "CT-Protokollsuche",
       "education-center": "Bildungszentrum"
@@ -223,7 +223,19 @@
         "authorityInformationAccess": "Zugriff auf Informationen der Zertifizierungsstelle",
         "authorityinformationaccess": "Zugriff auf Informationen der Zertifizierungsstelle",
         "subjectAlternativeName": "Alternativer Name des Antragstellers",
-        "subjectalternativename": "Alternativer Name des Antragstellers"
+        "subjectalternativename": "Alternativer Name des Antragstellers",
+        "extKeyUsage": "Erweiterte Schlüsselverwendung",
+        "extkeyusage": "Erweiterte Schlüsselverwendung",
+        "extendedKeyUsage": "Erweiterte Schlüsselverwendung",
+        "extendedkeyusage": "Erweiterte Schlüsselverwendung",
+        "subjectAltName": "Alternativer Name des Antragstellers",
+        "subjectaltname": "Alternativer Name des Antragstellers",
+        "timestampList": "Zertifikatstransparenz (SCT)",
+        "timestamplist": "Zertifikatstransparenz (SCT)",
+        "CertificateTransparencySCTs": "Zertifikatstransparenz (SCT)",
+        "certificateTransparencySCTs": "Zertifikatstransparenz (SCT)",
+        "authorityInfoAccess": "Zugriff auf Informationen der Zertifizierungsstelle",
+        "authorityinfoaccess": "Zugriff auf Informationen der Zertifizierungsstelle"
       },
       "purposes": {
         "digitalsignature": "Digitale Signatur",
@@ -486,7 +498,8 @@
       "unlockPfxTitle": "PKCS#12 / PFX-Keystore entsperren",
       "pfxPasswordPrompt": "Die Datei „{{fileName}}“ ist passwortgeschützt. Geben Sie das Passwort ein, um Zertifikate in den Kettenvalidierungs-Pool zu extrahieren.",
       "unlocking": "Wird entsperrt…",
-      "sampleAlreadyLoaded": "Diese Beispielkette ist bereits geladen"
+      "sampleAlreadyLoaded": "Diese Beispielkette ist bereits geladen",
+      "pathLenConstraint": "Pfadlängenbeschränkung"
     },
     "crl": {
       "eyebrow": "Sperrstatus & RFC 5280",
@@ -547,7 +560,7 @@
       "certNotCrl": "Diese Datei enthält ein X.509-Zertifikat, keine Zertifikatssperrliste (CRL). Bitte laden Sie eine gültige .crl-Datei hoch oder untersuchen Sie dieses Zertifikat im Trust Store Inspektor.",
       "csrNotCrl": "Diese Datei enthält eine Zertifikatsignierungsanforderung (CSR), keine Zertifikatssperrliste (CRL). Bitte untersuchen Sie diese Datei im CSR-Inspektor.",
       "keyNotCrl": "Diese Datei enthält einen privaten Schlüssel, keine Zertifikatssperrliste (CRL).",
-      "trustStoreNotCrl": "Diese Datei ist ein KeyStore / Vertrauensspeicher, keine Zertifikatssperrliste (CRL). Bitte untersuchen Sie diese Datei im Trust Store Inspektor.",
+      "trustStoreNotCrl": "Diese Datei ist ein KeyStore / Trust Store, keine Zertifikatssperrliste (CRL). Bitte untersuchen Sie diese Datei im Trust Store Inspektor.",
       "goToTrustStore": "Im Trust Store Inspektor öffnen",
       "goToCsrInspector": "Im CSR-Inspektor öffnen",
       "goToCertificateInspector": "Im Zertifikats-Inspektor öffnen",
@@ -873,7 +886,7 @@
       "presetPfxRsa4096": "Enterprise-Tresor (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Remote-TLS-Endpunkt-Scanner",
+      "title": "Remote TLS Scanner",
       "subtitle": "Verbinden Sie sich mit einem beliebigen Remote-TLS/SSL-Endpunkt, um die aktive Zertifikatskette, Cipher Suite, Protokollaushandlung und Vertrauensprüfung zu überprüfen.",
       "hostLabel": "Hostname / Domain / IP",
       "portLabel": "Port",
@@ -918,7 +931,7 @@
       "issuedBy": "Signiert von",
       "signedAndIssuedBy": "Von CA signiert & ausgestellt",
       "selfSignedRoot": "Selbstsigniertes Stammzertifikat · Vertrauensanker",
-      "trustedAnchor": "Kettenanker · Systemspeicher-Anker",
+      "trustedAnchor": "Kettenanker · Trust Store Anker",
       "lifespan": "Zertifikatslebensdauer",
       "elapsed": "abgelaufen",
       "daysRemaining": "{{count}} Tage verbleibend",
@@ -974,7 +987,9 @@
         "postalCode": "Postleitzahl",
         "serialNumber": "Seriennummer",
         "email": "E-Mail"
-      }
+      },
+      "embeddedSct": "Eingebettete signierte Zertifikats-Zeitstempel (SCT)",
+      "specialPresetBadge": "Dev"
     }
   },
   "common": {

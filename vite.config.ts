@@ -451,6 +451,230 @@ function tlsScannerApiPlugin() {
                 return;
               }
 
+              const parseExtensionNode = (e: any) => {
+                let ext: any;
+                try {
+                  ext = (forge.pki as any).certificateExtensionFromAsn1(e);
+                } catch {
+                  const rawOid = forge.asn1.derToOid(e.value[0].value);
+                  ext = { id: rawOid };
+                }
+
+                const oid: string = ext.id || forge.asn1.derToOid(e.value[0].value);
+                const critical: boolean = typeof ext.critical === 'boolean'
+                  ? ext.critical
+                  : (e.value.length === 3 ? !!e.value[1].value : false);
+                let name: string = ext.name || (forge.pki.oids as any)[oid] || oid;
+                let valStr = '';
+
+                // 1. Key Usage (2.5.29.15)
+                if (ext.name === 'keyUsage' || oid === '2.5.29.15') {
+                  name = 'keyUsage';
+                  const usages: string[] = [];
+                  if (ext.digitalSignature) usages.push('Digital Signature');
+                  if (ext.nonRepudiation) usages.push('Non-Repudiation');
+                  if (ext.keyEncipherment) usages.push('Key Encipherment');
+                  if (ext.dataEncipherment) usages.push('Data Encipherment');
+                  if (ext.keyAgreement) usages.push('Key Agreement');
+                  if (ext.keyCertSign) usages.push('Certificate Signing');
+                  if (ext.cRLSign) usages.push('CRL Signing');
+                  if (ext.encipherOnly) usages.push('Encipher Only');
+                  if (ext.decipherOnly) usages.push('Decipher Only');
+                  valStr = usages.join(', ');
+                }
+                // 2. Extended Key Usage (2.5.29.37)
+                else if (ext.name === 'extKeyUsage' || oid === '2.5.29.37') {
+                  name = 'extKeyUsage';
+                  const ekus: string[] = [];
+                  if (ext.serverAuth) ekus.push('Server Authentication (1.3.6.1.5.5.7.3.1)');
+                  if (ext.clientAuth) ekus.push('Client Authentication (1.3.6.1.5.5.7.3.2)');
+                  if (ext.codeSigning) ekus.push('Code Signing (1.3.6.1.5.5.7.3.3)');
+                  if (ext.emailProtection) ekus.push('Email Protection (1.3.6.1.5.5.7.3.4)');
+                  if (ext.timeStamping) ekus.push('Time Stamping (1.3.6.1.5.5.7.3.8)');
+                  if (ext.ocspSigning) ekus.push('OCSP Signing (1.3.6.1.5.5.7.3.9)');
+
+                  try {
+                    const valAsn1 = e.value.length === 3 ? e.value[2] : e.value[1];
+                    const innerAsn1 = forge.asn1.fromDer(valAsn1.value);
+                    if (innerAsn1.value && Array.isArray(innerAsn1.value)) {
+                      innerAsn1.value.forEach((item: any) => {
+                        const itemOid = forge.asn1.derToOid(item.value);
+                        const knownOids: Record<string, string> = {
+                          '1.3.6.1.5.5.7.3.1': 'Server Authentication (1.3.6.1.5.5.7.3.1)',
+                          '1.3.6.1.5.5.7.3.2': 'Client Authentication (1.3.6.1.5.5.7.3.2)',
+                          '1.3.6.1.5.5.7.3.3': 'Code Signing (1.3.6.1.5.5.7.3.3)',
+                          '1.3.6.1.5.5.7.3.4': 'Email Protection (1.3.6.1.5.5.7.3.4)',
+                          '1.3.6.1.5.5.7.3.8': 'Time Stamping (1.3.6.1.5.5.7.3.8)',
+                          '1.3.6.1.5.5.7.3.9': 'OCSP Signing (1.3.6.1.5.5.7.3.9)',
+                        };
+                        const label = knownOids[itemOid] || itemOid;
+                        if (!ekus.includes(label)) ekus.push(label);
+                      });
+                    }
+                  } catch {}
+                  valStr = ekus.join(', ');
+                }
+                // 3. Basic Constraints (2.5.29.19)
+                else if (ext.name === 'basicConstraints' || oid === '2.5.29.19') {
+                  name = 'basicConstraints';
+                  valStr = 'Is CA: ' + (ext.cA ? 'Yes' : 'No') + (ext.pathLenConstraint !== undefined ? ', Path Length Constraint: ' + ext.pathLenConstraint : '');
+                }
+                // 4. Subject Alternative Name (2.5.29.17)
+                else if (ext.name === 'subjectAltName' || oid === '2.5.29.17') {
+                  name = 'subjectAltName';
+                  if (ext.altNames && ext.altNames.length > 0) {
+                    valStr = ext.altNames.map((an: any) => {
+                      const prefix = an.type === 2 ? 'DNS:' : an.type === 7 ? 'IP:' : an.type === 1 ? 'email:' : an.type === 6 ? 'URI:' : '';
+                      return prefix + an.value;
+                    }).join(', ');
+                  } else {
+                    valStr = '';
+                  }
+                }
+                // 5. Subject Key Identifier (2.5.29.14)
+                else if (ext.name === 'subjectKeyIdentifier' || oid === '2.5.29.14') {
+                  name = 'subjectKeyIdentifier';
+                  try {
+                    const valAsn1 = e.value.length === 3 ? e.value[2] : e.value[1];
+                    let bytes = valAsn1.value;
+                    try {
+                      const inner = forge.asn1.fromDer(bytes);
+                      if (inner && inner.value && typeof inner.value === 'string') bytes = inner.value;
+                    } catch {}
+                    const hex = forge.util.bytesToHex(bytes).toUpperCase().match(/.{2}/g);
+                    valStr = hex ? hex.join(':') : forge.util.bytesToHex(bytes).toUpperCase();
+                  } catch {
+                    valStr = ext.value || '';
+                  }
+                }
+                // 6. Authority Key Identifier (2.5.29.35)
+                else if (ext.name === 'authorityKeyIdentifier' || oid === '2.5.29.35') {
+                  name = 'authorityKeyIdentifier';
+                  try {
+                    const valAsn1 = e.value.length === 3 ? e.value[2] : e.value[1];
+                    const inner = forge.asn1.fromDer(valAsn1.value);
+                    const keyIdObj = inner.value && Array.isArray(inner.value)
+                      ? inner.value.find((item: any) => item.tagClass === 128 && item.type === 0)
+                      : null;
+                    if (keyIdObj && typeof keyIdObj.value === 'string') {
+                      const hex = forge.util.bytesToHex(keyIdObj.value).toUpperCase().match(/.{2}/g);
+                      valStr = 'KeyID: ' + (hex ? hex.join(':') : forge.util.bytesToHex(keyIdObj.value).toUpperCase());
+                    } else if (typeof valAsn1.value === 'string') {
+                      const hex = forge.util.bytesToHex(valAsn1.value).toUpperCase().match(/.{2}/g);
+                      valStr = hex ? hex.join(':') : forge.util.bytesToHex(valAsn1.value).toUpperCase();
+                    }
+                  } catch {
+                    valStr = ext.value || '';
+                  }
+                }
+                // 7. Authority Information Access (1.3.6.1.5.5.7.1.1)
+                else if (ext.name === 'authorityInfoAccess' || oid === '1.3.6.1.5.5.7.1.1') {
+                  name = 'authorityInfoAccess';
+                  const items: string[] = [];
+                  try {
+                    const valAsn1 = e.value.length === 3 ? e.value[2] : e.value[1];
+                    const inner = forge.asn1.fromDer(valAsn1.value);
+                    if (inner.value && Array.isArray(inner.value)) {
+                      inner.value.forEach((accessDesc: any) => {
+                        const methodOid = forge.asn1.derToOid(accessDesc.value[0].value);
+                        const location = accessDesc.value[1].value;
+                        const methodNames: Record<string, string> = {
+                          '1.3.6.1.5.5.7.48.1': 'OCSP',
+                          '1.3.6.1.5.5.7.48.2': 'CA Issuers',
+                        };
+                        const method = methodNames[methodOid] || methodOid;
+                        items.push(method + ' - URI:' + location);
+                      });
+                    }
+                  } catch {}
+                  valStr = items.length > 0 ? items.join('\n') : (typeof ext.value === 'string' ? ext.value : '');
+                }
+                // 8. CRL Distribution Points (2.5.29.31)
+                else if (ext.name === 'cRLDistributionPoints' || oid === '2.5.29.31') {
+                  name = 'cRLDistributionPoints';
+                  const uris: string[] = [];
+                  try {
+                    const valAsn1 = e.value.length === 3 ? e.value[2] : e.value[1];
+                    const inner = forge.asn1.fromDer(valAsn1.value);
+                    const findUris = (node: any) => {
+                      if (!node) return;
+                      if (typeof node.value === 'string' && (node.value.startsWith('http') || node.value.startsWith('ldap'))) {
+                        uris.push('URI:' + node.value);
+                      } else if (Array.isArray(node.value)) {
+                        node.value.forEach(findUris);
+                      }
+                    };
+                    findUris(inner);
+                  } catch {}
+                  valStr = uris.length > 0 ? uris.join('\n') : (typeof ext.value === 'string' ? ext.value : '');
+                }
+                // 9. Certificate Policies (2.5.29.32)
+                else if (ext.name === 'certificatePolicies' || oid === '2.5.29.32') {
+                  name = 'certificatePolicies';
+                  const policies: string[] = [];
+                  try {
+                    const valAsn1 = e.value.length === 3 ? e.value[2] : e.value[1];
+                    const inner = forge.asn1.fromDer(valAsn1.value);
+                    if (inner.value && Array.isArray(inner.value)) {
+                      inner.value.forEach((polInfo: any, idx: number) => {
+                        const polOid = forge.asn1.derToOid(polInfo.value[0].value);
+                        let policyText = '[' + (idx + 1) + ']Certificate Policy: Policy Identifier=' + polOid;
+                        if (polInfo.value[1] && polInfo.value[1].value && Array.isArray(polInfo.value[1].value)) {
+                          polInfo.value[1].value.forEach((qual: any, qIdx: number) => {
+                            const qualOid = forge.asn1.derToOid(qual.value[0].value);
+                            const qualVal = qual.value[1] && qual.value[1].value;
+                            if (qualOid === '1.3.6.1.5.5.7.2.1') {
+                              policyText += '\n[' + (idx + 1) + ',' + (qIdx + 1) + ']Policy Qualifier Info: CPS: ' + qualVal;
+                            }
+                          });
+                        }
+                        policies.push(policyText);
+                      });
+                    }
+                  } catch {}
+                  valStr = policies.length > 0 ? policies.join('\n') : (typeof ext.value === 'string' ? ext.value : '');
+                }
+                // 10. Timestamp List (SCTs - 1.3.6.1.4.1.11129.2.4.2)
+                else if (oid === '1.3.6.1.4.1.11129.2.4.2' || ext.name === 'timestampList') {
+                  name = 'timestampList';
+                  try {
+                    const valAsn1 = e.value.length === 3 ? e.value[2] : e.value[1];
+                    let bytes = valAsn1.value;
+                    try {
+                      const inner = forge.asn1.fromDer(bytes);
+                      if (inner && inner.value && typeof inner.value === 'string') bytes = inner.value;
+                    } catch {}
+                    valStr = 'Embedded Signed Certificate Timestamps (' + bytes.length + ' bytes)';
+                  } catch {
+                    valStr = 'Embedded Signed Certificate Timestamps';
+                  }
+                }
+                // General Fallback
+                else {
+                  const rawVal = typeof ext.value === 'string' ? ext.value : '';
+                  const isBinary = /[\x00-\x08\x0E-\x1F\x7F-\xFF]/.test(rawVal);
+                  if (isBinary || !rawVal) {
+                    try {
+                      const valObj = e.value.length === 3 ? e.value[2] : e.value[1];
+                      const hex = forge.util.bytesToHex(valObj.value).toUpperCase().match(/.{2}/g);
+                      valStr = hex ? hex.join(' ') : forge.util.bytesToHex(valObj.value).toUpperCase();
+                    } catch {
+                      valStr = rawVal ? forge.util.bytesToHex(rawVal).toUpperCase() : '';
+                    }
+                  } else {
+                    valStr = rawVal;
+                  }
+                }
+
+                return {
+                  id: oid,
+                  oid,
+                  name,
+                  critical,
+                  value: valStr,
+                };
+              };
+
               const parseExtensionsFromRaw = (rawBuffer: Buffer) => {
                 try {
                   const asn1: any = forge.asn1.fromDer(rawBuffer.toString('binary'));
@@ -460,35 +684,7 @@ function tlsScannerApiPlugin() {
                   );
                   if (!extWrapper || !extWrapper.value || !extWrapper.value[0]) return [];
                   const extSeq = extWrapper.value[0];
-                  return extSeq.value.map((e: any) => {
-                    try {
-                      const ext = (forge.pki as any).certificateExtensionFromAsn1(e);
-                      return {
-                        id: ext.id,
-                        oid: ext.id,
-                        name: ext.name || ext.id,
-                        critical: !!ext.critical,
-                        value: typeof ext.value === 'string' ? ext.value : JSON.stringify(ext.value),
-                      };
-                    } catch {
-                      const oid = forge.asn1.derToOid(e.value[0].value);
-                      const critical = e.value.length === 3 ? !!e.value[1].value : false;
-                      const valObj = e.value.length === 3 ? e.value[2] : e.value[1];
-                      let valStr = '';
-                      try {
-                        valStr = forge.util.bytesToHex(valObj.value);
-                      } catch {
-                        valStr = '';
-                      }
-                      return {
-                        id: oid,
-                        oid,
-                        name: (forge.pki.oids as any)[oid] || oid,
-                        critical,
-                        value: valStr,
-                      };
-                    }
-                  });
+                  return extSeq.value.map(parseExtensionNode);
                 } catch {
                   return [];
                 }

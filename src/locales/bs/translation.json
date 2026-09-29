@@ -19,7 +19,7 @@
       "key-matcher": "Upoređivač Parova Ključeva",
       "key-generator": "Generator Ključeva",
       "format-converter": "Konverter Formata",
-      "tls-scanner": "Udaljeni TLS Skener",
+      "tls-scanner": "Remote TLS Scanner",
       "ocsp-checker": "OCSP Provjera",
       "ct-log-search": "Pretraga CT logova",
       "education-center": "Edukativni Centar"
@@ -223,7 +223,19 @@
         "authorityInformationAccess": "Pristup informacijama autoriteta",
         "authorityinformationaccess": "Pristup informacijama autoriteta",
         "subjectAlternativeName": "Alternativno ime subjekta",
-        "subjectalternativename": "Alternativno ime subjekta"
+        "subjectalternativename": "Alternativno ime subjekta",
+        "extKeyUsage": "Poboljšana upotreba ključa",
+        "extkeyusage": "Poboljšana upotreba ključa",
+        "extendedKeyUsage": "Poboljšana upotreba ključa",
+        "extendedkeyusage": "Poboljšana upotreba ključa",
+        "subjectAltName": "Alternativno ime subjekta",
+        "subjectaltname": "Alternativno ime subjekta",
+        "timestampList": "Transparentnost certifikata (SCT)",
+        "timestamplist": "Transparentnost certifikata (SCT)",
+        "CertificateTransparencySCTs": "Transparentnost certifikata (SCT)",
+        "certificateTransparencySCTs": "Transparentnost certifikata (SCT)",
+        "authorityInfoAccess": "Pristup informacijama autoriteta",
+        "authorityinfoaccess": "Pristup informacijama autoriteta"
       },
       "purposes": {
         "digitalsignature": "Digitalni potpis",
@@ -490,7 +502,8 @@
       "unlockPfxTitle": "Otključaj PKCS#12 / PFX skladište",
       "pfxPasswordPrompt": "Datoteka \"{{fileName}}\" je zaštićena lozinkom. Unesite lozinku za izdvajanje certifikata u bazu provjere lanca.",
       "unlocking": "Otključavanje…",
-      "sampleAlreadyLoaded": "Ovaj primjer lanca je već učitan"
+      "sampleAlreadyLoaded": "Ovaj primjer lanca je već učitan",
+      "pathLenConstraint": "Ograničenje dužine putanje"
     },
     "crl": {
       "eyebrow": "Status opoziva i RFC 5280",
@@ -551,7 +564,7 @@
       "certNotCrl": "Ova datoteka sadrži X.509 certifikat, a ne listu opozvanih certifikata (CRL). Molimo učitajte važeću .crl datoteku ili pregledajte ovaj certifikat u Inspektoru Trust Store-a.",
       "csrNotCrl": "Ova datoteka sadrži zahtjev za potpisivanje certifikata (CSR), a ne listu opozvanih certifikata (CRL). Pregledajte je u CSR Inspektoru.",
       "keyNotCrl": "Ova datoteka sadrži privatni ključ, a ne listu opozvanih certifikata (CRL).",
-      "trustStoreNotCrl": "Ova datoteka je skladište ključeva / certifikata, a ne lista opoziva certifikata (CRL). Molimo pregledajte je u Inspektoru Trust Store-a.",
+      "trustStoreNotCrl": "Ova datoteka je KeyStore / Trust Store, a ne lista opoziva certifikata (CRL). Molimo pregledajte je u Inspektoru Trust Store-a.",
       "goToTrustStore": "Otvori u Inspektoru Trust Store-a",
       "goToCsrInspector": "Otvori u CSR Inspektoru",
       "goToCertificateInspector": "Otvori u Inspektoru certifikata",
@@ -877,7 +890,7 @@
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Udaljeni TLS Skener Krajnjih Tačaka",
+      "title": "Remote TLS Scanner",
       "subtitle": "Povežite se na bilo koju udaljenu TLS/SSL tačku da biste pregledali aktivan lanac certifikata, cipher suite, pregovaranje protokola i provjeru povjerenja.",
       "hostLabel": "Naziv hosta / Domena / IP",
       "portLabel": "Port",
@@ -922,7 +935,7 @@
       "issuedBy": "Potpisao",
       "signedAndIssuedBy": "Potpisao & izdao CA",
       "selfSignedRoot": "Samopotpisani Korijenski CA · Sidro Povjerenja",
-      "trustedAnchor": "Sidro Lanca · Sistemsko Sidro Povjerenja",
+      "trustedAnchor": "Sidro Lanca · Trust Store Sidro",
       "lifespan": "Životni Vijek Certifikata",
       "elapsed": "proteklo",
       "daysRemaining": "preostalo {{count}} dana",
@@ -978,7 +991,9 @@
         "postalCode": "Poštanski broj",
         "serialNumber": "Serijski broj",
         "email": "E-pošta"
-      }
+      },
+      "embeddedSct": "Ugrađene vremenske oznake certifikata (SCT)",
+      "specialPresetBadge": "Dev"
     }
   },
   "common": {

@@ -12,14 +12,14 @@
       "secure-boot": "Secure Boot NVRAM",
       "win-cert-store": "Magazyn Certyfikatów Windows",
       "expiry-dashboard": "Panel Wygasania",
-      "trust-store": "Magazyn Zaufania",
+      "trust-store": "Trust Store",
       "crl-inspector": "Inspektor CRL",
       "chain-validator": "Walidator Łańcucha",
       "csr-inspector": "Inspektor CSR",
       "key-matcher": "Dopasowywanie Par Kluczy",
       "key-generator": "Generator Kluczy",
       "format-converter": "Konwerter Formatów",
-      "tls-scanner": "Zdalny Skaner TLS",
+      "tls-scanner": "Remote TLS Scanner",
       "ocsp-checker": "Sprawdzanie OCSP",
       "ct-log-search": "Wyszukiwanie Logów CT",
       "education-center": "Centrum Edukacji"
@@ -223,7 +223,19 @@
         "authorityInformationAccess": "Dostęp do informacji o urzędzie",
         "authorityinformationaccess": "Dostęp do informacji o urzędzie",
         "subjectAlternativeName": "Alternatywna nazwa podmiotu",
-        "subjectalternativename": "Alternatywna nazwa podmiotu"
+        "subjectalternativename": "Alternatywna nazwa podmiotu",
+        "extKeyUsage": "Rozszerzone użycie klucza",
+        "extkeyusage": "Rozszerzone użycie klucza",
+        "extendedKeyUsage": "Rozszerzone użycie klucza",
+        "extendedkeyusage": "Rozszerzone użycie klucza",
+        "subjectAltName": "Alternatywna nazwa podmiotu",
+        "subjectaltname": "Alternatywna nazwa podmiotu",
+        "timestampList": "Przejrzystość certyfikatów (SCT)",
+        "timestamplist": "Przejrzystość certyfikatów (SCT)",
+        "CertificateTransparencySCTs": "Przejrzystość certyfikatów (SCT)",
+        "certificateTransparencySCTs": "Przejrzystość certyfikatów (SCT)",
+        "authorityInfoAccess": "Dostęp do informacji o urzędzie",
+        "authorityinfoaccess": "Dostęp do informacji o urzędzie"
       },
       "purposes": {
         "digitalsignature": "Podpis cyfrowy",
@@ -494,7 +506,8 @@
       "unlockPfxTitle": "Odblokuj magazyn PKCS#12 / PFX",
       "pfxPasswordPrompt": "Plik \"{{fileName}}\" jest chroniony hasłem. Wprowadź hasło, aby wyodrębnić certyfikaty do puli walidacji łańcucha.",
       "unlocking": "Odblokowywanie…",
-      "sampleAlreadyLoaded": "Ten przykładowy łańcuch jest już załadowany"
+      "sampleAlreadyLoaded": "Ten przykładowy łańcuch jest już załadowany",
+      "pathLenConstraint": "Ograniczenie długości ścieżki"
     },
     "crl": {
       "eyebrow": "Status odwołania i RFC 5280",
@@ -555,7 +568,7 @@
       "certNotCrl": "Ten plik zawiera certyfikat X.509, a nie listę odwołanych certyfikatów (CRL). Prześlij prawidłowy plik .crl lub zbadaj ten certyfikat w Inspektorze Trust Store.",
       "csrNotCrl": "Ten plik zawiera żądanie podpisania certyfikatu (CSR), a nie listę odwołanych certyfikatów (CRL). Zbadaj ten plik w Inspektorze CSR.",
       "keyNotCrl": "Ten plik zawiera klucz prywatny, a nie listę odwołanych certyfikatów (CRL).",
-      "trustStoreNotCrl": "Ten plik to magazyn kluczy / certyfikatów, a nie lista odwołanych certyfikatów (CRL). Zbadaj ten plik w Inspektorze Trust Store.",
+      "trustStoreNotCrl": "Ten plik to KeyStore / Trust Store, a nie lista odwołanych certyfikatów (CRL). Zbadaj ten plik w Inspektorze Trust Store.",
       "goToTrustStore": "Otwórz w Inspektorze Trust Store",
       "goToCsrInspector": "Otwórz w Inspektorze CSR",
       "goToCertificateInspector": "Otwórz w Inspektorze certyfikatów",
@@ -634,10 +647,10 @@
       "downloadCsr": "Pobierz .csr",
       "downloadDer": "Pobierz .der",
       "parseError": "Nie udało się przetworzyć \"{{name}}\": {{error}}",
-      "certNotCsr": "Ten plik zawiera certyfikat X.509, a nie żądanie podpisania certyfikatu (CSR). Sprawdź ten plik w Inspektorze Magazynu Zaufania.",
+      "certNotCsr": "Ten plik zawiera certyfikat X.509, a nie żądanie podpisania certyfikatu (CSR). Sprawdź ten plik w Inspektorze Trust Store.",
       "crlNotCsr": "Ten plik zawiera listę odwołanych certyfikatów (CRL), a nie żądanie podpisania certyfikatu (CSR). Sprawdź ten plik w Inspektorze CRL.",
       "keyNotCsr": "Ten plik zawiera klucz prywatny, a nie żądanie podpisania certyfikatu (CSR).",
-      "goToTrustStore": "Otwórz w Inspektorze Magazynu Zaufania",
+      "goToTrustStore": "Otwórz w Inspektorze Trust Store",
       "goToCrlInspector": "Otwórz w Inspektorze CRL",
       "invalidFormat": "Plik nie jest prawidłowym żądaniem podpisania certyfikatu w formacie PEM lub DER.",
       "editor": {
@@ -881,7 +894,7 @@
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Zdalny Skaner Punktów Końcowych TLS",
+      "title": "Remote TLS Scanner",
       "subtitle": "Połącz się z dowolnym zdalnym punktem końcowym TLS/SSL, aby sprawdzić aktywny łańcuch certyfikatów, zestaw szyfrów, negocjację protokołu i walidację zaufania.",
       "hostLabel": "Nazwa hosta / Domena / IP",
       "portLabel": "Port",
@@ -926,7 +939,7 @@
       "issuedBy": "Podpisany przez",
       "signedAndIssuedBy": "Podpisany i wystawiony przez CA",
       "selfSignedRoot": "Samopodpisany główny CA · Kotwica zaufania",
-      "trustedAnchor": "Kotwica łańcucha · Magazyn zaufania",
+      "trustedAnchor": "Kotwica łańcucha · Trust Store",
       "selfSigned": "Samopodpisany",
       "lifespan": "Okres ważności certyfikatu",
       "elapsed": "upłynęło",
@@ -982,7 +995,9 @@
         "postalCode": "Kod pocztowy",
         "serialNumber": "Numer seryjny",
         "email": "E-mail"
-      }
+      },
+      "embeddedSct": "Wbudowane podpisane znaczniki czasu certyfikatów (SCT)",
+      "specialPresetBadge": "Dev"
     }
   },
   "common": {

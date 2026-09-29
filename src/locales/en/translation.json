@@ -223,7 +223,19 @@
         "authorityInformationAccess": "Authority Information Access",
         "authorityinformationaccess": "Authority Information Access",
         "subjectAlternativeName": "Subject Alternative Name",
-        "subjectalternativename": "Subject Alternative Name"
+        "subjectalternativename": "Subject Alternative Name",
+        "extKeyUsage": "Extended Key Usage",
+        "extkeyusage": "Extended Key Usage",
+        "extendedKeyUsage": "Extended Key Usage",
+        "extendedkeyusage": "Extended Key Usage",
+        "subjectAltName": "Subject Alternative Name",
+        "subjectaltname": "Subject Alternative Name",
+        "timestampList": "Certificate Transparency SCTs",
+        "timestamplist": "Certificate Transparency SCTs",
+        "CertificateTransparencySCTs": "Certificate Transparency SCTs",
+        "certificateTransparencySCTs": "Certificate Transparency SCTs",
+        "authorityInfoAccess": "Authority Information Access",
+        "authorityinfoaccess": "Authority Information Access"
       },
       "purposes": {
         "digitalsignature": "Digital Signature",
@@ -486,7 +498,8 @@
       "unlockPfxTitle": "Unlock PKCS#12 / PFX Keystore",
       "pfxPasswordPrompt": "The file \"{{fileName}}\" is password-protected. Enter the password to extract certificates into the chain validation pool.",
       "unlocking": "Unlocking…",
-      "sampleAlreadyLoaded": "This sample chain is already loaded"
+      "sampleAlreadyLoaded": "This sample chain is already loaded",
+      "pathLenConstraint": "Path Length Constraint"
     },
     "crl": {
       "eyebrow": "Revocation Status & RFC 5280",
@@ -873,7 +886,7 @@
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Remote TLS Endpoint Scanner",
+      "title": "Remote TLS Scanner",
       "subtitle": "Connect to any remote TLS/SSL endpoint to inspect its active certificate chain, cipher suite, protocol negotiation, and trust validation.",
       "hostLabel": "Hostname / Domain / IP",
       "portLabel": "Port",
@@ -974,7 +987,9 @@
         "postalCode": "Postal Code",
         "serialNumber": "Serial Number",
         "email": "Email"
-      }
+      },
+      "embeddedSct": "Embedded Signed Certificate Timestamps",
+      "specialPresetBadge": "Dev"
     }
   },
   "common": {

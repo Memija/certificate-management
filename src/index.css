@@ -643,6 +643,7 @@ details[open] > summary::-webkit-details-marker {
 ════════════════════════════════════════════════════════════ */
 .btn-download,
 .btn-download-pem,
+.btn-download-bundle,
 .btn-download-der,
 .btn-download-pfx,
 .download-btn-pem,
@@ -664,15 +665,19 @@ details[open] > summary::-webkit-details-marker {
   letter-spacing: 0.01em;
 }
 
-/* PEM Download -> Emerald Tint */
+/* PEM & Bundle Download -> Emerald Tint */
+.btn-download,
 .btn-download-pem,
+.btn-download-bundle,
 .download-btn-pem {
   background: rgba(16, 185, 129, 0.16) !important;
   color: #10b981 !important;
   border: 1px solid rgba(16, 185, 129, 0.42) !important;
 }
 
+.btn-download:hover:not(:disabled),
 .btn-download-pem:hover:not(:disabled),
+.btn-download-bundle:hover:not(:disabled),
 .download-btn-pem:hover:not(:disabled) {
   background: rgba(16, 185, 129, 0.28) !important;
   border-color: #10b981 !important;
@@ -711,7 +716,9 @@ details[open] > summary::-webkit-details-marker {
 }
 
 /* Light Theme overrides for downloads */
+[data-theme="light"] .btn-download,
 [data-theme="light"] .btn-download-pem,
+[data-theme="light"] .btn-download-bundle,
 [data-theme="light"] .download-btn-pem {
   background: #ecfdf5 !important;
   color: #047857 !important;
@@ -4785,6 +4792,85 @@ pre,
   background: #f1f5f9;
   border-color: #e2e8f0;
 }
+
+/* ════════════════════════════════════════════════════════════
+   Special Quick Preset: home-management.dev
+   ════════════════════════════════════════════════════════════ */
+.tls-preset-special {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.8rem 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(6, 182, 212, 0.20) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: #ecfdf5;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tls-preset-special:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(6, 182, 212, 0.32) 100%);
+  border-color: rgba(52, 211, 153, 0.75);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+}
+
+.tls-preset-special:active {
+  transform: translateY(0);
+}
+
+.tls-preset-special-icon {
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.6));
+}
+
+.tls-preset-special-sparkle {
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6));
+  opacity: 0.9;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.tls-preset-special:hover .tls-preset-special-sparkle {
+  opacity: 1;
+  transform: scale(1.15) rotate(5deg);
+}
+
+[data-theme="light"] .tls-preset-special {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.14) 100%);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #065f46;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+[data-theme="light"] .tls-preset-special:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.22) 100%);
+  border-color: rgba(5, 150, 105, 0.6);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.22);
+  color: #022c22;
+}
+
+[data-theme="light"] .tls-preset-special-icon {
+  color: #059669;
+  filter: none;
+}
+
+[data-theme="light"] .tls-preset-special-sparkle {
+  color: #0284c7;
+  filter: none;
+}
+
 
 
 

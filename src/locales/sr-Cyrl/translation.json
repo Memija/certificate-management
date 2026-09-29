@@ -19,7 +19,7 @@
       "key-matcher": "Упоређивач Парова Кључева",
       "key-generator": "Генератор Кључева",
       "format-converter": "Конвертор Формата",
-      "tls-scanner": "Удаљени TLS Скенер",
+      "tls-scanner": "Remote TLS Scanner",
       "ocsp-checker": "OCSP Провера",
       "ct-log-search": "Претрага CT логова",
       "education-center": "Едукативни Центар"
@@ -223,7 +223,19 @@
         "authorityInformationAccess": "Приступ информацијама ауторитета",
         "authorityinformationaccess": "Приступ информацијама ауторитета",
         "subjectAlternativeName": "Алтернативно име субјекта",
-        "subjectalternativename": "Алтернативно име субјекта"
+        "subjectalternativename": "Алтернативно име субјекта",
+        "extKeyUsage": "Побољшана употреба кључа",
+        "extkeyusage": "Побољшана употреба кључа",
+        "extendedKeyUsage": "Побољшана употреба кључа",
+        "extendedkeyusage": "Побољшана употреба кључа",
+        "subjectAltName": "Алтернативно име субјекта",
+        "subjectaltname": "Алтернативно име субјекта",
+        "timestampList": "Транспарентност сертификата (SCT)",
+        "timestamplist": "Транспарентност сертификата (SCT)",
+        "CertificateTransparencySCTs": "Транспарентност сертификата (SCT)",
+        "certificateTransparencySCTs": "Транспарентност сертификата (SCT)",
+        "authorityInfoAccess": "Приступ информацијама ауторитета",
+        "authorityinfoaccess": "Приступ информацијама ауторитета"
       },
       "purposes": {
         "digitalsignature": "Дигитални потпис",
@@ -490,7 +502,8 @@
       "unlockPfxTitle": "Откључај PKCS#12 / PFX складиште",
       "pfxPasswordPrompt": "Датотека \"{{fileName}}\" је заштићена лозинком. Унесите лозинку за издвајање сертификата у базу провере ланца.",
       "unlocking": "Откључавање…",
-      "sampleAlreadyLoaded": "Овај пример ланца је већ учитан"
+      "sampleAlreadyLoaded": "Овај пример ланца је већ учитан",
+      "pathLenConstraint": "Ограничење дужине путање"
     },
     "crl": {
       "eyebrow": "Статус опозива и RFC 5280",
@@ -551,7 +564,7 @@
       "certNotCrl": "Ова датотека садржи X.509 сертификат, а не листу опозваних сертификата (CRL). Молимо учитајте важећу .crl датотеку или прегледајте овај сертификат у Инспектору Trust Store-а.",
       "csrNotCrl": "Ова датотека садржи захтев за потписивање сертификата (CSR), а не листу опозваних сертификата (CRL). Молимо прегледајте је у CSR Инспектору.",
       "keyNotCrl": "Ова датотека садржи приватни кључ, а не листу опозваних сертификата (CRL).",
-      "trustStoreNotCrl": "Ова датотека је складиште кључева / сертификата, а не листа опозива сертификата (CRL). Молимо прегледајте је у Инспектору Trust Store-а.",
+      "trustStoreNotCrl": "Ова датотека је KeyStore / Trust Store, а не листа опозива сертификата (CRL). Молимо прегледајте је у Инспектору Trust Store-а.",
       "goToTrustStore": "Отвори у Инспектору Trust Store-а",
       "goToCsrInspector": "Отвори у CSR Инспектору",
       "goToCertificateInspector": "Отвори у Инспектору сертификата",
@@ -877,7 +890,7 @@
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Удаљени TLS Скенер Крајњих Тачака",
+      "title": "Remote TLS Scanner",
       "subtitle": "Повежите се на било коју удаљену TLS/SSL крајњу тачку да бисте прегледали активан ланац сертификата, cipher suite, преговарање протокола и проверу поверења.",
       "hostLabel": "Назив хоста / Домен / IP",
       "portLabel": "Порт",
@@ -922,7 +935,7 @@
       "issuedBy": "Потписао",
       "signedAndIssuedBy": "Потписао и издао CA",
       "selfSignedRoot": "Самопотписани Коренски CA · Сидро Поверења",
-      "trustedAnchor": "Сидро Ланца · Системско Сидро Поверења",
+      "trustedAnchor": "Сидро Ланца · Trust Store Сидро",
       "selfSigned": "Самопотписани",
       "lifespan": "Животни Век Сертификата",
       "elapsed": "протекло",
@@ -978,7 +991,9 @@
         "postalCode": "Поштански број",
         "serialNumber": "Серијски број",
         "email": "Е-пошта"
-      }
+      },
+      "embeddedSct": "Уграђене временске ознаке сертификата (SCT)",
+      "specialPresetBadge": "Dev"
     }
   },
   "common": {
