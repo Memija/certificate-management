@@ -1167,6 +1167,8 @@ details[open] > summary::-webkit-details-marker {
   gap: 1.25rem;
   box-shadow: var(--glass-shadow), var(--glass-inner-light);
   transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .metric-card:hover {
@@ -1210,9 +1212,18 @@ details[open] > summary::-webkit-details-marker {
   border: 1px solid var(--info-border);
 }
 
+.metric-icon-wrap.purple {
+  background: var(--purple-bg);
+  color: var(--purple-color);
+  border: 1px solid var(--purple-border);
+}
+
 .metric-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .metric-val {
@@ -1221,6 +1232,8 @@ details[open] > summary::-webkit-details-marker {
   font-weight: 800;
   line-height: 1.1;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .metric-label {
@@ -4487,6 +4500,290 @@ pre,
 
 .pfx-password-toggle:hover {
   color: var(--text-primary);
+}
+
+/* ════════════════════════════════════════════════════════════
+   TLS SCANNER CERTIFICATE CHAIN & VISUAL FLOW
+════════════════════════════════════════════════════════════ */
+.tls-chain-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: 16px;
+  overflow-x: auto;
+  margin-bottom: 2rem;
+  box-shadow: var(--glass-shadow), var(--glass-inner-light);
+}
+
+.tls-chain-flow-step {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border-subtle);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 240px;
+  flex: 1;
+  position: relative;
+  text-align: left;
+}
+
+.tls-chain-flow-step:hover {
+  transform: translateY(-2px);
+  border-color: var(--glass-border);
+  background: var(--card-bg-hover);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.tls-chain-flow-step.active {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px var(--accent-cyan), 0 8px 24px rgba(6, 182, 212, 0.25);
+}
+
+.tls-chain-flow-step.leaf {
+  border-top: 3px solid #a855f7;
+}
+
+.tls-chain-flow-step.intermediate {
+  border-top: 3px solid #06b6d4;
+}
+
+.tls-chain-flow-step.root {
+  border-top: 3px solid #10b981;
+}
+
+.tls-chain-flow-step.expired {
+  border-top: 3px solid var(--danger-color);
+}
+
+.tls-chain-flow-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  padding: 0 0.25rem;
+}
+
+.tls-chain-flow-arrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Vertical trust connector between certificate cards */
+.tls-card-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: -0.25rem 0;
+  position: relative;
+  z-index: 2;
+}
+
+.tls-card-connector-line {
+  width: 2px;
+  height: 24px;
+  background: linear-gradient(to bottom, var(--glass-border-accent), var(--accent-cyan));
+}
+
+.tls-card-connector-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.95rem;
+  border-radius: 9999px;
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border-accent);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Certificate card enhancements */
+.tls-cert-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--glass-shadow), var(--glass-inner-light);
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.tls-cert-card:hover {
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-shadow-lg), var(--glass-inner-light);
+}
+
+.tls-cert-card.leaf {
+  border-left: 4px solid #a855f7;
+}
+
+.tls-cert-card.intermediate {
+  border-left: 4px solid #06b6d4;
+}
+
+.tls-cert-card.root {
+  border-left: 4px solid #10b981;
+}
+
+.tls-cert-card.expired {
+  border-left: 4px solid var(--danger-color);
+}
+
+/* Lifetime progress bar */
+.tls-validity-bar-wrap {
+  margin: 1.25rem 0;
+  padding: 0.85rem 1.15rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--glass-border-subtle);
+}
+
+.tls-validity-bar-track {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin: 0.5rem 0 0.4rem 0;
+  position: relative;
+}
+
+.tls-validity-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+.tls-validity-bar-fill.normal {
+  background: linear-gradient(90deg, #10b981, #06b6d4);
+}
+
+.tls-validity-bar-fill.warning {
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+}
+
+.tls-validity-bar-fill.danger {
+  background: #f43f5e;
+}
+
+/* Parameters sub-grid */
+.tls-params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0;
+}
+
+.tls-param-box {
+  padding: 0.75rem 0.95rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tls-param-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tls-param-val {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* DN Chips */
+.tls-dn-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border-subtle);
+  font-size: 0.8rem;
+}
+
+.tls-dn-tag {
+  font-weight: 700;
+  color: var(--text-accent);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .tls-chain-flow {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="light"] .tls-chain-flow-step {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .tls-chain-flow-step:hover {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .tls-cert-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="light"] .tls-validity-bar-wrap {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .tls-validity-bar-track {
+  background: #e2e8f0;
+}
+
+[data-theme="light"] .tls-param-box {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .tls-dn-chip {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
 }
 
 
