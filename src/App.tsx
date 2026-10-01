@@ -71,6 +71,9 @@ const CATEGORIES = [
 function App() {
   const { t } = useTranslation();
   const [mode, setMode] = useState<AppMode>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const queryMode = params.get('mode') as AppMode;
+    if (queryMode) return queryMode;
     return (localStorage.getItem('app-mode') as AppMode) || 'secure-boot';
   });
 
@@ -563,7 +566,7 @@ function BootHealthWarnings({ lists }: { lists: EfiSignatureList[] }) {
               <AlertTriangle size={24} />
             </div>
             <div>
-              <h3 style={{ color: 'var(--danger-color)', margin: 0, fontSize: '1rem' }}>CRITICAL WARNING</h3>
+              <h3 style={{ color: 'var(--danger-color)', margin: 0, fontSize: '1rem' }}>Critical Warning</h3>
               <p style={{ margin: '0.2rem 0 0 0', color: 'var(--text-primary)', fontSize: '0.88rem' }}>{crit}</p>
             </div>
           </div>

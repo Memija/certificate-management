@@ -1318,7 +1318,7 @@ export function TlsScanner() {
                           {/* Subject DN */}
                           <div style={{ padding: '0.85rem 1rem', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--glass-border-subtle)', borderRadius: 10 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
                                 {t('app.tlsScanner.subjectDn', 'Subject Distinguished Name')}
                               </span>
                               <button
@@ -1349,7 +1349,7 @@ export function TlsScanner() {
                           {/* Issuer DN */}
                           <div style={{ padding: '0.85rem 1rem', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--glass-border-subtle)', borderRadius: 10 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
                                 {t('app.tlsScanner.issuerDn', 'Issuer Distinguished Name')}
                               </span>
                               <button

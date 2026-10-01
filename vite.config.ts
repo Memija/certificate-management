@@ -840,10 +840,19 @@ function ocspApiPlugin() {
               const b64 = data.certB64;
               if (!b64) throw new Error('certB64 is required');
               
+              const certBuf = Buffer.from(b64, 'base64');
+              try {
+                 new crypto.X509Certificate(certBuf);
+              } catch (certErr: any) {
+                 res.statusCode = 400;
+                 res.end(JSON.stringify({ error: 'The provided data is not a valid X.509 certificate.' }));
+                 return;
+              }
+
               const tmpdir = os.tmpdir();
               const certPath = path.join(tmpdir, `ocsp_check_${Date.now()}.cer`);
               
-              await fs.writeFile(certPath, Buffer.from(b64, 'base64'));
+              await fs.writeFile(certPath, certBuf);
               
               const command = `certutil -verify -urlfetch "${certPath}"`;
               let output = '';
@@ -856,15 +865,36 @@ function ocspApiPlugin() {
               
               try { await fs.unlink(certPath); } catch {}
               
-              const isRevoked = output.includes('REVOKED') || output.includes('Revoked');
-              const isOk = output.includes('Leaf certificate revocation check passed') || output.includes('certificate revocation check passed');
+              const isRevoked = 
+                output.includes('CERT_TRUST_IS_REVOKED') || 
+                output.includes('Certificate is REVOKED') || 
+                output.includes('The certificate is revoked') ||
+                /CRYPT_E_REVOKED/i.test(output);
+
+              const leafVerifiedOcsp = /Certificate OCSP\s*-+\s*Verified "OCSP"/i.test(output) || /Verified "OCSP"/i.test(output);
+              const leafVerifiedCrl = /Certificate CDP\s*-+\s*Verified "Base CRL/i.test(output) || /Verified "Base CRL/i.test(output);
+              const leafErrorStatusZero = /CertContext\[0\]\[0\]:[^\n]*dwErrorStatus=0/i.test(output);
+
+              const isOk = !isRevoked && (
+                output.includes('Leaf certificate revocation check passed') ||
+                output.includes('certificate revocation check passed') ||
+                ((leafVerifiedOcsp || leafVerifiedCrl) && leafErrorStatusZero)
+              );
+
               const status = isRevoked ? 'revoked' : (isOk ? 'good' : 'unknown');
-              
+
+              const ocspMatch = output.match(/Certificate OCSP\s*-+\s*([^\n]+)(?:\n\s*\[\d+\.\d+\]\s*([^\n\r]+))?/i);
+              const cdpMatch = output.match(/Certificate CDP\s*-+\s*([^\n]+)(?:\n\s*\[\d+\.\d+\]\s*([^\n\r]+))?/i);
+
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ 
                  data: {
                     status,
-                    output
+                    output,
+                    ocspVerified: leafVerifiedOcsp,
+                    crlVerified: leafVerifiedCrl,
+                    ocspUrl: ocspMatch && ocspMatch[2] ? ocspMatch[2].trim() : null,
+                    crlUrl: cdpMatch && cdpMatch[2] ? cdpMatch[2].trim() : null
                  }
               }));
            } catch (e: any) {
