@@ -5008,6 +5008,25 @@ pre,
   filter: none;
 }
 
+/* ════════════════════════════════════════════════════════════
+   PRINT / PDF EXPORT STYLES
+   ════════════════════════════════════════════════════════════ */
+@media print {
+  @page {
+    margin: 1cm;
+  }
+  .app-header,
+  .app-sidebar,
+  .app-header-inner,
+  .premium-header-panel,
+  header,
+  .main-nav,
+  .btn,
+  button {
+    display: none !important;
+  }
+}
+
 
 
 

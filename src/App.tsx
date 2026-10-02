@@ -220,7 +220,7 @@ function App() {
       case 'key-generator': return <KeyGenerator />;
       case 'format-converter': return <FormatConverter />;
       case 'tls-scanner': return <TlsScanner />;
-      case 'ocsp-checker': return <OcspChecker />;
+      case 'ocsp-checker': return <OcspChecker onNavigate={switchMode} />;
       case 'expiry-dashboard': return <ExpiryDashboard />;
       case 'ct-log-search': return <CtLogSearch />;
       case 'education-center': return <EducationCenter />;

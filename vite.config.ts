@@ -5,6 +5,7 @@ import { promisify } from 'util'
 import * as os from 'os'
 import * as path from 'path'
 import * as fs from 'fs/promises'
+import * as crypto from 'crypto'
 
 const execAsync = promisify(exec)
 
@@ -841,11 +842,31 @@ function ocspApiPlugin() {
               if (!b64) throw new Error('certB64 is required');
               
               const certBuf = Buffer.from(b64, 'base64');
+              let isValidCert = false;
               try {
                  new crypto.X509Certificate(certBuf);
-              } catch (certErr: any) {
+                 isValidCert = true;
+              } catch {
+                 try {
+                   new crypto.X509Certificate(`-----BEGIN CERTIFICATE-----\n${b64}\n-----END CERTIFICATE-----`);
+                   isValidCert = true;
+                 } catch {
+                   isValidCert = false;
+                 }
+              }
+
+              if (!isValidCert) {
+                 const rawStr = certBuf.toString('utf8');
+                 let errorMsg = 'The provided data is not a valid X.509 certificate.';
+                 if (rawStr.includes('CERTIFICATE REQUEST') || b64.includes('CERTIFICATE REQUEST')) {
+                   errorMsg = 'The provided data is a Certificate Signing Request (CSR), not an issued X.509 certificate. CSRs do not have revocation status.';
+                 } else if (rawStr.includes('PRIVATE KEY') || b64.includes('PRIVATE KEY')) {
+                   errorMsg = 'The provided data is a Private Key, not an X.509 certificate.';
+                 } else if (rawStr.includes('CRL') || b64.includes('CRL')) {
+                   errorMsg = 'The provided data is a CRL, not an X.509 certificate.';
+                 }
                  res.statusCode = 400;
-                 res.end(JSON.stringify({ error: 'The provided data is not a valid X.509 certificate.' }));
+                 res.end(JSON.stringify({ error: errorMsg }));
                  return;
               }
 
