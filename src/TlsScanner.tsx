@@ -991,9 +991,9 @@ export function TlsScanner() {
                         }}
                         title={t('app.tlsScanner.inspectCertTitle', 'Click to inspect certificate #{{num}}', { num: idx + 1 })}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                        <div className="tls-chain-flow-step-badges">
                           <span className={`chain-node-badge ${isLeaf ? 'badge-leaf' : isIntermediate ? 'badge-intermediate' : 'badge-root'}`}>
-                            #{idx + 1} {isLeaf ? t('app.certDetails.leafCert', 'Leaf') : isIntermediate ? t('app.certDetails.intermediateCa', 'Intermediate') : t('app.certDetails.rootCa', 'Root CA')}
+                            #{idx + 1} {isLeaf ? t('app.chain.roles.leaf', 'Leaf') : isIntermediate ? t('app.chain.roles.intermediate', 'Intermediate') : t('app.chain.roles.root', 'Root')}
                           </span>
                           <span className={`badge ${isExpired ? 'badge-danger' : isExpiringSoon ? 'badge-warning' : 'badge-success'}`} style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem' }}>
                             {isExpired ? (
@@ -1011,7 +1011,7 @@ export function TlsScanner() {
                           <div style={{ fontWeight: 700, fontSize: '0.94rem', color: 'var(--text-primary)', wordBreak: 'break-all' }}>
                             {cert.subjectCN}
                           </div>
-                          <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
                             <span>{t('app.tlsScanner.issuer', 'Issuer')}:</span>
                             <span style={{ color: 'var(--text-secondary)' }}>{cert.issuerCN}</span>
                           </div>
