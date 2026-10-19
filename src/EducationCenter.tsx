@@ -74,7 +74,7 @@ export function EducationCenter() {
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div className="metric-icon-wrap" style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 1rem auto', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%)', color: '#818cf8', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
+          <div className="metric-icon-wrap" style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 1rem auto', background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(14, 165, 233, 0.05) 100%)', color: 'var(--cat-learning)', border: '1px solid rgba(14, 165, 233, 0.3)' }}>
             <BookOpen size={28} />
           </div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>{t('app.nav.education-center')}</h2>

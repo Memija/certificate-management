@@ -871,7 +871,7 @@ export function TlsScanner() {
               </div>
 
               <div className="metric-card">
-                <div className="metric-icon-wrap purple">
+                <div className="metric-icon-wrap cyan">
                   <Layers size={22} />
                 </div>
                 <div className="metric-info">
@@ -905,7 +905,7 @@ export function TlsScanner() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div
-                    className="metric-icon-wrap purple"
+                    className="metric-icon-wrap cyan"
                     style={{ width: 42, height: 42, borderRadius: 12 }}
                   >
                     <LinkIcon size={20} />
@@ -924,7 +924,7 @@ export function TlsScanner() {
                       }}
                     >
                       <span>{t('app.tlsScanner.presentedChain', 'Presented Certificate Chain')}</span>
-                      <span className="badge badge-purple" style={{ fontSize: '0.75rem' }}>
+                      <span className="badge badge-info" style={{ fontSize: '0.75rem' }}>
                         {scanResult.chain.length} {t('app.tlsScanner.metrics.certs', 'Certificates')}
                       </span>
                       {scanResult.authorized ? (
@@ -1085,7 +1085,7 @@ export function TlsScanner() {
                         >
                           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
                             <div
-                              className={`metric-icon-wrap ${isExpired ? 'danger' : isLeaf ? 'purple' : isIntermediate ? 'info' : 'success'}`}
+                              className={`metric-icon-wrap ${isExpired ? 'danger' : isLeaf ? 'blue' : isIntermediate ? 'info' : 'success'}`}
                               style={{ width: 44, height: 44, borderRadius: 12, marginTop: 2 }}
                             >
                               {isLeaf ? <Globe size={22} /> : isIntermediate ? <ShieldCheck size={22} /> : <Award size={22} />}
@@ -1096,7 +1096,7 @@ export function TlsScanner() {
                                   #{idx + 1} {isLeaf ? t('app.certDetails.leafCert', 'Leaf Certificate') : isIntermediate ? t('app.certDetails.intermediateCa', 'Intermediate CA') : t('app.certDetails.rootCa', 'Root CA / Anchor')}
                                 </span>
                                 {cert.ca && !isLeaf && (
-                                  <span className="badge badge-purple" style={{ fontSize: '0.68rem' }}>CA</span>
+                                  <span className="badge badge-info" style={{ fontSize: '0.68rem' }}>CA</span>
                                 )}
                                 {isSelfSigned && idx > 0 && (
                                   <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>{t('app.tlsScanner.selfSigned', 'Self-Signed')}</span>
@@ -1270,7 +1270,7 @@ export function TlsScanner() {
 
                           <div className="tls-param-box">
                             <div className="tls-param-label">
-                              <Key size={12} style={{ color: 'var(--purple-color)' }} />
+                              <Key size={12} style={{ color: 'var(--accent-cyan)' }} />
                               {t('app.tlsScanner.serialNumber', 'Serial Number')}
                             </div>
                             <div
