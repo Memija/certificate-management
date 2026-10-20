@@ -223,7 +223,7 @@ function App() {
       case 'ocsp-checker': return <OcspChecker onNavigate={switchMode} />;
       case 'expiry-dashboard': return <ExpiryDashboard />;
       case 'ct-log-search': return <CtLogSearch />;
-      case 'education-center': return <EducationCenter />;
+      case 'education-center': return <EducationCenter onNavigate={switchMode} />;
       case 'secure-boot':
       default:
         if (loading) {

@@ -53,6 +53,7 @@
       "crl": "Daftar Pencabutan Sertifikat (CRL). Daftar sertifikat digital yang telah dicabut oleh Otoritas Sertifikat (CA) yang menerbitkan sebelum tanggal kedaluwarsa dan tidak boleh lagi dipercaya.",
       "csr": "Permintaan Penandatanganan Sertifikat (CSR). Blok teks yang disandikan yang diberikan ke Otoritas Sertifikat saat mengajukan sertifikat. Berisi informasi tentang pemohon dan kunci publiknya.",
       "ocsp": "Online Certificate Status Protocol (OCSP). Protokol internet yang digunakan untuk memperoleh status pencabutan sertifikat digital X.509, menawarkan alternatif yang lebih cepat dibandingkan CRL.",
+      "ocspStapling": "OCSP Stapling (RFC 6066). Ekstensi jabat tangan TLS di mana server web menyimpan respons OCSP CA dan mengirimkannya langsung ke klien, mencegah latensi dan menjaga privasi pengguna.",
       "ctlog": "Log Certificate Transparency (CT). Catatan sertifikat yang diterbitkan yang dapat diaudit publik dan terjamin secara kriptografi. Membantu mendeteksi sertifikat yang salah terbit atau berbahaya.",
       "pem": "Privacy Enhanced Mail (PEM). Format file umum untuk menyimpan kunci kriptografi dan sertifikat, ditandai dengan data terkode Base64 yang diapit antara '---BEGIN...' dan '---END...'.",
       "der": "Distinguished Encoding Rules (DER). Format biner untuk sertifikat dan kunci, tidak dapat dibaca sebagai teks biasa. Sering digunakan di lingkungan Windows atau Java keystores."
@@ -690,15 +691,82 @@
       "openInBrowser": "Buka di Tab Baru",
       "openInBrowserTooltip": "Buka log mentah lengkap di tab browser baru",
       "eduTitle": "Memahami Protokol Pencabutan Online",
+      "eduSubtitle": "Bagaimana sistem PKI modern memverifikasi bahwa sertifikat belum dicabut sebelum kedaluwarsa.",
       "eduOcspTitle": "OCSP (RFC 6960)",
       "eduOcspDesc": "Online Certificate Status Protocol meminta status nomor seri sertifikat tertentu ke CA secara real-time. Memberikan status seketika tetapi membutuhkan infrastruktur responder berkeandalan tinggi.",
       "eduCrlTitle": "CRL (RFC 5280)",
       "eduCrlDesc": "Certificate Revocation Lists adalah daftar bertanda tangan dan bertanda waktu yang diterbitkan secara berkala oleh CA. Banyak CA modern (seperti Let's Encrypt) mengandalkan distribusi CRL untuk pencabutan berskala tanpa beban OCSP per koneksi.",
-      "eduTestingTitle": "Strategi Pengujian",
-      "eduTestingDesc": "Gunakan contoh pengujian di atas untuk memverifikasi bagaimana aplikasi klien merespons sertifikat yang dicabut (uji BadSSL), sertifikat komersial EV/DV, dan sertifikat internal perusahaan.",
+      "eduStaplingTitle": "OCSP Stapling (RFC 6066)",
+      "eduStaplingDesc": "Server web secara berkala menanyakan responden OCSP dan menyimpan respons yang ditandatangani dalam cache, melampirkannya langsung ke jabat tangan TLS. Ini menghilangkan latensi klien dan melindungi privasi.",
+      "eduTestingTitle": "Strategi Pengujian & Mode Kegagalan",
+      "eduTestingDesc": "Sebagian besar peramban modern menerapkan soft-fail untuk mencegah gangguan penjelajahan. Gunakan contoh pengujian di Pemeriksa Pencabutan Online untuk menguji sertifikat yang dicabut.",
+      "learnMoreTitle": "Ingin mempelajari cara kerja protokol pencabutan?",
+      "learnMoreDesc": "Pelajari lebih lanjut tentang OCSP (RFC 6960), CRL (RFC 5280), dan OCSP Stapling di Pusat Pendidikan.",
+      "openEduCenter": "Buka Pusat Pendidikan",
+      "launchOcspChecker": "Buka Pemeriksa Pencabutan Online",
+      "launchCrlInspector": "Buka Pemeriksa CRL",
       "unsupportedFileType": "Jenis file tidak didukung. Harap unggah file sertifikat (.pem, .cer, .crt, .der).",
       "jsonNotCert": "File atau konten yang diberikan adalah JSON, bukan sertifikat X.509.",
       "missingPemHeaders": "Harap berikan sertifikat dalam format PEM yang dimulai dengan -----BEGIN CERTIFICATE-----."
+    },
+    "ctLog": {
+      "eyebrow": "Audit Publik & RFC 6962",
+      "title": "Pencarian Log Certificate Transparency (CT)",
+      "subtitle": "Cari log Certificate Transparency (CT) publik untuk menemukan semua sertifikat yang pernah diterbitkan untuk domain atau wildcard tertentu.",
+      "queryTitle": "Kueri Domain / Subdomain",
+      "placeholder": "mis. google.com, github.com, atau *.wikipedia.org",
+      "searchBtn": "Cari Log CT",
+      "searchingBtn": "Mencari Log...",
+      "clearBtn": "Hapus",
+      "tryExamples": "Coba Contoh Cepat:",
+      "foundCount": "Ditemukan <0>{{count}}</0> sertifikat untuk <1>{{domain}}</1>",
+      "filterAll": "Semua",
+      "filterValid": "Aktif / Berlaku",
+      "filterExpired": "Kedaluwarsa",
+      "filterPlaceholder": "Filter hasil berdasarkan domain, SAN, atau penerbit...",
+      "emptyResults": "Tidak ada log transparansi yang tercatat untuk domain ini.",
+      "noFilterMatches": "Tidak ada sertifikat yang cocok dengan filter pencarian Anda.",
+      "showingCachedSnapshot": "crt.sh saat ini sedang dibatasi (429/502). Menampilkan sampel data terverifikasi.",
+      "certIdTooltip": "Lihat catatan log sertifikat lengkap di crt.sh",
+      "issuerLabel": "Penerbit",
+      "identityLabel": "Identitas & Subject Alternative Names (SAN)",
+      "loggedLabel": "Dicatat",
+      "issuedLabel": "Diterbitkan",
+      "expiresLabel": "Kedaluwarsa",
+      "validBadge": "Berlaku",
+      "expiredBadge": "Kedaluwarsa",
+      "copyCnTooltip": "Salin Common Name",
+      "copySerialTooltip": "Salin Nomor Seri",
+      "copied": "Tersalin!",
+      "emptyDomainError": "Silakan masukkan nama domain yang valid (mis. google.com atau github.com).",
+      "searchFailedError": "Gagal mengambil log CT dari crt.sh. Layanan mungkin sedang mengalami lalu lintas tinggi.",
+      "presets": {
+        "github": {
+          "name": "GitHub",
+          "badge": "DigiCert / LE",
+          "desc": "Platform kolaborasi kode yang menggunakan sertifikat DigiCert dan Let's Encrypt."
+        },
+        "google": {
+          "name": "Google",
+          "badge": "Google Trust",
+          "desc": "Layanan web bertrafik tinggi yang menggunakan Google Trust Services (GTS) CA."
+        },
+        "cloudflare": {
+          "name": "Cloudflare",
+          "badge": "Edge TLS",
+          "desc": "Jaringan edge CDN global dengan manajemen sertifikat TLS otomatis."
+        },
+        "wikipedia": {
+          "name": "Wikipedia",
+          "badge": "Wikimedia",
+          "desc": "Ensiklopedia nirlaba global yang menggunakan Let's Encrypt dan GlobalSign."
+        },
+        "badssl": {
+          "name": "BadSSL",
+          "badge": "Suite Uji Keamanan",
+          "desc": "Alat uji keamanan yang berisi sertifikat kedaluwarsa, dicabut, dan kasus khusus."
+        }
+      }
     },
     "csr": {
       "eyebrow": "Inspeksi Permintaan PKCS#10",

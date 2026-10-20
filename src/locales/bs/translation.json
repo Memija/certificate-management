@@ -53,6 +53,7 @@
       "crl": "Lista Opozvanih Certifikata (CRL). Lista digitalnih certifikata koje je opozvalo certifikacijsko tijelo (CA) prije njihovog isteka i kojima se više ne bi trebalo vjerovati.",
       "csr": "Zahtjev za Potpisivanje Certifikata (CSR). Blok kodiranog teksta koji se predaje certifikacijskom tijelu prilikom podnošenja zahtjeva za certifikat. Sadrži informacije o podnosiocu i njegov javni ključ.",
       "ocsp": "Online Protokol o Statusu Certifikata (OCSP). Internet protokol koji se koristi za dobijanje statusa opoziva X.509 digitalnog certifikata, nudeći bržu alternativu CRL-ovima.",
+      "ocspStapling": "OCSP Stapling (RFC 6066). Ekstenzija TLS rukovanja gdje web server kešira OCSP odgovor od CA i isporučuje ga klijentu, sprečavajući kašnjenje i čuvajući privatnost korisnika.",
       "ctlog": "Certificate Transparency (CT) Log. Kriptografski osiguran, javno provjerljiv zapis izdanih certifikata. Pomaže u otkrivanju pogrešno izdanih ili zlonamjernih certifikata.",
       "pem": "Privacy Enhanced Mail (PEM). Uobičajeni format datoteke za pohranu kriptografskih ključeva i certifikata, karakteriziran Base64 kodiranim podacima uokvirenim između '---BEGIN...' i '---END...'.",
       "der": "Distinguished Encoding Rules (DER). Binarni format za certifikate i ključeve, nečitljiv kao običan tekst. Često se koristi u Windows okruženjima ili Java keystore-ovima."
@@ -694,15 +695,82 @@
       "openInBrowser": "Otvori u novoj kartici",
       "openInBrowserTooltip": "Otvori cijeli izvorni zapisnik u novoj kartici preglednika",
       "eduTitle": "Razumijevanje protokola za online opoziv",
+      "eduSubtitle": "Kako moderni PKI sistemi provjeravaju da certifikat nije opozvan prije isteka.",
       "eduOcspTitle": "OCSP (RFC 6960)",
       "eduOcspDesc": "Online Certificate Status Protocol upituje CA u realnom vremenu za određeni serijski broj certifikata. Pruža trenutni status, ali zahtijeva visoko dostupnu responder infrastrukturu.",
       "eduCrlTitle": "CRL (RFC 5280)",
       "eduCrlDesc": "Certificate Revocation Lists su potpisane liste sa vremenskim žigom koje CA periodično objavljuje. Mnogi moderni CA-ovi (kao što je Let's Encrypt) koriste CRL distribucije radi skalabilne provjere bez OCSP opterećenja po konekciji.",
-      "eduTestingTitle": "Strategija testiranja",
-      "eduTestingDesc": "Iskoristite testne primjere iznad da provjerite kako klijentske aplikacije reaguju na opozvane certifikate (BadSSL test), komercijalne EV/DV certifikate i interne poslovne certifikate.",
+      "eduStaplingTitle": "OCSP Stapling (RFC 6066)",
+      "eduStaplingDesc": "Web server periodično upituje OCSP responder i kešira potpisani odgovor, prilažući ga direktno u TLS rukovanje. Ovo eliminiše kašnjenje kod klijenta i štiti privatnost korisnika izbjegavanjem direktnih veza između klijenta i CA.",
+      "eduTestingTitle": "Strategija testiranja i načini rada pri grešci",
+      "eduTestingDesc": "Većina modernih preglednika koristi meki režim (soft-fail) kako bi izbjegla prekid rada. Iskoristite testne primjere u Provjeri Online Opoziva kako biste provjerili kako aplikacije reaguju na opozvane, EV/DV i interne certifikate.",
+      "learnMoreTitle": "Želite li naučiti kako funkcionišu protokoli opoziva?",
+      "learnMoreDesc": "Istražite detaljan vodič o OCSP-u (RFC 6960), CRL-ovima (RFC 5280) i OCSP Staplingu u Edukativnom Centru.",
+      "openEduCenter": "Otvori Edukativni Centar",
+      "launchOcspChecker": "Otvori Provjeru Online Opoziva",
+      "launchCrlInspector": "Otvori CRL Inspektor",
       "unsupportedFileType": "Nepodržan tip datoteke. Molimo učitajte certifikat (.pem, .cer, .crt, .der).",
       "jsonNotCert": "Učitana datoteka ili sadržaj je JSON, a ne X.509 certifikat.",
       "missingPemHeaders": "Molimo unesite certifikat u PEM formatu koji počinje sa -----BEGIN CERTIFICATE-----."
+    },
+    "ctLog": {
+      "eyebrow": "Javna Revizija & RFC 6962",
+      "title": "Pretraga Zapisa Transparentnosti Certifikata (CT)",
+      "subtitle": "Pretražite javne zapise transparentnosti certifikata (CT) da biste otkrili sve certifikate ikada izdate za određenu domenu ili wildcard.",
+      "queryTitle": "Upit za domenu / poddomenu",
+      "placeholder": "npr. google.com, github.com ili *.wikipedia.org",
+      "searchBtn": "Pretraži CT Zapise",
+      "searchingBtn": "Pretražujem Zapise...",
+      "clearBtn": "Očisti",
+      "tryExamples": "Isprobajte primjere:",
+      "foundCount": "Pronađeno <0>{{count}}</0> certifikata za <1>{{domain}}</1>",
+      "filterAll": "Svi",
+      "filterValid": "Aktivni / Važeći",
+      "filterExpired": "Istekli",
+      "filterPlaceholder": "Filtriraj rezultate po domeni, SAN-u ili izdavaču...",
+      "emptyResults": "Nema zabilježenih zapisa transparentnosti za ovu domenu.",
+      "noFilterMatches": "Nijedan certifikat ne odgovara vašem filteru.",
+      "showingCachedSnapshot": "Live crt.sh je trenutno preopterećen (429/502). Prikazujem priloženi verifikovani uzorak.",
+      "certIdTooltip": "Pogledajte kompletan javni zapis certifikata na crt.sh",
+      "issuerLabel": "Izdavač",
+      "identityLabel": "Identiteti & Alternativna Imena Subjekta (SAN)",
+      "loggedLabel": "Zabilježeno",
+      "issuedLabel": "Izdato",
+      "expiresLabel": "Ističe",
+      "validBadge": "Važeći",
+      "expiredBadge": "Istekao",
+      "copyCnTooltip": "Kopiraj Common Name",
+      "copySerialTooltip": "Kopiraj Serijski Broj",
+      "copied": "Kopirano!",
+      "emptyDomainError": "Molimo unesite važeći naziv domene (npr. google.com ili github.com).",
+      "searchFailedError": "Neuspješno preuzimanje CT zapisa sa crt.sh servisa. Servis je možda pod velikim opterećenjem.",
+      "presets": {
+        "github": {
+          "name": "GitHub",
+          "badge": "DigiCert / LE",
+          "desc": "Platforma za saradnju na kodu koja koristi DigiCert i Let's Encrypt certifikate."
+        },
+        "google": {
+          "name": "Google",
+          "badge": "Google Trust",
+          "desc": "Web servisi visokog prometa koji koriste Google Trust Services (GTS) CA."
+        },
+        "cloudflare": {
+          "name": "Cloudflare",
+          "badge": "Edge TLS",
+          "desc": "Globalna CDN mreža sa automatizovanim upravljanjem TLS certifikatima."
+        },
+        "wikipedia": {
+          "name": "Wikipedia",
+          "badge": "Wikimedia",
+          "desc": "Globalna enciklopedija koja koristi Let's Encrypt i GlobalSign certifikate."
+        },
+        "badssl": {
+          "name": "BadSSL",
+          "badge": "Sigurnosni test",
+          "desc": "Sigurnosno testno okruženje sa isteklim, opozvanim i graničnim certifikatima."
+        }
+      }
     },
     "csr": {
       "eyebrow": "Inspekcija PKCS#10 zahtjeva",

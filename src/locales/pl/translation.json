@@ -53,6 +53,7 @@
       "crl": "Lista Odwołanych Certyfikatów (CRL). Lista certyfikatów cyfrowych, które zostały odwołane przez wystawiający Urząd Certyfikacji (CA) przed upływem terminu ich ważności i nie powinny być już zaufane.",
       "csr": "Żądanie Podpisania Certyfikatu (CSR). Blok zakodowanego tekstu przekazywany Urzędowi Certyfikacji podczas ubiegania się o certyfikat. Zawiera informacje o wnioskodawcy i jego kluczu publicznym.",
       "ocsp": "Protokół Statusu Certyfikatów Online (OCSP). Protokół internetowy służący do uzyskiwania statusu unieważnienia certyfikatu cyfrowego X.509, oferujący szybszą alternatywę dla CRL.",
+      "ocspStapling": "OCSP Stapling (RFC 6066). Rozszerzenie uzgadniania TLS, w którym serwer WWW buforuje odpowiedź OCSP od CA i dostarcza ją bezpośrednio klientowi, eliminując opóźnienia i chroniąc prywatność użytkowników.",
       "ctlog": "Dziennik Certificate Transparency (CT). Zabezpieczony kryptograficznie, publicznie weryfikowalny rejestr wydanych certyfikatów. Pomaga w wykrywaniu błędnie wydanych lub złośliwych certyfikatów.",
       "pem": "Privacy Enhanced Mail (PEM). Powszechny format plików do przechowywania kluczy kryptograficznych i certyfikatów, charakteryzujący się danymi zakodowanymi w Base64 ujętymi pomiędzy '---BEGIN...' a '---END...'.",
       "der": "Distinguished Encoding Rules (DER). Format binarny certyfikatów i kluczy, nieczytelny jako zwykły tekst. Często używany w środowiskach Windows lub w magazynach kluczy Java."
@@ -698,15 +699,82 @@
       "openInBrowser": "Otwórz w nowej karcie",
       "openInBrowserTooltip": "Otwórz pełny dziennik diagnostyczny w nowej karcie przeglądarki",
       "eduTitle": "Zrozumienie protokołów odwoływania online",
+      "eduSubtitle": "Jak nowoczesne systemy PKI weryfikują, czy certyfikat nie został odwołany przed wygaśnięciem.",
       "eduOcspTitle": "OCSP (RFC 6960)",
       "eduOcspDesc": "Online Certificate Status Protocol odpytuje CA w czasie rzeczywistym o konkretny numer seryjny certyfikatu. Daje natychmiastowy status, ale wymaga infrastruktury respondera o wysokiej dostępności.",
       "eduCrlTitle": "CRL (RFC 5280)",
       "eduCrlDesc": "Certificate Revocation Lists to podpisane listy z sygnaturą czasową publikowane okresowo przez CA. Wiele nowoczesnych CA (takich jak Let's Encrypt) polega na dystrybucji CRL dla skalowalności bez obciążenia OCSP przy każdym połączeniu.",
-      "eduTestingTitle": "Strategia testowania",
-      "eduTestingDesc": "Użyj powyższych przykładów testowych, aby zweryfikować, jak aplikacje klienckie reagują na odwołane certyfikaty (test BadSSL), komercyjne certyfikaty EV/DV oraz wewnętrzne certyfikaty firmowe.",
+      "eduStaplingTitle": "OCSP Stapling (RFC 6066)",
+      "eduStaplingDesc": "Serwer WWW okresowo odpytuje responder OCSP i buforuje podpisaną odpowiedź, dołączając ją bezpośrednio do uzgadniania TLS. Eliminuje to opóźnienia i chroni prywatność użytkowników.",
+      "eduTestingTitle": "Strategia testowania i tryby awarii",
+      "eduTestingDesc": "Większość nowoczesnych przeglądarek stosuje soft-fail, aby uniknąć przerw w działaniu sieci. Użyj przykładów testowych w Narzędziu do Sprawdzania Odwołań Online, aby zbadać zachowanie aplikacji.",
+      "learnMoreTitle": "Chcesz dowiedzieć się, jak działają protokoły odwoływania?",
+      "learnMoreDesc": "Poznaj szczegółowy przewodnik po OCSP (RFC 6960), CRL (RFC 5280) oraz OCSP Stapling w Centrum Edukacji.",
+      "openEduCenter": "Otwórz Centrum Edukacji",
+      "launchOcspChecker": "Otwórz Narzędzie do Sprawdzania Odwołań Online",
+      "launchCrlInspector": "Otwórz Inspektor CRL",
       "unsupportedFileType": "Nieobsługiwany typ pliku. Proszę przesłać plik certyfikatu (.pem, .cer, .crt, .der).",
       "jsonNotCert": "Podany plik lub zawartość to JSON, a nie certyfikat X.509.",
       "missingPemHeaders": "Proszę podać certyfikat w formacie PEM rozpoczynający się od -----BEGIN CERTIFICATE-----."
+    },
+    "ctLog": {
+      "eyebrow": "Publiczny Audyt & RFC 6962",
+      "title": "Wyszukiwanie w Logach Certificate Transparency (CT)",
+      "subtitle": "Przeszukuj publiczne logi Certificate Transparency (CT), aby odkryć wszystkie certyfikaty kiedykolwiek wydane dla określonej domeny lub symbolu wieloznacznego.",
+      "queryTitle": "Zapytanie o domenę / subdomenę",
+      "placeholder": "np. google.com, github.com lub *.wikipedia.org",
+      "searchBtn": "Szukaj w logach CT",
+      "searchingBtn": "Wyszukiwanie logów...",
+      "clearBtn": "Wyczyść",
+      "tryExamples": "Wypróbuj przykłady:",
+      "foundCount": "Znaleziono <0>{{count}}</0> certyfikatów dla <1>{{domain}}</1>",
+      "filterAll": "Wszystkie",
+      "filterValid": "Aktywne / Ważne",
+      "filterExpired": "Wygasłe",
+      "filterPlaceholder": "Filtruj wyniki według domeny, SAN lub wystawcy...",
+      "emptyResults": "Brak zarejestrowanych logów przejrzystości dla tej domeny.",
+      "noFilterMatches": "Brak certyfikatów pasujących do Twojego filtra.",
+      "showingCachedSnapshot": "Serwer crt.sh jest obecnie przeciążony (429/502). Wyświetlam zweryfikowane dane przykładowe.",
+      "certIdTooltip": "Zobacz pełny publiczny rekord certyfikatu na crt.sh",
+      "issuerLabel": "Wystawca",
+      "identityLabel": "Tożsamości & Alternatywne Nazwy Podmiotu (SAN)",
+      "loggedLabel": "Zarejestrowano",
+      "issuedLabel": "Wydano",
+      "expiresLabel": "Wygasa",
+      "validBadge": "Ważny",
+      "expiredBadge": "Wygasł",
+      "copyCnTooltip": "Kopiuj Common Name",
+      "copySerialTooltip": "Kopiuj numer seryjny",
+      "copied": "Skopiowano!",
+      "emptyDomainError": "Wprowadź prawidłową nazwę domeny (np. google.com lub github.com).",
+      "searchFailedError": "Nie udało się pobrać logów CT z serwisu crt.sh. Usługa może być mocno obciążona.",
+      "presets": {
+        "github": {
+          "name": "GitHub",
+          "badge": "DigiCert / LE",
+          "desc": "Platforma współpracy nad kodem korzystająca z certyfikatów DigiCert i Let's Encrypt."
+        },
+        "google": {
+          "name": "Google",
+          "badge": "Google Trust",
+          "desc": "Usługi internetowe o dużym natężeniu ruchu korzystające z CA Google Trust Services (GTS)."
+        },
+        "cloudflare": {
+          "name": "Cloudflare",
+          "badge": "Edge TLS",
+          "desc": "Globalna sieć CDN z automatycznym zarządzaniem certyfikatami TLS."
+        },
+        "wikipedia": {
+          "name": "Wikipedia",
+          "badge": "Wikimedia",
+          "desc": "Globalna encyklopedia non-profit korzystająca z certyfikatów Let's Encrypt i GlobalSign."
+        },
+        "badssl": {
+          "name": "BadSSL",
+          "badge": "Testy bezpieczeństwa",
+          "desc": "Zestaw testowy zawierający certyfikaty wygasłe, odwołane i przypadki brzegowe."
+        }
+      }
     },
     "csr": {
       "eyebrow": "Inspekcja żądań PKCS#10",

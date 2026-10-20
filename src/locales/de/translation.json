@@ -53,6 +53,7 @@
       "crl": "Zertifikatssperrliste (CRL). Eine Liste digitaler Zertifikate, die von der ausstellenden Zertifizierungsstelle (CA) vor ihrem Ablaufdatum widerrufen wurden und denen nicht mehr vertraut werden sollte.",
       "csr": "Zertifikatssignierungsanforderung (CSR). Ein verschlüsselter Textblock, der einer Zertifizierungsstelle bei der Beantragung eines Zertifikats übergeben wird. Er enthält Informationen über den Antragsteller und dessen öffentlichen Schlüssel.",
       "ocsp": "Online Certificate Status Protocol (OCSP). Ein Internetprotokoll zur Ermittlung des Sperrstatus eines digitalen X.509-Zertifikats, das eine schnellere Alternative zu CRLs.",
+      "ocspStapling": "OCSP-Stapling (RFC 6066). Eine TLS-Handshake-Erweiterung, bei der der Webserver die OCSP-Antwort der CA zwischenspeichert und direkt an den Client übermittelt, um Latenz zu vermeiden und die Privatsphäre zu schützen.",
       "ctlog": "Certificate Transparency (CT) Log. Eine kryptografisch gesicherte, öffentlich überprüfbare und nur ergänzbare Aufzeichnung ausgestellter Zertifikate. Sie hilft bei der Erkennung falsch ausgestellter oder bösartiger Zertifikate.",
       "pem": "Privacy Enhanced Mail (PEM). Ein gängiges Dateiformat zum Speichern von kryptografischen Schlüsseln und Zertifikaten, das durch Base64-codierte Daten gekennzeichnet ist, die von '---BEGIN...' und '---END...' eingerahmt sind.",
       "der": "Distinguished Encoding Rules (DER). Ein Binärformat für Zertifikate und Schlüssel, das nicht als Klartext lesbar ist. Wird häufig in Windows-Umgebungen oder Java-Keystores verwendet."
@@ -690,15 +691,82 @@
       "openInBrowser": "In neuem Tab öffnen",
       "openInBrowserTooltip": "Vollständige Diagnoseausgabe in einem neuen Browser-Tab öffnen",
       "eduTitle": "Online-Sperrprotokolle verstehen",
+      "eduSubtitle": "Wie moderne PKI-Systeme überprüfen, ob ein Zertifikat vor dem Ablauf widerrufen wurde.",
       "eduOcspTitle": "OCSP (RFC 6960)",
       "eduOcspDesc": "Das Online Certificate Status Protocol fragt die CA in Echtzeit nach dem Status einer Zertifikatsseriennummer ab. Es bietet sofortigen Status, erfordert jedoch hochverfügbare Responder-Infrastruktur.",
       "eduCrlTitle": "CRL (RFC 5280)",
       "eduCrlDesc": "Certificate Revocation Lists sind signierte, mit Zeitstempel versehene Listen, die periodisch von der CA veröffentlicht werden. Viele moderne CAs (wie Let's Encrypt) nutzen CRL-Verteilungen für skalierbare Sperrprüfungen ohne OCSP-Overhead pro Verbindung.",
-      "eduTestingTitle": "Teststrategie",
-      "eduTestingDesc": "Nutzen Sie die obigen Testbeispiele, um zu prüfen, wie Clientanwendungen auf widerrufene Zertifikate (BadSSL-Testharnisch), kommerzielle EV/DV-Zertifikate und interne Unternehmenszertifikate reagieren.",
+      "eduStaplingTitle": "OCSP-Stapling (RFC 6066)",
+      "eduStaplingDesc": "Der Webserver fragt regelmäßig den OCSP-Responder ab, zwischenspeichert die signierte Antwort und hängt sie direkt an den TLS-Handshake an. Dies eliminiert Client-Latenz und schützt die Privatsphäre.",
+      "eduTestingTitle": "Teststrategie & Fehlermodi",
+      "eduTestingDesc": "Moderne Browser nutzen meist Soft-Fail, um Verbindungsabbrüche zu vermeiden. Nutzen Sie die Testbeispiele im Online-Sperrprüfer, um das Verhalten bei gesperrten Zertifikaten zu analysieren.",
+      "learnMoreTitle": "Möchten Sie erfahren, wie Sperrprotokolle funktionieren?",
+      "learnMoreDesc": "Erfahren Sie mehr über OCSP (RFC 6960), CRL (RFC 5280) und OCSP-Stapling im Bildungszentrum.",
+      "openEduCenter": "Bildungszentrum öffnen",
+      "launchOcspChecker": "Online-Sperrprüfung öffnen",
+      "launchCrlInspector": "CRL-Inspektor öffnen",
       "unsupportedFileType": "Nicht unterstützter Dateityp. Bitte laden Sie eine Zertifikatsdatei hoch (.pem, .cer, .crt, .der).",
       "jsonNotCert": "Die angegebene Datei oder der Inhalt ist JSON, kein X.509-Zertifikat.",
       "missingPemHeaders": "Bitte geben Sie ein Zertifikat im PEM-Format an, beginnend mit -----BEGIN CERTIFICATE-----."
+    },
+    "ctLog": {
+      "eyebrow": "Öffentliche Prüfung & RFC 6962",
+      "title": "Certificate Transparency (CT)-Protokollsuche",
+      "subtitle": "Durchsuchen Sie öffentliche Certificate Transparency (CT)-Protokolle, um alle für eine bestimmte Domain oder Wildcard ausgestellten Zertifikate zu entdecken.",
+      "queryTitle": "Domain- / Subdomain-Abfrage",
+      "placeholder": "z. B. google.com, github.com oder *.wikipedia.org",
+      "searchBtn": "CT-Protokolle durchsuchen",
+      "searchingBtn": "Protokolle werden durchsucht...",
+      "clearBtn": "Löschen",
+      "tryExamples": "Schnellbeispiele ausprobieren:",
+      "foundCount": "<0>{{count}}</0> Zertifikate für <1>{{domain}}</1> gefunden",
+      "filterAll": "Alle",
+      "filterValid": "Aktiv / Gültig",
+      "filterExpired": "Abgelaufen",
+      "filterPlaceholder": "Ergebnisse nach Domain, SAN oder Aussteller filtern...",
+      "emptyResults": "Für diese Domain wurden keine Transparenzprotokolle aufgezeichnet.",
+      "noFilterMatches": "Keine Zertifikate entsprechen Ihrem Suchfilter.",
+      "showingCachedSnapshot": "crt.sh ist derzeit überlastet (429/502). Zeige verifizierte Beispieldaten.",
+      "certIdTooltip": "Vollständigen Zertifikatsdatensatz auf crt.sh anzeigen",
+      "issuerLabel": "Aussteller",
+      "identityLabel": "Identitäten & Subject Alternative Names (SANs)",
+      "loggedLabel": "Protokolliert",
+      "issuedLabel": "Ausgestellt",
+      "expiresLabel": "Läuft ab",
+      "validBadge": "Gültig",
+      "expiredBadge": "Abgelaufen",
+      "copyCnTooltip": "Common Name kopieren",
+      "copySerialTooltip": "Seriennummer kopieren",
+      "copied": "Kopiert!",
+      "emptyDomainError": "Bitte geben Sie einen gültigen Domainnamen ein (z. B. google.com oder github.com).",
+      "searchFailedError": "Fehler beim Abrufen der CT-Protokolle von crt.sh. Der Dienst ist möglicherweise stark ausgelastet.",
+      "presets": {
+        "github": {
+          "name": "GitHub",
+          "badge": "DigiCert / LE",
+          "desc": "Code-Kollaborationsplattform mit Zertifikaten von DigiCert und Let's Encrypt."
+        },
+        "google": {
+          "name": "Google",
+          "badge": "Google Trust",
+          "desc": "Webdienste mit hohem Datenverkehr, die Google Trust Services (GTS) nutzen."
+        },
+        "cloudflare": {
+          "name": "Cloudflare",
+          "badge": "Edge TLS",
+          "desc": "Globales CDN-Netzwerk mit automatisierter TLS-Zertifikatsverwaltung."
+        },
+        "wikipedia": {
+          "name": "Wikipedia",
+          "badge": "Wikimedia",
+          "desc": "Gemeinnützige Online-Enzyklopädie mit Let's Encrypt- und GlobalSign-Zertifikaten."
+        },
+        "badssl": {
+          "name": "BadSSL",
+          "badge": "Sicherheitstest-Suite",
+          "desc": "Sicherheitstestumgebung mit abgelaufenen, gesperrten und Grenzwert-Zertifikaten."
+        }
+      }
     },
     "csr": {
       "eyebrow": "PKCS#10-Anforderungsprüfung",

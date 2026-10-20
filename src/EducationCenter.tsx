@@ -1,5 +1,18 @@
 import { useState } from 'react';
-import { BookOpen, Search, Shield, FileKey, Globe, Code, Layers, Copy } from 'lucide-react';
+import { 
+  BookOpen, 
+  Search, 
+  Shield, 
+  FileKey, 
+  Globe, 
+  Code, 
+  Layers, 
+  Copy, 
+  FileText, 
+  Zap, 
+  Activity, 
+  ArrowRight 
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TermId } from './LearningTerm';
 import { useToast } from './ToastContext';
@@ -31,7 +44,7 @@ const CATEGORIES: CategoryDef[] = [
     id: 'protocols',
     translationKey: 'protocols',
     icon: Globe,
-    keys: ['ocsp', 'ctlog'],
+    keys: ['ocsp', 'crl', 'ocspStapling', 'ctlog'],
     color: 'var(--cat-network)'
   },
   {
@@ -43,7 +56,7 @@ const CATEGORIES: CategoryDef[] = [
   }
 ];
 
-export function EducationCenter() {
+export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => void }) {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState<string>('all');
   const { t } = useTranslation();
@@ -144,8 +157,16 @@ export function EducationCenter() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {visibleCategories.map(category => {
             const visibleKeys = filterTerms(category.keys);
+            const isProtocols = category.id === 'protocols';
+            const matchesRevocationGuide = !search.trim() || 
+              'understanding online revocation protocols ocsp crl stapling rfc 6960 5280 6066 soft-fail hard-fail'
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              t('app.ocsp.eduTitle', 'Understanding Online Revocation Protocols').toLowerCase().includes(search.toLowerCase());
             
-            if (visibleKeys.length === 0) return null;
+            const showRevocationGuide = isProtocols && matchesRevocationGuide;
+
+            if (visibleKeys.length === 0 && !showRevocationGuide) return null;
 
             const Icon = category.icon;
 
@@ -156,47 +177,179 @@ export function EducationCenter() {
                   {t(`app.learningCategories.${category.translationKey}`)}
                 </h3>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.1rem' }}>
-                  {visibleKeys.map(key => {
-                    const text = t(`app.learningTerms.${key}`);
-                    const firstPeriodIdx = text.indexOf('.');
-                    let termTitle = text;
-                    let termDef = '';
-                    
-                    if (firstPeriodIdx > 0 && firstPeriodIdx < 60) {
-                      termTitle = text.substring(0, firstPeriodIdx);
-                      termDef = text.substring(firstPeriodIdx + 1).trim();
-                    } else {
-                      termTitle = key.toUpperCase();
-                      termDef = text;
-                    }
+                {visibleKeys.length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.1rem' }}>
+                    {visibleKeys.map(key => {
+                      const text = t(`app.learningTerms.${key}`);
+                      const firstPeriodIdx = text.indexOf('.');
+                      let termTitle = text;
+                      let termDef = '';
+                      
+                      if (firstPeriodIdx > 0 && firstPeriodIdx < 60) {
+                        termTitle = text.substring(0, firstPeriodIdx);
+                        termDef = text.substring(firstPeriodIdx + 1).trim();
+                      } else {
+                        termTitle = key.toUpperCase();
+                        termDef = text;
+                      }
 
-                    return (
-                      <div
-                        key={key}
-                        className="glass-card edu-card-hover"
-                        style={{ display: 'flex', flexDirection: 'column', padding: '1.25rem', position: 'relative' }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                          <h4 style={{ margin: 0, color: category.color, fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3 }}>
-                            {termTitle}
-                          </h4>
-                          <button
-                            className="toast-close-btn"
-                            style={{ opacity: 0.6 }}
-                            onClick={() => copyDefinition(termTitle, termDef)}
-                            title="Copy definition"
-                          >
-                            <Copy size={13} />
-                          </button>
+                      return (
+                        <div
+                          key={key}
+                          className="glass-card edu-card-hover"
+                          style={{ display: 'flex', flexDirection: 'column', padding: '1.25rem', position: 'relative' }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            <h4 style={{ margin: 0, color: category.color, fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3 }}>
+                              {termTitle}
+                            </h4>
+                            <button
+                              className="toast-close-btn"
+                              style={{ opacity: 0.6 }}
+                              onClick={() => copyDefinition(termTitle, termDef)}
+                              title="Copy definition"
+                            >
+                              <Copy size={13} />
+                            </button>
+                          </div>
+                          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6, flex: 1 }}>
+                            {termDef}
+                          </p>
                         </div>
-                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6, flex: 1 }}>
-                          {termDef}
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Deep Dive Guide: Understanding Online Revocation Protocols */}
+                {showRevocationGuide && (
+                  <div 
+                    className="glass-panel" 
+                    style={{ 
+                      marginTop: '1.5rem', 
+                      padding: '1.75rem', 
+                      borderRadius: 16, 
+                      border: '1px solid rgba(14, 165, 233, 0.3)', 
+                      background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)' 
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--cat-network)', marginBottom: '0.4rem' }}>
+                          <Globe size={13} />
+                          <span>PKI Architecture Guide</span>
+                        </div>
+                        <h4 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                          {t('app.ocsp.eduTitle', 'Understanding Online Revocation Protocols')}
+                        </h4>
+                        <p style={{ margin: '0.4rem 0 0 0', color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '750px', lineHeight: 1.5 }}>
+                          {t('app.ocsp.eduSubtitle', 'How modern PKI systems verify that a certificate has not been revoked before expiration.')}
                         </p>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      {onNavigate && (
+                        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => onNavigate('ocsp-checker')}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem' }}
+                            title={t('app.ocsp.launchOcspChecker', 'Open Online Revocation Checker')}
+                          >
+                            <Activity size={13} style={{ color: 'var(--cat-network)' }} />
+                            <span>{t('app.ocsp.launchOcspChecker', 'Online Revocation Checker')}</span>
+                            <ArrowRight size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => onNavigate('crl-inspector')}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem' }}
+                            title={t('app.ocsp.launchCrlInspector', 'Open CRL Inspector')}
+                          >
+                            <FileText size={13} style={{ color: 'var(--warning-color)' }} />
+                            <span>{t('app.ocsp.launchCrlInspector', 'CRL Inspector')}</span>
+                            <ArrowRight size={13} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: '1.1rem' }}>
+                      {/* OCSP Card */}
+                      <div className="glass-card edu-card-hover" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(14, 165, 233, 0.15)', color: 'var(--cat-network)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <Globe size={18} />
+                          </div>
+                          <div>
+                            <h5 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {t('app.ocsp.eduOcspTitle', 'OCSP (RFC 6960)')}
+                            </h5>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--cat-network)', fontWeight: 600 }}>Real-Time Verification</span>
+                          </div>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, flex: 1 }}>
+                          {t('app.ocsp.eduOcspDesc', 'Online Certificate Status Protocol queries the CA in real time for a specific certificate serial number. Provides instantaneous status but requires high-availability responder infrastructure.')}
+                        </p>
+                      </div>
+
+                      {/* CRL Card */}
+                      <div className="glass-card edu-card-hover" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <FileText size={18} />
+                          </div>
+                          <div>
+                            <h5 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {t('app.ocsp.eduCrlTitle', 'CRL (RFC 5280)')}
+                            </h5>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--warning-color)', fontWeight: 600 }}>Periodic Distribution Lists</span>
+                          </div>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, flex: 1 }}>
+                          {t('app.ocsp.eduCrlDesc', 'Certificate Revocation Lists are signed, timestamped lists published periodically by the CA. Many modern CAs (like Let\'s Encrypt) rely on CRL distributions to provide scalable revocation without per-handshake OCSP overhead.')}
+                        </p>
+                      </div>
+
+                      {/* OCSP Stapling Card */}
+                      <div className="glass-card edu-card-hover" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <Zap size={18} />
+                          </div>
+                          <div>
+                            <h5 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {t('app.ocsp.eduStaplingTitle', 'OCSP Stapling (RFC 6066)')}
+                            </h5>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--success-color)', fontWeight: 600 }}>Zero-Latency TLS Caching</span>
+                          </div>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, flex: 1 }}>
+                          {t('app.ocsp.eduStaplingDesc', 'The web server periodically queries the OCSP responder and caches the signed response, attaching it directly to the TLS handshake. This eliminates client lookup latency and protects user privacy by avoiding direct client-to-CA connections.')}
+                        </p>
+                      </div>
+
+                      {/* Testing Strategy Card */}
+                      <div className="glass-card edu-card-hover" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(168, 85, 247, 0.15)', color: 'var(--purple-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <Activity size={18} />
+                          </div>
+                          <div>
+                            <h5 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {t('app.ocsp.eduTestingTitle', 'Testing Strategy & Failure Modes')}
+                            </h5>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--purple-color)', fontWeight: 600 }}>Soft-Fail vs. Hard-Fail</span>
+                          </div>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, flex: 1 }}>
+                          {t('app.ocsp.eduTestingDesc', 'Most modern browsers employ soft-fail (proceeding if a revocation check times out) to prevent broken browsing experiences. Use the test examples in the Online Revocation Checker to verify how applications respond to revoked, EV/DV, and internal certificates.')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

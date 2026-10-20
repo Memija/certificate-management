@@ -10,14 +10,13 @@ import {
   Trash2, 
   Copy, 
   Check, 
-  Globe, 
-  FileText, 
   CheckCircle2, 
   XCircle,
   Calendar,
-  Key,
   ExternalLink,
-  Terminal
+  Terminal,
+  Globe,
+  FileText
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LearningTerm } from './LearningTerm';
@@ -1279,51 +1278,6 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
             </details>
           </div>
         )}
-
-        {/* Educational Cards */}
-        <div style={{ marginTop: '2.5rem', borderTop: '1px solid var(--glass-border-subtle)', paddingTop: '2rem' }}>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0 0 1rem 0', color: 'var(--text-primary)' }}>
-            {t('app.ocsp.eduTitle', 'Understanding Online Revocation Protocols')}
-          </h3>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' }}>
-            <div className="glass-panel" style={{ padding: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <Globe size={18} style={{ color: 'var(--accent-color)' }} />
-                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  <LearningTerm termId="ocsp">{t('app.ocsp.eduOcspTitle', 'OCSP (RFC 6960)')}</LearningTerm>
-                </h4>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                {t('app.ocsp.eduOcspDesc', 'Online Certificate Status Protocol queries the CA in real time for a specific certificate serial number. Provides instantaneous status but requires high-availability responder infrastructure.')}
-              </p>
-            </div>
-
-            <div className="glass-panel" style={{ padding: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <FileText size={18} style={{ color: 'var(--warning-color)' }} />
-                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  <LearningTerm termId="crl">{t('app.ocsp.eduCrlTitle', 'CRL (RFC 5280)')}</LearningTerm>
-                </h4>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                {t('app.ocsp.eduCrlDesc', 'Certificate Revocation Lists are signed, timestamped lists published periodically by the CA. Many modern CAs (like Let\'s Encrypt) rely on CRL distributions to provide scalable revocation without per-handshake OCSP overhead.')}
-              </p>
-            </div>
-
-            <div className="glass-panel" style={{ padding: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <Key size={18} style={{ color: 'var(--success-color)' }} />
-                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  {t('app.ocsp.eduTestingTitle', 'Testing Strategy')}
-                </h4>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                {t('app.ocsp.eduTestingDesc', 'Use the test examples above to verify how client applications respond to revoked certificates (BadSSL test harness), commercial EV/DV certs, and internal enterprise certificates.')}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -53,6 +53,7 @@
       "crl": "Certificate Revocation List (CRL). A list of digital certificates that have been revoked by the issuing Certificate Authority (CA) before their scheduled expiration date and should no longer be trusted.",
       "csr": "Certificate Signing Request (CSR). A block of encoded text given to a Certificate Authority when applying for a certificate. It contains information about the applicant and their public key.",
       "ocsp": "Online Certificate Status Protocol (OCSP). An internet protocol used for obtaining the revocation status of an X.509 digital certificate, offering a faster alternative to CRLs.",
+      "ocspStapling": "OCSP Stapling (RFC 6066). A TLS handshake extension where the web server caches the CA's OCSP response and delivers it directly to the client, preventing latency and preserving user privacy.",
       "ctlog": "Certificate Transparency (CT) Log. A cryptographically assured, publicly auditable, append-only record of issued certificates. It helps detect misissued or malicious certificates.",
       "pem": "Privacy Enhanced Mail (PEM). A common file format for storing cryptographic keys and certificates, characterized by Base64 encoded data framed between '---BEGIN...' and '---END...'.",
       "der": "Distinguished Encoding Rules (DER). A binary format for certificates and keys, not readable as plain text. Often used in Windows environments or Java keystores."
@@ -690,15 +691,82 @@
       "openInBrowser": "Open in New Tab",
       "openInBrowserTooltip": "Open full raw log in a new browser tab",
       "eduTitle": "Understanding Online Revocation Protocols",
+      "eduSubtitle": "How modern PKI systems verify that a certificate has not been revoked before expiration.",
       "eduOcspTitle": "OCSP (RFC 6960)",
       "eduOcspDesc": "Online Certificate Status Protocol queries the CA in real time for a specific certificate serial number. Provides instantaneous status but requires high-availability responder infrastructure.",
       "eduCrlTitle": "CRL (RFC 5280)",
       "eduCrlDesc": "Certificate Revocation Lists are signed, timestamped lists published periodically by the CA. Many modern CAs (like Let's Encrypt) rely on CRL distributions to provide scalable revocation without per-handshake OCSP overhead.",
-      "eduTestingTitle": "Testing Strategy",
-      "eduTestingDesc": "Use the test examples above to verify how client applications respond to revoked certificates (BadSSL test harness), commercial EV/DV certs, and internal enterprise certificates.",
+      "eduStaplingTitle": "OCSP Stapling (RFC 6066)",
+      "eduStaplingDesc": "The web server periodically queries the OCSP responder and caches the signed response, attaching it directly to the TLS handshake. This eliminates client lookup latency and protects user privacy by avoiding direct client-to-CA connections.",
+      "eduTestingTitle": "Testing Strategy & Failure Modes",
+      "eduTestingDesc": "Most modern browsers employ soft-fail (proceeding if a revocation check times out) to prevent broken browsing experiences. Use the test examples in the Online Revocation Checker to verify how applications respond to revoked, EV/DV, and internal certificates.",
+      "learnMoreTitle": "Want to learn how revocation protocols work?",
+      "learnMoreDesc": "Explore the deep dive on OCSP (RFC 6960), CRL (RFC 5280), and OCSP Stapling in the Education Center.",
+      "openEduCenter": "Open Education Center",
+      "launchOcspChecker": "Open Online Revocation Checker",
+      "launchCrlInspector": "Open CRL Inspector",
       "unsupportedFileType": "Unsupported file type. Please upload a certificate file (.pem, .cer, .crt, .der).",
       "jsonNotCert": "The provided file or content is JSON, not an X.509 certificate.",
       "missingPemHeaders": "Please provide a certificate in PEM format starting with -----BEGIN CERTIFICATE-----."
+    },
+    "ctLog": {
+      "eyebrow": "Public Audit & RFC 6962",
+      "title": "Certificate Transparency (CT) Log Search",
+      "subtitle": "Search public Certificate Transparency (CT) logs to discover all certificates ever issued for a specific domain name or wildcard.",
+      "queryTitle": "Domain / Subdomain Query",
+      "placeholder": "e.g. google.com, github.com, or *.wikipedia.org",
+      "searchBtn": "Search CT Logs",
+      "searchingBtn": "Searching Logs...",
+      "clearBtn": "Clear",
+      "tryExamples": "Try Quick Examples:",
+      "foundCount": "Found <0>{{count}}</0> certificates for <1>{{domain}}</1>",
+      "filterAll": "All",
+      "filterValid": "Active / Valid",
+      "filterExpired": "Expired",
+      "filterPlaceholder": "Filter results by domain, SAN, or issuer...",
+      "emptyResults": "No transparency logs recorded for this domain.",
+      "noFilterMatches": "No certificates match your search filter.",
+      "showingCachedSnapshot": "Live crt.sh is currently rate-limited (429/502). Displaying bundled verified sample snapshot.",
+      "certIdTooltip": "View complete public certificate log record on crt.sh",
+      "issuerLabel": "Issuer",
+      "identityLabel": "Identities & Subject Alternative Names (SANs)",
+      "loggedLabel": "Logged",
+      "issuedLabel": "Issued",
+      "expiresLabel": "Expires",
+      "validBadge": "Valid",
+      "expiredBadge": "Expired",
+      "copyCnTooltip": "Copy Common Name",
+      "copySerialTooltip": "Copy Serial Number",
+      "copied": "Copied!",
+      "emptyDomainError": "Please enter a valid domain name (e.g. google.com or github.com).",
+      "searchFailedError": "Failed to fetch CT logs from crt.sh. The service may be experiencing high traffic.",
+      "presets": {
+        "github": {
+          "name": "GitHub",
+          "badge": "DigiCert / LE",
+          "desc": "Code collaboration platform using DigiCert and Let's Encrypt certificates."
+        },
+        "google": {
+          "name": "Google",
+          "badge": "Google Trust",
+          "desc": "High-traffic web properties using Google Trust Services (GTS) CA."
+        },
+        "cloudflare": {
+          "name": "Cloudflare",
+          "badge": "Edge TLS",
+          "desc": "Global CDN edge network with automated TLS certificate management."
+        },
+        "wikipedia": {
+          "name": "Wikipedia",
+          "badge": "Wikimedia",
+          "desc": "Global non-profit encyclopedia using Let's Encrypt and GlobalSign."
+        },
+        "badssl": {
+          "name": "BadSSL",
+          "badge": "Security Test Suite",
+          "desc": "Security test harness containing expired, revoked, and edge-case certificates."
+        }
+      }
     },
     "csr": {
       "eyebrow": "PKCS#10 Request Inspection",
