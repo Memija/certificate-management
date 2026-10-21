@@ -944,28 +944,82 @@ function ctSearchApiPlugin() {
         }
         
         try {
-          const fetchUrl = `https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`;
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 12000);
-          const response = await fetch(fetchUrl, {
-            signal: controller.signal,
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Accept': 'application/json'
+          // Primary attempt: crt.sh
+          try {
+            const fetchUrl = `https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+            const response = await fetch(fetchUrl, {
+              signal: controller.signal,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'application/json'
+              }
+            });
+            clearTimeout(timeoutId);
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (Array.isArray(data) && data.length > 0) {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ data, provider: 'crt.sh', rateLimited: false }));
+                return;
+              }
             }
-          });
-          clearTimeout(timeoutId);
-          
-          if (!response.ok) {
-            throw new Error(`crt.sh returned ${response.status} ${response.statusText}`);
+          } catch (crtErr: any) {
+            console.warn(`crt.sh unavailable for ${domain} (${crtErr.message}), trying CertSpotter fallback...`);
           }
-          
-          const data = await response.json();
+
+          // Fallback provider: CertSpotter API
+          try {
+            const csUrl = `https://api.certspotter.com/v1/issuances?domain=${encodeURIComponent(domain)}&include_subdomains=true&expand=dns_names&expand=issuer`;
+            const csController = new AbortController();
+            const csTimeoutId = setTimeout(() => csController.abort(), 8000);
+            const csResponse = await fetch(csUrl, {
+              signal: csController.signal,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json'
+              }
+            });
+            clearTimeout(csTimeoutId);
+
+            if (csResponse.ok) {
+              const csData = await csResponse.json();
+              if (Array.isArray(csData) && csData.length > 0) {
+                const data = csData.map((item: any, idx: number) => ({
+                  id: parseInt(item.id, 10) || (Date.now() - idx * 1000),
+                  issuer_ca_id: 16418,
+                  issuer_name: item.issuer?.name || item.issuer?.friendly_name || "Public Certificate Authority",
+                  common_name: item.dns_names?.[0] || domain,
+                  name_value: (item.dns_names || [domain]).join('\n'),
+                  entry_timestamp: item.not_before,
+                  not_before: item.not_before,
+                  not_after: item.not_after,
+                  serial_number: item.cert_sha256 || item.tbs_sha256 || String(item.id)
+                }));
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ 
+                  data, 
+                  provider: 'certspotter', 
+                  rateLimited: true,
+                  primaryError: 'crt.sh rate-limited (429/502)' 
+                }));
+                return;
+              }
+            }
+          } catch (csErr: any) {
+            console.warn(`CertSpotter fallback failed for ${domain}:`, csErr.message);
+          }
+
+          // If both external providers failed or returned empty
+          res.statusCode = 502;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ data }));
+          res.end(JSON.stringify({ error: 'CT log providers (crt.sh & CertSpotter) are temporarily unavailable.' }));
         } catch (error: any) {
           console.error(`CT Search failed:`, error.message);
           res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: error.message }));
         }
       });

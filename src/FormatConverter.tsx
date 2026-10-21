@@ -611,11 +611,7 @@ export function FormatConverter() {
                 >
                   <span className="key-matcher-preset-name">{getLocalizedPemDerPresetName(preset)}</span>
                   <span
-                    className="key-matcher-preset-badge"
-                    style={{
-                      background: preset.outputFormat === 'der' ? 'rgba(14, 165, 233, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                      color: preset.outputFormat === 'der' ? 'var(--accent-color)' : 'var(--warning-color)',
-                    }}
+                    className={`key-matcher-preset-badge ${preset.outputFormat === 'der' ? 'badge-type-info' : 'badge-type-warning'}`}
                   >
                     {preset.badge}
                   </span>
@@ -668,13 +664,7 @@ export function FormatConverter() {
                   title={preset.description}
                 >
                   <span className="key-matcher-preset-name">{getLocalizedPfxPresetName(preset)}</span>
-                  <span
-                    className="key-matcher-preset-badge"
-                    style={{
-                      background: 'rgba(34, 197, 94, 0.15)',
-                      color: 'var(--success-color)',
-                    }}
-                  >
+                  <span className="key-matcher-preset-badge badge-type-success">
                     {preset.badge}
                   </span>
                 </button>

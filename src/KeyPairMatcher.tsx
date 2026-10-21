@@ -216,11 +216,7 @@ export function KeyPairMatcher() {
                 <span className="key-matcher-preset-name">{preset.name}</span>
                 {preset.badge && (
                   <span
-                    className="key-matcher-preset-badge"
-                    style={{
-                      background: preset.expectedMatch ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                      color: preset.expectedMatch ? 'var(--success-color)' : 'var(--danger-color)',
-                    }}
+                    className={`key-matcher-preset-badge ${preset.expectedMatch ? 'badge-type-success' : 'badge-type-danger'}`}
                   >
                     {preset.badge}
                   </span>

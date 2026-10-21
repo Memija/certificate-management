@@ -12,7 +12,8 @@ import {
   Trash2, 
   XCircle, 
   AlertTriangle,
-  FileText
+  FileText,
+  Home
 } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
 import { LearningTerm } from './LearningTerm';
@@ -30,6 +31,10 @@ export function CtLogSearch() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'valid' | 'expired'>('all');
   const [filterQuery, setFilterQuery] = useState('');
   const [isSampleData, setIsSampleData] = useState(false);
+  const [providerInfo, setProviderInfo] = useState<{
+    provider: 'crt.sh' | 'certspotter' | 'sample';
+    rateLimited: boolean;
+  } | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = (text: string, key: string) => {
@@ -57,9 +62,24 @@ export function CtLogSearch() {
         throw new Error(result.error || t('app.ctLog.searchFailedError', 'Failed to fetch CT logs from crt.sh. The service may be experiencing high traffic.'));
       }
 
-      // Deduplicate by serial number
-      const uniqueResults = (result.data || []).reduce((acc: CtEntry[], current: CtEntry) => {
-        if (!acc.some(item => item.serial_number === current.serial_number)) {
+      // Deduplicate and merge live results with historical audit log records if available
+      const liveItems: CtEntry[] = result.data || [];
+      const combined = [...liveItems];
+
+      if (preset && preset.sampleData) {
+        for (const sampleItem of preset.sampleData) {
+          const alreadyPresent = combined.some(
+            c => c.serial_number.toLowerCase() === sampleItem.serial_number.toLowerCase() ||
+                 String(c.id) === String(sampleItem.id)
+          );
+          if (!alreadyPresent) {
+            combined.push(sampleItem);
+          }
+        }
+      }
+
+      const uniqueResults = combined.reduce((acc: CtEntry[], current: CtEntry) => {
+        if (!acc.some(item => item.serial_number.toLowerCase() === current.serial_number.toLowerCase())) {
           acc.push(current);
         }
         return acc;
@@ -71,16 +91,25 @@ export function CtLogSearch() {
 
       setResults(sorted);
       setIsSampleData(false);
+      setProviderInfo({
+        provider: result.provider || 'crt.sh',
+        rateLimited: !!result.rateLimited
+      });
     } catch (err: any) {
       // Graceful fallback to bundled preset sample data if available
       if (preset && preset.sampleData && preset.sampleData.length > 0) {
         setResults(preset.sampleData);
         setIsSampleData(true);
+        setProviderInfo({
+          provider: 'sample',
+          rateLimited: true
+        });
         setError('');
       } else {
         setError(err.message || t('app.ctLog.searchFailedError', 'Failed to fetch CT logs from crt.sh. The service may be experiencing high traffic.'));
         setResults(null);
         setIsSampleData(false);
+        setProviderInfo(null);
       }
     } finally {
       setLoading(false);
@@ -109,6 +138,7 @@ export function CtLogSearch() {
     setSearchedDomain('');
     setError('');
     setIsSampleData(false);
+    setProviderInfo(null);
     setFilterQuery('');
   };
 
@@ -221,40 +251,42 @@ export function CtLogSearch() {
           <div className="key-matcher-presets-list">
             {CT_LOG_PRESETS.map((preset) => {
               const isActive = activePresetId === preset.id || domain.toLowerCase() === preset.domain.toLowerCase();
-              let badgeBg = 'rgba(14, 165, 233, 0.15)';
-              let badgeColor = 'var(--accent-color)';
-
-              if (preset.badgeType === 'danger') {
-                badgeBg = 'rgba(239, 68, 68, 0.15)';
-                badgeColor = 'var(--danger-color)';
-              } else if (preset.badgeType === 'success') {
-                badgeBg = 'rgba(34, 197, 94, 0.15)';
-                badgeColor = 'var(--success-color)';
-              } else if (preset.badgeType === 'warning') {
-                badgeBg = 'rgba(245, 158, 11, 0.15)';
-                badgeColor = 'var(--warning-color)';
-              } else if (preset.badgeType === 'purple') {
-                badgeBg = 'rgba(168, 85, 247, 0.15)';
-                badgeColor = 'var(--purple-color)';
-              }
-
               const presetName = t(`app.ctLog.presets.${preset.id}.name`, preset.domain);
               const presetBadge = t(`app.ctLog.presets.${preset.id}.badge`, preset.domain);
               const presetDesc = t(`app.ctLog.presets.${preset.id}.desc`, `Search CT logs for ${preset.domain}`);
 
+              if (preset.isSpecial) {
+                return (
+                  <button
+                    key={preset.id}
+                    id={`ct-preset-${preset.domain.replace(/[^a-zA-Z0-9]/g, '-')}`}
+                    type="button"
+                    className={`tls-preset-special${isActive ? ' active' : ''}`}
+                    onClick={() => handleSelectPreset(preset)}
+                    title={presetDesc}
+                  >
+                    <span className="tls-preset-special-icon">
+                      <Home size={13} />
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-mono)' }}>{preset.domain}</span>
+                    <span className="tls-preset-special-sparkle">
+                      <Sparkles size={11} />
+                    </span>
+                  </button>
+                );
+              }
+
               return (
                 <button
                   key={preset.id}
+                  id={`ct-preset-${preset.domain.replace(/[^a-zA-Z0-9]/g, '-')}`}
                   type="button"
                   className={`chain-sample-pill key-matcher-preset-pill${isActive ? ' active' : ''}`}
                   onClick={() => handleSelectPreset(preset)}
                   title={presetDesc}
                 >
                   <span className="key-matcher-preset-name">{presetName}</span>
-                  <span
-                    className="key-matcher-preset-badge"
-                    style={{ background: badgeBg, color: badgeColor }}
-                  >
+                  <span className={`key-matcher-preset-badge badge-type-${preset.badgeType}`}>
                     {presetBadge}
                   </span>
                 </button>
@@ -357,39 +389,62 @@ export function CtLogSearch() {
                 </h3>
 
                 {isSampleData && (
-                  <div style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.55rem', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: 'var(--warning-color)', fontSize: '0.75rem' }}>
-                    <AlertTriangle size={12} />
-                    <span>{t('app.ctLog.showingCachedSnapshot', 'Live crt.sh is currently rate-limited (429/502). Displaying bundled verified sample snapshot.')}</span>
+                  <div 
+                    id="ct-rate-limit-banner"
+                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.22rem 0.6rem', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: 'var(--warning-color)', fontSize: '0.78rem' }}
+                  >
+                    <AlertTriangle size={12} style={{ flexShrink: 0 }} />
+                    <span>{t('app.ctLog.showingCachedSnapshot', 'Live CT log services are currently rate-limited (429/502). Displaying bundled verified sample snapshot.')}</span>
+                  </div>
+                )}
+
+                {!isSampleData && providerInfo?.rateLimited && (
+                  <div 
+                    id="ct-rate-limit-notice"
+                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.22rem 0.6rem', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: 'var(--warning-color)', fontSize: '0.78rem' }}
+                  >
+                    <AlertTriangle size={12} style={{ flexShrink: 0 }} />
+                    <span>{t('app.ctLog.rateLimitFallbackNotice', 'Primary log server (crt.sh) rate-limited (429/502). Retrieved via fallback CT provider (CertSpotter).')}</span>
+                  </div>
+                )}
+
+                {!isSampleData && providerInfo && !providerInfo.rateLimited && (
+                  <div 
+                    id="ct-live-status-pill"
+                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.55rem', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', color: 'var(--success-color)', fontSize: '0.76rem' }}
+                  >
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success-color)' }} />
+                    <span>{t('app.ctLog.liveFromCrtSh', 'Live from crt.sh log monitor')}</span>
                   </div>
                 )}
               </div>
 
               {/* Filter Tabs & In-Page Search */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <div className="tab-group" style={{ display: 'inline-flex', background: 'var(--surface-bg)', padding: '0.2rem', borderRadius: '8px', border: '1px solid var(--glass-border-subtle)' }}>
+                <div className="segmented-tabs-group">
                   <button
                     type="button"
-                    className={`btn btn-sm ${filterStatus === 'all' ? 'btn-secondary active' : ''}`}
+                    className={`segmented-tab-btn ${filterStatus === 'all' ? 'active' : ''}`}
                     onClick={() => setFilterStatus('all')}
-                    style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem', height: 'auto', border: 'none' }}
                   >
-                    {t('app.ctLog.filterAll', 'All')} ({counts.all})
+                    <span>{t('app.ctLog.filterAll', 'All')}</span>
+                    <span className="tab-count-pill">{counts.all}</span>
                   </button>
                   <button
                     type="button"
-                    className={`btn btn-sm ${filterStatus === 'valid' ? 'btn-secondary active' : ''}`}
+                    className={`segmented-tab-btn ${filterStatus === 'valid' ? 'active tab-accent-valid' : ''}`}
                     onClick={() => setFilterStatus('valid')}
-                    style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem', height: 'auto', border: 'none' }}
                   >
-                    {t('app.ctLog.filterValid', 'Active')} ({counts.valid})
+                    <span>{t('app.ctLog.filterValid', 'Active')}</span>
+                    <span className="tab-count-pill">{counts.valid}</span>
                   </button>
                   <button
                     type="button"
-                    className={`btn btn-sm ${filterStatus === 'expired' ? 'btn-secondary active' : ''}`}
+                    className={`segmented-tab-btn ${filterStatus === 'expired' ? 'active tab-accent-expired' : ''}`}
                     onClick={() => setFilterStatus('expired')}
-                    style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem', height: 'auto', border: 'none' }}
                   >
-                    {t('app.ctLog.filterExpired', 'Expired')} ({counts.expired})
+                    <span>{t('app.ctLog.filterExpired', 'Expired')}</span>
+                    <span className="tab-count-pill">{counts.expired}</span>
                   </button>
                 </div>
 
@@ -495,7 +550,7 @@ export function CtLogSearch() {
 
                       {/* Identities / Subject Alternative Names (SANs) */}
                       <div>
-                        <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
                           {t('app.ctLog.identityLabel', 'Identities & Subject Alternative Names (SANs)')}
                         </div>
                         <div 

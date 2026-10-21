@@ -734,7 +734,9 @@
       "filterPlaceholder": "Filtruj wyniki według domeny, SAN lub wystawcy...",
       "emptyResults": "Brak zarejestrowanych logów przejrzystości dla tej domeny.",
       "noFilterMatches": "Brak certyfikatów pasujących do Twojego filtra.",
-      "showingCachedSnapshot": "Serwer crt.sh jest obecnie przeciążony (429/502). Wyświetlam zweryfikowane dane przykładowe.",
+      "showingCachedSnapshot": "Usługi CT na żywo są obecnie przeciążone (429/502). Wyświetlam zweryfikowane dane przykładowe.",
+      "rateLimitFallbackNotice": "Główny serwer logów (crt.sh) osiągnął limit zapytań (429/502). Pobrane z zapasowego dostawcy CT (CertSpotter).",
+      "liveFromCrtSh": "Na żywo z monitora logów crt.sh",
       "certIdTooltip": "Zobacz pełny publiczny rekord certyfikatu na crt.sh",
       "issuerLabel": "Wystawca",
       "identityLabel": "Tożsamości & Alternatywne Nazwy Podmiotu (SAN)",
@@ -749,6 +751,11 @@
       "emptyDomainError": "Wprowadź prawidłową nazwę domeny (np. google.com lub github.com).",
       "searchFailedError": "Nie udało się pobrać logów CT z serwisu crt.sh. Usługa może być mocno obciążona.",
       "presets": {
+        "homeManagement": {
+          "name": "home-management.dev",
+          "badge": "Let's Encrypt",
+          "desc": "Infrastruktura inteligentnego domu i mikrousługi z certyfikatami Let's Encrypt."
+        },
         "github": {
           "name": "GitHub",
           "badge": "DigiCert / LE",

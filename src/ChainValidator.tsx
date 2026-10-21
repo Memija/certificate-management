@@ -692,7 +692,7 @@ function NodeInspector({
                   <RIcon size={13} className="tab-role-icon" />
                   <span style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cn}</span>
                   {n.isSelfSigned && (
-                    <span className="badge badge-root" style={{ fontSize: '0.62rem', padding: '0.05rem 0.3rem' }}>
+                    <span className="badge badge-root tab-badge-pill">
                       {t('app.chain.roles.root', 'Root')}
                     </span>
                   )}
@@ -1278,7 +1278,8 @@ export function ChainValidator() {
                 marginRight: '0.25rem'
               }}>
                 <Shield size={14} style={{ color: 'var(--cat-validation)' }} />
-                {t('app.chain.certTabsLabel', 'Certificates')} ({allNodes.length}):
+                <span>{t('app.chain.certTabsLabel', 'Certificates')}</span>
+                <span className="tab-header-count-pill">{allNodes.length}</span>:
               </span>
 
               {/* Full Chain Overview Tab */}
@@ -1292,7 +1293,7 @@ export function ChainValidator() {
                   {activeNodeId === 'all' && <span className="tab-active-dot" />}
                   <GitFork size={13} className="tab-role-icon" />
                   <span>{t('app.chain.fullChainTab', 'Full Chain')}</span>
-                  <span className="badge" style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem' }}>
+                  <span className="badge tab-badge-pill">
                     {allNodes.length}
                   </span>
                   {activeNodeId === 'all' && <span className="tab-accent-line" />}
@@ -1327,7 +1328,7 @@ export function ChainValidator() {
                     <RoleIcon size={13} className="tab-role-icon" />
                     <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cn}</span>
                     {node.isSelfSigned && (
-                      <span className="badge badge-root" style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem' }}>
+                      <span className="badge badge-root tab-badge-pill">
                         {t('app.chain.roles.root', 'Root')}
                       </span>
                     )}

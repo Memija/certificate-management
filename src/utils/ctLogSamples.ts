@@ -13,11 +13,97 @@ export interface CtEntry {
 export interface CtLogPreset {
   id: string;
   domain: string;
-  badgeType: 'success' | 'warning' | 'purple' | 'info' | 'danger';
+  badgeType?: 'success' | 'warning' | 'purple' | 'info' | 'danger';
   sampleData: CtEntry[];
+  isSpecial?: boolean;
 }
 
 export const CT_LOG_PRESETS: CtLogPreset[] = [
+  {
+    id: 'homeManagement',
+    domain: 'home-management.dev',
+    isSpecial: true,
+    badgeType: 'success',
+    sampleData: [
+      {
+        id: 17405575237,
+        issuer_ca_id: 182390,
+        issuer_name: "C=US, O=Google Trust Services, CN=WE1",
+        common_name: "*.home-management.dev",
+        name_value: "*.home-management.dev\nhome-management.dev",
+        entry_timestamp: "2026-09-25T10:58:10",
+        not_before: "2026-09-25T10:58:10",
+        not_after: "2026-12-23T11:21:49",
+        serial_number: "04a18d9ab3e0efbc0c373077e869e5a4"
+      },
+      {
+        id: 17057309617,
+        issuer_ca_id: 16418,
+        issuer_name: "C=US, O=Let's Encrypt, CN=YE2",
+        common_name: "home-management.dev",
+        name_value: "*.home-management.dev\nhome-management.dev",
+        entry_timestamp: "2026-09-08T10:21:17",
+        not_before: "2026-09-08T10:21:17",
+        not_after: "2026-12-07T10:21:16",
+        serial_number: "053b175a010645ac889d2ba55614b13a3a05"
+      },
+      {
+        id: 17129299485,
+        issuer_ca_id: 182390,
+        issuer_name: "C=US, O=Google Trust Services, CN=WR3",
+        common_name: "home-management.dev",
+        name_value: "home-management.dev\n*.home-management.dev\napi.home-management.dev",
+        entry_timestamp: "2026-09-12T00:04:21",
+        not_before: "2026-09-12T00:04:21",
+        not_after: "2026-12-11T01:02:25",
+        serial_number: "03f9724495ec926133f8ac18449dca75"
+      },
+      {
+        id: 16110838450,
+        issuer_ca_id: 16418,
+        issuer_name: "C=US, O=Let's Encrypt, CN=R3",
+        common_name: "home-management.dev",
+        name_value: "home-management.dev\n*.home-management.dev",
+        entry_timestamp: "2026-04-20T08:15:00",
+        not_before: "2026-04-20T08:15:00",
+        not_after: "2026-07-19T08:15:00",
+        serial_number: "04b8248d5f22e417fdf37ad050fa0efb"
+      },
+      {
+        id: 15204810294,
+        issuer_ca_id: 16418,
+        issuer_name: "C=US, O=Let's Encrypt, CN=R3",
+        common_name: "*.home-management.dev",
+        name_value: "*.home-management.dev\nhome-management.dev",
+        entry_timestamp: "2026-01-15T09:00:00",
+        not_before: "2026-01-15T09:00:00",
+        not_after: "2026-04-15T09:00:00",
+        serial_number: "03e91049283740192837401928374019"
+      },
+      {
+        id: 14920194812,
+        issuer_ca_id: 16418,
+        issuer_name: "C=US, O=Let's Encrypt, CN=R3",
+        common_name: "*.home-management.dev",
+        name_value: "*.home-management.dev\nhome-management.dev",
+        entry_timestamp: "2025-10-15T08:12:30",
+        not_before: "2025-10-15T07:10:00",
+        not_after: "2026-01-15T07:10:00",
+        serial_number: "03bc102938471029384710293847102b"
+      },
+      {
+        id: 14820194810,
+        issuer_ca_id: 16418,
+        issuer_name: "C=US, O=Let's Encrypt, CN=E1",
+        common_name: "home-management.dev",
+        name_value: "home-management.dev\napi.home-management.dev\nauth.home-management.dev",
+        entry_timestamp: "2025-07-16T12:00:00",
+        not_before: "2025-07-16T11:00:00",
+        not_after: "2025-10-14T11:00:00",
+        serial_number: "02fa910283741029384710293847102c"
+      }
+    ]
+  },
   {
     id: 'github',
     domain: 'github.com',

@@ -822,7 +822,8 @@ export function TrustStoreInspector({ onNavigate }: { onNavigate?: (mode: AppMod
                 marginRight: '0.25rem'
               }}>
                 <FolderOpen size={14} style={{ color: 'var(--text-accent)' }} />
-                {t('app.trustStore.inspector.loadedFiles', 'Loaded Files')} ({loadedFiles.length}):
+                <span>{t('app.trustStore.inspector.loadedFiles', 'Loaded Files')}</span>
+                <span className="tab-header-count-pill">{loadedFiles.length}</span>:
               </span>
               {loadedFiles.map(lf => {
                 const isActive = activeFileId === lf.id;

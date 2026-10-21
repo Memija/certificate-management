@@ -726,7 +726,9 @@
       "filterPlaceholder": "Ergebnisse nach Domain, SAN oder Aussteller filtern...",
       "emptyResults": "Für diese Domain wurden keine Transparenzprotokolle aufgezeichnet.",
       "noFilterMatches": "Keine Zertifikate entsprechen Ihrem Suchfilter.",
-      "showingCachedSnapshot": "crt.sh ist derzeit überlastet (429/502). Zeige verifizierte Beispieldaten.",
+      "showingCachedSnapshot": "Live-CT-Dienste sind derzeit überlastet (429/502). Zeige verifizierte Beispieldaten.",
+      "rateLimitFallbackNotice": "Primärer CT-Server (crt.sh) hat Ratenbegrenzung erreicht (429/502). Über alternativen CT-Anbieter (CertSpotter) abgerufen.",
+      "liveFromCrtSh": "Live vom crt.sh-Protokollmonitor",
       "certIdTooltip": "Vollständigen Zertifikatsdatensatz auf crt.sh anzeigen",
       "issuerLabel": "Aussteller",
       "identityLabel": "Identitäten & Subject Alternative Names (SANs)",
@@ -741,6 +743,11 @@
       "emptyDomainError": "Bitte geben Sie einen gültigen Domainnamen ein (z. B. google.com oder github.com).",
       "searchFailedError": "Fehler beim Abrufen der CT-Protokolle von crt.sh. Der Dienst ist möglicherweise stark ausgelastet.",
       "presets": {
+        "homeManagement": {
+          "name": "home-management.dev",
+          "badge": "Let's Encrypt",
+          "desc": "Smart-Home-Infrastruktur und Mikrodienste mit Let's Encrypt-Zertifikaten."
+        },
         "github": {
           "name": "GitHub",
           "badge": "DigiCert / LE",

@@ -735,20 +735,6 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
           <div className="key-matcher-presets-list">
             {OCSP_SAMPLE_PRESETS.map((preset) => {
               const isActive = activePresetId === preset.id;
-              let badgeBg = 'rgba(14, 165, 233, 0.15)';
-              let badgeColor = 'var(--accent-color)';
-
-              if (preset.badgeType === 'danger') {
-                badgeBg = 'rgba(239, 68, 68, 0.15)';
-                badgeColor = 'var(--danger-color)';
-              } else if (preset.badgeType === 'success') {
-                badgeBg = 'rgba(34, 197, 94, 0.15)';
-                badgeColor = 'var(--success-color)';
-              } else if (preset.badgeType === 'warning') {
-                badgeBg = 'rgba(245, 158, 11, 0.15)';
-                badgeColor = 'var(--warning-color)';
-              }
-
               return (
                 <button
                   key={preset.id}
@@ -758,10 +744,7 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
                   title={getLocalizedPresetDescription(preset)}
                 >
                   <span className="key-matcher-preset-name">{getLocalizedPresetName(preset)}</span>
-                  <span
-                    className="key-matcher-preset-badge"
-                    style={{ background: badgeBg, color: badgeColor }}
-                  >
+                  <span className={`key-matcher-preset-badge badge-type-${preset.badgeType}`}>
                     {getLocalizedPresetBadge(preset)}
                   </span>
                 </button>

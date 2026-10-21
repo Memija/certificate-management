@@ -726,7 +726,9 @@
       "filterPlaceholder": "Filter results by domain, SAN, or issuer...",
       "emptyResults": "No transparency logs recorded for this domain.",
       "noFilterMatches": "No certificates match your search filter.",
-      "showingCachedSnapshot": "Live crt.sh is currently rate-limited (429/502). Displaying bundled verified sample snapshot.",
+      "showingCachedSnapshot": "Live CT log services are currently rate-limited (429/502). Displaying bundled verified sample snapshot.",
+      "rateLimitFallbackNotice": "Primary log server (crt.sh) rate-limited (429/502). Retrieved via fallback CT provider (CertSpotter).",
+      "liveFromCrtSh": "Live from crt.sh log monitor",
       "certIdTooltip": "View complete public certificate log record on crt.sh",
       "issuerLabel": "Issuer",
       "identityLabel": "Identities & Subject Alternative Names (SANs)",
@@ -741,6 +743,11 @@
       "emptyDomainError": "Please enter a valid domain name (e.g. google.com or github.com).",
       "searchFailedError": "Failed to fetch CT logs from crt.sh. The service may be experiencing high traffic.",
       "presets": {
+        "homeManagement": {
+          "name": "home-management.dev",
+          "badge": "Let's Encrypt",
+          "desc": "Smart home infrastructure and microservices with Let's Encrypt certificates."
+        },
         "github": {
           "name": "GitHub",
           "badge": "DigiCert / LE",

@@ -730,7 +730,9 @@
       "filterPlaceholder": "Filtriraj rezultate po domeni, SAN-u ili izdavaču...",
       "emptyResults": "Nema zabilježenih zapisa transparentnosti za ovu domenu.",
       "noFilterMatches": "Nijedan certifikat ne odgovara vašem filteru.",
-      "showingCachedSnapshot": "Live crt.sh je trenutno preopterećen (429/502). Prikazujem priloženi verifikovani uzorak.",
+      "showingCachedSnapshot": "Live CT servisi su trenutno preopterećeni (429/502). Prikazujem priloženi verifikovani uzorak.",
+      "rateLimitFallbackNotice": "Glavni CT server (crt.sh) ima ograničenje upita (429/502). Podaci preuzeti preko rezervnog CT servisa (CertSpotter).",
+      "liveFromCrtSh": "Uživo sa crt.sh monitora zapisa",
       "certIdTooltip": "Pogledajte kompletan javni zapis certifikata na crt.sh",
       "issuerLabel": "Izdavač",
       "identityLabel": "Identiteti & Alternativna Imena Subjekta (SAN)",
@@ -745,6 +747,11 @@
       "emptyDomainError": "Molimo unesite važeći naziv domene (npr. google.com ili github.com).",
       "searchFailedError": "Neuspješno preuzimanje CT zapisa sa crt.sh servisa. Servis je možda pod velikim opterećenjem.",
       "presets": {
+        "homeManagement": {
+          "name": "home-management.dev",
+          "badge": "Let's Encrypt",
+          "desc": "Infrastruktura pametnog doma i mikroservisi sa Let's Encrypt certifikatima."
+        },
         "github": {
           "name": "GitHub",
           "badge": "DigiCert / LE",

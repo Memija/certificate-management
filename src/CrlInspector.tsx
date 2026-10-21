@@ -1083,7 +1083,8 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
               marginRight: '0.25rem'
             }}>
               <ShieldAlert size={14} style={{ color: '#f43f5e' }} />
-              {t('app.crl.tabsLabel', 'CRLs')} ({loadedCrls.length}):
+              <span>{t('app.crl.tabsLabel', 'CRLs')}</span>
+              <span className="tab-header-count-pill">{loadedCrls.length}</span>:
             </span>
             {loadedCrls.map(item => {
               const isActive = activeItem?.id === item.id;

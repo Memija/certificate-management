@@ -726,7 +726,9 @@
       "filterPlaceholder": "Filter hasil berdasarkan domain, SAN, atau penerbit...",
       "emptyResults": "Tidak ada log transparansi yang tercatat untuk domain ini.",
       "noFilterMatches": "Tidak ada sertifikat yang cocok dengan filter pencarian Anda.",
-      "showingCachedSnapshot": "crt.sh saat ini sedang dibatasi (429/502). Menampilkan sampel data terverifikasi.",
+      "showingCachedSnapshot": "Layanan CT langsung saat ini dibatasi (429/502). Menampilkan sampel data terverifikasi.",
+      "rateLimitFallbackNotice": "Server log utama (crt.sh) terkena batas permintaan (429/502). Diambil melalui penyedia CT cadangan (CertSpotter).",
+      "liveFromCrtSh": "Langsung dari monitor log crt.sh",
       "certIdTooltip": "Lihat catatan log sertifikat lengkap di crt.sh",
       "issuerLabel": "Penerbit",
       "identityLabel": "Identitas & Subject Alternative Names (SAN)",
@@ -741,6 +743,11 @@
       "emptyDomainError": "Silakan masukkan nama domain yang valid (mis. google.com atau github.com).",
       "searchFailedError": "Gagal mengambil log CT dari crt.sh. Layanan mungkin sedang mengalami lalu lintas tinggi.",
       "presets": {
+        "homeManagement": {
+          "name": "home-management.dev",
+          "badge": "Let's Encrypt",
+          "desc": "Infrastruktur rumah pintar dan layanan mikro dengan sertifikat Let's Encrypt."
+        },
         "github": {
           "name": "GitHub",
           "badge": "DigiCert / LE",

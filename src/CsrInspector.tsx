@@ -708,7 +708,8 @@ export function CsrInspector({ onNavigate }: { onNavigate?: (mode: any) => void 
                 marginRight: '0.25rem'
               }}>
                 <FileKey size={14} style={{ color: 'var(--text-accent-2)' }} />
-                {t('app.csr.tabsLabel', 'CSRs')} ({entries.length}):
+                <span>{t('app.csr.tabsLabel', 'CSRs')}</span>
+                <span className="tab-header-count-pill">{entries.length}</span>:
               </span>
               {entries.map(entry => {
                 const isActive = activeEntryId === entry.id;
