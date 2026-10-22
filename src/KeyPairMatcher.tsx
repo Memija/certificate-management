@@ -246,7 +246,7 @@ export function KeyPairMatcher() {
                 <Shield size={18} style={{ color: 'var(--accent-color)' }} /> {t('app.keyMatcher.certOrCsr', 'Certificate or CSR (PEM)')}
               </h3>
               {certInfo && (
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.12)', color: 'var(--accent-color)' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'var(--info-bg)', color: 'var(--info-color)', border: '1px solid var(--info-border)' }}>
                   RSA {certInfo.bits}-bit
                 </span>
               )}
@@ -284,7 +284,7 @@ export function KeyPairMatcher() {
                 <FileKey size={18} style={{ color: 'var(--warning-color)' }} /> {t('app.keyMatcher.privateKey', 'Private Key (PEM)')}
               </h3>
               {keyInfo && (
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'rgba(234, 179, 8, 0.12)', color: 'var(--warning-color)' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'var(--warning-bg)', color: 'var(--warning-color)', border: '1px solid var(--warning-border)' }}>
                   RSA {keyInfo.bits}-bit
                 </span>
               )}
@@ -354,7 +354,7 @@ export function KeyPairMatcher() {
                 style={{
                   maxWidth: '700px',
                   margin: '0 auto',
-                  background: 'rgba(0, 0, 0, 0.25)',
+                  background: 'var(--card-bg)',
                   borderRadius: '10px',
                   padding: '1rem 1.25rem',
                   fontSize: '0.82rem',

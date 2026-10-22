@@ -13,14 +13,14 @@ import type { AppMode } from './App';
 
 // ─── Format label helpers ────────────────────────────────────────────────────
 const FORMAT_LABELS: Record<string, { key: string; label: string; color: string; icon: any }> = {
-  'X509-DER':   { key: 'app.trustStore.format.x509Der',   label: 'DER Certificate',  color: '#38bdf8', icon: Shield },
-  'X509-PEM':   { key: 'app.trustStore.format.x509Pem',   label: 'PEM Certificate',  color: '#38bdf8', icon: FileText },
-  'PEM-Bundle': { key: 'app.trustStore.format.pemBundle', label: 'PEM Bundle',        color: '#a78bfa', icon: Archive },
-  'PKCS7':      { key: 'app.trustStore.format.pkcs7',     label: 'PKCS#7 Chain',      color: '#f59e0b', icon: ShieldCheck },
-  'PKCS12':     { key: 'app.trustStore.format.pkcs12',    label: 'PKCS#12 / PFX',    color: '#fb923c', icon: Lock },
-  'JKS':        { key: 'app.trustStore.format.jks',       label: 'Java KeyStore',     color: '#4ade80', icon: FileKey },
-  'CRL':        { key: 'app.trustStore.format.crl',       label: 'Certificate Revocation List', color: '#f43f5e', icon: AlertTriangle },
-  'Unknown':    { key: 'app.trustStore.format.unknown',   label: 'Unknown Format',    color: '#ef4444', icon: AlertTriangle },
+  'X509-DER':   { key: 'app.trustStore.format.x509Der',   label: 'DER Certificate',  color: 'var(--cyan-color)', icon: Shield },
+  'X509-PEM':   { key: 'app.trustStore.format.x509Pem',   label: 'PEM Certificate',  color: 'var(--info-color)', icon: FileText },
+  'PEM-Bundle': { key: 'app.trustStore.format.pemBundle', label: 'PEM Bundle',        color: 'var(--purple-color)', icon: Archive },
+  'PKCS7':      { key: 'app.trustStore.format.pkcs7',     label: 'PKCS#7 Chain',      color: 'var(--warning-color)', icon: ShieldCheck },
+  'PKCS12':     { key: 'app.trustStore.format.pkcs12',    label: 'PKCS#12 / PFX',    color: 'var(--accent-2)', icon: Lock },
+  'JKS':        { key: 'app.trustStore.format.jks',       label: 'Java KeyStore',     color: 'var(--success-color)', icon: FileKey },
+  'CRL':        { key: 'app.trustStore.format.crl',       label: 'Certificate Revocation List', color: 'var(--danger-color)', icon: AlertTriangle },
+  'Unknown':    { key: 'app.trustStore.format.unknown',   label: 'Unknown Format',    color: 'var(--danger-color)', icon: AlertTriangle },
 };
 
 // ─── Loaded file state ────────────────────────────────────────────────────────
@@ -743,7 +743,7 @@ export function TrustStoreInspector({ onNavigate }: { onNavigate?: (mode: AppMod
               <FolderOpen size={24} />
             </div>
             <div className="premium-header-body">
-              <div className="premium-header-eyebrow" style={{ color: '#38bdf8' }}>
+              <div className="premium-header-eyebrow" style={{ color: 'var(--info-color)' }}>
                 <FolderOpen size={12} />
                 <span>{t('app.trustStore.inspector.eyebrow', 'KeyStore & Archive Inspection')}</span>
               </div>
@@ -762,19 +762,19 @@ export function TrustStoreInspector({ onNavigate }: { onNavigate?: (mode: AppMod
                   <span>{t('app.trustStore.inspector.pills.inMemory', 'In-Memory Parsing')}</span>
                 </span>
                 <span className="premium-header-tag">
-                  <Lock size={12} style={{ color: '#fb923c' }} />
+                  <Lock size={12} style={{ color: 'var(--warning-color)' }} />
                   <span>{t('app.trustStore.inspector.pills.pkcs12', 'PKCS#12 / PFX')}</span>
                 </span>
                 <span className="premium-header-tag">
-                  <FileKey size={12} style={{ color: '#4ade80' }} />
+                  <FileKey size={12} style={{ color: 'var(--success-color)' }} />
                   <span>{t('app.trustStore.inspector.pills.jks', 'Java KeyStore (JKS)')}</span>
                 </span>
                 <span className="premium-header-tag">
-                  <Archive size={12} style={{ color: '#a78bfa' }} />
+                  <Archive size={12} style={{ color: 'var(--purple-color)' }} />
                   <span>{t('app.trustStore.inspector.pills.pemBundle', 'PEM Bundles')}</span>
                 </span>
                 <span className="premium-header-tag">
-                  <Shield size={12} style={{ color: '#38bdf8' }} />
+                  <Shield size={12} style={{ color: 'var(--info-color)' }} />
                   <span>{t('app.trustStore.inspector.pills.derPkcs7', 'DER & PKCS#7')}</span>
                 </span>
               </div>

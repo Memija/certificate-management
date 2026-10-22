@@ -208,7 +208,7 @@ export function CtLogSearch() {
         
         {/* Page Header */}
         <div style={{ marginBottom: '1.75rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-color)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'var(--info-bg)', color: 'var(--info-color)', border: '1px solid var(--info-border)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
             <span>{t('app.ctLog.eyebrow', 'Public Audit & RFC 6962')}</span>
           </div>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.65rem', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -364,7 +364,7 @@ export function CtLogSearch() {
           </div>
 
           {error && (
-            <div className="glass-panel" style={{ marginTop: '1.25rem', padding: '0.85rem 1rem', background: 'rgba(239, 68, 68, 0.1)', borderColor: 'var(--danger-border)', color: 'var(--danger-color)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem' }}>
+            <div className="glass-panel" style={{ marginTop: '1.25rem', padding: '0.85rem 1rem', background: 'var(--danger-bg)', borderColor: 'var(--danger-border)', color: 'var(--danger-color)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem' }}>
               <XCircle size={16} style={{ flexShrink: 0 }} />
               <span>{error}</span>
             </div>
@@ -391,7 +391,7 @@ export function CtLogSearch() {
                 {isSampleData && (
                   <div 
                     id="ct-rate-limit-banner"
-                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.22rem 0.6rem', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: 'var(--warning-color)', fontSize: '0.78rem' }}
+                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.22rem 0.6rem', borderRadius: '5px', background: 'var(--warning-bg)', border: '1px solid var(--warning-border)', color: 'var(--warning-color)', fontSize: '0.78rem' }}
                   >
                     <AlertTriangle size={12} style={{ flexShrink: 0 }} />
                     <span>{t('app.ctLog.showingCachedSnapshot', 'Live CT log services are currently rate-limited (429/502). Displaying bundled verified sample snapshot.')}</span>
@@ -401,7 +401,7 @@ export function CtLogSearch() {
                 {!isSampleData && providerInfo?.rateLimited && (
                   <div 
                     id="ct-rate-limit-notice"
-                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.22rem 0.6rem', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: 'var(--warning-color)', fontSize: '0.78rem' }}
+                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.22rem 0.6rem', borderRadius: '5px', background: 'var(--warning-bg)', border: '1px solid var(--warning-border)', color: 'var(--warning-color)', fontSize: '0.78rem' }}
                   >
                     <AlertTriangle size={12} style={{ flexShrink: 0 }} />
                     <span>{t('app.ctLog.rateLimitFallbackNotice', 'Primary log server (crt.sh) rate-limited (429/502). Retrieved via fallback CT provider (CertSpotter).')}</span>
@@ -411,7 +411,7 @@ export function CtLogSearch() {
                 {!isSampleData && providerInfo && !providerInfo.rateLimited && (
                   <div 
                     id="ct-live-status-pill"
-                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.55rem', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', color: 'var(--success-color)', fontSize: '0.76rem' }}
+                    style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.55rem', borderRadius: '5px', background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success-color)', fontSize: '0.76rem' }}
                   >
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success-color)' }} />
                     <span>{t('app.ctLog.liveFromCrtSh', 'Live from crt.sh log monitor')}</span>

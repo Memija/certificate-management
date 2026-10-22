@@ -643,11 +643,11 @@ export function TlsScanner() {
       port: 443,
       isSpecial: true,
     },
-    { label: 'google.com', host: 'google.com', port: 443 },
-    { label: 'cloudflare.com', host: 'cloudflare.com', port: 443 },
-    { label: 'github.com', host: 'github.com', port: 443 },
-    { label: 'expired.badssl.com', host: 'expired.badssl.com', port: 443 },
-    { label: 'self-signed.badssl.com', host: 'self-signed.badssl.com', port: 443 },
+    { label: 'google.com', host: 'google.com', port: 443, badge: 'TLS 1.3', badgeType: 'info' },
+    { label: 'cloudflare.com', host: 'cloudflare.com', port: 443, badge: 'ECDSA', badgeType: 'purple' },
+    { label: 'github.com', host: 'github.com', port: 443, badge: 'RSA 2048', badgeType: 'success' },
+    { label: 'expired.badssl.com', host: 'expired.badssl.com', port: 443, badge: 'Expired', badgeType: 'warning' },
+    { label: 'self-signed.badssl.com', host: 'self-signed.badssl.com', port: 443, badge: 'Untrusted', badgeType: 'danger' },
   ];
 
   return (
@@ -721,13 +721,14 @@ export function TlsScanner() {
               {t('app.tlsScanner.quickPresets', 'Quick Presets:')}
             </span>
             {presets.map(p => {
+              const isActive = host === p.host;
               if (p.isSpecial) {
                 return (
                   <button
                     key={p.host}
                     id={`tls-preset-${p.host.replace(/[^a-zA-Z0-9]/g, '-')}`}
                     type="button"
-                    className="tls-preset-special"
+                    className={`tls-preset-special${isActive ? ' active' : ''}`}
                     onClick={() => {
                       setHost(p.host);
                       setPort(p.port);
@@ -750,21 +751,20 @@ export function TlsScanner() {
                   key={p.host}
                   id={`tls-preset-${p.host.replace(/[^a-zA-Z0-9]/g, '-')}`}
                   type="button"
-                  className="badge"
-                  style={{
-                    cursor: 'pointer',
-                    background: 'var(--badge-bg, rgba(255,255,255,0.06))',
-                    border: '1px solid var(--glass-border-subtle)',
-                    color: 'var(--text-secondary)',
-                    transition: 'all 0.15s ease',
-                  }}
+                  className={`chain-sample-pill key-matcher-preset-pill${isActive ? ' active' : ''}`}
                   onClick={() => {
                     setHost(p.host);
                     setPort(p.port);
                     scan(p.host, p.port);
                   }}
+                  title={`${p.host}:${p.port}`}
                 >
-                  {p.label}
+                  <span className="key-matcher-preset-name" style={{ fontFamily: 'var(--font-mono)' }}>{p.label}</span>
+                  {p.badge && (
+                    <span className={`key-matcher-preset-badge badge-type-${p.badgeType}`}>
+                      {p.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}

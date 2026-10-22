@@ -863,7 +863,7 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
             <ShieldAlert size={24} />
           </div>
           <div className="premium-header-body">
-            <div className="premium-header-eyebrow" style={{ color: '#f43f5e' }}>
+            <div className="premium-header-eyebrow" style={{ color: 'var(--danger-color)' }}>
               <ShieldAlert size={12} />
               <span>{t('app.crl.eyebrow', 'Revocation Status & RFC 5280')}</span>
             </div>
@@ -888,15 +888,15 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
                 <span>{t('app.crl.pills.rfc5280', 'RFC 5280 Parser')}</span>
               </span>
               <span className="premium-header-tag">
-                <FileText size={12} style={{ color: '#38bdf8' }} />
+                <FileText size={12} style={{ color: 'var(--info-color)' }} />
                 <span>{t('app.crl.pills.pemDer', 'PEM & DER Decoders')}</span>
               </span>
               <span className="premium-header-tag">
-                <Search size={12} style={{ color: '#f59e0b' }} />
+                <Search size={12} style={{ color: 'var(--warning-color)' }} />
                 <span>{t('app.crl.pills.serialLookup', 'Revoked Serial Lookup')}</span>
               </span>
               <span className="premium-header-tag">
-                <Calendar size={12} style={{ color: '#a78bfa' }} />
+                <Calendar size={12} style={{ color: 'var(--purple-color)' }} />
                 <span>{t('app.crl.pills.updateWindow', 'Update Window Audit')}</span>
               </span>
             </div>
@@ -913,16 +913,16 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
           gap: '0.75rem',
           marginBottom: '1.5rem',
           padding: '0.75rem 1rem',
-          background: errorInfo.action ? 'var(--warning-bg)' : 'rgba(239, 68, 68, 0.12)',
+          background: errorInfo.action ? 'var(--warning-bg)' : 'var(--danger-bg)',
           borderRadius: '10px',
-          borderLeft: errorInfo.action ? '3px solid var(--warning-color)' : '3px solid #ef4444',
-          color: errorInfo.action ? 'var(--text-primary)' : '#ef4444'
+          borderLeft: errorInfo.action ? '3px solid var(--warning-color)' : '3px solid var(--danger-color)',
+          color: errorInfo.action ? 'var(--text-primary)' : 'var(--danger-color)'
         }}>
           <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flex: 1, minWidth: '240px' }}>
             {errorInfo.action ? (
               <Info size={16} color="var(--warning-color)" style={{ flexShrink: 0 }} />
             ) : (
-              <AlertTriangle size={16} color="#ef4444" style={{ flexShrink: 0 }} />
+              <AlertTriangle size={16} color="var(--danger-color)" style={{ flexShrink: 0 }} />
             )}
             <span style={{ fontSize: '0.88rem', lineHeight: 1.45 }}>{localizedError}</span>
           </div>

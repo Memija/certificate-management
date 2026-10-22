@@ -46,11 +46,11 @@ interface CertStoreEntry {
 // ─── Store metadata ───────────────────────────────────────────────────────────
 
 const STORES: { name: StoreName; label: string; desc: string; icon: any; color: string }[] = [
-  { name: 'Root',             label: 'Trusted Root CAs',   desc: 'Self-signed root certificate authorities',        icon: Shield,          color: '#10b981' },
-  { name: 'CA',               label: 'Intermediate CAs',   desc: 'Intermediate certificate authorities',            icon: ShieldCheck,     color: '#06b6d4' },
-  { name: 'My',               label: 'Personal',            desc: 'Your personal certificates with private keys',    icon: User,            color: '#a855f7' },
-  { name: 'TrustedPublisher', label: 'Trusted Publishers', desc: 'Trusted code-signing publishers',                 icon: CheckCircle,     color: '#f59e0b' },
-  { name: 'Disallowed',       label: 'Untrusted',          desc: 'Explicitly distrusted / revoked certificates',   icon: XCircle,         color: '#f43f5e' },
+  { name: 'Root',             label: 'Trusted Root CAs',   desc: 'Self-signed root certificate authorities',        icon: Shield,          color: 'var(--success-color)' },
+  { name: 'CA',               label: 'Intermediate CAs',   desc: 'Intermediate certificate authorities',            icon: ShieldCheck,     color: 'var(--cyan-color)' },
+  { name: 'My',               label: 'Personal',            desc: 'Your personal certificates with private keys',    icon: User,            color: 'var(--purple-color)' },
+  { name: 'TrustedPublisher', label: 'Trusted Publishers', desc: 'Trusted code-signing publishers',                 icon: CheckCircle,     color: 'var(--warning-color)' },
+  { name: 'Disallowed',       label: 'Untrusted',          desc: 'Explicitly distrusted / revoked certificates',   icon: XCircle,         color: 'var(--danger-color)' },
 ];
 
 // ─── Copy button ──────────────────────────────────────────────────────────────

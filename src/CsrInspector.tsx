@@ -615,7 +615,7 @@ export function CsrInspector({ onNavigate }: { onNavigate?: (mode: any) => void 
               <FileKey size={24} />
             </div>
             <div className="premium-header-body">
-              <div className="premium-header-eyebrow" style={{ color: '#818cf8' }}>
+              <div className="premium-header-eyebrow" style={{ color: 'var(--purple-color)' }}>
                 <FileKey size={12} />
                 <span>{t('app.csr.eyebrow', 'PKCS#10 Request Inspection')}</span>
               </div>
@@ -640,15 +640,15 @@ export function CsrInspector({ onNavigate }: { onNavigate?: (mode: any) => void 
                   <span>{t('app.csr.pills.selfSig', 'Self-Signature Verification')}</span>
                 </span>
                 <span className="premium-header-tag">
-                  <FileKey size={12} style={{ color: '#818cf8' }} />
+                  <FileKey size={12} style={{ color: 'var(--purple-color)' }} />
                   <span>{t('app.csr.pills.rfc2986', 'PKCS#10 RFC 2986')}</span>
                 </span>
                 <span className="premium-header-tag">
-                  <Edit3 size={12} style={{ color: '#38bdf8' }} />
+                  <Edit3 size={12} style={{ color: 'var(--info-color)' }} />
                   <span>{t('app.csr.pills.editor', 'Interactive Editor & Re-sign')}</span>
                 </span>
                 <span className="premium-header-tag">
-                  <Lock size={12} style={{ color: '#fb923c' }} />
+                  <Lock size={12} style={{ color: 'var(--warning-color)' }} />
                   <span>{t('app.csr.pills.offline', '100% Offline Parsing')}</span>
                 </span>
               </div>

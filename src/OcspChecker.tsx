@@ -785,13 +785,13 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
                   {getLocalizedPresetName(activePreset)}
                 </span>
                 <span 
-                  className="key-matcher-preset-badge"
+                  className={`key-matcher-preset-badge badge-type-${activePreset.badgeType}`}
                   style={{
                     background: activePreset.badgeType === 'danger' 
-                      ? 'rgba(239, 68, 68, 0.15)' 
+                      ? 'var(--danger-bg)' 
                       : activePreset.badgeType === 'success' 
-                      ? 'rgba(34, 197, 94, 0.15)' 
-                      : 'rgba(245, 158, 11, 0.15)',
+                      ? 'var(--success-bg)' 
+                      : 'var(--warning-bg)',
                     color: activePreset.badgeType === 'danger' 
                       ? 'var(--danger-color)' 
                       : activePreset.badgeType === 'success' 
@@ -1133,8 +1133,9 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.4rem',
-                      background: result.status === activePreset.expectedStatus ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                      background: result.status === activePreset.expectedStatus ? 'var(--success-bg)' : 'var(--danger-bg)',
                       color: result.status === activePreset.expectedStatus ? 'var(--success-color)' : 'var(--danger-color)',
+                      border: result.status === activePreset.expectedStatus ? '1px solid var(--success-border)' : '1px solid var(--danger-border)',
                     }}
                   >
                     {result.status === activePreset.expectedStatus ? (
@@ -1166,7 +1167,7 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
             {/* Diagnostic Metrics Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
               {/* OCSP Check Card */}
-              <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--glass-border-subtle)', borderRadius: '10px', padding: '1rem' }}>
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border-subtle)', borderRadius: '10px', padding: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                     <LearningTerm termId="ocsp">OCSP</LearningTerm> {t('app.ocsp.ocspCheckTitle', 'Responder Check')}
@@ -1192,7 +1193,7 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
               </div>
 
               {/* CRL Check Card */}
-              <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--glass-border-subtle)', borderRadius: '10px', padding: '1rem' }}>
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border-subtle)', borderRadius: '10px', padding: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                     <LearningTerm termId="crl">CRL</LearningTerm> {t('app.ocsp.crlCheckTitle', 'Distribution Point Check')}

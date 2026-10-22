@@ -279,7 +279,7 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
                       {/* OCSP Card */}
                       <div className="glass-card edu-card-hover" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
-                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(14, 165, 233, 0.15)', color: 'var(--cat-network)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--info-bg)', color: 'var(--cat-network)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <Globe size={18} />
                           </div>
                           <div>
@@ -297,7 +297,7 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
                       {/* CRL Card */}
                       <div className="glass-card edu-card-hover" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
-                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--warning-bg)', color: 'var(--warning-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <FileText size={18} />
                           </div>
                           <div>
@@ -315,7 +315,7 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
                       {/* OCSP Stapling Card */}
                       <div className="glass-card edu-card-hover" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
-                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--success-bg)', color: 'var(--success-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <Zap size={18} />
                           </div>
                           <div>
@@ -333,7 +333,7 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
                       {/* Testing Strategy Card */}
                       <div className="glass-card edu-card-hover" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
-                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(168, 85, 247, 0.15)', color: 'var(--purple-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--purple-bg)', color: 'var(--purple-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <Activity size={18} />
                           </div>
                           <div>
