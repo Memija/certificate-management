@@ -10,6 +10,7 @@ import {
 import { useToast } from './ToastContext';
 import { splitPurposes, translatePurpose, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
+import { matchesSearch } from './utils/textSearch';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -135,10 +136,9 @@ function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEn
   const expiringSoon = entry.isExpiringSoon;
 
   // Show issuer hint when cert matched via issuer, not own name
-  const q = search.toLowerCase();
-  const matchesOwnName = !q || cn.toLowerCase().includes(q) || entry.subject.toLowerCase().includes(q) || entry.friendlyName.toLowerCase().includes(q) || entry.thumbprint.toLowerCase().includes(q);
+  const matchesOwnName = !search || matchesSearch([cn, entry.subject, entry.friendlyName, entry.thumbprint], search);
   const issuerCn = entry.issuer.match(/CN=([^,]+)/)?.[1]?.trim() || entry.issuer.match(/O=([^,]+)/)?.[1]?.trim() || '';
-  const showIssuerHint = q && !matchesOwnName && entry.issuer.toLowerCase().includes(q);
+  const showIssuerHint = !!(search && !matchesOwnName && matchesSearch(entry.issuer, search));
 
   return (
     <div
@@ -511,12 +511,9 @@ export function WinCertStoreInspector() {
     if (timelineFilter === 'valid' && c.isExpired) return false;
     if (timelineFilter === '30days' && (!c.isExpiringSoon || c.isExpired)) return false;
     if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      c.subject.toLowerCase().includes(q) ||
-      c.issuer.toLowerCase().includes(q) ||
-      c.thumbprint.toLowerCase().includes(q) ||
-      c.friendlyName.toLowerCase().includes(q)
+    return matchesSearch(
+      [c.subject, c.issuer, c.thumbprint, c.friendlyName],
+      search
     );
   }).sort((a, b) => {
     if (sortBy === 'expiry') {

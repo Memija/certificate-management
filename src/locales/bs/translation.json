@@ -1182,6 +1182,268 @@
       },
       "embeddedSct": "Ugrađene vremenske oznake certifikata (SCT)",
       "specialPresetBadge": "Dev"
+    },
+    "educationCenter": {
+      "title": "Edukativni Centar",
+      "subtitle": "Naučite osnovne koncepte PKI-ja, digitalnih certifikata i Secure Boot-a. Pregledajte glosar u nastavku kako biste razumjeli terminologiju koja se koristi u aplikaciji.",
+      "description": "Naučite osnovne koncepte PKI-ja, digitalnih certifikata i Secure Boot-a. Pregledajte glosar u nastavku kako biste razumjeli terminologiju koja se koristi u aplikaciji.",
+      "searchPlaceholder": "Pretraži teme, akronime ili koncepte...",
+      "clearSearch": "Očisti",
+      "allTopics": "Sve teme",
+      "copyTitle": "Kopiraj definiciju",
+      "copiedToast": "Kopirana definicija za {{title}}",
+      "archGuideBadge": "Vodič za PKI Arhitekturu",
+      "realTimeVerification": "Verifikacija u realnom vremenu",
+      "periodicDistLists": "Periodične distribucijske liste",
+      "zeroLatencyCaching": "TLS keširanje bez kašnjenja",
+      "softVsHardFail": "Soft-Fail u odnosu na Hard-Fail",
+      "noTermsFound": "Nema pronađenih pojmova koji odgovaraju \"{{search}}\"",
+      "learnMore": "Saznajte više i detalji",
+      "modal": {
+        "overview": "Tehnički pregled",
+        "keyMechanics": "Ključni mehanizmi i arhitektura",
+        "securityImpact": "Sigurnosna razmatranja i rizici",
+        "cliVerification": "Komandna linija i dijagnostika",
+        "interactiveDemo": "Alat za praktičnu inspekciju",
+        "tryInAppDesc": "Pregledajte i testirajte {{topic}} u aplikaciji",
+        "copyCommand": "Kopiraj komandu",
+        "copiedCommand": "Komanda kopirana u međuspremnik",
+        "previous": "Prethodno",
+        "next": "Sljedeće",
+        "close": "Zatvori",
+        "toolLabels": {
+          "secure-boot": "Inspektor Secure Boot NVRAM-a",
+          "trust-store": "Istražite bazu pouzdanih korijena",
+          "win-cert-store": "Windows spremište certifikata",
+          "chain-validator": "Validiraj lanac certifikata",
+          "expiry-dashboard": "Nadzorna ploča isteka certifikata",
+          "csr-inspector": "CSR Inspektor i Parser",
+          "crl-inspector": "CRL Inspektor",
+          "ocsp-checker": "Online provjera opoziva",
+          "tls-scanner": "Udaljeni TLS skener",
+          "ct-log-search": "Pretraga CT zapisa",
+          "format-converter": "Konverter formata"
+        }
+      },
+      "topicDetails": {
+        "nvram": {
+          "title": "NVRAM (Non-Volatile RAM)",
+          "subtitle": "UEFI postojano memorijsko skladište za sigurnosne varijable pokretanja",
+          "overview": "Non-Volatile Random-Access Memory (NVRAM) je specijalizovano postojano skladište smješteno direktno na matičnoj ploči računara (često unutar SPI flash čipa zajedno sa UEFI BIOS-om). U Secure Boot sistemu, NVRAM čuva kritične kriptografske baze podataka (PK, KEK, db, dbx) i konfiguracije bootloadera. Za razliku od standardnog RAM-a, NVRAM varijable ostaju sačuvane i nakon isključivanja računara, a za razliku od konvencionalnih particija na disku, ne mogu se mijenjati bez autentifikacije na nivou platforme ili fizičkog reprogramiranja firmvera.",
+          "keyPoints": [
+            "Dostupno u sistemu Windows putem GetFirmwareEnvironmentVariable Win32 API-ja i PowerShell komandi (zahtijeva administratorske privilegije).",
+            "Pohranjuje autentificirane UEFI varijable sa oznakama poput VARIABLE_ATTRIBUTE_NON_VOLATILE, BOOTSERVICE_ACCESS i RUNTIME_ACCESS.",
+            "Zaštićeno od neovlaštenih izmjena; svaka promjena sigurnosnih varijabli zahtijeva kriptografski potpis koji verificira Platformski ključ (PK) ili KEK."
+          ],
+          "securityImpact": "Ako je NVRAM oštećen ili resetovan putem CMOS kratkospojnika/baterije, Secure Boot setup mod se može aktivirati, privremeno dopuštajući pokretanje nepotpisanih operativnih sistema. Moderni proizvođači matičnih ploča koriste flash otporan na manipulacije ili TPM zaštitu.",
+          "cliExplanation": "Čita sirovu varijablu baze autorizovanih potpisa (db) pohranjenu u UEFI NVRAM-u."
+        },
+        "db": {
+          "title": "db (Baza potpisa)",
+          "subtitle": "UEFI lista ovlaštenih potpisa i certifikata (Whitelist)",
+          "overview": "Baza potpisa (db) predstavlja listu pouzdanih kriptografskih certifikata i binarnih hasheva ugrađenih u UEFI NVRAM. Prilikom pokretanja računara, UEFI firmver provjerava digitalni potpis svake EFI aplikacije (kao što je Windows Boot Manager, bootia32.efi ili shimx64.efi) i PCIe Option ROM-a. Ako potpis binarne datoteke vodi do certifikata u bazi db—ili njen SHA-256 hash tačno odgovara unosu u db—firmver dozvoljava izvršavanje.",
+          "keyPoints": [
+            "Sadrži X.509 certifikate i binarne hasheve (SHA-256, SHA-384, SHA-512) ovlaštene za izvršavanje prije pokretanja OS-a.",
+            "Proizvođači hardvera ga obično unaprijed učitavaju sa Microsoft Windows Production PCA 2011/2023 i Microsoft Corporation UEFI CA certifikatima.",
+            "Može se ažurirati samo ako je paket ažuriranja potpisan važećim ključem iz baze KEK (Key Exchange Key)."
+          ],
+          "securityImpact": "Zamjena originalnog Microsoft UEFI CA iz 2011. certifikatima iz 2023. je kritična jer certifikati iz 2011. ističu 2026. godine. Bez modernih db certifikata, budući bootloaderi neće proći verifikaciju.",
+          "cliExplanation": "Potvrđuje da li je Secure Boot aktivan i primjenjuje li potpise iz db baze."
+        },
+        "dbx": {
+          "title": "dbx (Baza zabranjenih potpisa)",
+          "subtitle": "UEFI lista opozvanih binarnih datoteka i potpisa prije pokretanja",
+          "overview": "Baza zabranjenih potpisa (dbx) služi kao lista opoziva (Blacklist) za UEFI firmver prije pokretanja sistema. Sadrži hasheve kompromitovanih bootloadera, ranjivih EFI datoteka i opozvanih certifikata za potpisivanje. Čak i ako EFI izvršna datoteka posjeduje validan potpis koji vodi do pouzdanog CA u db bazi, firmver će odbiti njeno pokretanje ako se njen hash ili otisak nalazi u dbx bazi.",
+          "keyPoints": [
+            "Ima apsolutni prioritet nad db: ako je binarna datoteka prisutna i u db i u dbx, njeno izvršavanje se momentalno blokira.",
+            "Čuva EFI_CERT_SHA256_GUID hasheve ranjivih boot managera i bootkit zlonamjernih programa.",
+            "Distribuira se putem Windows Update-a, Linux LVFS servisa i nadogradnji UEFI BIOS-a."
+          ],
+          "securityImpact": "Tokom 2023. godine, BlackLotus UEFI bootkit je iskoristio CVE-2022-21894 za zaobilaženje Secure Boot-a učitavanjem starijeg ranjivog Microsoft boot managera. Zaštita je zahtijevala dodavanje ranjivih hasheva u dbx bazu.",
+          "cliExplanation": "Prikazuje veličinu u bajtovima trenutne dbx liste opoziva u firmveru sistema."
+        },
+        "kek": {
+          "title": "KEK (Ključ za razmjenu ključeva)",
+          "subtitle": "Baza ovlaštenja za ažuriranje potpisa prije pokretanja",
+          "overview": "Baza Ključeva za Razmjenu Ključeva (KEK) čini srednji nivo u hijerarhiji povjerenja UEFI Secure Boot-a. Sadrži certifikate koji posjeduju ovlaštenje za slanje kriptografski potpisanih ažuriranja u bazu ovlaštenih potpisa (db) i bazu zabranjenih potpisa (dbx). Proizvođači operativnih sistema (poput Microsofta i Canonicala) posjeduju privatne KEK ključeve kako bi mogli distribuirati sigurnosne ispravke na milione uređaja.",
+          "keyPoints": [
+            "Povezuje hardverskog proizvođača (Platform Key) i ažuriranja proizvođača OS-a (db/dbx).",
+            "Omogućava dinamičko dodavanje opozvanih hasheva (dbx) ili novih korijenskih certifikata (db).",
+            "Svako ažuriranje za db ili dbx mora pratiti EFI_VARIABLE_AUTHENTICATION_2 paket potpisan KEK certifikatom."
+          ],
+          "securityImpact": "Bez važećeg KEK certifikata, sistem ne može primati udaljena Secure Boot ažuriranja opoziva, ostavljajući firmver ranjivim na poznate bootkit napade.",
+          "cliExplanation": "Dohvaća listu potpisa Ključa za razmjenu ključeva iz UEFI NVRAM-a."
+        },
+        "pk": {
+          "title": "PK (Platformski ključ)",
+          "subtitle": "Hardverski korijen povjerenja za UEFI Secure Boot",
+          "overview": "Platformski ključ (PK) predstavlja najviši vrh hijerarhije povjerenja u UEFI Secure Boot arhitekturi. Obično ga instalira proizvođač matične ploče (OEM) tokom proizvodnje. PK uspostavlja vlasnički odnos između vlasnika platforme i firmvera, kontroliše prelazak u Setup Mode i upravlja ažuriranjima samog PK-a i KEK baze.",
+          "keyPoints": [
+            "Jedinstveni korijenski certifikat: u sistemu može biti aktivan samo jedan Platformski ključ odjednom.",
+            "Prebacuje firmver iz Setup Mode (otključano) u User Mode (zaključano i aktivno provjeravanje).",
+            "Brisanje PK-a vraća sistem u Setup Mode, omogućavajući instalaciju prilagođenih Secure Boot ključeva."
+          ],
+          "securityImpact": "Posjedovanje privatnog ključa PK daje potpunu kontrolu nad sigurnosnim politikama firmvera. Ako privatni ključ procuri (poput MSI curenja 2023. godine), napadači mogu potpisati lažirana ažuriranja firmvera.",
+          "cliExplanation": "Pregledava Platformski ključ instaliran u UEFI NVRAM-u matične ploče."
+        },
+        "efi": {
+          "title": "UEFI / EFI",
+          "subtitle": "Arhitektura objedinjenog proširivog interfejsa firmvera",
+          "overview": "Unified Extensible Firmware Interface (UEFI, ranije EFI) je moderni industrijski standard koji definira softverski interfejs između operativnog sistema i firmvera računara. Zamjenjujući zastarjeli 16-bitni PC BIOS iz 1981. godine, UEFI pruža modularno 32-bitno/64-bitno okruženje prije pokretanja sistema, podršku za GPT particije veće od 2 TB, brzo pokretanje i Secure Boot kriptografski mehanizam.",
+          "keyPoints": [
+            "Zamjenjuje zastarjele BIOS prekide modularnim C-protokolima.",
+            "Podržava GPT particionisanje, uklanjajući ograničenje od 4 particije i granicu od 2.2 TB.",
+            "Pokreće drajvere prije podizanja OS-a (Option ROM) za NVMe diskove, grafičke kartice i mrežni boot."
+          ],
+          "securityImpact": "Budući da se UEFI izvršava u ring 0/SMM režimu prije učitavanja kernela, zlonamjerni kod na ovom nivou (UEFI rootkit) potpuno je nevidljiv za antivirusne programe i telemetriju operativnog sistema.",
+          "cliExplanation": "Prikazuje da li je Windows pokrenut pod modernim UEFI ili zastarjelim BIOS režimom."
+        },
+        "uac": {
+          "title": "UAC (Kontrola korisničkog računa)",
+          "subtitle": "Windows granica administrativnih privilegija",
+          "overview": "User Account Control (UAC) je sigurnosni mehanizam u operativnom sistemu Windows koji provodi princip najmanjih privilegija. Čak i kada ste prijavljeni kao administrator, aplikacije standardno rade sa ograničenim korisničkim pravima. Kada aplikacija pokuša izvršiti sistemske radnje—poput pristupa UEFI NVRAM varijablama ili izmjene certifikata u LocalMachine skladištu—Windows prikazuje prompt za odobrenje.",
+          "keyPoints": [
+            "Odvaja administrativne privilegije od uobičajenog svakodnevnog rada.",
+            "Koristi Secure Desktop (zatamnjeni ekran) kako bi spriječio lažno klikanje od strane zlonamjernog softvera.",
+            "Neophodan za pristup zaštićenim Win32 API pozivima kao što su GetFirmwareEnvironmentVariableEx i CertOpenStore."
+          ],
+          "securityImpact": "Bez UAC-a, bilo koji pozadinski zlonamjerni softver mogao bi neprimjetno prepisati pouzdane korijenske certifikate ili izmijeniti konfiguraciju pokretanja računara.",
+          "cliExplanation": "Provjerava da li trenutna sesija posjeduje povišene administratorske privilegije."
+        },
+        "rootCa": {
+          "title": "Root CA (Korijensko certifikacijsko tijelo)",
+          "subtitle": "Sidro povjerenja u infrastrukturi javnih ključeva (PKI)",
+          "overview": "Root Certificate Authority (Root CA) je vrhovno sidro povjerenja u infrastrukturi javnih ključeva (PKI). Korijenski certifikat je samopotpisan (self-signed): njegova polja Subject i Issuer su identična, a potpis se verificira vlastitim ugrađenim javnim ključem. Operativni sistemi i pretraživači čuvaju baze provjerenih Root CA certifikata ('Trust Stores'). Svaki certifikat svoju valjanost izvodi iz kriptografskog lanca koji vodi do ovih sidara.",
+          "keyPoints": [
+            "Samopotpisan: Nazivi Subject i Issuer se potpuno podudaraju.",
+            "Basic Constraints ekstenzija je označena kao Critical sa cA:TRUE vrijednošću.",
+            "Čuva se u ekstremnoj fizičkoj i kriptografskoj izolaciji (offline, HSM moduli, van mreže)."
+          ],
+          "securityImpact": "Ukoliko se kompromituje privatni ključ Root CA, napadač može izdavati lažne, potpuno pouzdane certifikate za bilo koju domenu ili softver na svijetu. Kompromitovane Root CA organizacije se hitno uklanjaju iz Trust Store baza.",
+          "cliExplanation": "Verifikuje da su Subject i Issuer identični, potvrđujući samopotpisani korijen."
+        },
+        "intermediateCa": {
+          "title": "Intermediate CA (Podređeno certifikacijsko tijelo)",
+          "subtitle": "Operativno tijelo za izdavanje certifikata koje štiti korijen",
+          "overview": "Intermediate Certificate Authority (podređeni ili izdavački CA) je certifikat koji se nalazi između Root CA i krajnjih (Leaf) certifikata. Kako bi se spriječilo izlaganje izuzetno osjetljivog privatnog ključa Root CA, Root CA potpisuje jedno ili više Intermediate tijela, a zatim se sprema offline. Intermediate CA obavlja svakodnevno potpisivanje, obnavljanje i opoziv certifikata.",
+          "keyPoints": [
+            "Potpisan od strane Root CA ili višeg posrednika u hijerarhiji certifikata.",
+            "Sadrži Basic Constraints: Critical, cA:TRUE, često uz ograničenje dubine lanca (pathLenConstraint).",
+            "Web serveri moraju slati intermediate certifikate zajedno sa leaf certifikatom tokom TLS rukovanja."
+          ],
+          "securityImpact": "Ako se kompromituje Intermediate CA, on se može pojedinačno opozvati putem CRL-a ili OCSP-a bez potrebe za opozivom i zamjenom vrhovnog Root CA na milijardama uređaja širom svijeta.",
+          "cliExplanation": "Validira kompletan lanac od leaf certifikata preko intermediate do root-a."
+        },
+        "leafCert": {
+          "title": "Leaf certifikat (Krajnji entitet)",
+          "subtitle": "Krajnji certifikat za servere, korisnike i digitalne potpise",
+          "overview": "Leaf certifikat (certifikat krajnjeg entiteta) je završni certifikat na kraju lanca povjerenja. Izdaje se određenom subjektu—kao što je ime domene (TLS web server), email adresa (S/MIME), korisnik (smart card) ili programer (code signing). Leaf certifikat se ne može koristiti za potpisivanje drugih certifikata.",
+          "keyPoints": [
+            "Basic Constraints ima vrijednost cA:FALSE (ili je ekstenzija potpuno izostavljena).",
+            "Key Usage ograničava kriptografske mogućnosti (npr. digitalSignature, keyEncipherment).",
+            "Extended Key Usage (EKU) definira tačnu namjenu (Server Authentication, Code Signing).",
+            "Subject Alternative Names (SAN) definira legitimna imena hostova ili IP adrese."
+          ],
+          "securityImpact": "Leaf certifikati imaju kraći vijek trajanja (obično 90 do 398 dana) kako bi se smanjio rizik u slučaju curenja privatnog ključa. Zaboravljeno obnavljanje certifikata dovodi do prekida rada servisa i sigurnosnih upozorenja.",
+          "cliExplanation": "Povezuje se na udaljeni server i ispisuje sve detalje njegovog leaf certifikata."
+        },
+        "csr": {
+          "title": "CSR (Zahtjev za potpisivanje certifikata)",
+          "subtitle": "PKCS#10 format zahtjeva za izdavanje certifikata",
+          "overview": "Certificate Signing Request (CSR) je standardizovana kriptografska poruka koju podnosilac šalje certifikacijskom tijelu (CA) prilikom apliciranja za digitalni certifikat. Sadrži javni ključ podnosioca, naziv subjekta (DN), tražene SAN nazive i digitalno je potpisan vlastitim privatnim ključem (Proof-of-Possession), čime se dokazuje posjedovanje privatnog ključa bez njegovog slanja ili otkrivanja.",
+          "keyPoints": [
+            "Nikada ne sadrži privatni ključ: uključeni su samo javni ključ i identifikacioni podaci.",
+            "Sadrži digitalni potpis kreiran privatnim ključem kao dokaz posjedovanja (Proof-of-Possession).",
+            "Kodiran je u Base64 PEM formatu sa zaglavljem '-----BEGIN CERTIFICATE REQUEST-----'."
+          ],
+          "securityImpact": "CSR je potpuno siguran za prenos javnom mrežom jer ne sadrži tajne. Međutim, ako napadač prevari CA da potpiše CSR za tuđu domenu, može izvesti napad posrednika (MITM).",
+          "cliExplanation": "Parsira CSR i verificira njegov interni kriptografski potpis dokaza posjedovanja."
+        },
+        "crl": {
+          "title": "CRL (Lista opozvanih certifikata)",
+          "subtitle": "Periodična CA-potpisana lista opozvanih serijskih brojeva",
+          "overview": "Certificate Revocation List (CRL) je lista koju periodično objavljuje i digitalno potpisuje certifikacijsko tijelo (CA), a koja navodi certifikate opozvane prije njihovog planiranog isteka. Svaki unos u CRL-u sadrži serijski broj certifikata, datum opoziva i opcionalni razlog (npr. kompromitacija ključa).",
+          "keyPoints": [
+            "Navodi se u certifikatima putem ekstenzije CRL Distribution Points (CDP).",
+            "Potpisana i vremenski označena sa prozorima valjanosti 'thisUpdate' i 'nextUpdate'.",
+            "Može biti potpuna (Base CRL) ili inkrementalna (Delta CRL) radi uštede mrežnog protoka."
+          ],
+          "securityImpact": "CRL liste mogu postati glomazne (desetine megabajta), uzrokujući kašnjenja pri TLS pregovorima. Zbog keširanja liste do 'nextUpdate' datuma, postoji vremenski prozor u kojem se opozvani certifikat može privremeno prihvatiti.",
+          "cliExplanation": "Parsira binarni DER CRL i ispisuje sve opozvane serijske brojeve."
+        },
+        "ocsp": {
+          "title": "OCSP (Protokol za online status certifikata)",
+          "subtitle": "Protokol za provjeru validnosti certifikata u realnom vremenu",
+          "overview": "Online Certificate Status Protocol (OCSP) je mrežni HTTP protokol dizajniran kao brža i efikasnija alternativa preuzimanju velikih CRL lista. Umjesto preuzimanja cjelokupne liste svih opozvanih certifikata, klijent šalje kratak upit koji sadrži serijski broj ciljnog certifikata, a OCSP responder odmah vraća potpisan odgovor sa statusom: 'good', 'revoked' ili 'unknown'.",
+          "keyPoints": [
+            "URL adresa respondera se nalazi u Authority Information Access (AIA) ekstenziji certifikata.",
+            "Pruža trenutan status bez prenosa velikih količina podataka.",
+            "Odgovor je digitalno potpisan od strane ovlaštenog OCSP respondera certifikacijskog tijela."
+          ],
+          "securityImpact": "OCSP unosi privatnosne brige (CA saznaje koje domene korisnici posjećuju) i kašnjenje pri otvaranju stranica. Zbog toga mnogi klijenti koriste 'soft-fail', ignorišući nedostupne OCSP servere što otvara prostor za zloupotrebu.",
+          "cliExplanation": "Izvodi punu provjeru statusa certifikata putem live AIA OCSP i CDP CRL servisa."
+        },
+        "ocspStapling": {
+          "title": "OCSP Stapling",
+          "subtitle": "TLS ekstenzija za keširanje statusa certifikata bez kašnjenja",
+          "overview": "OCSP Stapling (TLS Certificate Status Request) rješava nedostatke kašnjenja i privatnosti tradicionalnog OCSP-a. Kada je ova funkcija omogućena, sam web server periodično kontaktira OCSP responder certifikacijskog tijela u pozadini, kešira kriptografski potpisan odgovor i 'spaja' (hefta) ga direktno u TLS rukovanje poslano klijentu.",
+          "keyPoints": [
+            "Eliminiše kašnjenje klijenta tokom uspostavljanja TLS veze.",
+            "Štiti privatnost korisnika: CA tijelo nikada ne vidi IP adresu klijenta niti posjećene stranice.",
+            "Može se strogo zahtijevati pomoću OCSP Must-Staple ekstenzije (RFC 7633) u certifikatu."
+          ],
+          "securityImpact": "Bez Must-Staple ekstenzije, napadač na mreži može blokirati spojeni OCSP odgovor, uzrokujući da soft-fail klijenti nastave sesiju bez provjere opoziva.",
+          "cliExplanation": "Provjerava da li udaljeni server isporučuje OCSP stapled odgovor tokom TLS rukovanja."
+        },
+        "ctlog": {
+          "title": "CT Log (Dnevnik transparentnosti certifikata)",
+          "subtitle": "Javno provjerljiv zapisnik izdatih certifikata (Append-Only)",
+          "overview": "Certificate Transparency (CT) je otvoreni okvir i mreža javno audibilnih, kriptografski provjerljivih dnevnika (CT Logs) kojima upravljaju nezavisne kompanije (Google, Cloudflare, DigiCert). Prilikom izdavanja javnog SSL/TLS certifikata, CA ga mora prijaviti u više nezavisnih CT dnevnika, koji zauzvrat izdaju potpisane vremenske oznake (SCT) kao dokaz javne registracije.",
+          "keyPoints": [
+            "Zasnovan na Merkle Tree kriptografskim strukturama koje onemogućavaju brisanje ili izmjenu zapisa unazad.",
+            "Pretraživači (Chrome, Edge, Safari) odbijaju vjerovati certifikatima koji nemaju važeće SCT dokaze.",
+            "Omogućava vlasnicima domena praćenje novih certifikata u realnom vremenu radi sprečavanja zloupotrebe."
+          ],
+          "securityImpact": "CT dnevnici su u potpunosti eliminisali eru u kojoj su kompromitovani ili prevareni CA organi mogli tajno izdavati lažne certifikate za špijunažu i napade posrednika.",
+          "cliExplanation": "Pretražuje javni crt.sh CT log agregator za sve zabilježene certifikate određene domene."
+        },
+        "x509": {
+          "title": "X.509 Standard",
+          "subtitle": "ITU-T međunarodni standard za certifikate javnih ključeva",
+          "overview": "ITU-T preporuka X.509 definira međunarodni standardni format za certifikate javnih ključeva i modele verifikacije lanca povjerenja. Izvorno objavljen 1988. godine, X.509 verzija 3 (standardizirana u RFC 5280) pruža kriptografske temelje za savremeni internet sigurnosni protokol TLS/HTTPS, S/MIME enkripciju, IPsec VPN i UEFI Secure Boot.",
+          "keyPoints": [
+            "Definira strukturu certifikata: Serial, Issuer, Validity (Not Before/After), Subject, Public Key i Extensions.",
+            "Koristi ASN.1 (Abstract Syntax Notation One) za definisanje šeme podataka nezavisno od hardvera.",
+            "V3 ekstenzije uključuju Subject Alternative Names (SAN), Basic Constraints, Key Usage, AIA i CDP."
+          ],
+          "securityImpact": "Nejasnoće u parsiranju ASN.1 struktura kroz historiju su dovodile do ozbiljnih propusta poput lažiranja digitalnih potpisa i zaobilaženja validacije lanca certifikata.",
+          "cliExplanation": "Ispisuje sirovu ASN.1 tag-length-value (TLV) strukturu X.509 certifikata."
+        },
+        "pem": {
+          "title": "PEM (Privacy Enhanced Mail)",
+          "subtitle": "Tekstualno kodirani Base64 kriptografski kontejner",
+          "overview": "Privacy Enhanced Mail (PEM) je najzastupljeniji tekstualni format za predstavljanje kriptografskih certifikata, privatnih ključeva i CSR-ova. Iako je sam standard za e-poštu iz 1993. zamijenjen S/MIME protokolom, format kodiranja je opstao. PEM enkapsulira binarne ASN.1 DER podatke u Base64 tekst, uokviren čitljivim ASCII zaglavljima poput '-----BEGIN CERTIFICATE-----'.",
+          "keyPoints": [
+            "Tekstualni format: bezbjedan za kopiranje, slanje emailom i korištenje u konfiguracionim datotekama.",
+            "Uokviren jasnim linijama koje označavaju tip objekta (CERTIFICATE, RSA PRIVATE KEY, itd.).",
+            "Podržava 'bundle' datoteke koje sadrže više certifikata spojenih u jedan niz (lanac certifikata)."
+          ],
+          "securityImpact": "Zbog jednostavnog tekstualnog oblika, privatni ključevi u PEM formatu se greškom često postave na javne Git repozitorije. Proizvodni ključevi moraju imati stroge dozvole pristupa (npr. chmod 600).",
+          "cliExplanation": "Konvertuje binarni DER certifikat u standardnu Base64 PEM tekstualnu datoteku."
+        },
+        "der": {
+          "title": "DER (Distinguished Encoding Rules)",
+          "subtitle": "Kanonski binarni ASN.1 format serijalizacije",
+          "overview": "Distinguished Encoding Rules (DER) je strogi binarni standard serijalizacije za ASN.1 strukture podataka. Za razliku od Basic Encoding Rules (BER) formata koji dopušta više alternativnih načina zapisa istih podataka, DER zahtijeva jedinstvena, kanonska pravila kodiranja tako da svaka struktura proizvodi tačno jedan jedinstveni niz bajtova, što je ključno za digitalne potpise.",
+          "keyPoints": [
+            "Čisti binarni format: manja veličina datoteke i brže računarsko parsiranje u odnosu na PEM.",
+            "Deterministički: osigurava da hashiranje certifikata uvijek daje identičan otisak na svim platformama.",
+            "Standardni format koji se interno koristi u sistemu Windows (.cer datoteke), Java skladištima i pametnim karticama."
+          ],
+          "securityImpact": "Budući da je DER čist binarni format, ne može se bez oštećenja kopirati u obične tekstualne editore. Prije slanja kroz tekstualne protokole mora se enkodirati u Base64.",
+          "cliExplanation": "Konvertuje Base64 PEM certifikat u čisti binarni DER format."
+        }
+      }
     }
   },
   "common": {
