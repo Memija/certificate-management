@@ -7,7 +7,8 @@ import {
   Globe, 
   Code, 
   Layers, 
-  ArrowRight 
+  ArrowRight,
+  X 
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TermId } from './LearningTerm';
@@ -110,15 +111,17 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
         </div>
 
         {/* Search Bar */}
-        <div className="glass-panel" style={{ marginBottom: '1.5rem', padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', maxWidth: '600px', margin: '0 auto 1.5rem auto' }}>
+        <div className="glass-panel edu-search-bar" style={{ marginBottom: '1.5rem', padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', maxWidth: '600px', margin: '0 auto 1.5rem auto' }}>
           <Search size={18} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
           <input 
             type="text" 
             placeholder={t('app.educationCenter.searchPlaceholder', 'Search topics, acronyms, or concepts...')} 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="form-input"
+            className="form-input edu-search-input"
             style={{ 
+              flex: 1,
+              minWidth: 0,
               border: 'none', 
               background: 'transparent',
               padding: '0.4rem 0',
@@ -127,10 +130,28 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
           />
           {search && (
             <button
+              type="button"
               onClick={() => setSearch('')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+              className="edu-search-clear"
+              aria-label={t('app.educationCenter.clearSearch', t('app.common.clear', 'Clear'))}
+              title={t('app.educationCenter.clearSearch', t('app.common.clear', 'Clear'))}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                fontSize: '0.82rem',
+                padding: '0.25rem 0.55rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                borderRadius: '6px'
+              }}
             >
-              {t('app.educationCenter.clearSearch', t('app.common.clear', 'Clear'))}
+              <X size={14} style={{ flexShrink: 0 }} />
+              <span>{t('app.educationCenter.clearSearch', t('app.common.clear', 'Clear'))}</span>
             </button>
           )}
         </div>

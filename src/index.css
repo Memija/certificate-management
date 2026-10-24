@@ -3503,6 +3503,46 @@ pre,
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
+.edu-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 600px;
+  margin: 0 auto 1.5rem auto;
+  padding: 0.6rem 1rem;
+}
+
+.edu-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none !important;
+  background: transparent !important;
+  padding: 0.4rem 0 !important;
+  box-shadow: none !important;
+}
+
+.edu-search-clear {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0.25rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.edu-search-clear:hover {
+  color: var(--text-primary);
+  background: var(--glass-border-subtle);
+}
+
+
 /* ─── Interactive Certificate Chain Visual Graph ─────────────────────────── */
 .chain-graph-wrapper {
   position: relative;
