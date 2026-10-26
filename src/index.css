@@ -3460,7 +3460,7 @@ pre,
   font-weight: 600;
   border-radius: 999px;
   background: var(--input-bg);
-  border: 1px solid var(--glass-border-subtle);
+  border: 1px solid var(--pill-border, var(--glass-border-subtle));
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3469,24 +3469,70 @@ pre,
   gap: 0.45rem;
 }
 
+.edu-filter-pill .edu-filter-pill-icon {
+  color: var(--pill-color, var(--text-secondary));
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
 .edu-filter-pill:hover {
-  color: var(--text-primary);
-  border-color: var(--glass-border);
-  background: var(--card-bg-hover);
+  color: var(--pill-color, var(--text-primary));
+  border-color: var(--pill-color, var(--glass-border));
+  background: var(--pill-bg, var(--card-bg-hover));
+}
+
+.edu-filter-pill:hover .edu-filter-pill-icon {
+  transform: scale(1.15);
 }
 
 .edu-filter-pill.active {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(14, 165, 233, 0.1) 100%);
-  border-color: #0ea5e9;
-  color: #38bdf8;
-  box-shadow: 0 0 16px rgba(14, 165, 233, 0.25);
+  background: var(--pill-bg);
+  border-color: var(--pill-color);
+  color: var(--pill-color);
+  box-shadow: 0 0 16px var(--pill-glow);
 }
 
 [data-theme="light"] .edu-filter-pill.active {
-  background: #f0f9ff;
-  border-color: #0284c7;
-  color: #0284c7;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+  background: var(--pill-bg);
+  border-color: var(--pill-color);
+  color: var(--pill-color);
+  box-shadow: 0 2px 8px var(--pill-glow);
+}
+
+/* Category-specific colors matching each Education Center Subject */
+.edu-filter-pill[data-category="all"] {
+  --pill-color: var(--cat-learning);
+  --pill-bg: var(--cat-learning-bg);
+  --pill-border: var(--cat-learning-border);
+  --pill-glow: var(--cat-learning-glow);
+}
+
+.edu-filter-pill[data-category="secure-boot"] {
+  --pill-color: var(--cat-secureboot);
+  --pill-bg: var(--cat-secureboot-bg);
+  --pill-border: var(--cat-secureboot-border);
+  --pill-glow: var(--cat-secureboot-glow);
+}
+
+.edu-filter-pill[data-category="certificates"] {
+  --pill-color: var(--cat-inspection);
+  --pill-bg: var(--cat-inspection-bg);
+  --pill-border: var(--cat-inspection-border);
+  --pill-glow: var(--cat-inspection-glow);
+}
+
+.edu-filter-pill[data-category="protocols"] {
+  --pill-color: var(--cat-network);
+  --pill-bg: var(--cat-network-bg);
+  --pill-border: var(--cat-network-border);
+  --pill-glow: var(--cat-network-glow);
+}
+
+.edu-filter-pill[data-category="formats"] {
+  --pill-color: var(--cat-tools);
+  --pill-bg: var(--cat-tools-bg);
+  --pill-border: var(--cat-tools-border);
+  --pill-glow: var(--cat-tools-glow);
 }
 
 .edu-card-hover {

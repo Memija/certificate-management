@@ -96,7 +96,7 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div className="metric-icon-wrap" style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 1rem auto', background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(14, 165, 233, 0.05) 100%)', color: 'var(--cat-learning)', border: '1px solid rgba(14, 165, 233, 0.3)' }}>
+          <div className="metric-icon-wrap" style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 1rem auto', background: 'var(--cat-learning-bg)', color: 'var(--cat-learning)', border: '1px solid var(--cat-learning-border)', boxShadow: '0 2px 12px var(--cat-learning-glow)' }}>
             <BookOpen size={28} />
           </div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>
@@ -160,9 +160,10 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
         <div className="edu-filter-bar">
           <button
             className={`edu-filter-pill ${selectedCat === 'all' ? 'active' : ''}`}
+            data-category="all"
             onClick={() => setSelectedCat('all')}
           >
-            <Layers size={14} />
+            <Layers size={14} className="edu-filter-pill-icon" />
             <span>{t('app.educationCenter.allTopics', 'All Topics')}</span>
           </button>
           {CATEGORIES.map(c => {
@@ -171,9 +172,10 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
               <button
                 key={c.id}
                 className={`edu-filter-pill ${selectedCat === c.id ? 'active' : ''}`}
+                data-category={c.id}
                 onClick={() => setSelectedCat(c.id)}
               >
-                <Icon size={14} />
+                <Icon size={14} className="edu-filter-pill-icon" />
                 <span>{t(`app.learningCategories.${c.translationKey}`)}</span>
               </button>
             );
