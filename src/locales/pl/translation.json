@@ -1215,6 +1215,7 @@
         "previous": "Poprzedni",
         "next": "Następny",
         "close": "Zamknij",
+        "viewSpec": "Otwórz oficjalną specyfikację ({{spec}})",
         "toolLabels": {
           "secure-boot": "Inspektor NVRAM Secure Boot",
           "trust-store": "Przeglądaj magazyn główny zaufania",

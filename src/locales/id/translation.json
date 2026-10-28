@@ -1207,6 +1207,7 @@
         "previous": "Sebelumnya",
         "next": "Berikutnya",
         "close": "Tutup",
+        "viewSpec": "Buka spesifikasi resmi ({{spec}})",
         "toolLabels": {
           "secure-boot": "Inspektor NVRAM Secure Boot",
           "trust-store": "Jelajahi Trust Store Root",

@@ -6,6 +6,7 @@ export interface TopicDetail {
   subtitle: string;
   category: 'secure-boot' | 'certificates' | 'protocols' | 'formats';
   standardRef?: string;
+  standardUrl?: string;
   overview: string;
   keyPoints: string[];
   securityImpact: string;
@@ -27,6 +28,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'UEFI Non-Volatile Memory Storage for Boot Security Variables',
     category: 'secure-boot',
     standardRef: 'UEFI Spec 2.10 §3.2',
+    standardUrl: 'https://uefi.org/specs/UEFI/2.10/03_Boot_Manager.html#globally-defined-variables',
     overview: 'Non-Volatile Random-Access Memory (NVRAM) is specialized persistent storage situated directly on the computer motherboard (often within the SPI flash chip alongside the UEFI BIOS). In Secure Boot, NVRAM stores the critical cryptographic databases (PK, KEK, db, dbx) and bootloader configurations. Unlike standard RAM, NVRAM variables persist across system power cycles, and unlike conventional disk partitions, they cannot be altered without platform-level authentication or physical firmware reprogramming.',
     keyPoints: [
       'Accessible in Windows via the GetFirmwareEnvironmentVariable Win32 API and PowerShell cmdlets (requires administrative elevation).',
@@ -50,6 +52,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'UEFI Authorized Signatures & Certificate Whitelist',
     category: 'secure-boot',
     standardRef: 'UEFI Spec 2.10 §32.4.1',
+    standardUrl: 'https://uefi.org/specs/UEFI/2.10/32_Secure_Boot_and_Driver_Signing.html#firmware-os-key-exchange-creating-trust-relationships',
     overview: 'The Signature Database (db) is the whitelist of trusted cryptographic certificates and binary hashes embedded in UEFI NVRAM. When the system initiates, the UEFI firmware inspects the digital signature of every EFI application (such as the Windows Boot Manager, bootia32.efi, or shimx64.efi) and PCIe Option ROM. If the binary\'s signature chains to a certificate in db—or its exact SHA-256 hash matches an entry in db—the firmware permits execution.',
     keyPoints: [
       'Contains X.509 certificates and binary hashes (SHA-256, SHA-384, SHA-512) authorized to execute pre-boot.',
@@ -73,6 +76,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'UEFI Pre-Boot Revocation Blacklist',
     category: 'secure-boot',
     standardRef: 'UEFI Spec 2.10 §32.4.2',
+    standardUrl: 'https://uefi.org/specs/UEFI/2.10/32_Secure_Boot_and_Driver_Signing.html#signature-database-update',
     overview: 'The Forbidden Signature Database (dbx) serves as the pre-boot revocation list for UEFI firmware. It contains hashes of compromised bootloaders, vulnerable EFI binaries, and revoked signing certificates. Even if an EFI executable has a valid signature chained to a trusted CA in the db whitelist, the firmware will refuse to execute it if its hash or certificate thumbprint appears in dbx.',
     keyPoints: [
       'Takes absolute precedence over db: if a binary is present in both db and dbx, execution is blocked immediately.',
@@ -96,6 +100,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Database Authority for Updating Pre-Boot Signatures',
     category: 'secure-boot',
     standardRef: 'UEFI Spec 2.10 §32.4.3',
+    standardUrl: 'https://uefi.org/specs/UEFI/2.10/32_Secure_Boot_and_Driver_Signing.html#key-exchange-keys',
     overview: 'The Key Exchange Key (KEK) database forms the middle tier of the UEFI Secure Boot trust hierarchy. It contains certificates that have the authority to deliver cryptographically signed updates to the Signature Database (db) and the Forbidden Signature Database (dbx). Operating system vendors, such as Microsoft and Canonical, hold KEK private keys so they can distribute security revocation updates to millions of devices without requiring motherboard vendor intervention.',
     keyPoints: [
       'Bridges the OEM hardware vendor (Platform Key) and OS vendor updates (db/dbx).',
@@ -119,6 +124,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Hardware Root of Trust for UEFI Secure Boot',
     category: 'secure-boot',
     standardRef: 'UEFI Spec 2.10 §32.4.4',
+    standardUrl: 'https://uefi.org/specs/UEFI/2.10/32_Secure_Boot_and_Driver_Signing.html#platform-keys',
     overview: 'The Platform Key (PK) represents the supreme apex of trust in the UEFI Secure Boot architecture. Usually installed by the motherboard or device manufacturer (OEM) during production, the PK establishes an ownership relationship between the platform owner and the hardware firmware. It controls entry into Setup Mode and governs updates to both the PK itself and the Key Exchange Key (KEK) database.',
     keyPoints: [
       'Single root certificate: only one Platform Key can be active in the system at a time.',
@@ -142,6 +148,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Unified Extensible Firmware Interface Architecture',
     category: 'secure-boot',
     standardRef: 'UEFI Forum Specification',
+    standardUrl: 'https://uefi.org/specs/UEFI/2.10/',
     overview: 'The Unified Extensible Firmware Interface (UEFI, historically EFI) is the modern industry specification defining the software interface between the operating system and platform firmware. Replacing the legacy 16-bit IBM PC BIOS dating back to 1981, UEFI provides a modular 32-bit/64-bit pre-boot environment with rich driver support, GUID Partition Tables (GPT) supporting drives over 2TB, fast boot times, and the cryptographic verification engine known as Secure Boot.',
     keyPoints: [
       'Replaces legacy BIOS INT 13h/INT 10h real-mode interrupts with modular C-language protocols.',
@@ -165,6 +172,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Windows Administrative Privilege Boundary',
     category: 'secure-boot',
     standardRef: 'Windows Security Architecture',
+    standardUrl: 'https://learn.microsoft.com/en-us/windows/security/application-security/application-control/user-account-control/',
     overview: 'User Account Control (UAC) is a Windows security mechanism that enforces the principle of least privilege. Even when logged in as an administrator, applications run under standard user tokens by default. When an application attempts to perform system-level tasks—such as accessing UEFI NVRAM variables, modifying LocalMachine certificate stores, or installing drivers—Windows halts the action and presents a secure desktop elevation prompt.',
     keyPoints: [
       'Separates administrative permissions from standard daily operational workflows.',
@@ -188,6 +196,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Anchor of Trust in the Public Key Infrastructure',
     category: 'certificates',
     standardRef: 'ITU-T X.509 / RFC 5280 §3.2',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc5280#section-3.2',
     overview: 'A Root Certificate Authority (Root CA) is the apex anchor of trust in Public Key Infrastructure (PKI). A Root CA certificate is self-signed: its Subject and Issuer fields are identical, and its signature is verified using its own embedded public key. Operating systems (Windows, Linux, macOS) and web browsers maintain pre-audited collections of Root CAs known as "Trust Stores". Every certificate in the world derives its validity by chaining cryptographically back to one of these root trust anchors.',
     keyPoints: [
       'Self-signed: Subject and Issuer distinguished names (DN) match exactly.',
@@ -211,6 +220,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Operational Issuing Authority Protecting the Root',
     category: 'certificates',
     standardRef: 'RFC 5280 §4.2.1.9',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.9',
     overview: 'An Intermediate Certificate Authority (also known as a Subordinate CA or Issuing CA) is a certificate that sits between the Root CA and the end-entity Leaf certificates. To protect the highly sensitive Root CA private key from exposure, the Root CA signs one or more Intermediate CAs, and is then placed offline in a secure vault. The Intermediate CAs handle day-to-day certificate signing, renewals, and revocation for end users and websites.',
     keyPoints: [
       'Signed by a Root CA or a higher-tier intermediate in the certificate hierarchy.',
@@ -234,6 +244,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Terminal Certificate for Servers, Users, and Signatures',
     category: 'certificates',
     standardRef: 'RFC 5280 §4',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc5280#section-4',
     overview: 'A Leaf Certificate (also termed an End-Entity certificate) is the final certificate at the end of a trust chain. It is issued to a specific entity—such as a domain name (web server TLS), an email address (S/MIME), an individual (smart card authentication), or a software developer (code signing). A leaf certificate cannot be used to sign or issue other certificates.',
     keyPoints: [
       'Basic Constraints has cA:FALSE (or the extension is omitted entirely).',
@@ -258,6 +269,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'PKCS#10 Request Payload for Certificate Issuance',
     category: 'certificates',
     standardRef: 'PKCS#10 / RFC 2986',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc2986',
     overview: 'A Certificate Signing Request (CSR) is a standardized cryptographic message sent by an applicant to a Certificate Authority to apply for a digital certificate. It contains the applicant\'s public key, distinguished name (DN), requested Subject Alternative Names (SANs), and is digitally self-signed by the applicant\'s private key. This signature provides Proof-of-Possession (PoP), proving to the CA that the applicant holds the matching private key without ever transmitting or exposing the private key itself.',
     keyPoints: [
       'Never contains the private key: only the public key and applicant metadata are included.',
@@ -281,6 +293,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Periodic CA-Signed Distribution List of Revoked Serials',
     category: 'certificates',
     standardRef: 'RFC 5280 §5',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc5280#section-5',
     overview: 'A Certificate Revocation List (CRL) is an authenticated list published periodically by a Certificate Authority that enumerates digital certificates that have been revoked before their planned expiration date. Each entry in a CRL specifies the certificate\'s serial number, revocation date, and optional reason code (such as keyCompromise or affiliationChanged). The entire list is digitally signed by the CA.',
     keyPoints: [
       'Referenced in certificates via the CRL Distribution Points (CDP) extension.',
@@ -304,6 +317,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Real-Time Certificate Validity Query Protocol',
     category: 'protocols',
     standardRef: 'RFC 6960',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc6960',
     overview: 'The Online Certificate Status Protocol (OCSP) is an HTTP-based network protocol designed as a lightweight, real-time alternative to downloading bulky CRLs. Instead of retrieving the entire list of all revoked certificates, the client sends a small query containing the target certificate\'s serial number and issuer hash to the CA\'s OCSP responder. The responder returns a signed response stating whether the certificate is "good", "revoked", or "unknown".',
     keyPoints: [
       'Located in the certificate\'s Authority Information Access (AIA) extension.',
@@ -327,6 +341,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Zero-Latency TLS Certificate Status Request Extension',
     category: 'protocols',
     standardRef: 'RFC 6066 §8 / RFC 6961',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc6066#section-8',
     overview: 'OCSP Stapling (formally the TLS Certificate Status Request extension) solves the latency and privacy drawbacks of traditional OCSP. With stapling enabled, the web server itself periodically queries the CA\'s OCSP responder in the background, caches the cryptographically signed OCSP response, and "staples" it directly into the TLS handshake (CertificateStatus message) sent to connecting clients.',
     keyPoints: [
       'Eliminates client-side lookup latency during the TLS handshake.',
@@ -350,6 +365,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Publicly Auditable Append-Only Certificate Ledger',
     category: 'protocols',
     standardRef: 'RFC 6962',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc6962',
     overview: 'Certificate Transparency (CT) is an open framework and network of publicly auditable, append-only, cryptographically verified ledgers (CT Logs) maintained by trusted operators like Google, Cloudflare, and DigiCert. Whenever a CA issues an SSL/TLS certificate, it must submit it to multiple independent CT logs. In return, the logs provide Signed Certificate Timestamps (SCTs) proving that the certificate has been publicly recorded.',
     keyPoints: [
       'Built on Merkle Tree cryptographic hash structures preventing retroactive alteration or removal.',
@@ -373,6 +389,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'ITU-T Standard for Public Key Certificates',
     category: 'formats',
     standardRef: 'ITU-T X.509 / RFC 5280',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc5280',
     overview: 'ITU-T Recommendation X.509 defines the international standard format for public key certificates and validation path models. Originally published in 1988 as part of the X.500 directory recommendations, X.509 Version 3 (standardized in RFC 5280) provides the cryptographic foundation for the Internet\'s Transport Layer Security (TLS/HTTPS), S/MIME email encryption, IPsec VPNs, code signing, and UEFI Secure Boot.',
     keyPoints: [
       'Defines certificate structure: Serial, Issuer, Validity (Not Before/Not After), Subject, Public Key, and Extensions.',
@@ -396,6 +413,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Base64 Text Encoded Cryptographic Container',
     category: 'formats',
     standardRef: 'RFC 7468 / RFC 1421',
+    standardUrl: 'https://datatracker.ietf.org/doc/html/rfc7468',
     overview: 'Privacy Enhanced Mail (PEM) is the ubiquitous text-based encoding format used to represent cryptographic certificates, private keys, and CSRs. While the 1993 PEM secure email standard itself was superseded by S/MIME, its encoding format survived. A PEM file wraps raw binary DER ASN.1 data in Base64 characters, flanked by human-readable ASCII encapsulating boundaries like "-----BEGIN CERTIFICATE-----".',
     keyPoints: [
       'ASCII text-based format: safe for copy-pasting, email transmission, and configuration files.',
@@ -419,6 +437,7 @@ export const EDUCATION_TOPICS: Record<TermId, TopicDetail> = {
     subtitle: 'Canonical Binary ASN.1 Serialization Format',
     category: 'formats',
     standardRef: 'ITU-T X.690 / ASN.1 DER',
+    standardUrl: 'https://www.itu.int/rec/T-REC-X.690/',
     overview: 'Distinguished Encoding Rules (DER) is a strict, unambiguous binary serialization standard for ASN.1 data structures. Unlike Basic Encoding Rules (BER) which allows multiple alternative encodings for the same data (such as variable length byte formats), DER enforces exact, canonical encoding rules so that every data structure produces exactly one unique byte stream. This property is mandatory for digital signatures.',
     keyPoints: [
       'Pure binary format: smaller footprint and faster parsing than text-based PEM.',

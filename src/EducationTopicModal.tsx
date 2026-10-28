@@ -120,9 +120,22 @@ export function EducationTopicModal({
               </span>
 
               {topic.standardRef && (
-                <span className="badge" style={{ fontSize: '0.74rem', background: 'var(--input-bg)' }}>
-                  {topic.standardRef}
-                </span>
+                topic.standardUrl ? (
+                  <a
+                    href={topic.standardUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="badge edu-spec-badge-link"
+                    title={t('app.educationCenter.modal.viewSpec', 'Open official specification ({{spec}})', { spec: topic.standardRef })}
+                  >
+                    <span>{topic.standardRef}</span>
+                    <ExternalLink size={11} style={{ flexShrink: 0, opacity: 0.8 }} />
+                  </a>
+                ) : (
+                  <span className="badge" style={{ fontSize: '0.74rem', background: 'var(--input-bg)' }}>
+                    {topic.standardRef}
+                  </span>
+                )
               )}
             </div>
 

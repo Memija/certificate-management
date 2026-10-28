@@ -1211,6 +1211,7 @@
         "previous": "Prethodno",
         "next": "Sljedeće",
         "close": "Zatvori",
+        "viewSpec": "Otvori zvaničnu specifikaciju ({{spec}})",
         "toolLabels": {
           "secure-boot": "Inspektor Secure Boot NVRAM-a",
           "trust-store": "Istražite bazu pouzdanih korijena",
