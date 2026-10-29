@@ -39,23 +39,23 @@
       "formats": "Formate & Standards"
     },
     "learningTerms": {
-      "nvram": "Non-Volatile Random-Access Memory. In diesem Kontext bezieht es sich auf den Speicher auf der Hauptplatine, wo die UEFI-Firmware Secure-Boot-Variablen (wie Schlüssel und Signaturen) speichert, sodass sie auch nach dem Ausschalten erhalten bleiben.",
-      "db": "Signaturdatenbank (db). Enthält eine Liste von kryptografischen Signaturen und Zertifikaten, die explizit vertrauenswürdig sind und während des Bootvorgangs ausgeführt werden dürfen (z. B. Windows-Bootloader).",
+      "nvram": "Non-Volatile Random-Access Memory. In diesem Kontext bezieht es sich auf den Speicher auf der Hauptplatine, in dem die UEFI-Firmware Secure-Boot-Variablen (wie Schlüssel und Signaturen) speichert, sodass sie auch nach dem Ausschalten des Computers erhalten bleiben.",
+      "db": "Signaturdatenbank (db). Enthält eine Liste kryptografischer Signaturen und Zertifikate, denen explizit vertraut wird und die während des Bootvorgangs ausgeführt werden dürfen (z. B. Windows-Bootloader).",
       "dbx": "Widerrufene Signaturdatenbank (dbx). Enthält Signaturen und Zertifikate, deren Ausführung explizit verboten ist. Wenn ein Bootloader eine Schwachstelle aufweist, wird sein Hash hier hinzugefügt, um ihn zu blockieren.",
       "kek": "Key Exchange Key (KEK). Eine Datenbank von Zertifikaten, die verwendet wird, um Vertrauen für die Aktualisierung der Signaturdatenbank (db) und der widerrufenen Signaturdatenbank (dbx) herzustellen.",
-      "pk": "Plattformschlüssel (PK). Der vom Hardwarehersteller installierte Stammschlüssel. Er wird verwendet, um die KEK-Datenbank sicher zu aktualisieren und steuert den Secure-Boot-Setup-Modus.",
+      "pk": "Plattformschlüssel (PK). Der vom Hardwarehersteller installierte Stammschlüssel. Er wird verwendet, um die Key-Exchange-Key-Datenbank (KEK) sicher zu aktualisieren, und steuert den Secure-Boot-Setup-Modus.",
       "x509": "X.509 ist ein Standardformat für Public-Key-Zertifikate. Diese Zertifikate verknüpfen einen kryptografischen Schlüssel sicher mit einer Identität und ermöglichen dem System zu überprüfen, wer eine Software signiert hat.",
-      "efi": "Extensible Firmware Interface (oder UEFI). Die moderne Softwareschnittstelle zwischen dem Betriebssystem und der Plattform-Firmware, die das veraltete BIOS ersetzt. Es erzwingt Secure Boot.",
-      "uac": "Benutzerkontensteuerung (UAC). Eine Windows-Sicherheitsfunktion, die die Zustimmung des Benutzers erfordert, um einer Anwendung Administratorrechte zu gewähren und so unbefugte Änderungen zu verhindern.",
-      "rootCa": "Stammzertifizierungsstelle (Root CA). Das oberste Zertifikat in einer Vertrauenskette. Es ist selbstsigniert und wird vom System standardmäßig als vertrauenswürdig eingestuft.",
-      "intermediateCa": "Zwischenzertifizierungsstelle (Intermediate CA). Ein Zertifikat, das die Brücke zwischen einer Root CA und einem Endzertifikat bildet und eine zusätzliche Sicherheitsebene bietet.",
-      "leafCert": "Endzertifikat (Leaf Certificate). Das von einem bestimmten Dienst oder Softwareherausgeber verwendete Zertifikat. Es kann nicht verwendet werden, um andere Zertifikate zu signieren.",
-      "crl": "Zertifikatssperrliste (CRL). Eine Liste digitaler Zertifikate, die von der ausstellenden Zertifizierungsstelle (CA) vor ihrem Ablaufdatum widerrufen wurden und denen nicht mehr vertraut werden sollte.",
-      "csr": "Zertifikatssignierungsanforderung (CSR). Ein verschlüsselter Textblock, der einer Zertifizierungsstelle bei der Beantragung eines Zertifikats übergeben wird. Er enthält Informationen über den Antragsteller und dessen öffentlichen Schlüssel.",
-      "ocsp": "Online Certificate Status Protocol (OCSP). Ein Internetprotokoll zur Ermittlung des Sperrstatus eines digitalen X.509-Zertifikats, das eine schnellere Alternative zu CRLs.",
-      "ocspStapling": "OCSP-Stapling (RFC 6066). Eine TLS-Handshake-Erweiterung, bei der der Webserver die OCSP-Antwort der CA zwischenspeichert und direkt an den Client übermittelt, um Latenz zu vermeiden und die Privatsphäre zu schützen.",
-      "ctlog": "Certificate Transparency (CT) Log. Eine kryptografisch gesicherte, öffentlich überprüfbare und nur ergänzbare Aufzeichnung ausgestellter Zertifikate. Sie hilft bei der Erkennung falsch ausgestellter oder bösartiger Zertifikate.",
-      "pem": "Privacy Enhanced Mail (PEM). Ein gängiges Dateiformat zum Speichern von kryptografischen Schlüsseln und Zertifikaten, das durch Base64-codierte Daten gekennzeichnet ist, die von '---BEGIN...' und '---END...' eingerahmt sind.",
+      "efi": "Extensible Firmware Interface (oder UEFI). Die moderne Softwareschnittstelle zwischen dem Betriebssystem und der Plattform-Firmware, die das veraltete BIOS ersetzt. Sie erzwingt Secure Boot.",
+      "uac": "Benutzerkontensteuerung. Eine Windows-Sicherheitsfunktion, die die Zustimmung des Benutzers erfordert, um einer Anwendung Administratorrechte zu gewähren, und so unbefugte Änderungen verhindert.",
+      "rootCa": "Stammzertifizierungsstelle (CA). Das oberste Zertifikat in einer Vertrauenskette. Es ist selbstsigniert und wird vom System inhärent als vertrauenswürdig eingestuft.",
+      "intermediateCa": "Zwischenzertifizierungsstelle. Ein Zertifikat, das die Lücke zwischen einer Root-CA und einem Endzertifikat schließt und eine zusätzliche Sicherheitsebene bietet.",
+      "leafCert": "Endzertifikat (Leaf-Zertifikat). Das Endentitäts-Zertifikat, das von einem bestimmten Dienst oder Softwareherausgeber verwendet wird. Es kann nicht zum Signieren anderer Zertifikate verwendet werden.",
+      "crl": "Zertifikatssperrliste (CRL). Eine Liste digitaler Zertifikate, die von der ausstellenden Zertifizierungsstelle (CA) vor ihrem geplanten Ablaufdatum widerrufen wurden und denen nicht mehr vertraut werden sollte.",
+      "csr": "Zertifikatssignierungsanforderung (CSR). Ein Block codierten Textes, der einer Zertifizierungsstelle bei der Beantragung eines Zertifikats übergeben wird. Er enthält Informationen über den Antragsteller und dessen öffentlichen Schlüssel.",
+      "ocsp": "Online Certificate Status Protocol (OCSP). Ein Internetprotokoll zur Ermittlung des Widerrufsstatus eines digitalen X.509-Zertifikats, das eine schnellere Alternative zu CRLs bietet.",
+      "ocspStapling": "OCSP-Stapling (RFC 6066). Eine TLS-Handshake-Erweiterung, bei der der Webserver die OCSP-Antwort der CA zwischenspeichert und direkt an den Client ausliefert, wodurch Latenz vermieden und die Privatsphäre der Nutzer geschützt wird.",
+      "ctlog": "Certificate Transparency (CT) Log. Ein kryptografisch gesichertes, öffentlich überprüfbares, nur ergänzbares (Append-Only) Verzeichnis ausgestellter Zertifikate. Es hilft, falsch ausgestellte oder bösartige Zertifikate zu erkennen.",
+      "pem": "Privacy Enhanced Mail (PEM). Ein gängiges Dateiformat zum Speichern kryptografischer Schlüssel und Zertifikate, gekennzeichnet durch Base64-codierte Daten, die zwischen '---BEGIN...' und '---END...' eingerahmt sind.",
       "der": "Distinguished Encoding Rules (DER). Ein Binärformat für Zertifikate und Schlüssel, das nicht als Klartext lesbar ist. Wird häufig in Windows-Umgebungen oder Java-Keystores verwendet."
     },
     "adminAccess": {
@@ -1226,218 +1226,218 @@
         "nvram": {
           "title": "NVRAM (Nichtflüchtiger RAM)",
           "subtitle": "Nichtflüchtiger UEFI-Speicher für Boot-Sicherheitsvariablen",
-          "overview": "Non-Volatile Random-Access Memory (NVRAM) ist ein spezialisierter persistenter Speicher direkt auf der Hauptplatine (oft innerhalb des SPI-Flash-Chips zusammen mit dem UEFI-BIOS). Bei Secure Boot speichert das NVRAM kritische kryptografische Datenbanken (PK, KEK, db, dbx) und Bootloader-Konfigurationen. Im Gegensatz zu Standard-RAM bleiben NVRAM-Variablen über Neustarts hinweg erhalten und können nicht ohne plattformbasierte Authentifizierung geändert werden.",
+          "overview": "Non-Volatile Random-Access Memory (NVRAM) ist ein spezialisierter persistenter Speicher direkt auf der Computer-Hauptplatine (häufig innerhalb des SPI-Flash-Chips zusammen mit dem UEFI-BIOS). Bei Secure Boot speichert das NVRAM die kritischen kryptografischen Datenbanken (PK, KEK, db, dbx) sowie Bootloader-Konfigurationen. Im Gegensatz zu herkömmlichem RAM bleiben NVRAM-Variablen über System-Aus- und Einschaltzyklen hinweg erhalten, und im Gegensatz zu herkömmlichen Festplattenpartitionen können sie nicht ohne Authentifizierung auf Plattformebene oder physische Neuprogrammierung der Firmware geändert werden.",
           "keyPoints": [
-            "Unter Windows über die Win32-API GetFirmwareEnvironmentVariable und PowerShell-Cmdlets zugänglich (erfordert Administratorrechte).",
-            "Speichert authentifizierte UEFI-Variablen mit Attributen wie VARIABLE_ATTRIBUTE_NON_VOLATILE, BOOTSERVICE_ACCESS und RUNTIME_ACCESS.",
-            "Geschützt vor unbefugten Manipulationen; Änderungen erfordern kryptografische Signaturen, die durch den Plattformschlüssel oder KEK verifiziert werden."
+            "Unter Windows über die Win32-API GetFirmwareEnvironmentVariable und PowerShell-Cmdlets zugänglich (erfordert erhöhte Administratorrechte).",
+            "Speichert authentifizierte UEFI-Variablen mit Flags wie VARIABLE_ATTRIBUTE_NON_VOLATILE, BOOTSERVICE_ACCESS und RUNTIME_ACCESS.",
+            "Geschützt vor nicht authentifizierten Manipulationen; Änderungen an Sicherheitsvariablen erfordern eine kryptografische Signatur, die durch den Plattformschlüssel (PK) oder KEK verifiziert wird."
           ],
-          "securityImpact": "Wenn das NVRAM beschädigt oder über CMOS-Jumper/Batterieentfernung zurückgesetzt wird, kann das System in den Setup-Modus wechseln und unsignierte Betriebssysteme starten. Moderne Motherboards nutzen manipulationssicheren Flash-Speicher oder TPM-Schutz.",
-          "cliExplanation": "Liest die unformatierte autorisierte Signaturdatenbank-Variable aus dem UEFI-NVRAM aus."
+          "securityImpact": "Wenn das NVRAM beschädigt oder über einen CMOS-Jumper bzw. das Entfernen der Batterie zurückgesetzt wird, kann der Secure-Boot-Setup-Modus aktiviert werden, wodurch vorübergehend das Starten unsignierter Betriebssysteme möglich wird. Moderne Mainboard-Hersteller verwenden manipulationssicheren Flash-Speicher oder Hardware-TPM-Schutz, um böswilliges Überschreiben des NVRAMs zu verhindern.",
+          "cliExplanation": "Liest die unformatierte Variable der autorisierten Signaturdatenbank aus, die im UEFI-NVRAM gespeichert ist."
         },
         "db": {
           "title": "db (Signaturdatenbank)",
           "subtitle": "Autorisierte UEFI-Signaturen & Zertifikats-Whitelist",
-          "overview": "Die Signaturdatenbank (db) ist die Positivliste (Whitelist) vertrauenswürdiger kryptografischer Zertifikate und Binär-Hashes im UEFI-NVRAM. Beim Systemstart überprüft die UEFI-Firmware die digitale Signatur jeder EFI-Anwendung (z. B. Windows Boot Manager, bootia32.efi, shimx64.efi) und PCIe Option-ROMs. Entspricht die Signatur einem Zertifikat oder Hash in der db, erlaubt die Firmware die Ausführung.",
+          "overview": "Die Signaturdatenbank (db) ist die Positivliste (Whitelist) vertrauenswürdiger kryptografischer Zertifikate und Binär-Hashes, die im UEFI-NVRAM eingebettet sind. Beim Systemstart überprüft die UEFI-Firmware die digitale Signatur jeder EFI-Anwendung (wie des Windows Boot Managers, bootia32.efi oder shimx64.efi) sowie jedes PCIe-Option-ROMs. Wenn die Signatur der Binärdatei auf ein Zertifikat in db verkettet werden kann – oder ihr exakter SHA-256-Hash mit einem Eintrag in db übereinstimmt –, erlaubt die Firmware die Ausführung.",
           "keyPoints": [
-            "Enthält X.509-Zertifikate und Binär-Hashes (SHA-256, SHA-384, SHA-512), die vor dem Booten autorisiert sind.",
-            "Wird von OEMs vorab mit Microsoft Windows Production PCA 2011/2023 und Microsoft Corporation UEFI CA geladen.",
-            "Kann nur aktualisiert werden, wenn das Update durch einen Schlüssel aus der Key Exchange Key (KEK)-Datenbank signiert ist."
+            "Enthält X.509-Zertifikate und Binär-Hashes (SHA-256, SHA-384, SHA-512), die vor dem Booten zur Ausführung autorisiert sind.",
+            "Typischerweise von OEMs ab Werk mit Microsoft Windows Production PCA 2011/2023 und Microsoft Corporation UEFI CA vorinstalliert.",
+            "Kann nur aktualisiert werden, wenn die Update-Nutzlast mit einem gültigen Schlüssel signiert ist, der in der Key-Exchange-Key-Datenbank (KEK) vorhanden ist."
           ],
-          "securityImpact": "Der Austausch der Microsoft-UEFI-CA von 2011 gegen Zertifikate von 2023 ist entscheidend, da die 2011-Zertifikate 2026 ablaufen. Ohne moderne db-Zertifikate scheitert die Signaturprüfung zukünftiger Bootloader.",
+          "securityImpact": "Der Austausch der ursprünglichen Microsoft UEFI CA von 2011 durch die Zertifikate von 2023 ist entscheidend, da die Zertifikate von 2011 im Jahr 2026 ablaufen. Ohne moderne db-Zertifikate schlägt die Signaturüberprüfung zukünftiger Bootloader und Option-ROMs fehl.",
           "cliExplanation": "Bestätigt, ob Secure Boot aktiv ist und Signaturen aus der db-Whitelist durchsetzt."
         },
         "dbx": {
           "title": "dbx (Verbotene Signaturdatenbank)",
-          "subtitle": "Pre-Boot-Sperrliste für kompromittierte Signaturen",
-          "overview": "Die verbotene Signaturdatenbank (dbx) dient als Sperrliste (Blacklist) für die UEFI-Firmware. Sie enthält Hashes kompromittierter Bootloader, anfälliger EFI-Binärdateien und widerrufener Signaturzertifikate. Selbst wenn eine Binärdatei eine gültige Signatur zu einer CA in db besitzt, wird die Ausführung blockiert, sobald ihr Hash in dbx vorkommt.",
+          "subtitle": "UEFI-Pre-Boot-Widerrufs-Blacklist",
+          "overview": "Die verbotene Signaturdatenbank (Forbidden Signature Database, dbx) dient als Pre-Boot-Widerrufsliste für die UEFI-Firmware. Sie enthält Hashes kompromittierter Bootloader, anfälliger EFI-Binärdateien und widerrufener Signaturzertifikate. Selbst wenn eine ausführbare EFI-Datei über eine gültige Signatur verfügt, die auf eine vertrauenswürdige CA in der db-Whitelist zurückführt, verweigert die Firmware die Ausführung, sobald ihr Hash oder Zertifikatsfingerabdruck in dbx aufgeführt ist.",
           "keyPoints": [
-            "Besitzt absolute Priorität über db: Ist eine Binärdatei in db und dbx vorhanden, wird sie sofort blockiert.",
+            "Hat absoluten Vorrang vor db: Ist eine Binärdatei sowohl in db als auch in dbx vorhanden, wird die Ausführung sofort blockiert.",
             "Speichert EFI_CERT_SHA256_GUID-Hashes anfälliger Bootmanager und Bootkits.",
-            "Wird über Windows Update, Linux LVFS und UEFI-BIOS-Updates verteilt."
+            "Wird über Windows Update, den Linux Vendor Firmware Service (LVFS) und UEFI-BIOS-Updates verteilt."
           ],
-          "securityImpact": "2023 nutzte das BlackLotus-UEFI-Bootkit CVE-2022-21894 aus, um Secure Boot durch das Laden älterer, anfälliger Microsoft-Bootmanager zu umgehen. Zur Behebung mussten die Hashes der dbx hinzugefügt werden.",
-          "cliExplanation": "Gibt die Bytegröße der aktuellen dbx-Sperrliste in der System-Firmware aus."
+          "securityImpact": "Im Jahr 2023 nutzte das UEFI-Bootkit BlackLotus die Sicherheitslücke CVE-2022-21894 (Baton Drop) aus, um Secure Boot zu umgehen, indem es einen älteren, anfälligen Microsoft-Bootmanager lud. Die Eindämmung von BlackLotus erforderte das Hinzufügen der anfälligen Binär-Hashes zur dbx-Datenbank.",
+          "cliExplanation": "Zeigt die Größe der aktuellen in der System-Firmware gespeicherten dbx-Widerrufsliste in Bytes an."
         },
         "kek": {
-          "title": "KEK (Schlüsselaustauschschlüssel)",
-          "subtitle": "Autoritätsdatenbank zur Aktualisierung von Pre-Boot-Signaturen",
-          "overview": "Die Key Exchange Key (KEK)-Datenbank bildet die mittlere Ebene der UEFI Secure Boot-Vertrauenshierarchie. Sie enthält Zertifikate mit der Berechtigung, kryptografisch signierte Aktualisierungen an die Signaturdatenbank (db) und die verbotene Datenbank (dbx) zu übermitteln. Betriebssystemanbieter (wie Microsoft und Canonical) besitzen private KEK-Schlüssel für weltweite Sicherheitsupdates.",
+          "title": "KEK (Key Exchange Key)",
+          "subtitle": "Datenbankautorität zur Aktualisierung von Pre-Boot-Signaturen",
+          "overview": "Die Key-Exchange-Key-Datenbank (KEK) bildet die mittlere Ebene der UEFI-Secure-Boot-Vertrauenshierarchie. Sie enthält Zertifikate, die berechtigt sind, kryptografisch signierte Updates für die Signaturdatenbank (db) und die verbotene Signaturdatenbank (dbx) bereitzustellen. Betriebssystemhersteller wie Microsoft und Canonical verfügen über private KEK-Schlüssel, damit sie Sicherheits- und Widerrufsupdates an Millionen von Geräten verteilen können, ohne dass ein Eingreifen des Mainboard-Herstellers erforderlich ist.",
           "keyPoints": [
-            "Verbindet den Hardwarehersteller (Plattformschlüssel) mit den Updates des Betriebssystemherstellers (db/dbx).",
-            "Ermöglicht das dynamische Hinzufügen gesperrter Hashes (dbx) oder neuer Stammzertifikate (db).",
-            "Jedes Update für db oder dbx erfordert eine durch ein KEK-Zertifikat signierte EFI_VARIABLE_AUTHENTICATION_2-Nutzlast."
+            "Bildet die Brücke zwischen dem OEM-Hardwarehersteller (Platform Key) und Updates des Betriebssystemherstellers (db/dbx).",
+            "Ermöglicht Betriebssystem-Updates das dynamische Hinzufügen widerrufener Hashes (dbx) oder neuer Betriebssystem-Stammzertifikate (db).",
+            "Jedes Update von db oder dbx muss von einer authentifizierten EFI_VARIABLE_AUTHENTICATION_2-Nutzlast begleitet werden, die mit einem KEK-Zertifikat signiert ist."
           ],
-          "securityImpact": "Ohne ein gültiges KEK-Zertifikat kann das System keine Remote-Sperrlistenaktualisierungen empfangen, wodurch die Firmware anfällig für Bootkit-Angriffe bleibt.",
-          "cliExplanation": "Ruft die Schlüsselaustauschschlüssel-Signaturliste aus dem UEFI-NVRAM ab."
+          "securityImpact": "Ohne ein gültiges KEK-Zertifikat des jeweiligen Betriebssystemherstellers kann das System keine externen Secure-Boot-Widerrufsupdates empfangen, wodurch die Firmware anfällig für bekannte Bootkit-Exploits bleibt.",
+          "cliExplanation": "Ruft die Key-Exchange-Key-Signaturliste aus dem UEFI-NVRAM ab."
         },
         "pk": {
           "title": "PK (Plattformschlüssel)",
           "subtitle": "Hardware-Vertrauensanker für UEFI Secure Boot",
-          "overview": "Der Plattformschlüssel (Platform Key, PK) stellt die oberste Vertrauensinstanz in der UEFI Secure Boot-Architektur dar. Üblicherweise vom Motherboard-Hersteller (OEM) vorinstalliert, begründet der PK die Eigentümerbeziehung zur Plattform. Er steuert den Übergang in den Setup-Modus und regelt Aktualisierungen von PK und KEK.",
+          "overview": "Der Plattformschlüssel (Platform Key, PK) bildet die oberste Vertrauensspitze in der UEFI-Secure-Boot-Architektur. In der Regel wird der PK während der Fertigung vom Mainboard- oder Gerätehersteller (OEM) installiert und begründet eine Eigentumsbeziehung zwischen dem Plattformeigentümer und der Hardware-Firmware. Er steuert den Wechsel in den Setup-Modus und regelt Aktualisierungen sowohl des PK selbst als auch der Key-Exchange-Key-Datenbank (KEK).",
           "keyPoints": [
-            "Einzigartiges Stammzertifikat: Es kann immer nur ein Plattformschlüssel aktiv sein.",
-            "Versetzt die Firmware vom Setup-Modus (anpassbar) in den Benutzermodus (gesperrt und erzwungen).",
-            "Das Löschen des PK setzt die Firmware zurück, sodass eigene Secure Boot-Schlüssel registriert werden können."
+            "Einzelnes Stammzertifikat: Im System kann jeweils nur ein einziger Plattformschlüssel aktiv sein.",
+            "Überführt die Firmware vom Setup-Modus (entsperrt, anpassbar) in den Benutzermodus (gesperrt, erzwungen).",
+            "Das Löschen des PK versetzt die Firmware zurück in den Setup-Modus, sodass Benutzer oder Unternehmensadministratoren eigene Secure-Boot-Schlüssel registrieren können."
           ],
-          "securityImpact": "Der Besitz des privaten PK-Schlüssels gewährt uneingeschränkte Kontrolle über Firmware-Sicherheitsrichtlinien. Ein Leck (wie bei MSI im Jahr 2023) erlaubt es Angreifern, autorisierte Firmware-Updates zu fälschen.",
-          "cliExplanation": "Überprüft den im UEFI-Motherboard-NVRAM registrierten Plattformschlüssel."
+          "securityImpact": "Der Besitz des privaten PK-Schlüssels verleiht die vollständige Kontrolle über die Firmware-Sicherheitsrichtlinien des Systems. Wenn der private PK-Schlüssel offengelegt wird (wie beim Leak von MSI-Firmware-Signaturschlüsseln im Jahr 2023), können Angreifer autorisierte Updates für Firmware-Komponenten fälschen.",
+          "cliExplanation": "Überprüft den im UEFI-NVRAM der Hauptplatine hinterlegten Plattformschlüssel."
         },
         "efi": {
           "title": "UEFI / EFI",
-          "subtitle": "Architektur der Unified Extensible Firmware Interface",
-          "overview": "Die Unified Extensible Firmware Interface (UEFI, historisch EFI) definiert die moderne Softwareschnittstelle zwischen Betriebssystem und Plattform-Firmware. Als Nachfolger des 16-Bit-IBM-PC-BIOS von 1981 bietet UEFI eine modulare 32/64-Bit-Pre-Boot-Umgebung, GPT-Partitionstabellen für Datenträger über 2 TB, schnelle Startzeiten und Secure Boot.",
+          "subtitle": "Architektur des Unified Extensible Firmware Interface",
+          "overview": "Das Unified Extensible Firmware Interface (UEFI, historisch EFI) ist die moderne Industriespezifikation, welche die Softwareschnittstelle zwischen dem Betriebssystem und der Plattform-Firmware definiert. Als Ersatz für das aus dem Jahr 1981 stammende 16-Bit-IBM-PC-BIOS bietet UEFI eine modulare 32-Bit-/64-Bit-Pre-Boot-Umgebung mit umfassender Treiberunterstützung, GUID-Partitionstabellen (GPT) für Laufwerke über 2 TB, schnellen Startzeiten sowie der kryptografischen Prüf-Engine namens Secure Boot.",
           "keyPoints": [
-            "Ersetzt veraltete BIOS-Interrupts durch modulare C-Protokolle.",
-            "Unterstützt GPT-Partitionierung ohne die 4-Partitionen- und 2,2-TB-Grenze von MBR.",
-            "Führt Pre-Boot-Treiber (Option-ROMs) für NVMe-Laufwerke, Grafikkarten und Netzwerk-Boot aus."
+            "Ersetzt veraltete BIOS-Real-Mode-Interrupts (INT 13h/INT 10h) durch modulare Protokolle in der Sprache C.",
+            "Unterstützt GPT-Partitionierung und hebt damit das 4-Partitionen-Limit sowie die 2,2-TB-Grenze von MBR-Datenträgern auf.",
+            "Stellt Pre-Boot-Treiber (Option-ROMs) für NVMe-Laufwerke, GPUs und Netzwerkkarten (PXE-/HTTP-Boot) bereit."
           ],
-          "securityImpact": "Da UEFI im Ring 0/SMM vor dem Laden des Betriebssystems ausgeführt wird, ist Schadcode auf dieser Ebene (ein UEFI-Rootkit) für Antivirensoftware und Betriebssystem-Telemetrie völlig unsichtbar.",
-          "cliExplanation": "Zeigt an, ob Windows unter modernem UEFI oder Legacy-BIOS gestartet wurde."
+          "securityImpact": "Da UEFI vor dem Laden des Kernels mit Ring-0-/SMM-Zugriff (System Management Mode) ausgeführt wird, ist Schadcode auf dieser Ebene (ein UEFI-Rootkit) für Antivirenprogramme des Betriebssystems und die Kernel-Telemetrie vollständig unsichtbar.",
+          "cliExplanation": "Zeigt an, ob das Windows-Betriebssystem unter modernem UEFI oder veraltetem BIOS gestartet wurde."
         },
         "uac": {
           "title": "UAC (Benutzerkontensteuerung)",
-          "subtitle": "Windows-Grenze für Administratorrechte",
-          "overview": "Die Benutzerkontensteuerung (User Account Control, UAC) erzwingt das Prinzip der minimalen Rechtevergabe in Windows. Selbst als Administrator angemeldete Benutzer führen Anwendungen standardmäßig mit Standardrechten aus. Bei sicherheitskritischen Aktionen fordert Windows eine Bestätigung auf dem sicheren Desktop an.",
+          "subtitle": "Administrative Berechtigungsgrenze unter Windows",
+          "overview": "Die Benutzerkontensteuerung (User Account Control, UAC) ist ein Windows-Sicherheitsmechanismus, der das Prinzip der geringsten Rechte durchsetzt. Selbst wenn ein Benutzer als Administrator angemeldet ist, werden Anwendungen standardmäßig mit Standardbenutzer-Tokens ausgeführt. Versucht eine Anwendung, Aufgaben auf Systemebene auszuführen – etwa auf UEFI-NVRAM-Variablen zuzugreifen, LocalMachine-Zertifikatsspeicher zu ändern oder Treiber zu installieren –, hält Windows den Vorgang an und zeigt auf dem sicheren Desktop eine Eingabeaufforderung zur Rechteerhöhung an.",
           "keyPoints": [
-            "Trennt administrative Berechtigungen von alltäglichen Benutzeraufgaben.",
-            "Verwendet den sicheren Desktop, um synthetische Tastatur- und Mausinjektionen abzuwehren.",
-            "Erforderlich für privilegierte Win32-APIs wie GetFirmwareEnvironmentVariableEx und CertOpenStore."
+            "Trennt administrative Berechtigungen von alltäglichen Standard-Arbeitsabläufen.",
+            "Verwendet den Sicheren Desktop (abgedunkelter Bildschirm), um synthetische Tastatur-/Maus-Injektionsangriffe zu verhindern.",
+            "Unverzichtbar für den Zugriff auf privilegierte Win32-APIs wie GetFirmwareEnvironmentVariableEx und CertOpenStore."
           ],
-          "securityImpact": "Ohne UAC könnte Hintergrund-Malware unbemerkt maschinenweite Stammzertifikate überschreiben oder Bootkonfigurationen manipulieren.",
-          "cliExplanation": "Überprüft, ob die aktuelle PowerShell-Sitzung über erhöhte Administratorrechte verfügt."
+          "securityImpact": "Ohne UAC könnte jedes Skript oder jede Hintergrund-Malware innerhalb einer Benutzersitzung unbemerkt systemweite vertrauenswürdige Stammzertifikate auslesen und überschreiben oder System-Bootkonfigurationen ohne Vorwarnung ändern.",
+          "cliExplanation": "Überprüft, ob die aktuelle Sitzung über erhöhte Administratorberechtigungen verfügt."
         },
         "rootCa": {
           "title": "Root-CA (Stammzertifizierungsstelle)",
-          "subtitle": "Vertrauensanker der Public-Key-Infrastruktur",
-          "overview": "Eine Stammzertifizierungsstelle (Root-CA) ist der oberste Vertrauensanker in einer PKI. Ein Root-CA-Zertifikat ist selbstsigniert: Subject und Issuer sind identisch, und die Signatur wird mit dem eigenen öffentlichen Schlüssel geprüft. Betriebssysteme und Browser verwalten geprüfte 'Trust Stores'. Alle Zertifikate leiten ihre Gültigkeit von diesen Stammzertifikaten ab.",
+          "subtitle": "Vertrauensanker in der Public-Key-Infrastruktur",
+          "overview": "Eine Stammzertifizierungsstelle (Root Certificate Authority, Root-CA) ist der oberste Vertrauensanker in der Public-Key-Infrastruktur (PKI). Ein Root-CA-Zertifikat ist selbstsigniert: Seine Felder Subject und Issuer sind identisch, und seine Signatur wird mit dem eigenen eingebetteten öffentlichen Schlüssel überprüft. Betriebssysteme (Windows, Linux, macOS) und Webbrowser pflegen vorab geprüfte Sammlungen von Root-CAs, sogenannte 'Trust Stores'. Jedes Zertifikat weltweit leitet seine Gültigkeit ab, indem es kryptografisch auf einen dieser Stamm-Vertrauensanker zurückführt.",
           "keyPoints": [
-            "Selbstsigniert: Subject und Issuer stimmen exakt überein.",
-            "Besitzt die Erweiterung 'Basic Constraints' mit cA:TRUE (als kritisch markiert).",
-            "Wird unter strengster physischer und kryptografischer Isolation offline aufbewahrt (HSM, Air-Gap)."
+            "Selbstsigniert: Die Distinguished Names (DN) von Subject und Issuer stimmen exakt überein.",
+            "Besitzt die als kritisch (Critical) markierte Erweiterung Basic Constraints mit cA:TRUE.",
+            "Wird unter extremer physischer und kryptografischer Isolation verwahrt (offline, Hardware-Sicherheitsmodule / HSMs, Air-Gapped)."
           ],
-          "securityImpact": "Wird der private Schlüssel einer Root-CA kompromittiert, können gefälschte, vertrauenswürdige Zertifikate für jede beliebige Domain ausgestellt werden. Betroffene Root-CAs werden umgehend von Browser-Herstellern gesperrt.",
-          "cliExplanation": "Überprüft die Identität von Subject und Issuer zur Bestätigung eines selbstsignierten Root-Zertifikats."
+          "securityImpact": "Wird der private Schlüssel einer Root-CA kompromittiert, kann ein Angreifer gefälschte, vertrauenswürdige Zertifikate für jede beliebige Domain, jeden Benutzer oder jeden Code-Signing-Herausgeber weltweit ausstellen, ohne Browserwarnungen auszulösen. Kompromittierte Root-CAs werden von großen Herstellern umgehend per Notfall-Update für Browser und Betriebssysteme als nicht vertrauenswürdig eingestuft.",
+          "cliExplanation": "Überprüft, dass Subject und Issuer identisch sind, und bestätigt damit ein selbstsigniertes Stammzertifikat."
         },
         "intermediateCa": {
           "title": "Intermediate-CA (Zwischenzertifizierungsstelle)",
-          "subtitle": "Operative Ausstellungsstelle zum Schutz des Stammzertifikats",
-          "overview": "Eine Zwischenzertifizierungsstelle (Intermediate-CA oder Subordinate-CA) liegt zwischen der Root-CA und den Blattzertifikaten. Um den sensiblen privaten Schlüssel der Root-CA zu schützen, signiert diese eine oder mehrere Intermediate-CAs und geht anschließend offline. Die Intermediate-CAs übernehmen das tägliche Signieren und Widerrufen von Zertifikaten.",
+          "subtitle": "Operative Ausstellungsstelle zum Schutz der Root-CA",
+          "overview": "Eine Zwischenzertifizierungsstelle (Intermediate Certificate Authority, auch Subordinate CA oder Issuing CA genannt) ist ein Zertifikat, das zwischen der Root-CA und den Endentitäts-Blattzertifikaten (Leaf Certificates) steht. Um den hochsensiblen privaten Schlüssel der Root-CA vor Offenlegung zu schützen, signiert die Root-CA eine oder mehrere Intermediate-CAs und wird anschließend offline in einem sicheren Tresor verwahrt. Die Intermediate-CAs übernehmen im Tagesgeschäft das Signieren, Erneuern und Widerrufen von Zertifikaten für Endbenutzer und Websites.",
           "keyPoints": [
-            "Von einer Root-CA oder einer übergeordneten Intermediate-CA signiert.",
-            "Enthält Basic Constraints: Critical, cA:TRUE, oft mit Pfadlängenbeschränkung (pathLenConstraint).",
-            "Server müssen Zwischenzertifikate beim TLS-Handshake mitsenden."
+            "Signiert von einer Root-CA oder einer übergeordneten Zwischenzertifizierungsstelle in der Zertifikatshierarchie.",
+            "Enthält Basic Constraints: Critical, cA:TRUE, häufig mit einem pathLenConstraint zur Begrenzung der Rekursionstiefe.",
+            "Server müssen Zwischenzertifikate während des TLS-Handshakes zusammen mit ihrem Blattzertifikat mitsenden."
           ],
-          "securityImpact": "Bei einer Kompromittierung kann eine Intermediate-CA einzeln widerrufen werden, ohne dass die weltweite Root-CA auf Milliarden Geräten ausgetauscht werden muss.",
-          "cliExplanation": "Validiert die vollständige Zertifikatskette vom Blatt- über das Zwischen- bis zum Stammzertifikat."
+          "securityImpact": "Wird eine Intermediate-CA kompromittiert, kann sie einzeln über CRL oder OCSP widerrufen werden, ohne dass die oberste Root-CA widerrufen, ersetzt und auf Milliarden von Client-Geräten weltweit neu verteilt werden muss.",
+          "cliExplanation": "Validiert die vollständige Kette vom Blattzertifikat über das Zwischenzertifikat bis zum Stammzertifikat."
         },
         "leafCert": {
-          "title": "Endentitätszertifikat (Leaf-Zertifikat)",
-          "subtitle": "Abschließendes Zertifikat für Server, Benutzer und Signaturen",
-          "overview": "Ein Leaf-Zertifikat (End-Entity-Zertifikat) ist das finale Zertifikat am Ende einer Vertrauenskette. Es wird für einen konkreten Zweck ausgestellt (Webserver-TLS, S/MIME-E-Mail, Codesignierung). Ein Blattzertifikat kann keine weiteren Zertifikate ausstellen oder signieren.",
+          "title": "Blattzertifikat (End-Entity)",
+          "subtitle": "Endzertifikat für Server, Benutzer und Signaturen",
+          "overview": "Ein Blattzertifikat (Leaf Certificate, auch Endentitäts-Zertifikat genannt) ist das letzte Zertifikat am Ende einer Vertrauenskette. Es wird für eine bestimmte Entität ausgestellt – etwa einen Domainnamen (Webserver-TLS), eine E-Mail-Adresse (S/MIME), eine Einzelperson (Smartcard-Authentifizierung) oder einen Softwareentwickler (Code Signing). Ein Blattzertifikat kann nicht verwendet werden, um andere Zertifikate zu signieren oder auszustellen.",
           "keyPoints": [
-            "Basic Constraints hat cA:FALSE (oder fehlt vollständig).",
-            "Key Usage schränkt kryptografische Operationen ein (z. B. digitalSignature, keyEncipherment).",
-            "Extended Key Usage (EKU) bestimmt den Einsatzzweck (z. B. Server-Authentifizierung).",
-            "Subject Alternative Names (SAN) definiert die gültigen Hostnamen oder IP-Adressen."
+            "Basic Constraints hat den Wert cA:FALSE (oder die Erweiterung wird vollständig weggelassen).",
+            "Key Usage schränkt die kryptografischen Fähigkeiten ein (z. B. digitalSignature, keyEncipherment).",
+            "Extended Key Usage (EKU) legt die genauen Rollen fest (z. B. Server-Authentifizierung, Code Signing).",
+            "Subject Alternative Names (SAN) definiert die zulässigen Hostnamen, IP-Adressen oder E-Mail-Adressen."
           ],
-          "securityImpact": "Leaf-Zertifikate haben kurze Gültigkeitsdauern (meist 90 bis 398 Tage), um das Risiko von Schlüssellecks zu minimieren. Ein versäumter Austausch führt zu Dienstausfällen.",
-          "cliExplanation": "Verbindet sich mit einem Remote-Server und gibt dessen vollständiges Leaf-Zertifikat aus."
+          "securityImpact": "Blattzertifikate haben eine kurze Lebensdauer (typischerweise 90 bis 398 Tage), um das Risiko bei einem Leck des privaten Schlüssels zu begrenzen. Werden Blattzertifikate nicht rechtzeitig vor Ablauf erneuert, führt dies zu schwerwiegenden Dienstausfällen und Sicherheitswarnungen im Browser.",
+          "cliExplanation": "Stellt eine Verbindung zu einem Remote-Server her und gibt die vollständig geparsten Details seines Blattzertifikats aus."
         },
         "csr": {
-          "title": "CSR (Zertifikatsignierungsanforderung)",
-          "subtitle": "PKCS#10-Anforderungsnutzlast für die Zertifikatausstellung",
-          "overview": "Eine Zertifikatsignierungsanforderung (CSR) ist eine standardisierte kryptografische Nachricht, die an eine Zertifizierungsstelle gesendet wird. Sie enthält den öffentlichen Schlüssel des Antragstellers, Namensattribute (DN), gewünschte SANs und ist mit dem privaten Schlüssel digital signiert (Proof-of-Possession).",
+          "title": "CSR (Zertifikatssignierungsanforderung)",
+          "subtitle": "PKCS#10-Anforderungsnutzlast für die Zertifikatsausstellung",
+          "overview": "Eine Zertifikatssignierungsanforderung (Certificate Signing Request, CSR) ist eine standardisierte kryptografische Nachricht, die ein Antragsteller an eine Zertifizierungsstelle sendet, um ein digitales Zertifikat zu beantragen. Sie enthält den öffentlichen Schlüssel des Antragstellers, den Distinguished Name (DN) sowie die angeforderten Subject Alternative Names (SANs) und ist mit dem privaten Schlüssel des Antragstellers digital selbstsigniert. Diese Signatur liefert den Besitznachweis (Proof-of-Possession, PoP) und beweist der CA, dass der Antragsteller über den passenden privaten Schlüssel verfügt, ohne diesen jemals zu übertragen oder preiszugeben.",
           "keyPoints": [
-            "Enthält niemals den privaten Schlüssel, sondern nur den öffentlichen Schlüssel und Metadaten.",
-            "Beinhaltet eine Signatur als Eigentumsnachweis des privaten Schlüssels (Proof-of-Possession).",
-            "Im Base64-PEM-Format mit Header '-----BEGIN CERTIFICATE REQUEST-----' kodiert."
+            "Enthält niemals den privaten Schlüssel: Nur der öffentliche Schlüssel und Metadaten des Antragstellers sind enthalten.",
+            "Enthält eine mit dem privaten Schlüssel erstellte kryptografische Signatur zum Eigentumsnachweis (Proof-of-Possession).",
+            "Codiert im Base64-PEM-Format mit der Kopfzeile '-----BEGIN CERTIFICATE REQUEST-----'."
           ],
-          "securityImpact": "Eine CSR kann gefahrlos über öffentliche Netzwerke übertragen werden. Wird eine CA jedoch getäuscht, ein Zertifikat für eine fremde Domain auszustellen, drohen Man-in-the-Middle-Angriffe.",
-          "cliExplanation": "Parst die CSR und überprüft die interne kryptografische Signatur des Eigentumsnachweises."
+          "securityImpact": "Ein CSR kann bedenkenlos über öffentliche Netzwerke übertragen werden, da er keine Geheimnisse enthält. Wenn es einem Angreifer jedoch gelingt, eine CA dazu zu bringen, einen CSR mit einem von ihm kontrollierten Schlüssel für eine fremde Domain zu signieren, kann er Man-in-the-Middle-Angriffe durchführen.",
+          "cliExplanation": "Parst den CSR und überprüft dessen enthaltene kryptografische Proof-of-Possession-Signatur."
         },
         "crl": {
-          "title": "CRL (Zertifikatsperrliste)",
-          "subtitle": "Periodisch signierte Liste widerrufener Seriennummern",
-          "overview": "Eine Zertifikatsperrliste (Certificate Revocation List, CRL) ist eine regelmäßig von einer Zertifizierungsstelle herausgegebene und signierte Liste widerrufener Zertifikate. Jeder Eintrag enthält die Seriennummer, das Widerrufsdatum und optionale Gründe.",
+          "title": "CRL (Zertifikatssperrliste)",
+          "subtitle": "Periodisch von der CA signierte Verteilungsliste widerrufener Seriennummern",
+          "overview": "Eine Zertifikatssperrliste (Certificate Revocation List, CRL) ist eine authentifizierte Liste, die regelmäßig von einer Zertifizierungsstelle veröffentlicht wird und digitale Zertifikate aufführt, die vor ihrem geplanten Ablaufdatum widerrufen wurden. Jeder Eintrag in einer CRL nennt die Seriennummer des Zertifikats, das Widerrufsdatum sowie einen optionalen Grundcode (wie keyCompromise oder affiliationChanged). Die gesamte Liste ist von der CA digital signiert.",
           "keyPoints": [
             "Wird in Zertifikaten über die Erweiterung CRL Distribution Points (CDP) referenziert.",
-            "Signiert und mit Gültigkeitsfenstern 'thisUpdate' und 'nextUpdate' versehen.",
+            "Signiert und mit Zeitstempeln für die Gültigkeitsfenster 'thisUpdate' und 'nextUpdate' versehen.",
             "Kann vollständig (Base CRL) oder inkrementell (Delta CRL) sein, um Bandbreite zu sparen."
           ],
-          "securityImpact": "CRLs können sehr groß werden (mehrere Megabyte), was Latenzen beim TLS-Handshake verursacht. Da Clients CRLs bis 'nextUpdate' zwischenspeichern, besteht ein zeitliches Angriffsfenster.",
-          "cliExplanation": "Parst eine binäre DER-CRL und listet alle widerrufenen Seriennummern auf."
+          "securityImpact": "CRLs können enorm anwachsen (auf Dutzende Megabyte bei großen CAs), was während TLS-Handshakes zu Latenz und Speicherbelastung führt. Da Clients CRLs bis zum Zeitpunkt nextUpdate zwischenspeichern, entsteht ein Verwundbarkeitsfenster, in dem ein frisch widerrufenes Zertifikat noch akzeptiert werden kann.",
+          "cliExplanation": "Parst eine binäre DER-Zertifikatssperrliste und zeigt alle widerrufenen Seriennummern an."
         },
         "ocsp": {
           "title": "OCSP (Online Certificate Status Protocol)",
-          "subtitle": "Echtzeit-Protokoll zur Überprüfung des Zertifikatsstatus",
-          "overview": "Das Online Certificate Status Protocol (OCSP) ist ein HTTP-basiertes Protokoll zur ressourcensparenden Echtzeit-Statusabfrage. Anstatt vollständige CRL-Listen herunterzuladen, fragt der Client gezielt den Status einer einzelnen Seriennummer beim OCSP-Responder ab.",
+          "subtitle": "Echtzeit-Abfrageprotokoll für die Zertifikatsgültigkeit",
+          "overview": "Das Online Certificate Status Protocol (OCSP) ist ein HTTP-basiertes Netzwerkprotokoll, das als schlanke Echtzeit-Alternative zum Herunterladen umfangreicher CRLs entwickelt wurde. Anstatt die gesamte Liste aller widerrufenen Zertifikate abzurufen, sendet der Client eine kleine Anfrage mit der Seriennummer des Zielzertifikats und dem Aussteller-Hash an den OCSP-Responder der CA. Der Responder liefert eine signierte Antwort zurück, die angibt, ob das Zertifikat 'good', 'revoked' oder 'unknown' ist.",
           "keyPoints": [
-            "Die Responder-URL befindet sich in der Authority Information Access (AIA)-Erweiterung.",
-            "Bietet sofortige Statusauskunft ohne Übertragung großer Sperrlisten.",
-            "Die Antwort ist von einem autorisierten OCSP-Responder der CA digital signiert."
+            "Befindet sich in der Erweiterung Authority Information Access (AIA) des Zertifikats.",
+            "Liefert einen sofortigen Status, ohne Megabytes an Sperrlisten übertragen zu müssen.",
+            "Die Antwort ist digital mit einem von der CA autorisierten OCSP-Signaturzertifikat signiert."
           ],
-          "securityImpact": "OCSP birgt Datenschutzbedenken (die CA sieht, wer wann welche Domains besucht) und Latenzen. Viele Clients nutzen daher 'Soft-Fail' und ignorieren nicht erreichbare OCSP-Server.",
-          "cliExplanation": "Führt eine vollständige Sperrprüfung über Live-AIA-OCSP- und CDP-CRL-Endpunkte durch."
+          "securityImpact": "OCSP bringt Datenschutzbedenken (die CA erfährt in Echtzeit, welche Domains Clients besuchen) sowie Leistungseinbußen (zusätzlicher Netzwerk-Roundtrip während der TLS-Aushandlung) mit sich. Um das Surfen im Web bei ausgefallenen Respondern nicht zu blockieren, nutzen viele Clients standardmäßig 'Soft-Fail' und ignorieren nicht erreichbare OCSP-Server.",
+          "cliExplanation": "Führt eine vollständige Netzwerk-Widerrufsprüfung gegen aktive AIA-OCSP- und CDP-CRL-Endpunkte durch."
         },
         "ocspStapling": {
           "title": "OCSP Stapling",
-          "subtitle": "Latenzfreie TLS-Zertifikatsstatusabfrage-Erweiterung",
-          "overview": "OCSP Stapling (TLS Certificate Status Request) beseitigt die Latenz- und Datenschutzprobleme von klassischem OCSP. Der Webserver fragt die CA selbst im Hintergrund ab, speichert die signierte OCSP-Antwort zwischen und heftet ('staples') sie direkt an den TLS-Handshake an.",
+          "subtitle": "Latenzfreie TLS-Erweiterung für Zertifikatsstatusabfragen",
+          "overview": "OCSP Stapling (formell die TLS-Erweiterung Certificate Status Request) löst die Latenz- und Datenschutznachteile von herkömmlichem OCSP. Bei aktiviertem Stapling fragt der Webserver selbst regelmäßig im Hintergrund den OCSP-Responder der CA ab, speichert die kryptografisch signierte OCSP-Antwort zwischen und 'heftet' (staples) sie direkt in den TLS-Handshake (CertificateStatus-Nachricht) an, der an verbindende Clients gesendet wird.",
           "keyPoints": [
-            "Beseitigt verbindungsbedingte Latenzen beim Client während des TLS-Handshakes.",
-            "Schützt die Privatsphäre: Die CA erfährt weder IP-Adresse noch Surfverhalten des Nutzers.",
-            "Kann über die Erweiterung OCSP Must-Staple (RFC 7633) im Zertifikat erzwungen werden."
+            "Eliminiert clientseitige Abfragelatenzen während des TLS-Handshakes.",
+            "Schützt die Privatsphäre des Clients: Die CA sieht niemals die IP-Adresse oder das Surfverhalten des Clients.",
+            "Kann mithilfe der Erweiterung OCSP Must-Staple (RFC 7633) im Zertifikat erzwungen werden."
           ],
-          "securityImpact": "Ohne Must-Staple kann ein Angreifer im Netzwerk die angeheftete Antwort blockieren, sodass Soft-Fail-Clients die Verbindung ungeprüft fortsetzen.",
-          "cliExplanation": "Prüft, ob der Remote-Server beim TLS-Handshake eine angeheftete OCSP-Antwort liefert."
+          "securityImpact": "Ohne Must-Staple kann ein Angreifer bei einem Man-in-the-Middle-Angriff die angeheftete Antwort blockieren, sodass Soft-Fail-Clients ohne Überprüfung fortfahren. Must-Staple zwingt Clients dazu, den Handshake abzubrechen, wenn eine gültige angeheftete Antwort fehlt.",
+          "cliExplanation": "Prüft, ob der Remote-Server während des TLS-Handshakes eine angeheftete OCSP-Antwort mitliefert."
         },
         "ctlog": {
           "title": "Certificate Transparency (CT) Log",
-          "subtitle": "Öffentlich prüfbares, unveränderliches Zertifikatsprotokoll",
-          "overview": "Certificate Transparency (CT) ist ein offenes Netzwerk kryptografisch gesicherter, unveränderlicher Audit-Protokolle (CT-Logs), die von Anbietern wie Google, Cloudflare und DigiCert betrieben werden. Ausgestellte TLS-Zertifikate müssen dort registriert werden und erhalten signierte Zeitstempel (SCTs).",
+          "subtitle": "Öffentlich prüfbares Append-Only-Zertifikatsverzeichnis",
+          "overview": "Certificate Transparency (CT) ist ein offenes Framework und Netzwerk öffentlich überprüfbarer, nur ergänzbarer (Append-Only) und kryptografisch verifizierter Verzeichnisse (CT-Logs), die von vertrauenswürdigen Betreibern wie Google, Cloudflare und DigiCert geführt werden. Wann immer eine CA ein SSL/TLS-Zertifikat ausstellt, muss sie es an mehrere unabhängige CT-Logs übermitteln. Im Gegenzug liefern die Logs Signed Certificate Timestamps (SCTs), die belegen, dass das Zertifikat öffentlich protokolliert wurde.",
           "keyPoints": [
-            "Basiert auf Merkle-Tree-Hashstrukturen, die nachträgliche Änderungen unmöglich machen.",
-            "Moderne Webbrowser verweigern Zertifikaten ohne gültige SCT-Nachweise das Vertrauen.",
-            "Ermöglicht Domaininhabern die Echtzeitüberwachung unberechtigt ausgestellter Zertifikate."
+            "Basiert auf kryptografischen Merkle-Tree-Hashstrukturen, die nachträgliche Änderungen oder Löschungen verhindern.",
+            "Browser (Chrome, Edge, Safari) verweigern öffentlichen TLS-Zertifikaten ohne gültige SCT-Nachweise das Vertrauen.",
+            "Ermöglicht Domaininhabern, CT-Logs in Echtzeit zu überwachen und missbräuchliche oder unautorisierte Zertifikate zu entdecken."
           ],
-          "securityImpact": "CT-Logs beendeten die Ära unbemerkter CA-Kompromittierungen, da jedes öffentlich ausgestellte Zertifikat binnen Sekunden weltweit transparent einsehbar ist.",
-          "cliExplanation": "Fragt den öffentlichen crt.sh-Aggregator nach allen für eine Domain protokollierten Zertifikaten ab."
+          "securityImpact": "CT-Logs haben die Websicherheit grundlegend verändert, indem sie die Ära beendeten, in der kompromittierte oder bösartige CAs heimlich Zertifikate für Spionage oder MITM-Angriffe ausstellen konnten. Jedes von einer öffentlichen CA ausgestellte Zertifikat ist innerhalb von Sekunden nach seiner Erstellung für jedermann öffentlich sichtbar.",
+          "cliExplanation": "Fragt den öffentlichen CT-Log-Aggregator crt.sh nach öffentlichen Einträgen ausgestellter Zertifikate für eine Domain ab."
         },
         "x509": {
           "title": "X.509-Standard",
           "subtitle": "ITU-T-Standard für Public-Key-Zertifikate",
-          "overview": "Die ITU-T-Empfehlung X.509 definiert den weltweiten Standard für Public-Key-Zertifikate und Pfadvalidierungsmodelle. Version 3 (RFC 5280) bildet das kryptografische Fundament für TLS/HTTPS, S/MIME-Verschlüsselung, IPsec-VPNs und UEFI Secure Boot.",
+          "overview": "Die ITU-T-Empfehlung X.509 definiert das internationale Standardformat für Public-Key-Zertifikate und Pfadvalidierungsmodelle. Ursprünglich 1988 als Teil der X.500-Verzeichnisempfehlungen veröffentlicht, bildet X.509 Version 3 (standardisiert in RFC 5280) das kryptografische Fundament für Transport Layer Security (TLS/HTTPS) im Internet, S/MIME-E-Mail-Verschlüsselung, IPsec-VPNs, Code Signing und UEFI Secure Boot.",
           "keyPoints": [
-            "Definiert Zertifikatsfelder: Seriennummer, Aussteller, Gültigkeit, Inhaber, öffentlicher Schlüssel und Erweiterungen.",
-            "Nutzt Abstract Syntax Notation One (ASN.1) für plattformunabhängige Datenschemata.",
-            "V3-Erweiterungen umfassen SAN, Basic Constraints, Key Usage, AIA und CDP."
+            "Definiert die Zertifikatsstruktur: Seriennummer, Aussteller (Issuer), Gültigkeit (Not Before/Not After), Inhaber (Subject), öffentlicher Schlüssel und Erweiterungen.",
+            "Verwendet Abstract Syntax Notation One (ASN.1), um Datenschemata unabhängig von der Maschinenarchitektur zu definieren.",
+            "Zu den V3-Erweiterungen gehören Subject Alternative Names, Basic Constraints, Key Usage, AIA und CDP."
           ],
-          "securityImpact": "Unklarheiten beim ASN.1-Parsing führten historisch zu schweren Sicherheitslücken wie Signaturfälschungen. Moderne Implementierungen setzen auf strikte ASN.1-DER-Parser.",
-          "cliExplanation": "Gibt die rohe ASN.1-Tag-Length-Value (TLV)-Datenstruktur eines X.509-Zertifikats aus."
+          "securityImpact": "Mehrdeutigkeiten beim ASN.1-Parsing haben in der Vergangenheit zu schwerwiegenden Sicherheitslücken geführt, etwa zu Signaturfälschungen (CVE-2008-1386) und Umgehungen der Pfadvalidierung. Moderne Implementierungen verwenden strikte ASN.1-DER-Dekodierungsbibliotheken.",
+          "cliExplanation": "Gibt die rohe ASN.1-Tag-Length-Value-Datenstruktur (TLV) eines X.509-Zertifikats aus."
         },
         "pem": {
           "title": "PEM (Privacy Enhanced Mail)",
-          "subtitle": "Base64-textkodierter kryptografischer Container",
-          "overview": "Privacy Enhanced Mail (PEM) ist das weit verbreitete textbasierte Format zur Darstellung von Zertifikaten, Schlüsseln und CSRs. Es bettet rohe binäre ASN.1-DER-Daten in Base64-Zeichen ein, umschlossen von lesbaren Kopf- und Fußzeilen wie '-----BEGIN CERTIFICATE-----'.",
+          "subtitle": "Base64-textcodierter kryptografischer Container",
+          "overview": "Privacy Enhanced Mail (PEM) ist das allgegenwärtige textbasierte Codierungsformat zur Darstellung kryptografischer Zertifikate, privater Schlüssel und CSRs. Während der PEM-Standard für sichere E-Mails aus dem Jahr 1993 selbst durch S/MIME abgelöst wurde, hat sein Codierungsformat überlebt. Eine PEM-Datei verpackt rohe binäre DER-ASN.1-Daten in Base64-Zeichen, eingerahmt von menschenlesbaren ASCII-Begrenzungszeilen wie '-----BEGIN CERTIFICATE-----'.",
           "keyPoints": [
-            "Textbasiertes ASCII-Format: Ideal für Konfigurationsdateien, E-Mail und Copy-Paste.",
-            "Umschlossen von Grenzmarkierungen, die den Objekttyp klar kennzeichnen.",
-            "Unterstützt Verkettungen mehrerer Zertifikate in einer Datei (Zertifikatsketten)."
+            "Textbasiertes ASCII-Format: sicher für Copy-and-Paste, E-Mail-Übertragung und Konfigurationsdateien.",
+            "Eingekapselt zwischen klaren Begrenzungszeilen, die den Objekttyp angeben (CERTIFICATE, RSA PRIVATE KEY usw.).",
+            "Unterstützt Bundle-Dateien, die mehrere nacheinander verkettete Zertifikate enthalten (Zertifikatsketten)."
           ],
-          "securityImpact": "Aufgrund des Textformats landen private Schlüssel in PEM-Form häufig versehentlich in öffentlichen Git-Repositories. Produktionsschlüssel müssen strenge Dateirechte besitzen.",
-          "cliExplanation": "Konvertiert ein binäres DER-Zertifikat in eine standardkonforme Base64-PEM-Textdatei."
+          "securityImpact": "Leicht einzusehen und zu bearbeiten, jedoch können sensible private Schlüssel im PEM-Format leicht versehentlich in öffentliche Git-Repositories hochgeladen oder in Chat-Kanäle eingefügt werden. Produktivschlüssel müssen mit strikten Dateisystemberechtigungen gespeichert werden (z. B. chmod 600).",
+          "cliExplanation": "Konvertiert ein binäres DER-Zertifikat in eine standardmäßige Base64-PEM-Textdatei."
         },
         "der": {
           "title": "DER (Distinguished Encoding Rules)",
           "subtitle": "Kanonisches binäres ASN.1-Serialisierungsformat",
-          "overview": "Distinguished Encoding Rules (DER) ist ein strikter binärer Serialisierungsstandard für ASN.1-Strukturen. Im Gegensatz zu BER erzwingt DER eindeutige Kodierungsregeln, sodass jedes Datenobjekt exakt einen eindeutigen Bytestrom erzeugt – eine zwingende Voraussetzung für digitale Signaturen.",
+          "overview": "Distinguished Encoding Rules (DER) ist ein strikter, eindeutiger binärer Serialisierungsstandard für ASN.1-Datenstrukturen. Im Gegensatz zu Basic Encoding Rules (BER), das mehrere alternative Codierungen für dieselben Daten zulässt (wie etwa Byteformate variabler Länge), erzwingt DER exakte, kanonische Codierungsregeln, sodass jede Datenstruktur genau einen eindeutigen Bytestrom erzeugt. Diese Eigenschaft ist für digitale Signaturen zwingend erforderlich.",
           "keyPoints": [
-            "Reines Binärformat: Kompakter und schneller einzulesen als textbasiertes PEM.",
-            "Deterministisch: Garantiert identische Hash-Digests auf allen Rechnerarchitekturen.",
-            "Natives Format unter Windows (.cer-Dateien), in Java-Keystores und auf Smartcards."
+            "Reines Binärformat: geringerer Speicherbedarf und schnelleres Parsing als textbasiertes PEM.",
+            "Deterministisch: stellt sicher, dass das Hashen des Zertifikats auf allen Plattformen einen identischen Digest erzeugt.",
+            "Standardformat, das nativ unter Windows (.cer-Dateien), in Java-Keystores und auf Hardware-Tokens verwendet wird."
           ],
-          "securityImpact": "Als Binärformat kann DER nicht ohne Beschädigung in reine Texteditoren kopiert werden. Für Textprotokolle muss es in Base64 kodiert werden.",
+          "securityImpact": "Da DER binär ist, kann es nicht ohne Beschädigung in reine Texteditoren oder HTTP-Abfrageparameter eingefügt werden. Bei der Übertragung über reine Textmedien muss es dekodiert bzw. Base64-codiert werden.",
           "cliExplanation": "Konvertiert ein Base64-PEM-Zertifikat in das reine binäre DER-Format."
         }
       }

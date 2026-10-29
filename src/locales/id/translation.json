@@ -39,24 +39,24 @@
       "formats": "Format & Standar"
     },
     "learningTerms": {
-      "nvram": "Non-Volatile Random-Access Memory (NVRAM). Dalam konteks ini, merujuk pada memori di motherboard tempat firmware UEFI menyimpan variabel Secure Boot (seperti kunci dan tanda tangan) sehingga tetap tersimpan meskipun komputer dimatikan.",
+      "nvram": "Non-Volatile Random-Access Memory. Dalam konteks ini, merujuk pada memori di motherboard tempat firmware UEFI menyimpan variabel Secure Boot (seperti kunci dan tanda tangan) sehingga tetap tersimpan meskipun komputer dimatikan.",
       "db": "Basis Data Tanda Tangan (db). Berisi daftar tanda tangan kriptografi dan sertifikat yang secara eksplisit dipercaya dan diizinkan untuk dieksekusi selama proses boot (mis. bootloader Windows).",
-      "dbx": "Basis Data Tanda Tangan yang Dicabut (dbx). Berisi tanda tangan dan sertifikat yang secara eksplisit dilarang untuk dieksekusi. Jika bootloader memiliki kerentanan, nilai hash-nya ditambahkan ke sini untuk diblokir.",
+      "dbx": "Basis Data Tanda Tangan yang Dicabut (dbx). Berisi tanda tangan dan sertifikat yang secara eksplisit dilarang untuk dieksekusi. Jika bootloader memiliki kerentanan, hash-nya ditambahkan ke sini untuk memblokirnya.",
       "kek": "Key Exchange Key (KEK). Basis data sertifikat yang digunakan untuk membangun kepercayaan guna memperbarui Basis Data Tanda Tangan (db) dan Basis Data Tanda Tangan yang Dicabut (dbx).",
-      "pk": "Platform Key (PK). Kunci root yang diinstal oleh vendor perangkat keras. Ini digunakan untuk memperbarui basis data KEK dengan aman dan mengontrol mode pengaturan Secure Boot.",
+      "pk": "Platform Key (PK). Kunci root yang dipasang oleh vendor perangkat keras. Kunci ini digunakan untuk memperbarui basis data Key Exchange Key (KEK) secara aman dan mengontrol mode pengaturan Secure Boot.",
       "x509": "X.509 adalah format standar untuk sertifikat kunci publik. Sertifikat ini dengan aman mengaitkan kunci kriptografi dengan identitas, memungkinkan sistem memverifikasi siapa yang menandatangani suatu perangkat lunak.",
-      "efi": "Extensible Firmware Interface (atau UEFI). Antarmuka perangkat lunak modern antara sistem operasi dan firmware platform, menggantikan BIOS lama. Ia menerapkan Secure Boot.",
-      "uac": "User Account Control (UAC). Fitur keamanan Windows yang membutuhkan persetujuan pengguna untuk memberikan hak istimewa administrator kepada aplikasi, mencegah perubahan yang tidak sah.",
-      "rootCa": "Otoritas Sertifikat Root (Root CA). Sertifikat teratas dalam rantai kepercayaan. Ditandatangani sendiri dan dipercaya secara inheren oleh sistem.",
-      "intermediateCa": "Otoritas Sertifikat Menengah (Intermediate CA). Sertifikat yang menjembatani antara Root CA dan sertifikat akhir (leaf), memberikan lapisan keamanan ekstra.",
-      "leafCert": "Sertifikat Akhir (Leaf Certificate). Sertifikat entitas akhir yang digunakan oleh layanan atau penerbit perangkat lunak tertentu. Tidak dapat digunakan untuk menandatangani sertifikat lain.",
-      "crl": "Daftar Pencabutan Sertifikat (CRL). Daftar sertifikat digital yang telah dicabut oleh Otoritas Sertifikat (CA) yang menerbitkan sebelum tanggal kedaluwarsa dan tidak boleh lagi dipercaya.",
-      "csr": "Permintaan Penandatanganan Sertifikat (CSR). Blok teks yang disandikan yang diberikan ke Otoritas Sertifikat saat mengajukan sertifikat. Berisi informasi tentang pemohon dan kunci publiknya.",
+      "efi": "Extensible Firmware Interface (atau UEFI). Antarmuka perangkat lunak modern antara sistem operasi dan firmware platform, menggantikan BIOS lama. Antarmuka ini menegakkan Secure Boot.",
+      "uac": "User Account Control (UAC). Fitur keamanan Windows yang memerlukan persetujuan pengguna untuk memberikan hak istimewa administratif kepada aplikasi, guna mencegah perubahan yang tidak sah.",
+      "rootCa": "Otoritas Sertifikat Root (CA). Sertifikat paling atas dalam rantai kepercayaan. Sertifikat ini ditandatangani sendiri dan secara inheren dipercaya oleh sistem.",
+      "intermediateCa": "Otoritas Sertifikat Menengah. Sertifikat yang menjembatani kesenjangan antara Root CA dan sertifikat daun (leaf), memberikan lapisan keamanan tambahan.",
+      "leafCert": "Sertifikat Daun (Leaf Certificate). Sertifikat entitas akhir yang digunakan oleh layanan atau penerbit perangkat lunak tertentu. Tidak dapat digunakan untuk menandatangani sertifikat lain.",
+      "crl": "Daftar Pencabutan Sertifikat (CRL). Daftar sertifikat digital yang telah dicabut oleh Otoritas Sertifikat (CA) penerbit sebelum tanggal kedaluwarsa yang dijadwalkan dan tidak boleh lagi dipercaya.",
+      "csr": "Permintaan Penandatanganan Sertifikat (CSR). Blok teks terenkode yang diberikan kepada Otoritas Sertifikat saat mengajukan sertifikat. Berisi informasi tentang pemohon dan kunci publiknya.",
       "ocsp": "Online Certificate Status Protocol (OCSP). Protokol internet yang digunakan untuk memperoleh status pencabutan sertifikat digital X.509, menawarkan alternatif yang lebih cepat dibandingkan CRL.",
-      "ocspStapling": "OCSP Stapling (RFC 6066). Ekstensi jabat tangan TLS di mana server web menyimpan respons OCSP CA dan mengirimkannya langsung ke klien, mencegah latensi dan menjaga privasi pengguna.",
-      "ctlog": "Log Certificate Transparency (CT). Catatan sertifikat yang diterbitkan yang dapat diaudit publik dan terjamin secara kriptografi. Membantu mendeteksi sertifikat yang salah terbit atau berbahaya.",
-      "pem": "Privacy Enhanced Mail (PEM). Format file umum untuk menyimpan kunci kriptografi dan sertifikat, ditandai dengan data terkode Base64 yang diapit antara '---BEGIN...' dan '---END...'.",
-      "der": "Distinguished Encoding Rules (DER). Format biner untuk sertifikat dan kunci, tidak dapat dibaca sebagai teks biasa. Sering digunakan di lingkungan Windows atau Java keystores."
+      "ocspStapling": "OCSP Stapling (RFC 6066). Ekstensi jabat tangan TLS di mana server web menyimpan sementara respons OCSP dari CA dan mengirimkannya langsung ke klien, mencegah latensi dan menjaga privasi pengguna.",
+      "ctlog": "Log Certificate Transparency (CT). Catatan sertifikat yang diterbitkan yang terjamin secara kriptografi, dapat diaudit secara publik, dan hanya-tambah (append-only). Membantu mendeteksi sertifikat yang salah terbit atau berbahaya.",
+      "pem": "Privacy Enhanced Mail (PEM). Format berkas umum untuk menyimpan kunci kriptografi dan sertifikat, ditandai dengan data terenkode Base64 yang dibingkai di antara '---BEGIN...' dan '---END...'.",
+      "der": "Distinguished Encoding Rules (DER). Format biner untuk sertifikat dan kunci, tidak dapat dibaca sebagai teks biasa. Sering digunakan di lingkungan Windows atau Java keystore."
     },
     "adminAccess": {
       "title": "Akses Administrator Diperlukan",
@@ -1224,220 +1224,221 @@
       },
       "topicDetails": {
         "nvram": {
-          "title": "NVRAM (RAM Non-Volatile)",
-          "subtitle": "Penyimpanan Memori Non-Volatile UEFI untuk Variabel Keamanan Boot",
-          "overview": "Non-Volatile Random-Access Memory (NVRAM) adalah penyimpanan persisten khusus yang terletak langsung di motherboard komputer. Di Secure Boot, NVRAM menyimpan basis data kriptografi penting (PK, KEK, db, dbx) dan konfigurasi bootloader yang tetap tersimpan saat komputer dimatikan.",
+          "title": "NVRAM (Non-Volatile RAM)",
+          "subtitle": "Penyimpanan Memori Non-Volatil UEFI untuk Variabel Keamanan Boot",
+          "overview": "Non-Volatile Random-Access Memory (NVRAM) adalah penyimpanan persisten khusus yang terletak langsung pada motherboard komputer (sering kali berada di dalam cip SPI flash bersama UEFI BIOS). Dalam Secure Boot, NVRAM menyimpan basis data kriptografi penting (PK, KEK, db, dbx) serta konfigurasi bootloader. Berbeda dengan RAM standar, variabel NVRAM tetap bertahan melewati siklus mati-hidup daya sistem, dan berbeda dengan partisi disk konvensional, variabel tersebut tidak dapat diubah tanpa autentikasi tingkat platform atau pemrograman ulang firmware secara fisik.",
           "keyPoints": [
-            "Dapat diakses di Windows melalui API GetFirmwareEnvironmentVariable dan cmdlet PowerShell dengan hak administrator.",
-            "Menyimpan variabel UEFI terautentikasi dengan atribut keamanan tingkat firmware.",
-            "Dilindungi dari manipulasi tanpa izin; pembaruan memerlukan tanda tangan kriptografi sah."
+            "Dapat diakses di Windows melalui Win32 API GetFirmwareEnvironmentVariable dan cmdlet PowerShell (memerlukan peningkatan hak administratif).",
+            "Menyimpan variabel UEFI terautentikasi dengan flag seperti VARIABLE_ATTRIBUTE_NON_VOLATILE, BOOTSERVICE_ACCESS, dan RUNTIME_ACCESS.",
+            "Dilindungi dari modifikasi tanpa autentikasi; perubahan pada variabel keamanan memerlukan tanda tangan kriptografi yang diverifikasi oleh Platform Key atau KEK."
           ],
-          "securityImpact": "Jika NVRAM rusak atau disetel ulang via jumper CMOS, mode pengaturan Secure Boot dapat aktif dan mengizinkan OS tanpa tanda tangan dimuat.",
-          "cliExplanation": "Membaca variabel basis data tanda tangan resmi (db) dari NVRAM UEFI."
+          "securityImpact": "Jika NVRAM rusak atau diatur ulang melalui jumper CMOS atau pelepasan baterai, mode pengaturan (setup mode) Secure Boot dapat aktif sehingga sementara mengizinkan sistem operasi tanpa tanda tangan untuk melakukan boot. Vendor motherboard modern menggunakan flash tahan manipulasi atau perlindungan TPM perangkat keras untuk mencegah penulisan ulang NVRAM yang berbahaya.",
+          "cliExplanation": "Membaca variabel mentah basis data tanda tangan resmi yang tersimpan di dalam NVRAM UEFI."
         },
         "db": {
           "title": "db (Basis Data Tanda Tangan)",
-          "subtitle": "Daftar Tanda Tangan & Sertifikat Resmi UEFI yang Diizinkan",
-          "overview": "Basis Data Tanda Tangan (db) adalah whitelist sertifikat kriptografi dan hash biner terpercaya di NVRAM UEFI. Saat komputer menyala, firmware memeriksa tanda tangan digital aplikasi EFI sebelum mengizinkan eksekusi.",
+          "subtitle": "Tanda Tangan Resmi UEFI & Daftar Putih Sertifikat",
+          "overview": "Basis Data Tanda Tangan (Signature Database, db) adalah daftar putih (whitelist) sertifikat kriptografi tepercaya dan hash biner yang tertanam di dalam NVRAM UEFI. Saat sistem mulai menyala, firmware UEFI memeriksa tanda tangan digital setiap aplikasi EFI (seperti Windows Boot Manager, bootia32.efi, atau shimx64.efi) dan PCIe Option ROM. Jika tanda tangan biner tersebut terhubung dalam rantai ke sertifikat di dalam db—atau hash SHA-256 persisnya cocok dengan entri di dalam db—firmware mengizinkan eksekusi.",
           "keyPoints": [
-            "Berisi sertifikat X.509 dan hash biner (SHA-256) resmi sebelum pemuatan OS.",
-            "Dimuat sejak awal oleh pabrikan dengan sertifikat produksi Microsoft.",
-            "Hanya dapat diperbarui menggunakan kunci dari basis data KEK."
+            "Berisi sertifikat X.509 dan hash biner (SHA-256, SHA-384, SHA-512) yang diotorisasi untuk dieksekusi pada tahap pra-boot.",
+            "Umumnya dimuat sebelumnya oleh OEM dengan Microsoft Windows Production PCA 2011/2023 dan Microsoft Corporation UEFI CA.",
+            "Hanya dapat diperbarui apabila muatan pembaruannya ditandatangani oleh kunci valid yang terdapat dalam basis data Key Exchange Key (KEK)."
           ],
-          "securityImpact": "Pembaruan sertifikat UEFI CA 2011 ke versi 2023 sangat penting karena sertifikat lama kedaluwarsa pada tahun 2026.",
-          "cliExplanation": "Memverifikasi apakah Secure Boot aktif dan memberlakukan whitelist db."
+          "securityImpact": "Penggantian Microsoft UEFI CA asli tahun 2011 dengan sertifikat tahun 2023 sangat krusial karena sertifikat tahun 2011 kedaluwarsa pada tahun 2026. Tanpa sertifikat db modern, bootloader dan Option ROM masa depan akan gagal melewati verifikasi tanda tangan.",
+          "cliExplanation": "Memastikan apakah Secure Boot aktif dan menegakkan tanda tangan dari daftar putih db."
         },
         "dbx": {
           "title": "dbx (Basis Data Tanda Tangan Terlarang)",
-          "subtitle": "Daftar Pencabutan Pre-Boot UEFI",
-          "overview": "Basis Data Tanda Tangan Terlarang (dbx) berfungsi sebagai daftar pencabutan (blacklist) firmware UEFI untuk memblokir bootloader yang rentan atau disusupi.",
+          "subtitle": "Daftar Hitam Pencabutan Pra-Boot UEFI",
+          "overview": "Basis Data Tanda Tangan Terlarang (Forbidden Signature Database, dbx) berfungsi sebagai daftar pencabutan pra-boot untuk firmware UEFI. Basis data ini berisi hash dari bootloader yang telah disusupi, biner EFI yang rentan, serta sertifikat penandatanganan yang telah dicabut. Meskipun sebuah berkas eksekusi EFI memiliki tanda tangan valid yang berantai ke CA tepercaya dalam daftar putih db, firmware tetap akan menolak mengeksekusinya apabila hash atau sidik jari sertifikatnya tercantum di dalam dbx.",
           "keyPoints": [
-            "Memiliki prioritas mutlak di atas db: eksekusi langsung dibatalkan jika ada di dbx.",
-            "Menyimpan hash biner EFI rentan dan bootkit berbahaya.",
-            "Didistribusikan melalui Windows Update dan pembaruan BIOS."
+            "Memiliki prioritas mutlak di atas db: jika suatu biner terdapat baik di db maupun di dbx, eksekusinya langsung diblokir.",
+            "Menyimpan hash EFI_CERT_SHA256_GUID dari boot manager yang rentan dan bootkit.",
+            "Didistribusikan melalui Windows Update, Linux Vendor Firmware Service (LVFS), dan pembaruan UEFI BIOS."
           ],
-          "securityImpact": "Bootkit BlackLotus mengeksploitasi celah boot manager lama. Penanganannya membutuhkan penambahan hash ke dbx.",
-          "cliExplanation": "Menampilkan ukuran daftar pencabutan dbx dalam firmware sistem."
+          "securityImpact": "Pada tahun 2023, bootkit UEFI BlackLotus mengeksploitasi CVE-2022-21894 (Baton Drop) untuk melewati Secure Boot dengan memuat boot manager Microsoft versi lama yang rentan. Mitigasi BlackLotus mengharuskan penambahan hash biner yang rentan tersebut ke dalam basis data dbx.",
+          "cliExplanation": "Menampilkan ukuran dalam byte dari daftar pencabutan dbx saat ini yang tersimpan di firmware sistem."
         },
         "kek": {
-          "title": "KEK (Kunci Pertukaran Kunci)",
-          "subtitle": "Otoritas Basis Data untuk Memperbarui Tanda Tangan Pre-Boot",
-          "overview": "Basis data Key Exchange Key (KEK) menjadi jembatan perantara dalam hierarki kepercayaan UEFI antara produsen perangkat keras dan pembaruan vendor OS.",
+          "title": "KEK (Key Exchange Key)",
+          "subtitle": "Otoritas Basis Data untuk Memperbarui Tanda Tangan Pra-Boot",
+          "overview": "Basis data Key Exchange Key (KEK) membentuk lapisan tengah dalam hierarki kepercayaan UEFI Secure Boot. Basis data ini berisi sertifikat yang memiliki wewenang untuk mengirimkan pembaruan bertanda tangan kriptografi ke Basis Data Tanda Tangan (db) dan Basis Data Tanda Tangan Terlarang (dbx). Vendor sistem operasi, seperti Microsoft dan Canonical, memegang kunci privat KEK sehingga mereka dapat mendistribusikan pembaruan pencabutan keamanan ke jutaan perangkat tanpa memerlukan campur tangan vendor motherboard.",
           "keyPoints": [
-            "Menghubungkan Platform Key dengan pembaruan vendor sistem operasi.",
-            "Memungkinkan OS menambahkan hash pencabutan dbx secara dinamis.",
-            "Pembaruan wajib ditandatangani sertifikat KEK yang sah."
+            "Menjembatani vendor perangkat keras OEM (Platform Key) dan pembaruan vendor sistem operasi (db/dbx).",
+            "Memungkinkan pembaruan OS menambahkan hash yang dicabut (dbx) atau sertifikat root OS baru (db) secara dinamis.",
+            "Setiap pembaruan pada db atau dbx harus disertai muatan EFI_VARIABLE_AUTHENTICATION_2 terautentikasi yang ditandatangani oleh sertifikat KEK."
           ],
-          "securityImpact": "Tanpa sertifikat KEK yang sah, sistem tidak dapat menerima pembaruan pencabutan firmware jarak jauh.",
-          "cliExplanation": "Mengambil daftar tanda tangan KEK dari NVRAM UEFI."
+          "securityImpact": "Tanpa sertifikat KEK valid yang sesuai dengan vendor OS, sistem tidak dapat menerima pembaruan pencabutan Secure Boot jarak jauh, sehingga membiarkan firmware rentan terhadap eksploitasi bootkit yang telah diketahui.",
+          "cliExplanation": "Mengambil daftar tanda tangan Key Exchange Key dari NVRAM UEFI."
         },
         "pk": {
-          "title": "PK (Kunci Platform)",
-          "subtitle": "Root of Trust Perangkat Keras untuk UEFI Secure Boot",
-          "overview": "Kunci Platform (Platform Key, PK) adalah puncak tertinggi kepercayaan UEFI Secure Boot yang dipasang oleh produsen perangkat keras untuk mengunci firmware ke User Mode.",
+          "title": "PK (Platform Key)",
+          "subtitle": "Akar Kepercayaan Perangkat Keras untuk UEFI Secure Boot",
+          "overview": "Platform Key (PK) merepresentasikan puncak tertinggi kepercayaan dalam arsitektur UEFI Secure Boot. Biasanya dipasang oleh produsen motherboard atau perangkat (OEM) selama proses produksi, PK menetapkan hubungan kepemilikan antara pemilik platform dan firmware perangkat keras. PK mengontrol masuknya sistem ke Setup Mode serta mengatur pembaruan baik terhadap PK itu sendiri maupun terhadap basis data Key Exchange Key (KEK).",
           "keyPoints": [
-            "Hanya ada satu Kunci Platform aktif dalam satu waktu.",
-            "Mengontrol transisi antara Setup Mode dan User Mode.",
-            "Menghapus PK memungkinkan pengguna mendaftarkan kunci kustom mereka sendiri."
+            "Sertifikat root tunggal: hanya satu Platform Key yang dapat aktif di dalam sistem pada satu waktu.",
+            "Mengalihkan firmware dari Setup Mode (terbuka, dapat disesuaikan) ke User Mode (terkunci, ditegakkan).",
+            "Menghapus PK akan mengatur ulang firmware ke Setup Mode, memungkinkan pengguna atau administrator perusahaan mendaftarkan kunci Secure Boot kustom."
           ],
-          "securityImpact": "Kebocoran kunci privat PK memberi penyerang kendali penuh untuk memalsukan pembaruan firmware.",
-          "cliExplanation": "Memeriksa Kunci Platform yang terpasang di NVRAM motherboard."
+          "securityImpact": "Kepemilikan kunci privat PK memberikan otoritas penuh atas kebijakan keamanan firmware sistem. Jika kunci privat PK bocor (seperti pada kebocoran kunci penandatanganan firmware MSI tahun 2023), penyerang dapat memalsukan pembaruan resmi pada komponen firmware.",
+          "cliExplanation": "Memeriksa Platform Key yang terdaftar di dalam NVRAM UEFI motherboard."
         },
         "efi": {
           "title": "UEFI / EFI",
-          "subtitle": "Arsitektur Antarmuka Firmware Terpadu yang Dapat Diperluas",
-          "overview": "UEFI adalah standar industri modern antarmuka perangkat lunak antara OS dan firmware yang menggantikan BIOS warisan dengan dukungan GPT di atas 2 TB dan Secure Boot.",
+          "subtitle": "Arsitektur Unified Extensible Firmware Interface",
+          "overview": "Unified Extensible Firmware Interface (UEFI, secara historis disebut EFI) adalah spesifikasi industri modern yang mendefinisikan antarmuka perangkat lunak antara sistem operasi dan firmware platform. Menggantikan BIOS IBM PC 16-bit warisan yang berasal dari tahun 1981, UEFI menyediakan lingkungan pra-boot 32-bit/64-bit modular dengan dukungan driver yang kaya, GUID Partition Tables (GPT) yang mendukung drive di atas 2 TB, waktu boot yang cepat, serta mesin verifikasi kriptografi yang dikenal sebagai Secure Boot.",
           "keyPoints": [
-            "Menggantikan interupsi BIOS lama dengan protokol modular.",
-            "Mendukung partisi GPT tanpa batasan 2,2 TB.",
-            "Menjalankan driver pre-boot untuk penyimpanan NVMe dan jaringan."
+            "Menggantikan interupsi real-mode BIOS lama INT 13h/INT 10h dengan protokol modular berbahasa C.",
+            "Mendukung pemartisian GPT, menghapus batas 4 partisi dan batas 2,2 TB pada disk MBR.",
+            "Menjalankan driver pra-boot (Option ROM) untuk drive NVMe, GPU, dan kartu jaringan (boot PXE/HTTP)."
           ],
-          "securityImpact": "Kode berbahaya pada level UEFI (rootkit) tidak dapat dideteksi oleh antivirus sistem operasi.",
-          "cliExplanation": "Menampilkan apakah sistem operasi di-boot di bawah UEFI modern."
+          "securityImpact": "Karena UEFI dieksekusi dengan akses ring 0/SMM (System Management Mode) sebelum kernel dimuat, kode berbahaya yang berjalan pada lapisan ini (rootkit UEFI) sepenuhnya tidak terlihat oleh antivirus sistem operasi maupun telemetri kernel.",
+          "cliExplanation": "Menampilkan apakah OS Windows di-boot di bawah UEFI modern atau BIOS lama."
         },
         "uac": {
-          "title": "UAC (Kontrol Akun Pengguna)",
+          "title": "UAC (User Account Control)",
           "subtitle": "Batas Hak Istimewa Administratif Windows",
-          "overview": "User Account Control (UAC) menerapkan prinsip hak istimewa terendah di Windows untuk membatasi eksekusi administratif tanpa izin pengguna.",
+          "overview": "User Account Control (UAC) adalah mekanisme keamanan Windows yang menegakkan prinsip hak istimewa paling rendah (least privilege). Bahkan saat masuk sebagai administrator, aplikasi secara bawaan berjalan di bawah token pengguna standar. Ketika sebuah aplikasi mencoba menjalankan tugas tingkat sistem—seperti mengakses variabel NVRAM UEFI, memodifikasi penyimpanan sertifikat LocalMachine, atau memasang driver—Windows menghentikan tindakan tersebut dan menampilkan dialog peningkatan hak akses pada secure desktop.",
           "keyPoints": [
-            "Memisahkan izin administratif dari sesi harian pengguna biasa.",
-            "Menggunakan Secure Desktop untuk mencegah injeksi klik otomatis.",
-            "Wajib untuk mengakses API tingkat rendah Windows dan penyimpanan sertifikat mesin."
+            "Memisahkan izin administratif dari alur kerja operasional harian standar.",
+            "Menggunakan Secure Desktop (layar diredupkan) untuk mencegah serangan injeksi papan ketik/tetikus sintetis.",
+            "Sangat penting untuk mengakses Win32 API berhak istimewa seperti GetFirmwareEnvironmentVariableEx dan CertOpenStore."
           ],
-          "securityImpact": "Tanpa UAC, program jahat dapat secara diam-diam memodifikasi sertifikat root terpercaya di seluruh sistem.",
-          "cliExplanation": "Memeriksa apakah sesi saat ini memiliki hak istimewa administrator penuh."
+          "securityImpact": "Tanpa UAC, skrip atau malware latar belakang apa pun yang berjalan dalam sesi pengguna dapat secara diam-diam membaca dan menimpa sertifikat root tepercaya di seluruh mesin atau memodifikasi konfigurasi boot sistem tanpa pemberitahuan.",
+          "cliExplanation": "Memeriksa apakah sesi saat ini memegang hak istimewa administrator yang ditingkatkan."
         },
         "rootCa": {
-          "title": "Root CA (Otoritas Sertifikat Akar)",
-          "subtitle": "Jangkar Kepercayaan dalam Infrastruktur Kunci Publik (PKI)",
-          "overview": "Root CA adalah akar kepercayaan tertinggi dalam PKI. Sertifikat root ditandatangani sendiri (self-signed) dan disimpan dalam Trust Store sistem operasi dan peramban.",
+          "title": "Root CA (Otoritas Sertifikat Root)",
+          "subtitle": "Jangkar Kepercayaan dalam Infrastruktur Kunci Publik",
+          "overview": "Otoritas Sertifikat Root (Root Certificate Authority, Root CA) adalah jangkar kepercayaan tertinggi dalam Infrastruktur Kunci Publik (PKI). Sertifikat Root CA ditandatangani sendiri (self-signed): kolom Subject dan Issuer-nya identik, dan tanda tangannya diverifikasi menggunakan kunci publik yang tertanam di dalamnya sendiri. Sistem operasi (Windows, Linux, macOS) dan peramban web memelihara kumpulan Root CA yang telah diaudit sebelumnya yang dikenal sebagai 'Trust Stores'. Setiap sertifikat di dunia memperoleh validitasnya dengan berantai secara kriptografi kembali ke salah satu jangkar kepercayaan root ini.",
           "keyPoints": [
-            "Ditandatangani sendiri: Nama Subject dan Issuer identik.",
-            "Ekstensi Basic Constraints bertanda Critical dengan nilai cA:TRUE.",
-            "Disimpan secara offline dan terisolasi dalam modul keamanan perangkat keras (HSM)."
+            "Ditandatangani sendiri: Distinguished Name (DN) pada Subject dan Issuer cocok secara persis.",
+            "Memiliki ekstensi Basic Constraints yang ditandai Critical dengan nilai cA:TRUE.",
+            "Disimpan dalam isolasi fisik dan kriptografi yang ekstrem (offline, modul keamanan perangkat keras / HSM, air-gapped)."
           ],
-          "securityImpact": "Jika kunci privat Root CA bocor, penyerang dapat menerbitkan sertifikat palsu untuk situs web mana pun di dunia.",
-          "cliExplanation": "Memverifikasi identitas Subject dan Issuer untuk memastikan sertifikat root."
+          "securityImpact": "Jika kunci privat Root CA disusupi, penyerang dapat menerbitkan sertifikat palsu yang dipercaya untuk domain, pengguna, atau penerbit penandatanganan kode mana pun di Bumi tanpa memicu peringatan peramban. Root CA yang disusupi segera dicabut kepercayaannya oleh vendor-vendor besar melalui pembaruan darurat peramban dan sistem operasi.",
+          "cliExplanation": "Memverifikasi bahwa Subject dan Issuer identik, mengonfirmasi sertifikat root yang ditandatangani sendiri."
         },
         "intermediateCa": {
-          "title": "Intermediate CA (CA Menengah)",
-          "subtitle": "Otoritas Penerbit Operasional yang Melindungi Root CA",
-          "overview": "Intermediate CA berada di antara Root CA dan sertifikat daun untuk menjalankan tugas penandatanganan harian sehingga Root CA tetap aman secara offline.",
+          "title": "Intermediate CA (CA Subordinat)",
+          "subtitle": "Otoritas Penerbit Operasional yang Melindungi Root",
+          "overview": "Otoritas Sertifikat Menengah (Intermediate Certificate Authority, juga dikenal sebagai Subordinate CA atau Issuing CA) adalah sertifikat yang berada di antara Root CA dan sertifikat Leaf entitas akhir. Untuk melindungi kunci privat Root CA yang sangat sensitif dari paparan, Root CA menandatangani satu atau beberapa Intermediate CA, lalu disimpan secara offline di dalam brankas aman. Intermediate CA menangani penandatanganan, perpanjangan, dan pencabutan sertifikat sehari-hari bagi pengguna akhir dan situs web.",
           "keyPoints": [
-            "Ditandatangani oleh Root CA atau CA perantara di atasnya.",
-            "Memiliki Basic Constraints cA:TRUE.",
-            "Wajib dikirimkan oleh server web selama jabat tangan TLS."
+            "Ditandatangani oleh Root CA atau perantara tingkat lebih tinggi dalam hierarki sertifikat.",
+            "Menyertakan Basic Constraints: Critical, cA:TRUE, sering kali disertai pathLenConstraint yang membatasi kedalaman rekursi.",
+            "Server harus mengirimkan sertifikat intermediate bersama sertifikat leaf-nya selama jabat tangan TLS."
           ],
-          "securityImpact": "Jika Intermediate CA disusupi, sertifikat tersebut dapat dicabut secara terpisah tanpa mengganti Root CA di seluruh dunia.",
-          "cliExplanation": "Memvalidasi rantai sertifikat lengkap dari daun hingga akar."
+          "securityImpact": "Jika sebuah Intermediate CA disusupi, sertifikat tersebut dapat dicabut secara individual melalui CRL atau OCSP tanpa harus mencabut dan mengganti Root CA tingkat atas serta mendistribusikannya kembali ke miliaran perangkat klien di seluruh dunia.",
+          "cliExplanation": "Memvalidasi rantai lengkap mulai dari leaf melalui intermediate hingga ke root."
         },
         "leafCert": {
           "title": "Sertifikat Daun (End-Entity)",
           "subtitle": "Sertifikat Terminal untuk Server, Pengguna, dan Tanda Tangan",
-          "overview": "Sertifikat daun adalah sertifikat di ujung rantai kepercayaan yang diterbitkan untuk domain situs web, email, atau penandatanganan kode.",
+          "overview": "Sertifikat Daun (Leaf Certificate, juga disebut sertifikat End-Entity) adalah sertifikat terakhir di ujung rantai kepercayaan. Sertifikat ini diterbitkan untuk entitas tertentu—seperti nama domain (TLS server web), alamat email (S/MIME), individu (autentikasi kartu pintar), atau pengembang perangkat lunak (penandatanganan kode). Sertifikat daun tidak dapat digunakan untuk menandatangani atau menerbitkan sertifikat lain.",
           "keyPoints": [
-            "Memiliki Basic Constraints cA:FALSE.",
-            "Key Usage membatasi fungsi kriptografi.",
-            "SAN (Subject Alternative Name) mendefinisikan domain yang sah."
+            "Basic Constraints bernilai cA:FALSE (atau ekstensi tersebut dihilangkan sama sekali).",
+            "Key Usage membatasi kemampuan kriptografi (mis. digitalSignature, keyEncipherment).",
+            "Extended Key Usage (EKU) menentukan peran spesifik (mis. Server Authentication, Code Signing).",
+            "Subject Alternative Names (SAN) mendefinisikan nama host, alamat IP, atau email yang sah."
           ],
-          "securityImpact": "Masa berlaku sertifikat daun sengaja dibuat pendek (90-398 hari) untuk membatasi dampak kebocoran kunci.",
-          "cliExplanation": "Menghubungi server jarak jauh dan mencetak detail sertifikat daunnya."
+          "securityImpact": "Sertifikat daun memiliki masa berlaku singkat (umumnya 90 hingga 398 hari) guna membatasi paparan risiko apabila kunci privat bocor. Kegagalan memperbarui sertifikat daun sebelum kedaluwarsa menyebabkan gangguan layanan besar dan peringatan keamanan pada peramban.",
+          "cliExplanation": "Terhubung ke server jarak jauh dan mencetak detail lengkap hasil penguraian sertifikat daunnya."
         },
         "csr": {
           "title": "CSR (Permintaan Penandatanganan Sertifikat)",
           "subtitle": "Muatan Permintaan PKCS#10 untuk Penerbitan Sertifikat",
-          "overview": "CSR adalah pesan kriptografi terstandar yang diajukan pemohon ke CA untuk mendapatkan sertifikat digital tanpa perlu membocorkan kunci privat.",
+          "overview": "Permintaan Penandatanganan Sertifikat (Certificate Signing Request, CSR) adalah pesan kriptografi terstandar yang dikirimkan oleh pemohon kepada Otoritas Sertifikat untuk mengajukan sertifikat digital. Pesan ini berisi kunci publik pemohon, Distinguished Name (DN), Subject Alternative Names (SAN) yang diminta, serta ditandatangani sendiri secara digital menggunakan kunci privat pemohon. Tanda tangan ini memberikan Bukti Kepemilikan (Proof-of-Possession, PoP), yang membuktikan kepada CA bahwa pemohon memegang kunci privat pasangannya tanpa pernah mengirimkan atau mengekspos kunci privat itu sendiri.",
           "keyPoints": [
-            "Tidak pernah memuat kunci privat: hanya kunci publik dan data identitas pemohon.",
-            "Memiliki tanda tangan internal sebagai Proof-of-Possession.",
-            "Diformat dalam teks Base64 PEM."
+            "Tidak pernah berisi kunci privat: hanya kunci publik dan metadata pemohon yang disertakan.",
+            "Berisi tanda tangan kriptografi yang dibuat oleh kunci privat untuk membuktikan kepemilikan (Proof-of-Possession).",
+            "Dienkode dalam format Base64 PEM dengan header '-----BEGIN CERTIFICATE REQUEST-----'."
           ],
-          "securityImpact": "CSR aman dikirim melalui internet terbuka karena tidak mengandung rahasia apa pun.",
-          "cliExplanation": "Memeriksa CSR dan memverifikasi tanda tangan Proof-of-Possession di dalamnya."
+          "securityImpact": "CSR aman dikirimkan melalui jaringan publik karena tidak mengandung rahasia apa pun. Namun, jika penyerang berhasil memperdaya CA agar menandatangani CSR dengan kunci yang dikuasainya untuk domain yang bukan miliknya, penyerang dapat melakukan serangan man-in-the-middle.",
+          "cliExplanation": "Mengurai CSR dan memverifikasi tanda tangan kriptografi Proof-of-Possession yang terkandung di dalamnya."
         },
         "crl": {
           "title": "CRL (Daftar Pencabutan Sertifikat)",
-          "subtitle": "Daftar Distribusi Berkala Nomor Seri yang Dicabut",
-          "overview": "CRL adalah daftar berkala yang ditandatangani CA berisikan nomor seri sertifikat yang dicabut sebelum masa kedaluwarsanya berakhir.",
+          "subtitle": "Daftar Distribusi Berkala Nomor Seri Dicabut yang Ditandatangani CA",
+          "overview": "Daftar Pencabutan Sertifikat (Certificate Revocation List, CRL) adalah daftar terautentikasi yang diterbitkan secara berkala oleh Otoritas Sertifikat yang mencantumkan sertifikat-sertifikat digital yang telah dicabut sebelum tanggal kedaluwarsa yang direncanakan. Setiap entri dalam CRL menyebutkan nomor seri sertifikat, tanggal pencabutan, dan kode alasan opsional (seperti keyCompromise atau affiliationChanged). Seluruh daftar tersebut ditandatangani secara digital oleh CA.",
           "keyPoints": [
-            "Dirujuk melalui ekstensi CRL Distribution Points (CDP).",
-            "Memiliki stempel waktu 'thisUpdate' dan 'nextUpdate'.",
-            "Dapat berukuran puluhan megabita untuk CA besar."
+            "Dirujuk di dalam sertifikat melalui ekstensi CRL Distribution Points (CDP).",
+            "Ditandatangani dan diberi stempel waktu dengan jendela masa berlaku 'thisUpdate' dan 'nextUpdate'.",
+            "Dapat bersifat penuh (Base CRL) atau bertahap/inkremental (Delta CRL) untuk menghemat bandwidth."
           ],
-          "securityImpact": "Ukuran CRL yang besar menimbulkan latensi pada koneksi TLS dan risiko celah keamanan pada masa tunggu pembaruan.",
-          "cliExplanation": "Mem-parsing berkas biner DER CRL dan menampilkan nomor seri yang dicabut."
+          "securityImpact": "CRL dapat tumbuh sangat besar (puluhan megabita untuk CA besar), menyebabkan latensi dan beban memori selama jabat tangan TLS. Karena klien menyimpan cache CRL hingga nextUpdate, terdapat jendela kerentanan di mana sertifikat yang baru saja dicabut mungkin masih diterima.",
+          "cliExplanation": "Mengurai Daftar Pencabutan Sertifikat DER biner dan menampilkan semua nomor seri yang telah dicabut."
         },
         "ocsp": {
-          "title": "OCSP (Protokol Status Sertifikat Daring)",
+          "title": "OCSP (Online Certificate Status Protocol)",
           "subtitle": "Protokol Kueri Validitas Sertifikat Waktu Nyata",
-          "overview": "OCSP adalah protokol HTTP ringan yang memungkinkan peramban menanyakan status validitas satu sertifikat tertentu secara langsung ke responder CA.",
+          "overview": "Online Certificate Status Protocol (OCSP) adalah protokol jaringan berbasis HTTP yang dirancang sebagai alternatif ringan dan waktu nyata terhadap pengunduhan CRL yang berukuran besar. Alih-alih mengambil seluruh daftar semua sertifikat yang dicabut, klien mengirimkan kueri kecil berisi nomor seri sertifikat target dan hash penerbit ke responder OCSP milik CA. Responder mengembalikan respons bertanda tangan yang menyatakan apakah sertifikat tersebut berstatus 'good', 'revoked', atau 'unknown'.",
           "keyPoints": [
-            "Alamat URL responder terdapat dalam ekstensi AIA sertifikat.",
-            "Memberikan status seketika (good, revoked, atau unknown).",
-            "Jawaban ditandatangani secara digital oleh responder resmi."
+            "Terletak di dalam ekstensi Authority Information Access (AIA) pada sertifikat.",
+            "Memberikan status seketika tanpa perlu mentransfer daftar pencabutan berukuran megabita.",
+            "Respons ditandatangani secara digital dengan sertifikat OCSP Signing yang diotorisasi oleh CA."
           ],
-          "securityImpact": "Banyak peramban menggunakan soft-fail jika responder tidak merespons, yang dapat disalahgunakan penyerang jaringan.",
-          "cliExplanation": "Memeriksa status pencabutan sertifikat secara langsung via OCSP dan CRL."
+          "securityImpact": "OCSP menimbulkan masalah privasi (CA mengetahui domain apa saja yang dikunjungi klien secara waktu nyata) serta beban kinerja tambahan (perjalanan bolak-balik jaringan ekstra selama negosiasi TLS). Untuk menghindari terganggunya penjelajahan web saat responder sedang luring, banyak klien secara bawaan menggunakan 'soft-fail' dengan mengabaikan server OCSP yang gagal dihubungi.",
+          "cliExplanation": "Melakukan verifikasi pencabutan jaringan penuh terhadap titik akhir AIA OCSP dan CDP CRL secara langsung."
         },
         "ocspStapling": {
           "title": "OCSP Stapling",
           "subtitle": "Ekstensi Permintaan Status Sertifikat TLS Tanpa Latensi",
-          "overview": "OCSP Stapling memungkinkan server web mengunduh respons status OCSP dari CA secara berkala dan melampirkannya langsung dalam jabat tangan TLS.",
+          "overview": "OCSP Stapling (secara formal merupakan ekstensi TLS Certificate Status Request) mengatasi kelemahan latensi dan privasi pada OCSP tradisional. Dengan stapling diaktifkan, server web itu sendiri secara berkala menanyakan responder OCSP milik CA di latar belakang, menyimpan cache respons OCSP yang telah ditandatangani secara kriptografi, lalu 'menyematkannya' (staples) langsung ke dalam jabat tangan TLS (pesan CertificateStatus) yang dikirimkan ke klien yang terhubung.",
           "keyPoints": [
-            "Menghilangkan latensi kueri tambahan di sisi klien.",
-            "Melindungi privasi pengunjung situs dari pemantauan pihak ketiga.",
-            "Dapat diwajibkan menggunakan ekstensi OCSP Must-Staple."
+            "Menghilangkan latensi pencarian di sisi klien selama jabat tangan TLS.",
+            "Melindungi privasi klien: CA tidak pernah melihat alamat IP maupun kebiasaan penjelajahan klien.",
+            "Dapat ditegakkan secara wajib menggunakan ekstensi OCSP Must-Staple (RFC 7633) di dalam sertifikat."
           ],
-          "securityImpact": "Tanpa Must-Staple, peretas jaringan dapat memblokir respons stapled dan memaksa klien melanjutkan tanpa verifikasi.",
-          "cliExplanation": "Memeriksa apakah server menyertakan respons OCSP stapled saat jabat tangan TLS."
+          "securityImpact": "Tanpa Must-Staple, penyerang yang melakukan serangan man-in-the-middle dapat memblokir respons yang disematkan tersebut, sehingga membuat klien soft-fail tetap melanjutkan koneksi tanpa verifikasi. Must-Staple memaksa klien menghentikan jabat tangan apabila respons stapled yang valid tidak disertakan.",
+          "cliExplanation": "Memeriksa apakah server jarak jauh mengirimkan respons OCSP stapled selama jabat tangan TLS."
         },
         "ctlog": {
-          "title": "Log Transparansi Sertifikat (CT)",
-          "subtitle": "Buku Besar Sertifikat Append-Only yang Dapat Diaudit Secara Publik",
-          "overview": "Certificate Transparency (CT) adalah jaringan buku besar publik berbasis Merkle Tree tempat setiap sertifikat TLS publik wajib dicatat sebelum dipercaya.",
+          "title": "Log Certificate Transparency (CT)",
+          "subtitle": "Buku Besar Sertifikat Append-Only yang Dapat Diaudit Publik",
+          "overview": "Certificate Transparency (CT) adalah kerangka kerja terbuka dan jaringan buku besar yang dapat diaudit secara publik, hanya-tambah (append-only), serta terverifikasi secara kriptografi (CT Logs) yang dikelola oleh operator tepercaya seperti Google, Cloudflare, dan DigiCert. Setiap kali CA menerbitkan sertifikat SSL/TLS, CA wajib mengirimkannya ke beberapa log CT independen. Sebagai balasannya, log memberikan Signed Certificate Timestamps (SCT) yang membuktikan bahwa sertifikat tersebut telah tercatat secara publik.",
           "keyPoints": [
-            "Mencegah manipulasi catatan masa lalu berkat struktur Merkle Tree.",
-            "Peramban menolak sertifikat publik yang tidak memiliki bukti SCT.",
-            "Membantu pemilik domain mendeteksi sertifikat palsu seketika."
+            "Dibangun di atas struktur hash kriptografi Merkle Tree yang mencegah perubahan atau penghapusan secara surut.",
+            "Peramban (Chrome, Edge, Safari) menolak mempercayai sertifikat TLS publik yang tidak memiliki bukti SCT yang valid.",
+            "Memungkinkan pemilik domain memantau log CT secara waktu nyata dan menemukan sertifikat liar atau tidak sah."
           ],
-          "securityImpact": "Menghentikan penerbitan sertifikat rahasia oleh otoritas sertifikat yang disusupi atau lalai.",
-          "cliExplanation": "Mencari catatan log transparansi publik crt.sh untuk domain tertentu."
+          "securityImpact": "Log CT mengubah lanskap keamanan web dengan mengakhiri era di mana CA nakal atau tersusupi dapat secara diam-diam menerbitkan sertifikat untuk spionase atau serangan MITM. Setiap sertifikat yang diterbitkan oleh CA publik dapat dilihat secara terbuka oleh siapa saja dalam hitungan detik sejak dibuat.",
+          "cliExplanation": "Melakukan kueri ke agregator log CT publik crt.sh untuk mencari catatan publik sertifikat yang diterbitkan bagi suatu domain."
         },
         "x509": {
           "title": "Standar X.509",
           "subtitle": "Standar ITU-T untuk Sertifikat Kunci Publik",
-          "overview": "Rekomendasi X.509 mendefinisikan format standar internasional untuk sertifikat kunci publik dan validasi rantai yang menjadi fondasi keamanan internet.",
+          "overview": "Rekomendasi ITU-T X.509 mendefinisikan format standar internasional untuk sertifikat kunci publik dan model validasi jalur. Awalnya diterbitkan pada tahun 1988 sebagai bagian dari rekomendasi direktori X.500, X.509 Versi 3 (distandardisasi dalam RFC 5280) menyediakan fondasi kriptografi bagi Transport Layer Security (TLS/HTTPS) Internet, enkripsi email S/MIME, VPN IPsec, penandatanganan kode (code signing), dan UEFI Secure Boot.",
           "keyPoints": [
-            "Mendefinisikan bidang sertifikat: Nomor Seri, Penerbit, Validitas, Subjek, dan Ekstensi.",
-            "Menggunakan skema data ASN.1 independen platform.",
-            "Mendukung ekstensi modern SAN, Basic Constraints, dan Key Usage."
+            "Mendefinisikan struktur sertifikat: Nomor Seri (Serial), Penerbit (Issuer), Masa Berlaku (Not Before/Not After), Subjek (Subject), Kunci Publik, dan Ekstensi.",
+            "Menggunakan Abstract Syntax Notation One (ASN.1) untuk mendefinisikan skema data yang independen dari arsitektur mesin.",
+            "Ekstensi V3 mencakup Subject Alternative Names, Basic Constraints, Key Usage, AIA, dan CDP."
           ],
-          "securityImpact": "Celah parsing ASN.1 di masa lalu pernah menyebabkan kerentanan pemalsuan tanda tangan kriptografi.",
-          "cliExplanation": "Menampilkan struktur data ASN.1 Tag-Length-Value (TLV) mentah dari sertifikat."
+          "securityImpact": "Ambiguitas dalam penguraian (parsing) ASN.1 secara historis telah menyebabkan kerentanan parah, seperti pemalsuan tanda tangan (CVE-2008-1386) dan penembusan validasi jalur. Implementasi modern menggunakan pustaka dekode ASN.1 DER yang ketat.",
+          "cliExplanation": "Menampilkan struktur data mentah tag-length-value (TLV) ASN.1 dari sebuah sertifikat X.509."
         },
         "pem": {
           "title": "PEM (Privacy Enhanced Mail)",
-          "subtitle": "Wadah Kriptografi Berenkode Teks Base64",
-          "overview": "PEM adalah format teks berbasis Base64 yang paling umum digunakan untuk menyimpan sertifikat, kunci privat, dan CSR dalam berkas konfigurasi.",
+          "subtitle": "Wadah Kriptografi Terenkode Teks Base64",
+          "overview": "Privacy Enhanced Mail (PEM) adalah format pengkodean berbasis teks yang digunakan di mana-mana untuk merepresentasikan sertifikat kriptografi, kunci privat, dan CSR. Meskipun standar email aman PEM tahun 1993 itu sendiri telah digantikan oleh S/MIME, format pengkodeannya tetap bertahan. Sebuah berkas PEM membungkus data biner mentah DER ASN.1 ke dalam karakter Base64, diapit oleh baris pembatas ASCII yang mudah dibaca manusia seperti '-----BEGIN CERTIFICATE-----'.",
           "keyPoints": [
-            "Berbasis teks ASCII: aman disalin dan ditempelkan dalam berkas teks.",
-            "Dikelilingi baris pembatas seperti '-----BEGIN CERTIFICATE-----'.",
-            "Mendukung penggabungan beberapa sertifikat rantai dalam satu berkas."
+            "Format berbasis teks ASCII: aman untuk salin-tempel, pengiriman email, dan berkas konfigurasi.",
+            "Dibungkus di antara baris batas yang jelas yang menunjukkan jenis objek (CERTIFICATE, RSA PRIVATE KEY, dll.).",
+            "Mendukung berkas bundel yang berisi beberapa sertifikat yang digabungkan secara berurutan (rantai sertifikat)."
           ],
-          "securityImpact": "Kunci privat dalam format teks rawan tidak sengaja terunggah ke repositori publik dan harus dilindungi hak akses ketat.",
-          "cliExplanation": "Mengonversi berkas sertifikat biner DER menjadi teks Base64 PEM."
+          "securityImpact": "Mudah dilihat dan dimanipulasi, tetapi kunci privat sensitif dalam format PEM sangat mudah secara tidak sengaja terunggah ke repositori Git publik atau tertempel ke saluran obrolan. Kunci produksi harus disimpan dengan izin sistem berkas yang ketat (mis. chmod 600).",
+          "cliExplanation": "Mengonversi sertifikat DER biner menjadi berkas teks Base64 PEM standar."
         },
         "der": {
           "title": "DER (Distinguished Encoding Rules)",
-          "subtitle": "Format Serialisasi Biner Kanonis ASN.1",
-          "overview": "DER adalah standar pengkodean biner deterministik untuk struktur ASN.1 yang memastikan satu struktur data hanya menghasilkan satu representasi biner unik.",
+          "subtitle": "Format Serialisasi Biner ASN.1 Kanonis",
+          "overview": "Distinguished Encoding Rules (DER) adalah standar serialisasi biner yang ketat dan tidak ambigu untuk struktur data ASN.1. Berbeda dengan Basic Encoding Rules (BER) yang mengizinkan beberapa pengkodean alternatif untuk data yang sama (seperti format panjang byte variabel), DER menegakkan aturan pengkodean kanonis yang eksak sehingga setiap struktur data menghasilkan tepat satu aliran byte unik. Sifat ini wajib dimiliki untuk tanda tangan digital.",
           "keyPoints": [
-            "Format biner murni: ukuran lebih kecil dan pemrosesan lebih cepat dibanding PEM.",
-            "Deterministik: memastikan hash tanda tangan digital selalu identik.",
-            "Format bawaan Windows (.cer) dan keystore Java."
+            "Format biner murni: ukuran lebih ringkas dan penguraian lebih cepat dibandingkan PEM berbasis teks.",
+            "Deterministik: memastikan bahwa proses hashing sertifikat menghasilkan digest yang identik di semua platform.",
+            "Format standar yang digunakan secara bawaan di dalam Windows (berkas .cer), keystore Java, dan token perangkat keras."
           ],
-          "securityImpact": "Format biner DER tidak dapat disalin langsung ke editor teks biasa tanpa risiko kerusakan berkas.",
-          "cliExplanation": "Mengonversi sertifikat teks Base64 PEM ke dalam format biner murni DER."
+          "securityImpact": "Karena DER berbentuk biner, format ini tidak dapat ditempelkan secara aman ke editor teks biasa atau parameter kueri HTTP tanpa mengalami kerusakan data. Data harus didekode atau dienkode ke Base64 saat dikirimkan melalui media khusus teks.",
+          "cliExplanation": "Mengonversi sertifikat Base64 PEM menjadi format biner DER murni."
         }
       }
     }

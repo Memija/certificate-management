@@ -39,24 +39,24 @@
       "formats": "Formaty i Standardy"
     },
     "learningTerms": {
-      "nvram": "Nieulotna pamięć o dostępie swobodnym (NVRAM). W tym kontekście odnosi się do pamięci na płycie głównej, w której firmware UEFI przechowuje zmienne Secure Boot (takie jak klucze i podpisy), dzięki czemu pozostają one zapisane nawet po wyłączeniu komputera.",
-      "db": "Baza Podpisów (db). Zawiera listę kryptograficznych podpisów i certyfikatów, które są wyraźnie zaufane i dopuszczone do wykonania podczas procesu rozruchu (np. bootloader Windows).",
-      "dbx": "Baza Odwołanych Podpisów (dbx). Zawiera podpisy i certyfikaty, których wykonywanie jest surowo zabronione. Jeśli bootloader ma lukę, jego skrót jest tutaj dodawany w celu jego zablokowania.",
-      "kek": "Klucz Wymiany Kluczy (KEK). Baza certyfikatów używana do ustanowienia zaufania do aktualizacji Bazy Podpisów (db) oraz Bazy Odwołanych Podpisów (dbx).",
-      "pk": "Klucz Platformy (PK). Główny klucz zainstalowany przez producenta sprzętu. Służy do bezpiecznej aktualizacji bazy KEK i kontroluje tryb konfiguracji Secure Boot.",
-      "x509": "X.509 to standardowy format certyfikatów klucza publicznego. Certyfikaty te bezpiecznie wiążą klucz kryptograficzny z tożsamością, umożliwiając systemowi sprawdzenie, kto podpisał dane oprogramowanie.",
-      "efi": "Extensible Firmware Interface (lub UEFI). Nowoczesny interfejs oprogramowania między systemem operacyjnym a oprogramowaniem układowym platformy, zastępujący przestarzały BIOS. Egzekwuje on zasady Secure Boot.",
-      "uac": "Kontrola Konta Użytkownika (UAC). Funkcja zabezpieczeń systemu Windows, która wymaga zgody użytkownika na przyznanie aplikacji uprawnień administratora, zapobiegając nieautoryzowanym zmianom.",
-      "rootCa": "Główny Urząd Certyfikacji (Root CA). Najwyższy certyfikat w łańcuchu zaufania. Jest samopodpisany i system z natury mu ufa.",
-      "intermediateCa": "Pośredni Urząd Certyfikacji (Intermediate CA). Certyfikat stanowiący pomost między Root CA a certyfikatem końcowym, zapewniający dodatkową warstwę bezpieczeństwa.",
-      "leafCert": "Certyfikat Końcowy (Leaf Certificate). Certyfikat podmiotu końcowego używany przez określoną usługę lub wydawcę oprogramowania. Nie można go użyć do podpisywania innych certyfikatów.",
-      "crl": "Lista Odwołanych Certyfikatów (CRL). Lista certyfikatów cyfrowych, które zostały odwołane przez wystawiający Urząd Certyfikacji (CA) przed upływem terminu ich ważności i nie powinny być już zaufane.",
-      "csr": "Żądanie Podpisania Certyfikatu (CSR). Blok zakodowanego tekstu przekazywany Urzędowi Certyfikacji podczas ubiegania się o certyfikat. Zawiera informacje o wnioskodawcy i jego kluczu publicznym.",
-      "ocsp": "Protokół Statusu Certyfikatów Online (OCSP). Protokół internetowy służący do uzyskiwania statusu unieważnienia certyfikatu cyfrowego X.509, oferujący szybszą alternatywę dla CRL.",
-      "ocspStapling": "OCSP Stapling (RFC 6066). Rozszerzenie uzgadniania TLS, w którym serwer WWW buforuje odpowiedź OCSP od CA i dostarcza ją bezpośrednio klientowi, eliminując opóźnienia i chroniąc prywatność użytkowników.",
-      "ctlog": "Dziennik Certificate Transparency (CT). Zabezpieczony kryptograficznie, publicznie weryfikowalny rejestr wydanych certyfikatów. Pomaga w wykrywaniu błędnie wydanych lub złośliwych certyfikatów.",
-      "pem": "Privacy Enhanced Mail (PEM). Powszechny format plików do przechowywania kluczy kryptograficznych i certyfikatów, charakteryzujący się danymi zakodowanymi w Base64 ujętymi pomiędzy '---BEGIN...' a '---END...'.",
-      "der": "Distinguished Encoding Rules (DER). Format binarny certyfikatów i kluczy, nieczytelny jako zwykły tekst. Często używany w środowiskach Windows lub w magazynach kluczy Java."
+      "nvram": "Pamięć nieulotna RAM (NVRAM). W tym kontekście odnosi się do pamięci na płycie głównej, w której oprogramowanie układowe UEFI przechowuje zmienne Secure Boot (takie jak klucze i podpisy), dzięki czemu pozostają one zapisane nawet po wyłączeniu komputera.",
+      "db": "Baza Podpisów (db). Zawiera listę podpisów kryptograficznych i certyfikatów, którym jawnie się ufa i które są dopuszczone do wykonania podczas procesu rozruchu (np. bootloader Windows).",
+      "dbx": "Baza Odwołanych Podpisów (dbx). Zawiera podpisy i certyfikaty, których wykonywanie jest jawnie zabronione. Jeśli bootloader zawiera lukę w zabezpieczeniach, jego skrót jest tutaj dodawany w celu jego zablokowania.",
+      "kek": "Klucz Wymiany Kluczy (KEK). Baza certyfikatów używana do ustanowienia zaufania na potrzeby aktualizacji Bazy Podpisów (db) oraz Bazy Odwołanych Podpisów (dbx).",
+      "pk": "Klucz Platformy (PK). Główny klucz instalowany przez producenta sprzętu. Służy do bezpiecznego aktualizowania bazy Klucza Wymiany Kluczy (KEK) oraz kontroluje tryb konfiguracji Secure Boot.",
+      "x509": "X.509 to standardowy format certyfikatów klucza publicznego. Certyfikaty te bezpiecznie wiążą klucz kryptograficzny z tożsamością, umożliwiając systemowi zweryfikowanie, kto podpisał dane oprogramowanie.",
+      "efi": "Extensible Firmware Interface (lub UEFI). Nowoczesny interfejs programowy między systemem operacyjnym a oprogramowaniem układowym platformy, zastępujący przestarzały BIOS. Egzekwuje on mechanizm Secure Boot.",
+      "uac": "Kontrola Konta Użytkownika (UAC). Funkcja zabezpieczeń systemu Windows wymagająca zgody użytkownika na przyznanie aplikacji uprawnień administracyjnych, co zapobiega nieautoryzowanym zmianom.",
+      "rootCa": "Główny Urząd Certyfikacji (CA). Najwyższy certyfikat w łańcuchu zaufania. Jest samopodpisany i system z założenia mu ufa.",
+      "intermediateCa": "Pośredni Urząd Certyfikacji. Certyfikat stanowiący pomost między głównym urzędem Root CA a certyfikatem końcowym (liścia), zapewniający dodatkową warstwę bezpieczeństwa.",
+      "leafCert": "Certyfikat Końcowy (Leaf Certificate). Certyfikat podmiotu końcowego używany przez konkretną usługę lub wydawcę oprogramowania. Nie może być używany do podpisywania innych certyfikatów.",
+      "crl": "Lista Odwołanych Certyfikatów (CRL). Lista certyfikatów cyfrowych, które zostały unieważnione przez wystawiający je Urząd Certyfikacji (CA) przed planowaną datą wygaśnięcia i którym nie należy już ufać.",
+      "csr": "Żądanie Podpisania Certyfikatu (CSR). Blok zakodowanego tekstu przekazywany Urzędowi Certyfikacji podczas ubiegania się o certyfikat. Zawiera informacje o wnioskodawcy oraz jego klucz publiczny.",
+      "ocsp": "Protokół Statusu Certyfikatów Online (OCSP). Protokół internetowy służący do sprawdzania statusu unieważnienia certyfikatu cyfrowego X.509, oferujący szybszą alternatywę dla list CRL.",
+      "ocspStapling": "OCSP Stapling (RFC 6066). Rozszerzenie uzgadniania TLS, w którym serwer WWW buforuje odpowiedź OCSP z urzędu CA i dostarcza ją bezpośrednio klientowi, zapobiegając opóźnieniom i chroniąc prywatność użytkownika.",
+      "ctlog": "Dziennik Certificate Transparency (CT). Zabezpieczony kryptograficznie, publicznie weryfikowalny rejestr wydanych certyfikatów tylko do dopisywania (append-only). Pomaga wykrywać błędnie wydane lub złośliwe certyfikaty.",
+      "pem": "Privacy Enhanced Mail (PEM). Popularny format plików do przechowywania kluczy kryptograficznych i certyfikatów, charakteryzujący się danymi zakodowanymi w Base64 ujętymi pomiędzy '---BEGIN...' a '---END...'.",
+      "der": "Distinguished Encoding Rules (DER). Binarny format certyfikatów i kluczy, nieczytelny jako zwykły tekst. Często używany w środowiskach Windows oraz w magazynach kluczy Java."
     },
     "adminAccess": {
       "title": "Wymagany Dostęp Administratora",
@@ -1233,219 +1233,220 @@
       "topicDetails": {
         "nvram": {
           "title": "NVRAM (Pamięć nieulotna RAM)",
-          "subtitle": "Pamięć nieulotna UEFI dla zmiennych bezpieczeństwa rozruchu",
-          "overview": "Pamięć nieulotna RAM (NVRAM) to wyspecjalizowana pamięć trwała umieszczona bezpośrednio na płycie głównej komputera (zwykle w układzie SPI Flash wraz z BIOS-em UEFI). W mechanizmie Secure Boot przechowuje bazy kryptograficzne (PK, KEK, db, dbx) oraz konfiguracje bootloadera, zachowując dane po wyłączeniu zasilania.",
+          "subtitle": "Nieulotna pamięć UEFI dla zmiennych bezpieczeństwa rozruchu",
+          "overview": "Pamięć nieulotna o dostępie swobodnym (Non-Volatile Random-Access Memory, NVRAM) to wyspecjalizowana pamięć trwała umieszczona bezpośrednio na płycie głównej komputera (często wewnątrz układu SPI flash obok BIOS-u UEFI). W mechanizmie Secure Boot pamięć NVRAM przechowuje kluczowe bazy kryptograficzne (PK, KEK, db, dbx) oraz konfiguracje bootloadera. W przeciwieństwie do standardowej pamięci RAM zmienne NVRAM przetrwają cykle wyłączenia i włączenia zasilania, a w przeciwieństwie do zwykłych partycji dyskowych nie mogą zostać zmodyfikowane bez uwierzytelnienia na poziomie platformy lub fizycznego przeprogramowania układowego.",
           "keyPoints": [
-            "Dostępna w systemie Windows poprzez API GetFirmwareEnvironmentVariable oraz polecenia PowerShell (wymaga uprawnień administratora).",
-            "Przechowuje uwierzytelnione zmienne UEFI z flagami bezpieczeństwa środowiska uruchomieniowego.",
-            "Zabezpieczona przed nieautoryzowaną modyfikacją; zmiany wymagają podpisu klucza platformy lub KEK."
+            "Dostępna w systemie Windows za pośrednictwem interfejsu Win32 API GetFirmwareEnvironmentVariable oraz poleceń cmdlet PowerShell (wymaga podniesienia uprawnień do poziomu administratora).",
+            "Przechowuje uwierzytelnione zmienne UEFI z flagami takimi jak VARIABLE_ATTRIBUTE_NON_VOLATILE, BOOTSERVICE_ACCESS oraz RUNTIME_ACCESS.",
+            "Chroniona przed nieautoryzowaną manipulacją; zmiany zmiennych bezpieczeństwa wymagają podpisu kryptograficznego zweryfikowanego przez Klucz Platformy (PK) lub KEK."
           ],
-          "securityImpact": "Uszkodzenie lub zresetowanie NVRAM zworką CMOS może przełączyć system w tryb instalacyjny (Setup Mode), zezwalając na rozruch niepodpisanych systemów.",
-          "cliExplanation": "Odczytuje surową zmienną bazy autoryzowanych podpisów (db) z pamięci NVRAM UEFI."
+          "securityImpact": "Jeśli pamięć NVRAM ulegnie uszkodzeniu lub zostanie zresetowana za pomocą zworki CMOS bądź wyjęcia baterii, może zostać aktywowany tryb konfiguracji (Setup Mode) Secure Boot, tymczasowo zezwalający na rozruch niepodpisanych systemów operacyjnych. Nowocześni producenci płyt głównych stosują układy flash odporne na manipulację lub sprzętową ochronę TPM, aby zapobiec złośliwemu nadpisaniu pamięci NVRAM.",
+          "cliExplanation": "Odczytuje surową zmienną bazy autoryzowanych podpisów zapisaną w pamięci NVRAM UEFI."
         },
         "db": {
-          "title": "db (Baza danych podpisów)",
-          "subtitle": "Biała lista autoryzowanych podpisów i certyfikatów UEFI",
-          "overview": "Baza danych podpisów (db) to biała lista zaufanych certyfikatów i skrótów binarnych w pamięci NVRAM UEFI. Przed uruchomieniem oprogramowanie układowe weryfikuje podpis każdego pliku wykonywalnego EFI.",
+          "title": "db (Baza podpisów)",
+          "subtitle": "Autoryzowane podpisy UEFI i biała lista certyfikatów",
+          "overview": "Baza podpisów (Signature Database, db) to biała lista (whitelist) zaufanych certyfikatów kryptograficznych oraz skrótów binarnych osadzonych w pamięci NVRAM UEFI. Podczas uruchamiania systemu oprogramowanie układowe UEFI sprawdza podpis cyfrowy każdej aplikacji EFI (takiej jak Windows Boot Manager, bootia32.efi czy shimx64.efi) oraz pamięci PCIe Option ROM. Jeśli podpis pliku binarnego tworzy łańcuch prowadzący do certyfikatu w bazie db—lub jego dokładny skrót SHA-256 pasuje do wpisu w db—oprogramowanie układowe zezwala na wykonanie.",
           "keyPoints": [
-            "Zawiera certyfikaty X.509 i skróty binarne (SHA-256) uprawnione do uruchomienia przed startem systemu.",
-            "Fabrycznie wgrywana przez producentów sprzętu z certyfikatami Microsoft Production PCA.",
-            "Aktualizacja możliwa wyłącznie z podpisem klucza z bazy KEK."
+            "Zawiera certyfikaty X.509 oraz skróty binarne (SHA-256, SHA-384, SHA-512) autoryzowane do uruchomienia w fazie przedrozruchowej.",
+            "Zazwyczaj fabrycznie wczytywana przez producentów OEM z certyfikatami Microsoft Windows Production PCA 2011/2023 oraz Microsoft Corporation UEFI CA.",
+            "Może zostać zaktualizowana wyłącznie wtedy, gdy ładunek aktualizacji jest podpisany ważnym kluczem obecnym w bazie Klucza Wymiany Kluczy (KEK)."
           ],
-          "securityImpact": "Zastąpienie certyfikatów UEFI CA z 2011 roku nowymi z 2023 roku jest kluczowe, ponieważ stare certyfikaty wygasają w 2026 roku.",
-          "cliExplanation": "Sprawdza, czy funkcja Secure Boot jest aktywna i egzekwuje podpisy z bazy db."
+          "securityImpact": "Zastąpienie pierwotnego certyfikatu Microsoft UEFI CA z 2011 roku certyfikatami z 2023 roku ma kluczowe znaczenie, ponieważ certyfikaty z 2011 roku wygasają w 2026 roku. Bez nowoczesnych certyfikatów w bazie db przyszłe bootloadery oraz moduły Option ROM nie przejdą weryfikacji podpisu.",
+          "cliExplanation": "Potwierdza, czy Secure Boot jest aktywny i egzekwuje podpisy z białej listy db."
         },
         "dbx": {
           "title": "dbx (Baza zakazanych podpisów)",
-          "subtitle": "Lista unieważnień przedrozruchowych UEFI",
-          "overview": "Baza zakazanych podpisów (dbx) działa jako czarna lista oprogramowania UEFI, blokując podatne lub skompromitowane pliki wykonywalne i bootloadery.",
+          "subtitle": "Przedrozruchowa czarna lista unieważnień UEFI",
+          "overview": "Baza zakazanych podpisów (Forbidden Signature Database, dbx) pełni rolę przedrozruchowej listy unieważnień dla oprogramowania układowego UEFI. Zawiera skróty skompromitowanych bootloaderów, podatnych plików binarnych EFI oraz unieważnionych certyfikatów podpisujących. Nawet jeśli plik wykonywalny EFI posiada ważny podpis prowadzący do zaufanego urzędu CA na białej liście db, oprogramowanie układowe odmówi jego uruchomienia, jeżeli jego skrót lub odcisk palca certyfikatu widnieje w bazie dbx.",
           "keyPoints": [
-            "Ma bezwzględny priorytet nad bazą db: obecność skrótu w dbx natychmiast blokuje uruchomienie.",
-            "Zawiera skróty podatnych bootloaderów i zagrożeń typu bootkit.",
-            "Dystrybuowana poprzez Windows Update oraz aktualizacje BIOS."
+            "Ma bezwzględne pierwszeństwo przed bazą db: jeśli plik binarny występuje jednocześnie w db i dbx, jego wykonanie zostaje natychmiast zablokowane.",
+            "Przechowuje skróty EFI_CERT_SHA256_GUID podatnych menedżerów rozruchu i bootkitów.",
+            "Dystrybuowana za pośrednictwem Windows Update, usługi Linux Vendor Firmware Service (LVFS) oraz aktualizacji BIOS-u UEFI."
           ],
-          "securityImpact": "Bootkit BlackLotus omijał Secure Boot za pomocą starszego menedżera rozruchu. Zablokowanie ataku wymagało dopisania skrótów do bazy dbx.",
-          "cliExplanation": "Wyświetla rozmiar aktualnej listy unieważnień dbx w oprogramowaniu układowym."
+          "securityImpact": "W 2023 roku bootkit UEFI BlackLotus wykorzystał podatność CVE-2022-21894 (Baton Drop), aby obejść Secure Boot poprzez załadowanie starszego, podatnego menedżera rozruchu Microsoft. Zneutralizowanie zagrożenia BlackLotus wymagało dodania skrótów podatnych plików binarnych do bazy dbx.",
+          "cliExplanation": "Wyświetla rozmiar w bajtach bieżącej listy unieważnień dbx zapisanej w oprogramowaniu układowym systemu."
         },
         "kek": {
           "title": "KEK (Klucz wymiany kluczy)",
-          "subtitle": "Urząd bazy danych do aktualizacji podpisów przedrozruchowych",
-          "overview": "Baza danych kluczy wymiany kluczy (KEK) stanowi pośredni poziom zaufania w Secure Boot, autoryzując podpisywanie aktualizacji baz db i dbx przez dostawców systemów.",
+          "subtitle": "Autorytet bazy danych do aktualizacji podpisów przedrozruchowych",
+          "overview": "Baza Klucza Wymiany Kluczy (Key Exchange Key, KEK) tworzy środkową warstwę hierarchii zaufania UEFI Secure Boot. Zawiera certyfikaty uprawnione do dostarczania podpisanych kryptograficznie aktualizacji do Bazy Podpisów (db) oraz Bazy Zakazanych Podpisów (dbx). Dostawcy systemów operacyjnych, tacy jak Microsoft czy Canonical, posiadają klucze prywatne KEK, dzięki czemu mogą dystrybuować aktualizacje unieważnień bezpieczeństwa na miliony urządzeń bez konieczności angażowania producenta płyty głównej.",
           "keyPoints": [
-            "Łączy klucz sprzętowy platformy (PK) z aktualizacjami dostawców systemów (db/dbx).",
-            "Umożliwia zdalne dopisywanie nowych unieważnień do bazy dbx.",
-            "Wymaga pakietu uwierzytelniającego podpisanego certyfikatem KEK."
+            "Stanowi pomost między producentem sprzętu OEM (Klucz Platformy) a aktualizacjami dostawcy systemu operacyjnego (db/dbx).",
+            "Umożliwia aktualizacjom systemu operacyjnego dynamiczne dodawanie unieważnionych skrótów (dbx) lub nowych głównych certyfikatów systemu (db).",
+            "Każdej aktualizacji baz db lub dbx musi towarzyszyć uwierzytelniony ładunek EFI_VARIABLE_AUTHENTICATION_2 podpisany certyfikatem KEK."
           ],
-          "securityImpact": "Brak prawidłowego certyfikatu KEK uniemożliwia odbiór aktualizacji bezpieczeństwa oprogramowania układowego.",
-          "cliExplanation": "Pobiera listę podpisów KEK z pamięci NVRAM UEFI."
+          "securityImpact": "Bez ważnego certyfikatu KEK odpowiadającego dostawcy systemu operacyjnego komputer nie może otrzymywać zdalnych aktualizacji unieważnień Secure Boot, przez co oprogramowanie układowe pozostaje podatne na znane exploity typu bootkit.",
+          "cliExplanation": "Pobiera listę podpisów Klucza Wymiany Kluczy z pamięci NVRAM UEFI."
         },
         "pk": {
           "title": "PK (Klucz platformy)",
-          "subtitle": "Sprzętowy punkt zaufania dla UEFI Secure Boot",
-          "overview": "Klucz platformy (Platform Key, PK) to główny punkt zaufania zainstalowany przez producenta płyty głównej, który blokuje oprogramowanie w trybie użytkownika (User Mode).",
+          "subtitle": "Sprzętowy korzeń zaufania dla UEFI Secure Boot",
+          "overview": "Klucz Platformy (Platform Key, PK) stanowi najwyższy wierzchołek zaufania w architekturze UEFI Secure Boot. Zazwyczaj instalowany przez producenta płyty głównej lub urządzenia (OEM) na etapie produkcji, klucz PK ustanawia relację własności między właścicielem platformy a sprzętowym oprogramowaniem układowym. Kontroluje wejście w tryb konfiguracji (Setup Mode) oraz zarządza aktualizacjami zarówno samego klucza PK, jak i bazy Klucza Wymiany Kluczy (KEK).",
           "keyPoints": [
-            "Pojedynczy certyfikat główny: tylko jeden klucz PK może być aktywny.",
-            "Zarządza przejściem między trybem Setup Mode a User Mode.",
-            "Skasowanie klucza PK pozwala na wdrożenie własnych kluczy Secure Boot."
+            "Pojedynczy certyfikat główny: w danym momencie w systemie może być aktywny tylko jeden Klucz Platformy.",
+            "Przełącza oprogramowanie układowe z trybu Setup Mode (odblokowany, konfigurowalny) w tryb User Mode (zablokowany, egzekwowany).",
+            "Wyczyszczenie klucza PK przywraca oprogramowanie układowe do trybu Setup Mode, pozwalając użytkownikom lub administratorom korporacyjnym zarejestrować własne klucze Secure Boot."
           ],
-          "securityImpact": "Wyciek klucza prywatnego PK daje atakującym pełną kontrolę nad politykami bezpieczeństwa oprogramowania układowego.",
-          "cliExplanation": "Sprawdza klucz platformy zapisany w pamięci NVRAM płyty głównej."
+          "securityImpact": "Posiadanie klucza prywatnego PK daje całkowitą władzę nad politykami bezpieczeństwa oprogramowania układowego systemu. W przypadku wycieku klucza prywatnego PK (jak podczas wycieku kluczy podpisujących firmware firmy MSI w 2023 roku) atakujący mogą podrabiać autoryzowane aktualizacje komponentów oprogramowania układowego.",
+          "cliExplanation": "Sprawdza Klucz Platformy zapisany w pamięci NVRAM UEFI płyty głównej."
         },
         "efi": {
           "title": "UEFI / EFI",
           "subtitle": "Architektura ujednoliconego rozszerzalnego interfejsu oprogramowania układowego",
-          "overview": "UEFI to nowoczesny standard komunikacji między systemem a oprogramowaniem układowym, który zastąpił 16-bitowy BIOS PC, wprowadzając partycje GPT powyżej 2 TB i Secure Boot.",
+          "overview": "Unified Extensible Firmware Interface (UEFI, historycznie EFI) to nowoczesna specyfikacja branżowa definiująca interfejs programowy między systemem operacyjnym a oprogramowaniem układowym platformy. Zastępując przestarzały 16-bitowy BIOS komputerów IBM PC sięgający 1981 roku, UEFI zapewnia modułowe 32-bitowe/64-bitowe środowisko przedrozruchowe z bogatą obsługą sterowników, tablicami partycji GUID (GPT) obsługującymi dyski powyżej 2 TB, krótkim czasem rozruchu oraz silnikiem weryfikacji kryptograficznej znanym jako Secure Boot.",
           "keyPoints": [
-            "Zastępuje przerwania BIOS-u modułowymi protokołami w języku C.",
-            "Obsługuje partycjonowanie GPT bez limitu 2,2 TB.",
-            "Uruchamia sterowniki przedrozruchowe (Option ROM) dla dysków NVMe i kart sieciowych."
+            "Zastępuje przestarzałe przerwania trybu rzeczywistego BIOS-u INT 13h/INT 10h modułowymi protokołami w języku C.",
+            "Obsługuje partycjonowanie GPT, znosząc limit 4 partycji oraz barierę 2,2 TB właściwą dla dysków MBR.",
+            "Udostępnia sterowniki przedrozruchowe (Option ROM) dla dysków NVMe, kart graficznych GPU oraz kart sieciowych (rozruch PXE/HTTP)."
           ],
-          "securityImpact": "Złośliwy kod działający na poziomie UEFI (rootkit) pozostaje całkowicie niewidoczny dla antywirusów systemu operacyjnego.",
-          "cliExplanation": "Wskazuje, czy system Windows został uruchomiony w trybie UEFI czy tradycyjnym BIOS."
+          "securityImpact": "Ponieważ UEFI wykonuje się z dostępem na poziomie ring 0/SMM (System Management Mode) jeszcze przed załadowaniem jądra systemu, złośliwy kod działający w tej warstwie (rootkit UEFI) jest całkowicie niewidoczny dla programów antywirusowych systemu operacyjnego oraz telemetrii jądra.",
+          "cliExplanation": "Wyświetla informację, czy system Windows został uruchomiony w nowoczesnym trybie UEFI czy w przestarzałym trybie BIOS."
         },
         "uac": {
           "title": "UAC (Kontrola konta użytkownika)",
           "subtitle": "Granica uprawnień administracyjnych systemu Windows",
-          "overview": "Kontrola konta użytkownika (UAC) egzekwuje zasadę najniższych uprawnień w systemie Windows, chroniąc przed nieautoryzowanymi modyfikacjami konfiguracji systemowej.",
+          "overview": "Kontrola konta użytkownika (User Account Control, UAC) to mechanizm bezpieczeństwa systemu Windows egzekwujący zasadę najniższych uprawnień. Nawet po zalogowaniu na konto administratora aplikacje domyślnie uruchamiane są ze standardowymi tokenami użytkownika. Gdy aplikacja próbuje wykonać zadania na poziomie systemu—takie jak dostęp do zmiennych NVRAM UEFI, modyfikacja magazynów certyfikatów LocalMachine czy instalacja sterowników—system Windows wstrzymuje operację i wyświetla monit o podniesienie uprawnień na bezpiecznym pulpicie.",
           "keyPoints": [
-            "Oddziela uprawnienia administracyjne od codziennej pracy użytkownika.",
-            "Wykorzystuje bezpieczny pulpit (Secure Desktop) przed atakami automatycznymi.",
-            "Niezbędna do odczytu zmiennych NVRAM i magazynu certyfikatów komputera lokalnego."
+            "Oddziela uprawnienia administracyjne od standardowych, codziennych przepływów pracy.",
+            "Wykorzystuje Bezpieczny Pulpit (Secure Desktop, przyciemniony ekran), aby zapobiec atakom polegającym na syntetycznym wstrzykiwaniu zdarzeń klawiatury i myszy.",
+            "Niezbędna do uzyskania dostępu do uprzywilejowanych funkcji Win32 API, takich jak GetFirmwareEnvironmentVariableEx oraz CertOpenStore."
           ],
-          "securityImpact": "Bez UAC złośliwe oprogramowanie mogłoby w tle podmienić zaufane certyfikaty główne w całym systemie.",
+          "securityImpact": "Bez mechanizmu UAC dowolny skrypt lub działające w tle złośliwe oprogramowanie uruchomione w sesji użytkownika mogłoby po cichu odczytywać i nadpisywać zaufane certyfikaty główne w całym systemie lub modyfikować konfigurację rozruchu bez żadnego powiadomienia.",
           "cliExplanation": "Sprawdza, czy bieżąca sesja posiada podwyższone uprawnienia administratora."
         },
         "rootCa": {
           "title": "Root CA (Główny urząd certyfikacji)",
-          "subtitle": "Punkt zaufania w infrastrukturze klucza publicznego (PKI)",
-          "overview": "Główny urząd certyfikacji (Root CA) to nadrzędne źródło zaufania w PKI. Certyfikat główny jest samopodpisany i wbudowany w magazyny zaufania systemów i przeglądarek.",
+          "subtitle": "Kotwica zaufania w infrastrukturze klucza publicznego",
+          "overview": "Główny Urząd Certyfikacji (Root Certificate Authority, Root CA) to najwyższa kotwica zaufania w infrastrukturze klucza publicznego (PKI). Certyfikat Root CA jest samopodpisany: jego pola Subject oraz Issuer są identyczne, a jego podpis weryfikowany jest za pomocą własnego, osadzonego w nim klucza publicznego. Systemy operacyjne (Windows, Linux, macOS) oraz przeglądarki internetowe utrzymują wstępnie audytowane zbiory certyfikatów Root CA zwane magazynami zaufania ('Trust Stores'). Każdy certyfikat na świecie czerpie swoją ważność poprzez kryptograficzne powiązanie zwrotne z jedną z tych głównych kotwic zaufania.",
           "keyPoints": [
-            "Samopodpisany: wartości pól Subject i Issuer są identyczne.",
-            "Rozszerzenie Basic Constraints oznaczone jako krytyczne z wartością cA:TRUE.",
-            "Przechowywany w izolacji kryptograficznej offline w modułach HSM."
+            "Samopodpisany: nazwy wyróżniające (Distinguished Names, DN) pól Subject i Issuer są dokładnie takie same.",
+            "Posiada rozszerzenie Basic Constraints oznaczone jako krytyczne (Critical) z wartością cA:TRUE.",
+            "Przechowywany w ekstremalnej izolacji fizycznej i kryptograficznej (offline, sprzętowe moduły bezpieczeństwa / HSM, odcięcie od sieci typu air-gap)."
           ],
-          "securityImpact": "Przejęcie klucza prywatnego Root CA pozwala na wystawienie fałszywych certyfikatów dla dowolnej domeny internetowej.",
-          "cliExplanation": "Weryfikuje tożsamość pól Subject i Issuer, potwierdzając certyfikat główny."
+          "securityImpact": "Jeśli klucz prywatny Root CA zostanie skompromitowany, atakujący może wystawiać podrobione, darzone zaufaniem certyfikaty dla dowolnej domeny, użytkownika lub wydawcy podpisującego kod na Ziemi bez wywoływania ostrzeżeń w przeglądarce. Skompromitowanym urzędom Root CA główni dostawcy natychmiast odbierają zaufanie w drodze awaryjnych aktualizacji przeglądarek i systemów operacyjnych.",
+          "cliExplanation": "Weryfikuje, że pola Subject i Issuer są identyczne, potwierdzając samopodpisany certyfikat główny."
         },
         "intermediateCa": {
-          "title": "Intermediate CA (Pośredni urząd certyfikacji)",
-          "subtitle": "Operacyjny urząd wystawiający chroniący urząd główny",
-          "overview": "Pośredni urząd certyfikacji pośredniczy między urzędem głównym a certyfikatami końcowymi, umożliwiając bezpieczne przechowywanie Root CA w trybie offline.",
+          "title": "Intermediate CA (Podrzędny urząd certyfikacji)",
+          "subtitle": "Operacyjny urząd wydający chroniący główny urząd Root CA",
+          "overview": "Pośredni Urząd Certyfikacji (Intermediate Certificate Authority, określany też jako Subordinate CA lub Issuing CA) to certyfikat znajdujący się pomiędzy głównym urzędem Root CA a końcowymi certyfikatami liścia (Leaf). Aby chronić niezwykle wrażliwy klucz prywatny Root CA przed ujawnieniem, urząd Root CA podpisuje jeden lub więcej urzędów Intermediate CA, a następnie jest umieszczany offline w bezpiecznym skarbcu. Urzędy Intermediate CA obsługują codzienne podpisywanie, odnawianie oraz unieważnianie certyfikatów dla użytkowników końcowych i witryn internetowych.",
           "keyPoints": [
-            "Podpisany przez Root CA lub nadrzędny urząd pośredni.",
-            "Posiada Basic Constraints cA:TRUE.",
-            "Musi być przesyłany przez serwer WWW podczas uzgadniania połączenia TLS."
+            "Podpisany przez główny urząd Root CA lub urząd pośredni wyższego szczebla w hierarchii certyfikatów.",
+            "Zawiera rozszerzenie Basic Constraints: Critical, cA:TRUE, często z ograniczeniem pathLenConstraint limitującym głębokość rekurencji.",
+            "Serwery muszą przesyłać certyfikaty pośrednie razem ze swoim certyfikatem liścia podczas uzgadniania połączenia TLS."
           ],
-          "securityImpact": "W razie incydentu certyfikat pośredni można unieważnić bez konieczności aktualizacji głównego Root CA na urządzeniach na całym świecie.",
-          "cliExplanation": "Sprawdza kompletny łańcuch certyfikatów od liścia do certyfikatu głównego."
+          "securityImpact": "W razie skompromitowania urzędu Intermediate CA można go indywidualnie unieważnić za pomocą listy CRL lub protokołu OCSP bez konieczności unieważniania i wymiany nadrzędnego certyfikatu Root CA oraz jego ponownej dystrybucji na miliardy urządzeń klienckich na całym świecie.",
+          "cliExplanation": "Waliduje pełny łańcuch od certyfikatu liścia przez certyfikat pośredni aż do certyfikatu głównego."
         },
         "leafCert": {
           "title": "Certyfikat liścia (End-Entity)",
           "subtitle": "Końcowy certyfikat dla serwerów, użytkowników i podpisów",
-          "overview": "Certyfikat liścia znajduje się na samym końcu łańcucha zaufania i jest wydawany dla serwera WWW, adresu e-mail lub podpisywania kodu. Nie może podpisywać innych certyfikatów.",
+          "overview": "Certyfikat liścia (Leaf Certificate, nazywany również certyfikatem podmiotu końcowego – End-Entity) to ostatni certyfikat na końcu łańcucha zaufania. Wydawany jest konkretnemu podmiotowi—takiemu jak nazwa domeny (TLS serwera WWW), adres e-mail (S/MIME), osoba fizyczna (uwierzytelnianie kartą inteligentną) czy twórca oprogramowania (podpisywanie kodu). Certyfikat liścia nie może być używany do podpisywania ani wystawiania innych certyfikatów.",
           "keyPoints": [
-            "Wartość pola Basic Constraints wynosi cA:FALSE.",
-            "Rozszerzenie Key Usage definiuje dozwolone operacje kryptograficzne.",
-            "Pole SAN określa uprawnione domeny i adresy IP."
+            "Rozszerzenie Basic Constraints ma wartość cA:FALSE (lub jest całkowicie pominięte).",
+            "Key Usage ogranicza dozwolone operacje kryptograficzne (np. digitalSignature, keyEncipherment).",
+            "Extended Key Usage (EKU) określa dokładne role zastosowania (np. Server Authentication, Code Signing).",
+            "Subject Alternative Names (SAN) definiuje uprawnione nazwy hostów, adresy IP lub adresy e-mail."
           ],
-          "securityImpact": "Krótki okres ważności (zwykle 90-398 dni) ogranicza ryzyko w przypadku ujawnienia klucza prywatnego.",
-          "cliExplanation": "Łączy się ze zdalnym serwerem i wyświetla szczegóły jego certyfikatu końcowego."
+          "securityImpact": "Certyfikaty liścia mają krótki okres ważności (zazwyczaj od 90 do 398 dni), aby ograniczyć skalę narażenia w razie wycieku klucza prywatnego. Nieodnowienie certyfikatu liścia przed jego wygaśnięciem prowadzi do poważnych awarii usług oraz ostrzeżeń bezpieczeństwa w przeglądarkach.",
+          "cliExplanation": "Łączy się ze zdalnym serwerem i wypisuje pełne, sparsowane szczegóły jego certyfikatu liścia."
         },
         "csr": {
           "title": "CSR (Żądanie podpisania certyfikatu)",
-          "subtitle": "Żądanie PKCS#10 dotyczące wydania certyfikatu",
-          "overview": "Żądanie CSR to ustandaryzowany pakiet wysyłany do urzędu certyfikacji, zawierający klucz publiczny i podpis potwierdzający posiadanie klucza prywatnego (Proof-of-Possession).",
+          "subtitle": "Ładunek żądania PKCS#10 na potrzeby wydania certyfikatu",
+          "overview": "Żądanie podpisania certyfikatu (Certificate Signing Request, CSR) to ustandaryzowana wiadomość kryptograficzna wysyłana przez wnioskodawcę do Urzędu Certyfikacji w celu ubiegania się o certyfikat cyfrowy. Zawiera klucz publiczny wnioskodawcy, nazwę wyróżniającą (Distinguished Name, DN), wnioskowane alternatywne nazwy podmiotu (SAN) i jest cyfrowo samopodpisana kluczem prywatnym wnioskodawcy. Podpis ten stanowi dowód posiadania (Proof-of-Possession, PoP), udowadniając urzędowi CA, że wnioskodawca dysponuje pasującym kluczem prywatnym bez konieczności przesyłania ani ujawniania samego klucza prywatnego.",
           "keyPoints": [
-            "Nigdy nie zawiera klucza prywatnego: wyłącznie klucz publiczny i dane wnioskodawcy.",
-            "Zawiera podpis cyfrowy stanowiący dowód posiadania klucza.",
-            "Kodowany tekstowo w formacie Base64 PEM."
+            "Nigdy nie zawiera klucza prywatnego: dołączane są wyłącznie klucz publiczny oraz metadane wnioskodawcy.",
+            "Zawiera podpis kryptograficzny złożony kluczem prywatnym w celu potwierdzenia własności (Proof-of-Possession).",
+            "Zakodowany w formacie tekstowym Base64 PEM z nagłówkiem '-----BEGIN CERTIFICATE REQUEST-----'."
           ],
-          "securityImpact": "CSR jest całkowicie bezpieczny w przesyłaniu przez sieć, gdyż nie zawiera żadnych tajemnic.",
-          "cliExplanation": "Bada plik CSR i sprawdza zawarty w nim podpis dowodu posiadania klucza."
+          "securityImpact": "Plik CSR można bezpiecznie przesyłać przez sieci publiczne, ponieważ nie zawiera żadnych danych poufnych. Jeśli jednak atakujący nakłoni urząd CA do podpisania żądania CSR z kontrolowanym przez siebie kluczem dla domeny, której nie jest właścicielem, może przeprowadzać ataki typu man-in-the-middle.",
+          "cliExplanation": "Parsuje żądanie CSR i weryfikuje zawarty w nim kryptograficzny podpis Proof-of-Possession."
         },
         "crl": {
-          "title": "CRL (Lista unieważnionych certyfikatów)",
-          "subtitle": "Okresowa podpisana przez CA lista unieważnionych numerów seryjnych",
-          "overview": "Lista CRL to publikowany okresowo i podpisany przez urząd CA wykaz certyfikatów unieważnionych przed planowanym terminem wygaśnięcia.",
+          "title": "CRL (Lista odwołanych certyfikatów)",
+          "subtitle": "Okresowa, podpisana przez CA lista dystrybucyjna unieważnionych numerów seryjnych",
+          "overview": "Lista odwołanych certyfikatów (Certificate Revocation List, CRL) to uwierzytelniony wykaz publikowany okresowo przez Urząd Certyfikacji, wyszczególniający certyfikaty cyfrowe unieważnione przed ich planowaną datą wygaśnięcia. Każdy wpis na liście CRL określa numer seryjny certyfikatu, datę unieważnienia oraz opcjonalny kod przyczyny (taki jak keyCompromise lub affiliationChanged). Cała lista jest podpisana cyfrowo przez urząd CA.",
           "keyPoints": [
-            "Wskazywana w certyfikatach w rozszerzeniu CRL Distribution Points (CDP).",
-            "Opatrzona znacznikami czasu 'thisUpdate' oraz 'nextUpdate'.",
-            "Może osiągać znaczne rozmiary w przypadku dużych urzędów certyfikacji."
+            "Wskazywana w certyfikatach za pośrednictwem rozszerzenia CRL Distribution Points (CDP).",
+            "Podpisana i opatrzona znacznikami czasu z oknami ważności 'thisUpdate' oraz 'nextUpdate'.",
+            "Może być pełna (Base CRL) lub przyrostowa (Delta CRL) w celu oszczędzania przepustowości łącza."
           ],
-          "securityImpact": "Duży rozmiar list CRL powoduje opóźnienia w nawiązywaniu sesji TLS oraz stwarza okno podatności przed publikacją kolejnej listy.",
-          "cliExplanation": "Odczytuje binarny plik DER CRL i wypisuje wszystkie unieważnione numery seryjne."
+          "securityImpact": "Listy CRL mogą osiągać ogromne rozmiary (dziesiątki megabajtów w przypadku dużych urzędów CA), powodując opóźnienia i obciążenie pamięci podczas uzgadniania połączeń TLS. Ponieważ klienci buforują listy CRL aż do czasu nextUpdate, powstaje okno podatności, w którym świeżo unieważniony certyfikat może nadal zostać zaakceptowany.",
+          "cliExplanation": "Parsuje binarną listę odwołanych certyfikatów w formacie DER i wyświetla wszystkie unieważnione numery seryjne."
         },
         "ocsp": {
-          "title": "OCSP (Protokół sprawdzania stanu certyfikatów online)",
-          "subtitle": "Protokół sprawdzania ważności certyfikatów w czasie rzeczywistym",
-          "overview": "Protokół OCSP umożliwia szybkie sprawdzenie statusu pojedynczego certyfikatu w czasie rzeczywistym bezpośrednio u respondera CA, bez pobierania całej listy CRL.",
+          "title": "OCSP (Protokół statusu certyfikatów online)",
+          "subtitle": "Protokół zapytań o ważność certyfikatów w czasie rzeczywistym",
+          "overview": "Online Certificate Status Protocol (OCSP) to oparty na HTTP protokół sieciowy zaprojektowany jako lekka, działająca w czasie rzeczywistym alternatywa dla pobierania obszernych list CRL. Zamiast pobierać kompletną listę wszystkich unieważnionych certyfikatów, klient wysyła niewielkie zapytanie zawierające numer seryjny docelowego certyfikatu oraz skrót wystawcy do respondera OCSP urzędu CA. Responder zwraca podpisaną odpowiedź informującą, czy certyfikat ma status 'good', 'revoked' czy 'unknown'.",
           "keyPoints": [
-            "Adres URL respondera znajduje się w rozszerzeniu AIA certyfikatu.",
-            "Zwraca natychmiastowy status (good, revoked lub unknown).",
-            "Odpowiedź jest cyfrowo podpisana przez respondera."
+            "Adres znajduje się w rozszerzeniu Authority Information Access (AIA) certyfikatu.",
+            "Zapewnia natychmiastową informację o statusie bez konieczności przesyłania megabajtów list unieważnień.",
+            "Odpowiedź jest podpisana cyfrowo certyfikatem OCSP Signing autoryzowanym przez urząd CA."
           ],
-          "securityImpact": "Przeglądarki często stosują zasadę soft-fail przy braku odpowiedzi OCSP, co może zostać wykorzystane przez atakującego w sieci.",
-          "cliExplanation": "Wykonuje pełną weryfikację unieważnienia certyfikatu w aktywnych usługach OCSP i CRL."
+          "securityImpact": "Protokół OCSP rodzi obawy dotyczące prywatności (urząd CA dowiaduje się w czasie rzeczywistym, jakie domeny odwiedzają klienci) oraz narzut wydajnościowy (dodatkowa wymiana pakietów sieciowych podczas negocjacji TLS). Aby uniknąć blokowania przeglądania stron w razie niedostępności responderów, wielu klientów domyślnie stosuje tryb 'soft-fail', ignorując nieosiągalne serwery OCSP.",
+          "cliExplanation": "Przeprowadza pełną sieciową weryfikację unieważnienia względem aktywnych punktów końcowych AIA OCSP oraz CDP CRL."
         },
         "ocspStapling": {
           "title": "OCSP Stapling",
-          "subtitle": "Rozszerzenie zapytania o stan certyfikatu TLS bez opóźnień",
-          "overview": "Mechanizm OCSP Stapling pozwala serwerowi WWW pobierać podpisaną odpowiedź OCSP w tle i dołączać ją bezpośrednio do pakietów uzgadniania TLS.",
+          "subtitle": "Bezzwłoczne rozszerzenie TLS zapytania o status certyfikatu",
+          "overview": "OCSP Stapling (formalnie rozszerzenie TLS Certificate Status Request) rozwiązuje problemy opóźnień oraz prywatności występujące w tradycyjnym protokole OCSP. Po włączeniu mechanizmu staplingu sam serwer WWW okresowo odpytuje w tle responder OCSP urzędu CA, buforuje podpisaną kryptograficznie odpowiedź OCSP i 'przypina' (staples) ją bezpośrednio do komunikatów uzgadniania TLS (wiadomość CertificateStatus) wysyłanych do łączących się klientów.",
           "keyPoints": [
-            "Eliminuje opóźnienia w zapytaniach po stronie przeglądarki klienta.",
-            "Chroni prywatność użytkownika przed śledzeniem przez urząd certyfikacji.",
-            "Może być egzekwowany rozszerzeniem OCSP Must-Staple."
+            "Eliminuje opóźnienia zapytań po stronie klienta podczas uzgadniania połączenia TLS.",
+            "Chroni prywatność klienta: urząd CA nigdy nie widzi adresu IP klienta ani jego nawyków przeglądania.",
+            "Może zostać wymuszony za pomocą rozszerzenia OCSP Must-Staple (RFC 7633) umieszczonego w certyfikacie."
           ],
-          "securityImpact": "Bez Must-Staple atakujący może zablokować dołączoną odpowiedź, zmuszając przeglądarkę do połączenia bez weryfikacji.",
-          "cliExplanation": "Sprawdza, czy zdalny serwer przesyła dołączoną odpowiedź OCSP podczas powitania TLS."
+          "securityImpact": "Bez rozszerzenia Must-Staple atakujący przeprowadzający atak man-in-the-middle może zablokować przypiętą odpowiedź, sprawiając, że klienci w trybie soft-fail kontynuują połączenie bez weryfikacji. Must-Staple wymusza na klientach przerwanie uzgadniania połączenia, jeśli zabraknie ważnej przypiętej odpowiedzi.",
+          "cliExplanation": "Sprawdza, czy zdalny serwer dostarcza przypiętą odpowiedź OCSP podczas uzgadniania połączenia TLS."
         },
         "ctlog": {
           "title": "Dziennik Certificate Transparency (CT)",
-          "subtitle": "Publicznie audytowalny rejestr wydanych certyfikatów",
-          "overview": "Certificate Transparency (CT) to otwarta sieć publicznie dostępnych, niezmiennych rejestrów, w których muszą zostać zarejestrowane publiczne certyfikaty TLS.",
+          "subtitle": "Publicznie audytowalny rejestr certyfikatów tylko do dopisywania",
+          "overview": "Certificate Transparency (CT) to otwarty framework oraz sieć publicznie weryfikowalnych, kryptograficznie potwierdzanych rejestrów tylko do dopisywania (dzienników CT) prowadzonych przez zaufanych operatorów, takich jak Google, Cloudflare i DigiCert. Za każdym razem, gdy urząd CA wydaje certyfikat SSL/TLS, musi zgłosić go do wielu niezależnych dzienników CT. W zamian dzienniki zwracają podpisane znaczniki czasu certyfikatu (Signed Certificate Timestamps, SCT) dowodzące, że certyfikat został publicznie odnotowany.",
           "keyPoints": [
-            "Oparty na strukturach Merkle Tree uniemożliwiających usuwanie wpisów wstecz.",
-            "Przeglądarki odrzucają publiczne certyfikaty bez ważnych dowodów SCT.",
-            "Pozwala właścicielom domen na bieżąco monitorować nowo wystawiane certyfikaty."
+            "Oparty na kryptograficznych strukturach skrótów drzewa Merkle'a (Merkle Tree), które uniemożliwiają wsteczną modyfikację lub usunięcie wpisów.",
+            "Przeglądarki (Chrome, Edge, Safari) odmawiają zaufania publicznym certyfikatom TLS pozbawionym ważnych dowodów SCT.",
+            "Umożliwia właścicielom domen monitorowanie dzienników CT w czasie rzeczywistym oraz wykrywanie fałszywych lub nieautoryzowanych certyfikatów."
           ],
-          "securityImpact": "Wyeliminował problem potajemnego wystawiania fałszywych certyfikatów przez skompromitowane urzędy certyfikacji.",
-          "cliExplanation": "Przeszukuje publiczny agregator crt.sh w poszukiwaniu certyfikatów dla wybranej domeny."
+          "securityImpact": "Dzienniki CT odmieniły bezpieczeństwo sieci WWW, kończąc epokę, w której nieuczciwe lub skompromitowane urzędy CA mogły potajemnie wystawiać certyfikaty na potrzeby szpiegostwa lub ataków MITM. Każdy certyfikat wystawiony przez publiczny urząd CA staje się publicznie widoczny dla wszystkich w ciągu kilku sekund od utworzenia.",
+          "cliExplanation": "Odpytuje publiczny agregator dzienników CT crt.sh o publiczne wpisy certyfikatów wystawionych dla danej domeny."
         },
         "x509": {
           "title": "Standard X.509",
           "subtitle": "Standard ITU-T dla certyfikatów klucza publicznego",
-          "overview": "Standard ITU-T X.509 definiuje międzynarodowy format certyfikatów klucza publicznego i walidacji łańcucha zaufania dla protokołów TLS, S/MIME i Secure Boot.",
+          "overview": "Rekomendacja ITU-T X.509 definiuje międzynarodowy standardowy format certyfikatów klucza publicznego oraz modele walidacji ścieżek certyfikacji. Opublikowany pierwotnie w 1988 roku jako część zaleceń katalogowych X.500, standard X.509 w wersji 3 (ustandaryzowany w dokumencie RFC 5280) stanowi kryptograficzny fundament internetowego protokołu Transport Layer Security (TLS/HTTPS), szyfrowania poczty S/MIME, sieci VPN IPsec, podpisywania kodu (code signing) oraz mechanizmu UEFI Secure Boot.",
           "keyPoints": [
-            "Określa pola certyfikatu: numer seryjny, wystawca, ważność, podmiot, klucz publiczny i rozszerzenia.",
-            "Używa niezależnej od platformy notacji danych ASN.1.",
-            "Wersja 3 wprowadza rozszerzenia SAN, Basic Constraints i Key Usage."
+            "Definiuje strukturę certyfikatu: numer seryjny (Serial), wystawca (Issuer), okres ważności (Not Before/Not After), podmiot (Subject), klucz publiczny oraz rozszerzenia.",
+            "Wykorzystuje notację Abstract Syntax Notation One (ASN.1) do definiowania schematów danych niezależnie od architektury maszyny.",
+            "Rozszerzenia wersji 3 obejmują Subject Alternative Names, Basic Constraints, Key Usage, AIA oraz CDP."
           ],
-          "securityImpact": "Niejednoznaczności w implementacji parserów ASN.1 były historycznie źródłem poważnych luk bezpieczeństwa weryfikacji podpisów.",
-          "cliExplanation": "Wypisuje surową strukturę danych ASN.1 certyfikatu X.509."
+          "securityImpact": "Niejednoznaczności podczas parsowania ASN.1 prowadziły w przeszłości do poważnych luk w zabezpieczeniach, takich jak podrabianie podpisów (CVE-2008-1386) oraz obchodzenie walidacji ścieżki certyfikacji. Współczesne implementacje korzystają ze ścisłych bibliotek dekodujących ASN.1 DER.",
+          "cliExplanation": "Wypisuje surową strukturę danych ASN.1 tag-length-value (TLV) certyfikatu X.509."
         },
         "pem": {
           "title": "PEM (Privacy Enhanced Mail)",
           "subtitle": "Tekstowy kontener kryptograficzny kodowany w Base64",
-          "overview": "Format PEM to powszechny tekstowy format zapisu certyfikatów, kluczy i żądań CSR, kodujący dane binarne ASN.1 w Base64 pomiędzy czytelnymi nagłówkami.",
+          "overview": "Privacy Enhanced Mail (PEM) to wszechobecny, tekstowy format kodowania służący do reprezentowania certyfikatów kryptograficznych, kluczy prywatnych oraz żądań CSR. Choć sam standard bezpiecznej poczty PEM z 1993 roku został zastąpiony przez S/MIME, jego format kodowania przetrwał. Plik PEM opakowuje surowe dane binarne DER ASN.1 w znaki Base64, otoczone czytelnymi dla człowieka liniami granicznymi ASCII, takimi jak '-----BEGIN CERTIFICATE-----'.",
           "keyPoints": [
-            "Format tekstowy ASCII: bezpieczny do kopiowania i wklejania w plikach konfiguracyjnych.",
-            "Otoczony nagłówkami jednoznacznie określającymi typ zawartości.",
-            "Obsługuje łączenie wielu certyfikatów w jeden plik (łańcuchy certyfikatów)."
+            "Tekstowy format ASCII: bezpieczny do kopiowania i wklejania, przesyłania pocztą e-mail oraz umieszczania w plikach konfiguracyjnych.",
+            "Zamknięty pomiędzy wyraźnymi liniami granicznymi określającymi typ obiektu (CERTIFICATE, RSA PRIVATE KEY itp.).",
+            "Obsługuje pliki zbiorcze (bundle) zawierające wiele certyfikatów połączonych sekwencyjnie (łańcuchy certyfikatów)."
           ],
-          "securityImpact": "Tekstowy charakter ułatwia przypadkowe opublikowanie klucza prywatnego w publicznym repozytorium kodu.",
-          "cliExplanation": "Konwertuje binarny certyfikat DER do pliku tekstowego Base64 PEM."
+          "securityImpact": "Łatwy do przeglądania i edycji, jednak wrażliwe klucze prywatne w formacie PEM mogą łatwo zostać przypadkowo zatwierdzone do publicznych repozytoriów Git lub wklejone na kanały czatu. Klucze produkcyjne muszą być przechowywane z rygorystycznymi uprawnieniami systemu plików (np. chmod 600).",
+          "cliExplanation": "Konwertuje binarny certyfikat DER do standardowego pliku tekstowego Base64 PEM."
         },
         "der": {
           "title": "DER (Distinguished Encoding Rules)",
           "subtitle": "Kanoniczny binarny format serializacji ASN.1",
-          "overview": "DER to ścisły, kanoniczny binarny standard zapisu struktur ASN.1, gwarantujący uzyskanie dokładnie jednego, jednoznacznego ciągu bajtów dla danego obiektu.",
+          "overview": "Distinguished Encoding Rules (DER) to ścisły, jednoznaczny binarny standard serializacji struktur danych ASN.1. W przeciwieństwie do reguł Basic Encoding Rules (BER), które dopuszczają wiele alternatywnych sposobów kodowania tych samych danych (takich jak formaty bajtowe o zmiennej długości), DER wymusza dokładne, kanoniczne reguły kodowania, dzięki czemu każda struktura danych generuje dokładnie jeden unikalny strumień bajtów. Właściwość ta jest obowiązkowa w przypadku podpisów cyfrowych.",
           "keyPoints": [
-            "Czysty format binarny: mniejszy rozmiar i szybsze przetwarzanie w porównaniu z PEM.",
-            "Deterministyczny: gwarantuje identyczny skrót kryptograficzny na każdej maszynie.",
-            "Natywny format systemu Windows (.cer), środowiska Java oraz kart kryptograficznych."
+            "Czysty format binarny: mniejszy rozmiar oraz szybsze parsowanie niż w przypadku tekstowego formatu PEM.",
+            "Deterministyczny: gwarantuje, że obliczenie skrótu certyfikatu daje identyczny skrót (digest) na wszystkich platformach.",
+            "Standardowy format natywnie używany w systemie Windows (pliki .cer), magazynach kluczy Java oraz tokenach sprzętowych."
           ],
-          "securityImpact": "Jako format binarny nie może być bezpiecznie edytowany w zwykłych edytorach tekstowych.",
-          "cliExplanation": "Konwertuje certyfikat Base64 PEM do postaci binarnej DER."
+          "securityImpact": "Ponieważ DER jest formatem binarnym, nie można go bezpiecznie wklejać do zwykłych edytorów tekstu ani parametrów zapytań HTTP bez ryzyka uszkodzenia danych. Podczas przesyłania przez kanały wyłącznie tekstowe musi zostać zdekodowany lub zakodowany w Base64.",
+          "cliExplanation": "Konwertuje certyfikat Base64 PEM do czystego formatu binarnego DER."
         }
       }
     }
