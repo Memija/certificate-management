@@ -5697,3 +5697,824 @@ pre,
 
 
 
+
+/* ════════════════════════════════════════════════════════════
+   FLOATING SECTION & WIND-REPAIRED RIGHT-SIDE FLAG HEADER
+   ════════════════════════════════════════════════════════════ */
+.app-main-wrapper {
+  position: relative;
+}
+
+.app-header {
+  transition:
+    background 0.3s ease,
+    height 0.44s cubic-bezier(0.16, 1, 0.3, 1),
+    min-height 0.44s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.app-header.is-collapsing {
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.app-header.is-collapsing .app-header-title-group {
+  animation: headerTitleWindHide 0.22s cubic-bezier(0.32, 0, 0.67, 0) forwards;
+  transform-origin: left center;
+}
+
+.app-header.is-collapsing .app-header-right {
+  animation: headerRightTuckOut 0.18s ease-in forwards;
+}
+
+.app-header.is-collapsing .sidebar-toggle-btn {
+  opacity: 0;
+  transition: opacity 0.14s ease;
+}
+
+@keyframes headerTitleWindHide {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) skewX(0deg) scale(1);
+    filter: blur(0px);
+  }
+  45% {
+    opacity: 0.55;
+    transform: translate3d(16px, -5px, 0) skewX(-9deg) scale(0.98);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(42px, -14px, 0) skewX(-16deg) scale(0.94);
+    filter: blur(6px);
+  }
+}
+
+@keyframes headerRightTuckOut {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(26px, -6px, 0) scale(0.92);
+  }
+}
+
+/* ─── Section Float-to-Top Stage ─── */
+.section-float-stage {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.section-float-stage.section-float-pass-a {
+  animation: sectionFloatToTopA 0.56s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-float-stage.section-float-pass-b {
+  animation: sectionFloatToTopB 0.56s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes sectionFloatToTopA {
+  0% {
+    opacity: 0.18;
+    transform: translate3d(0, 44px, 0) scale(0.99);
+  }
+  62% {
+    opacity: 1;
+    transform: translate3d(0, -3px, 0) scale(1.001);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes sectionFloatToTopB {
+  0% {
+    opacity: 0.18;
+    transform: translate3d(0, 44px, 0) scale(0.99);
+  }
+  62% {
+    opacity: 1;
+    transform: translate3d(0, -3px, 0) scale(1.001);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.app-main-wrapper.is-floated .main-content {
+  padding-top: 1.55rem;
+  transition: padding-top 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Mobile Floating Sidebar Trigger (when full header is collapsed) */
+.floating-sidebar-trigger {
+  display: none;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 260;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--header-bg);
+  backdrop-filter: blur(22px) saturate(190%);
+  -webkit-backdrop-filter: blur(22px) saturate(190%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-inner-light);
+  color: var(--text-primary);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background 0.2s ease;
+}
+
+.floating-sidebar-trigger:hover {
+  transform: translateY(-1px);
+  background: var(--glass-bg-hover);
+  border-color: var(--accent-color);
+}
+
+@keyframes floatingTriggerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ─── Right-Side Repaired Flag Header Dock ─── */
+.flag-header-dock {
+  --flag-accent: var(--cat-systemcheck);
+  --flag-accent-bg: var(--cat-systemcheck-bg);
+  --flag-accent-border: var(--cat-systemcheck-border);
+  --flag-accent-glow: var(--cat-systemcheck-glow);
+
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 260;
+  display: flex;
+  align-items: stretch;
+  pointer-events: auto;
+}
+
+.flag-header-dock[data-category="systemCheck"],
+.flag-header-dock[data-category="secureBoot"] {
+  --flag-accent: var(--cat-systemcheck);
+  --flag-accent-bg: var(--cat-systemcheck-bg);
+  --flag-accent-border: var(--cat-systemcheck-border);
+  --flag-accent-glow: var(--cat-systemcheck-glow);
+}
+
+.flag-header-dock[data-category="inspectionValidation"],
+.flag-header-dock[data-category="inspection"],
+.flag-header-dock[data-category="validation"] {
+  --flag-accent: var(--cat-inspectionvalidation);
+  --flag-accent-bg: var(--cat-inspectionvalidation-bg);
+  --flag-accent-border: var(--cat-inspectionvalidation-border);
+  --flag-accent-glow: var(--cat-inspectionvalidation-glow);
+}
+
+.flag-header-dock[data-category="keyManagement"],
+.flag-header-dock[data-category="tools"] {
+  --flag-accent: var(--cat-keymanagement);
+  --flag-accent-bg: var(--cat-keymanagement-bg);
+  --flag-accent-border: var(--cat-keymanagement-border);
+  --flag-accent-glow: var(--cat-keymanagement-glow);
+}
+
+.flag-header-dock[data-category="networkStatus"],
+.flag-header-dock[data-category="network"] {
+  --flag-accent: var(--cat-networkstatus);
+  --flag-accent-bg: var(--cat-networkstatus-bg);
+  --flag-accent-border: var(--cat-networkstatus-border);
+  --flag-accent-glow: var(--cat-networkstatus-glow);
+}
+
+.flag-header-dock[data-category="learning"] {
+  --flag-accent: var(--cat-learning);
+  --flag-accent-bg: var(--cat-learning-bg);
+  --flag-accent-border: var(--cat-learning-border);
+  --flag-accent-glow: var(--cat-learning-glow);
+}
+
+.flag-banner-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 13px 5px 5px 13px;
+  overflow: visible;
+}
+
+/* Unified Frosted-Glass Pennant Shell (emerges seamlessly as strips mend) */
+.flag-unified-glass {
+  position: absolute;
+  inset: 0;
+  border-radius: 13px 5px 5px 13px;
+  background: var(--header-bg);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--flag-accent-border);
+  border-right-width: 2px;
+  box-shadow:
+    var(--glass-shadow),
+    0 0 22px -6px var(--flag-accent-glow),
+    var(--glass-inner-light);
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+/* Heraldic pennant trim along the left fly edge */
+.flag-swallowtail-notch {
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(
+    180deg,
+    var(--flag-accent) 0%,
+    transparent 42%,
+    transparent 58%,
+    var(--flag-accent) 100%
+  );
+  opacity: 0.85;
+}
+
+/* Silk weave sheen sweeping across the newly repaired flag */
+.flag-weave-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    112deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.08) 46%,
+    var(--flag-accent-bg) 52%,
+    transparent 76%
+  );
+  transform: translateX(110%);
+}
+
+.flag-header-dock.phase-repairing .flag-weave-sheen {
+  animation: flagRepairSheenSweep 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.32s forwards;
+}
+
+@keyframes flagRepairSheenSweep {
+  0% {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-115%);
+    opacity: 0;
+  }
+}
+
+.flag-header-dock.phase-shredding .flag-unified-glass {
+  opacity: 0;
+  transition: opacity 0.04s linear;
+}
+
+.flag-header-dock.phase-repairing .flag-unified-glass {
+  animation: flagUnifiedConsolidate 0.88s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.flag-header-dock.phase-repaired .flag-unified-glass {
+  opacity: 1;
+}
+
+@keyframes flagUnifiedConsolidate {
+  0%, 42% {
+    opacity: 0;
+  }
+  74% {
+    opacity: 0.88;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ─── Tattered Fluttering Strips & Wind-Thread Loom ─── */
+.flag-tattered-loom {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  overflow: visible;
+}
+
+.flag-strip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(var(--strip-i) * 12.5%);
+  width: 14.6%;
+  transform-origin: right center;
+  background:
+    repeating-linear-gradient(
+      -58deg,
+      rgba(255, 255, 255, 0.065) 0px,
+      rgba(255, 255, 255, 0.065) 2px,
+      transparent 2px,
+      transparent 6px
+    ),
+    linear-gradient(
+      180deg,
+      var(--flag-accent-bg) 0%,
+      var(--header-bg) 38%,
+      var(--header-bg) 72%,
+      var(--flag-accent-bg) 100%
+    );
+  border-top: 1px solid var(--flag-accent-border);
+  border-bottom: 1px solid var(--flag-accent-border);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+  will-change: transform, opacity, clip-path;
+}
+
+[data-theme="light"] .flag-strip {
+  background:
+    repeating-linear-gradient(
+      -58deg,
+      rgba(15, 23, 42, 0.045) 0px,
+      rgba(15, 23, 42, 0.045) 2px,
+      transparent 2px,
+      transparent 6px
+    ),
+    linear-gradient(
+      180deg,
+      var(--flag-accent-bg) 0%,
+      rgba(255, 255, 255, 0.96) 40%,
+      rgba(255, 255, 255, 0.96) 72%,
+      var(--flag-accent-bg) 100%
+    );
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+.flag-strip.strip-0 {
+  border-radius: 0 5px 5px 0;
+  border-right: 2px solid var(--flag-accent-border);
+}
+
+.flag-strip.is-fly-tip {
+  border-radius: 13px 0 0 13px;
+  border-left: 1px solid var(--flag-accent-border);
+}
+
+/* Glowing stitch-seam thread that zips down each mended tear */
+.flag-strip:not(.is-fly-tip)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: repeating-linear-gradient(
+    180deg,
+    #ffffff 0px,
+    #ffffff 3px,
+    var(--flag-accent) 3px,
+    var(--flag-accent) 7px,
+    transparent 7px,
+    transparent 10px
+  );
+  box-shadow: 0 0 10px var(--flag-accent), 0 0 4px #ffffff;
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: top center;
+}
+
+.flag-header-dock.phase-repairing .flag-strip.tear-even {
+  animation: flagStripWindRepairEven 0.68s cubic-bezier(0.22, 1, 0.36, 1) var(--strip-delay) both;
+}
+
+.flag-header-dock.phase-repairing .flag-strip.tear-odd {
+  animation: flagStripWindRepairOdd 0.68s cubic-bezier(0.22, 1, 0.36, 1) var(--strip-delay) both;
+}
+
+.flag-header-dock.phase-repairing .flag-strip:not(.is-fly-tip)::after {
+  animation: flagSeamStitch 0.68s cubic-bezier(0.22, 1, 0.36, 1) var(--strip-delay) both;
+}
+
+.flag-header-dock.phase-shredding .flag-strip {
+  animation: flagStripWindShred 0.19s cubic-bezier(0.4, 0, 1, 1) calc(var(--strip-i) * 10ms) both;
+}
+
+/* 8-vertex jagged-tear -> mended-edge cloth flutter (even strips) */
+@keyframes flagStripWindRepairEven {
+  0% {
+    opacity: 0;
+    transform: translate3d(24px, calc(var(--tear-y) * 1.3), 0) skewY(calc(var(--skew-deg) * 1.35)) skewX(-14deg) rotate(var(--rot-deg)) scaleY(0.72) scaleX(0.76);
+    clip-path: polygon(0% 16%, 34% 38%, 66% 4%, 100% 18%, 100% 82%, 68% 98%, 32% 64%, 0% 90%);
+  }
+  20% {
+    opacity: 0.95;
+    transform: translate3d(-7px, calc(var(--tear-y) * -0.95), 0) skewY(calc(var(--skew-deg) * -1.0)) skewX(9deg) rotate(calc(var(--rot-deg) * -0.75)) scaleY(0.84) scaleX(0.88);
+    clip-path: polygon(0% 12%, 34% 30%, 66% 6%, 100% 14%, 100% 86%, 68% 96%, 32% 72%, 0% 92%);
+  }
+  42% {
+    opacity: 1;
+    transform: translate3d(4px, calc(var(--tear-y) * 0.52), 0) skewY(calc(var(--skew-deg) * 0.55)) skewX(-5deg) rotate(calc(var(--rot-deg) * 0.4)) scaleY(0.94) scaleX(0.96);
+    clip-path: polygon(0% 5%, 34% 14%, 66% 2%, 100% 6%, 100% 94%, 68% 99%, 32% 86%, 0% 96%);
+  }
+  64% {
+    opacity: 1;
+    transform: translate3d(-1.5px, calc(var(--tear-y) * -0.18), 0) skewY(calc(var(--skew-deg) * -0.18)) skewX(2deg) rotate(0deg) scaleY(0.99) scaleX(1.03);
+    clip-path: polygon(0% 1%, 34% 3%, 66% 0%, 100% 1%, 100% 99%, 68% 100%, 32% 97%, 0% 99%);
+  }
+  80% {
+    opacity: 0.85;
+    transform: translate3d(0, 0, 0) skewY(0deg) skewX(0deg) rotate(0deg) scaleY(1) scaleX(1.02);
+    clip-path: polygon(0% 0%, 34% 0%, 66% 0%, 100% 0%, 100% 100%, 68% 100%, 32% 100%, 0% 100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) skewY(0deg) skewX(0deg) rotate(0deg) scale(1);
+    clip-path: polygon(0% 0%, 34% 0%, 66% 0%, 100% 0%, 100% 100%, 68% 100%, 32% 100%, 0% 100%);
+  }
+}
+
+/* 8-vertex jagged-tear -> mended-edge cloth flutter (odd strips) */
+@keyframes flagStripWindRepairOdd {
+  0% {
+    opacity: 0;
+    transform: translate3d(24px, calc(var(--tear-y) * 1.3), 0) skewY(calc(var(--skew-deg) * 1.35)) skewX(12deg) rotate(var(--rot-deg)) scaleY(0.72) scaleX(0.76);
+    clip-path: polygon(0% 5%, 32% 8%, 68% 38%, 100% 12%, 100% 92%, 64% 62%, 34% 96%, 0% 80%);
+  }
+  20% {
+    opacity: 0.95;
+    transform: translate3d(-7px, calc(var(--tear-y) * -0.95), 0) skewY(calc(var(--skew-deg) * -1.0)) skewX(-8deg) rotate(calc(var(--rot-deg) * -0.75)) scaleY(0.84) scaleX(0.88);
+    clip-path: polygon(0% 4%, 32% 7%, 68% 29%, 100% 9%, 100% 94%, 64% 70%, 34% 97%, 0% 85%);
+  }
+  42% {
+    opacity: 1;
+    transform: translate3d(4px, calc(var(--tear-y) * 0.52), 0) skewY(calc(var(--skew-deg) * 0.55)) skewX(4deg) rotate(calc(var(--rot-deg) * 0.4)) scaleY(0.94) scaleX(0.96);
+    clip-path: polygon(0% 2%, 32% 3%, 68% 13%, 100% 4%, 100% 97%, 64% 87%, 34% 99%, 0% 94%);
+  }
+  64% {
+    opacity: 1;
+    transform: translate3d(-1.5px, calc(var(--tear-y) * -0.18), 0) skewY(calc(var(--skew-deg) * -0.18)) skewX(-2deg) rotate(0deg) scaleY(0.99) scaleX(1.03);
+    clip-path: polygon(0% 0%, 32% 1%, 68% 3%, 100% 1%, 100% 99%, 64% 97%, 34% 100%, 0% 99%);
+  }
+  80% {
+    opacity: 0.85;
+    transform: translate3d(0, 0, 0) skewY(0deg) skewX(0deg) rotate(0deg) scaleY(1) scaleX(1.02);
+    clip-path: polygon(0% 0%, 32% 0%, 68% 0%, 100% 0%, 100% 100%, 64% 100%, 34% 100%, 0% 100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) skewY(0deg) skewX(0deg) rotate(0deg) scale(1);
+    clip-path: polygon(0% 0%, 32% 0%, 68% 0%, 100% 0%, 100% 100%, 64% 100%, 34% 100%, 0% 100%);
+  }
+}
+
+@keyframes flagSeamStitch {
+  0%, 30% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  48% {
+    opacity: 1;
+    transform: scaleY(0.65);
+  }
+  68% {
+    opacity: 0.95;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes flagStripWindShred {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) skewY(0deg) rotate(0deg) scale(1);
+    clip-path: polygon(0% 0%, 34% 0%, 66% 0%, 100% 0%, 100% 100%, 68% 100%, 32% 100%, 0% 100%);
+  }
+  45% {
+    opacity: 0.9;
+    transform: translate3d(-10px, calc(var(--tear-y) * 0.75), 0) skewY(var(--skew-deg)) rotate(calc(var(--rot-deg) * 0.7)) scaleY(0.84) scaleX(0.88);
+    clip-path: polygon(0% 14%, 34% 34%, 66% 5%, 100% 16%, 100% 84%, 68% 97%, 32% 66%, 0% 90%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(26px, calc(var(--tear-y) * 1.25), 0) skewY(calc(var(--skew-deg) * 1.3)) rotate(var(--rot-deg)) scaleY(0.68) scaleX(0.72);
+    clip-path: polygon(0% 18%, 34% 40%, 66% 4%, 100% 20%, 100% 80%, 68% 98%, 32% 60%, 0% 92%);
+  }
+}
+
+/* Loose Wind Threads / Frayed Fibres SVG */
+.flag-wind-svg {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  left: -38px;
+  width: calc(100% + 42px);
+  height: calc(100% + 16px);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.flag-wind-svg .wind-thread {
+  fill: none;
+  stroke: var(--flag-accent);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-dasharray: 84 260;
+  stroke-dashoffset: 130;
+  opacity: 0;
+  filter: drop-shadow(0 0 5px var(--flag-accent));
+}
+
+.flag-wind-svg .wind-thread.wt-2 {
+  stroke-width: 1.1;
+  stroke-dasharray: 68 260;
+}
+
+.flag-header-dock.phase-repairing .flag-wind-svg .wt-1 {
+  animation: flagWindThreadDraw 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.04s forwards;
+}
+
+.flag-header-dock.phase-repairing .flag-wind-svg .wt-2 {
+  animation: flagWindThreadDraw 0.76s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+}
+
+.flag-header-dock.phase-repairing .flag-wind-svg .wt-3 {
+  animation: flagWindThreadDraw 0.74s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+}
+
+.flag-header-dock.phase-shredding .flag-wind-svg .wind-thread {
+  animation: flagWindThreadWhipOut 0.19s ease-out forwards;
+}
+
+@keyframes flagWindThreadDraw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 150;
+  }
+  25% {
+    opacity: 0.85;
+  }
+  72% {
+    opacity: 0.55;
+    stroke-dashoffset: -120;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -195;
+  }
+}
+
+@keyframes flagWindThreadWhipOut {
+  0% {
+    opacity: 0.75;
+    stroke-dashoffset: -80;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 120;
+  }
+}
+
+/* ─── Controls Payload (Exposed Right-to-Left as Flag Repairs) ─── */
+.flag-controls-payload {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.36rem 0.6rem 0.36rem 0.75rem;
+}
+
+.flag-controls-divider {
+  width: 1px;
+  height: 19px;
+  background: var(--glass-border-subtle);
+  flex-shrink: 0;
+}
+
+.flag-header-dock.phase-shredding .flag-controls-payload {
+  animation: flagControlsVeilOut 0.17s ease-in forwards;
+  pointer-events: none;
+}
+
+.flag-header-dock.phase-repairing .flag-controls-payload {
+  animation: flagControlsUnveil 0.84s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.flag-header-dock.phase-repaired .flag-controls-payload {
+  opacity: 1;
+  transform: none;
+  clip-path: none;
+}
+
+/* 6-vertex jagged wind-edge wipe unveiling controls from right mast to left tip */
+@keyframes flagControlsUnveil {
+  0%, 16% {
+    opacity: 0;
+    transform: translate3d(10px, 0, 0);
+    clip-path: polygon(100% -12%, 105% -12%, 105% 112%, 100% 112%, 98% 66%, 101% 33%);
+  }
+  34% {
+    opacity: 1;
+    transform: translate3d(5px, -1px, 0);
+    clip-path: polygon(74% -12%, 105% -12%, 105% 112%, 78% 112%, 66% 66%, 80% 33%);
+  }
+  62% {
+    opacity: 1;
+    transform: translate3d(-1px, 1px, 0);
+    clip-path: polygon(26% -12%, 105% -12%, 105% 112%, 32% 112%, 16% 66%, 34% 33%);
+  }
+  88% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    clip-path: polygon(-6% -12%, 105% -12%, 105% 112%, -6% 112%, -8% 66%, -6% 33%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    clip-path: polygon(-10% -16%, 108% -16%, 108% 116%, -10% 116%, -10% 66%, -10% 33%);
+  }
+}
+
+@keyframes flagControlsVeilOut {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) skewX(0deg);
+    clip-path: polygon(-6% -12%, 105% -12%, 105% 112%, -6% 112%, -6% 66%, -6% 33%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(14px, -3px, 0) skewX(-10deg);
+    clip-path: polygon(96% -12%, 105% -12%, 105% 112%, 98% 112%, 90% 66%, 99% 33%);
+  }
+}
+
+/* ─── Right-Edge Flagpole / Mast ─── */
+.flag-mast {
+  position: relative;
+  width: 9px;
+  margin-left: 2px;
+  margin-top: -3px;
+  margin-bottom: -3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.flag-mast-pole {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  border-radius: 99px;
+  background: linear-gradient(
+    180deg,
+    var(--flag-accent) 0%,
+    rgba(255, 255, 255, 0.75) 50%,
+    var(--flag-accent) 100%
+  );
+  box-shadow: 0 0 12px var(--flag-accent-glow);
+}
+
+[data-theme="light"] .flag-mast-pole {
+  background: linear-gradient(
+    180deg,
+    var(--flag-accent) 0%,
+    #94a3b8 50%,
+    var(--flag-accent) 100%
+  );
+}
+
+.flag-mast-finial {
+  position: relative;
+  z-index: 2;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--flag-accent);
+  box-shadow: 0 0 8px var(--flag-accent);
+}
+
+.flag-mast-halyard {
+  position: absolute;
+  right: 50%;
+  width: 6px;
+  height: 2px;
+  background: var(--flag-accent);
+  opacity: 0.75;
+  border-radius: 2px;
+}
+
+.flag-mast-halyard.top {
+  top: 11px;
+}
+
+.flag-mast-halyard.bottom {
+  bottom: 11px;
+}
+
+.flag-header-dock.phase-repairing .flag-mast {
+  animation: flagMastAnchorIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes flagMastAnchorIn {
+  0% {
+    opacity: 0;
+    transform: translateX(8px) scaleY(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scaleY(1);
+  }
+}
+
+/* ─── Responsive & Clearance Rules for Floated Header Mode ─── */
+@media (min-width: 1025px) and (max-width: 1560px) {
+  .app-main-wrapper.is-floated .expiry-top-header {
+    padding-right: 252px;
+  }
+
+  .app-main-wrapper.is-floated .premium-header-actions {
+    margin-top: 2.6rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .app-main-wrapper.is-floated .floating-sidebar-trigger {
+    display: flex;
+    animation: floatingTriggerIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .app-main-wrapper.is-floated .main-content {
+    padding-top: 4.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-sidebar-trigger {
+    top: 10px;
+    left: 10px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .flag-header-dock {
+    top: 10px;
+    right: 10px;
+  }
+
+  .flag-controls-payload {
+    padding: 0.3rem 0.45rem 0.3rem 0.55rem;
+    gap: 0.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-float-stage.section-float-pass-a,
+  .section-float-stage.section-float-pass-b,
+  .flag-header-dock.phase-repairing .flag-strip,
+  .flag-header-dock.phase-shredding .flag-strip,
+  .flag-header-dock.phase-repairing .flag-wind-svg .wind-thread,
+  .flag-header-dock.phase-repairing .flag-controls-payload {
+    animation-duration: 0.15s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+@media print {
+  .flag-header-dock,
+  .floating-sidebar-trigger {
+    display: none !important;
+  }
+}

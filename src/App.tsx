@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { parseEfiSignatureLists, parseRawX509, type EfiSignatureList, type ParsedCertificate } from './utils/efiParser';
 import { Shield, ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, FolderOpen, Sun, Moon, FileKey, Monitor, ShieldAlert, Link as LinkIcon, Key, Zap, FileArchive, Globe, Activity, LayoutDashboard, Menu, X, Search, BookOpen, Download, Copy, Check, Eye, EyeOff } from 'lucide-react';
@@ -23,6 +23,7 @@ import './index.css';
 
 export type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
 export type Theme = 'dark' | 'light' | 'system';
+export type HeaderPhase = 'shredding' | 'repairing' | 'repaired';
 
 const APP_VERSION = '1.4.0';
 
@@ -83,6 +84,33 @@ function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Floated section & wind-repaired right-side flag choreography (active from initial load)
+  const [headerPhase, setHeaderPhase] = useState<HeaderPhase>('repairing');
+  const headerPhaseRef = useRef<HeaderPhase>('repairing');
+  const [floatGen, setFloatGen] = useState<number>(1);
+  const [isSectionFloating, setIsSectionFloating] = useState<boolean>(true);
+  const [repairGen, setRepairGen] = useState<number>(0);
+  const mainContentAreaRef = useRef<HTMLDivElement>(null);
+  const headerTimersRef = useRef<number[]>([]);
+
+  const updateHeaderPhase = (next: HeaderPhase) => {
+    headerPhaseRef.current = next;
+    setHeaderPhase(next);
+  };
+
+  const clearHeaderTimers = () => {
+    headerTimersRef.current.forEach(id => window.clearTimeout(id));
+    headerTimersRef.current = [];
+  };
+
+  useEffect(() => {
+    const initialTimer = window.setTimeout(() => {
+      updateHeaderPhase('repaired');
+    }, 880);
+    headerTimersRef.current.push(initialTimer);
+    return () => clearHeaderTimers();
+  }, []);
+
   useEffect(() => {
     const applyTheme = () => {
       let activeTheme = theme;
@@ -110,9 +138,28 @@ function App() {
   });
 
   const switchMode = (m: AppMode) => {
+    clearHeaderTimers();
     setMode(m);
     localStorage.setItem('app-mode', m);
     setSidebarOpen(false); // Close mobile sidebar on navigation
+
+    // Reset viewport scroll and float the selected section to the top
+    if (mainContentAreaRef.current) {
+      mainContentAreaRef.current.scrollTop = 0;
+    }
+    setFloatGen(g => g + 1);
+    setIsSectionFloating(true);
+
+    // Wind-gust shreds the banner, then repairs it for the selected section
+    updateHeaderPhase('shredding');
+    const t1 = window.setTimeout(() => {
+      setRepairGen(g => g + 1);
+      updateHeaderPhase('repairing');
+    }, 190);
+    const t2 = window.setTimeout(() => {
+      updateHeaderPhase('repaired');
+    }, 190 + 880);
+    headerTimersRef.current.push(t1, t2);
   };
 
   const [activeVar, setActiveVar] = useState<string>('db');
@@ -348,20 +395,54 @@ function App() {
     }
   };
 
+  const floatAnimClass = isSectionFloating
+    ? (floatGen % 2 === 1 ? 'section-float-pass-a' : 'section-float-pass-b')
+    : '';
+
   return (
     <ToastProvider>
       <div className="app-layout">
         <AppSidebar mode={mode} onModeChange={switchMode} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <div className="app-main-wrapper">
-          <AppHeader
+        <div
+          className="app-main-wrapper is-floated"
+          data-mode={mode}
+          data-header-phase={headerPhase}
+        >
+          <button
+            className="floating-sidebar-trigger"
+            onClick={() => setSidebarOpen(true)}
+            title={t('app.aria.openSidebar')}
+            aria-label={t('app.aria.openSidebar')}
+          >
+            <Menu size={20} />
+          </button>
+
+          <RepairedFlagHeader
             mode={mode}
             theme={theme}
+            phase={headerPhase}
+            repairGen={repairGen}
             onToggleTheme={toggleTheme}
-            onOpenSidebar={() => setSidebarOpen(true)}
+            onInteractEarly={() => {
+              if (headerPhaseRef.current === 'repairing') {
+                clearHeaderTimers();
+                updateHeaderPhase('repaired');
+              }
+            }}
           />
-          <div className="main-content-area">
-            {renderContent()}
+
+          <div className="main-content-area" ref={mainContentAreaRef}>
+            <div
+              className={`section-float-stage ${floatAnimClass}`}
+              onAnimationEnd={(e) => {
+                if (e.target === e.currentTarget) {
+                  setIsSectionFloating(false);
+                }
+              }}
+            >
+              {renderContent()}
+            </div>
           </div>
           <Footer />
         </div>
@@ -831,12 +912,18 @@ const LANGUAGES = [
 ];
 
 // ─── Flag Language Picker ─────────────────────────────────────────────────────
-function LanguagePicker() {
+function LanguagePicker({ closeSignal }: { closeSignal?: number }) {
   const { i18n, t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
   const current = LANGUAGES.find(l => l.code === i18n.language) ?? LANGUAGES[0];
+
+  React.useEffect(() => {
+    if (closeSignal !== undefined) {
+      setOpen(false);
+    }
+  }, [closeSignal]);
 
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -872,51 +959,86 @@ function LanguagePicker() {
   );
 }
 
-// ─── Shared App Header ───────────────────────────────────────────────────────
-function AppHeader({
-  mode, theme, onToggleTheme, onOpenSidebar
+// ─── Tattered Strip Spec for Wind-Damaged Flag Repair ─────────────────────────
+const FLAG_STRIPS = [
+  { idx: 0, tearY: '-12px', skew: '10deg',  rot: '-5deg',  delay: '0ms'   },
+  { idx: 1, tearY: '15px',  skew: '-12deg', rot: '6deg',   delay: '34ms'  },
+  { idx: 2, tearY: '-18px', skew: '14deg',  rot: '-8deg',  delay: '68ms'  },
+  { idx: 3, tearY: '21px',  skew: '-15deg', rot: '9deg',   delay: '102ms' },
+  { idx: 4, tearY: '-24px', skew: '17deg',  rot: '-10deg', delay: '136ms' },
+  { idx: 5, tearY: '26px',  skew: '-19deg', rot: '12deg',  delay: '170ms' },
+  { idx: 6, tearY: '-29px', skew: '21deg',  rot: '-13deg', delay: '204ms' },
+  { idx: 7, tearY: '32px',  skew: '-23deg', rot: '15deg',  delay: '238ms' },
+];
+
+// ─── Right-Side Wind-Repaired Flag Controls Banner ────────────────────────────
+function RepairedFlagHeader({
+  mode,
+  theme,
+  phase,
+  repairGen,
+  onToggleTheme,
+  onInteractEarly,
 }: {
   mode: AppMode;
   theme: Theme;
+  phase: 'shredding' | 'repairing' | 'repaired';
+  repairGen: number;
   onToggleTheme: () => void;
-  onOpenSidebar: () => void;
+  onInteractEarly: () => void;
 }) {
   const { t } = useTranslation();
-  let title = t('app.title');
-  let ActiveIcon: React.ElementType = Shield;
-  let categoryName = '';
-  let categoryId = 'secureBoot';
 
+  let categoryId = 'systemCheck';
   CATEGORIES.forEach(cat => {
-    const item = cat.items.find(i => i.id === mode);
-    if (item) {
-      title = t(`app.nav.${item.id}`);
-      ActiveIcon = item.icon;
-      categoryName = t(`app.categories.${cat.id}`);
+    if (cat.items.some(i => i.id === mode)) {
       categoryId = cat.id;
     }
   });
 
   return (
-    <header className="app-header">
-      <div className="app-header-inner">
-        <div className="app-header-left">
-          <button className="sidebar-toggle-btn" onClick={onOpenSidebar} title={t('app.aria.openSidebar')}>
-            <Menu size={20} />
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
-            <div className={`metric-icon-wrap header-badge-${categoryId}`} style={{ width: 36, height: 36, borderRadius: 10 }}>
-              <ActiveIcon size={18} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <h1 className="app-header-title">{title}</h1>
-              {categoryName && <span style={{ fontSize: '0.7rem', color: `var(--cat-${categoryId.toLowerCase()})`, fontWeight: 600, letterSpacing: '0.02em' }}>{categoryName}</span>}
-            </div>
-          </div>
+    <div
+      className={`flag-header-dock phase-${phase}`}
+      data-category={categoryId}
+      onPointerDown={onInteractEarly}
+      role="region"
+      aria-label="Quick settings"
+    >
+      <div className="flag-banner-frame">
+        {/* Healed frosted-glass pennant body */}
+        <div className="flag-unified-glass" aria-hidden="true">
+          <span className="flag-swallowtail-notch" />
+          <span className="flag-weave-sheen" />
         </div>
 
-        <div className="app-header-right">
-          <LanguagePicker />
+        {/* Tattered fluttering strips & loose wind threads during shred / repair */}
+        {phase !== 'repaired' && (
+          <div key={`${phase}-${repairGen}`} className="flag-tattered-loom" aria-hidden="true">
+            {FLAG_STRIPS.map(s => (
+              <span
+                key={s.idx}
+                className={`flag-strip strip-${s.idx} ${s.idx % 2 === 0 ? 'tear-even' : 'tear-odd'} ${s.idx === 7 ? 'is-fly-tip' : ''}`}
+                style={{
+                  '--strip-i': s.idx,
+                  '--tear-y': s.tearY,
+                  '--skew-deg': s.skew,
+                  '--rot-deg': s.rot,
+                  '--strip-delay': s.delay,
+                } as React.CSSProperties}
+              />
+            ))}
+            <svg className="flag-wind-svg" viewBox="0 0 280 64" preserveAspectRatio="none">
+              <path className="wind-thread wt-1" d="M -30,13 C 22,1 74,25 140,10 C 196,-2 238,14 278,10" />
+              <path className="wind-thread wt-2" d="M -38,33 C 16,49 88,17 154,34 C 208,46 244,28 278,32" />
+              <path className="wind-thread wt-3" d="M -24,52 C 32,37 98,59 166,48 C 218,40 248,54 278,52" />
+            </svg>
+          </div>
+        )}
+
+        {/* Theme & language controls exposed as the flag repairs right-to-left */}
+        <div className="flag-controls-payload">
+          <LanguagePicker closeSignal={repairGen} />
+          <span className="flag-controls-divider" aria-hidden="true" />
           <button
             className="theme-toggle"
             onClick={onToggleTheme}
@@ -926,7 +1048,16 @@ function AppHeader({
           </button>
         </div>
       </div>
-    </header>
+
+      {/* Right-edge Flagpole / Mast */}
+      <div className="flag-mast" aria-hidden="true">
+        <span className="flag-mast-finial top" />
+        <span className="flag-mast-halyard top" />
+        <span className="flag-mast-pole" />
+        <span className="flag-mast-halyard bottom" />
+        <span className="flag-mast-finial bottom" />
+      </div>
+    </div>
   );
 }
 

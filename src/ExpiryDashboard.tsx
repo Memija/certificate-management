@@ -166,7 +166,7 @@ export function ExpiryDashboard() {
   return (
     <div className="main-content">
       <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="expiry-top-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ margin: '0 0 0.4rem 0' }}>{t('app.nav.expiry-dashboard', 'Certificate Expiry Dashboard')}</h2>
             <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.92rem' }}>
