@@ -23,7 +23,7 @@ import './index.css';
 
 export type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
 export type Theme = 'dark' | 'light' | 'system';
-export type HeaderPhase = 'shredding' | 'repairing' | 'repaired';
+export type HeaderPhase = 'waiting' | 'shredding' | 'repairing' | 'repaired';
 
 const APP_VERSION = '1.4.0';
 
@@ -84,12 +84,14 @@ function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Floated section & wind-repaired right-side flag choreography (active from initial load)
-  const [headerPhase, setHeaderPhase] = useState<HeaderPhase>('repairing');
-  const headerPhaseRef = useRef<HeaderPhase>('repairing');
+  // Sequenced choreography: 1. Hide left title -> 2. Float content to top -> 3. Mend right-side glass controls capsule
+  const [headerPhase, setHeaderPhase] = useState<HeaderPhase>('waiting');
+  const headerPhaseRef = useRef<HeaderPhase>('waiting');
+  const [showLeftTitle, setShowLeftTitle] = useState<boolean>(true);
   const [floatGen, setFloatGen] = useState<number>(1);
   const [isSectionFloating, setIsSectionFloating] = useState<boolean>(true);
   const [repairGen, setRepairGen] = useState<number>(0);
+  const [transitionGen, setTransitionGen] = useState<number>(1);
   const mainContentAreaRef = useRef<HTMLDivElement>(null);
   const headerTimersRef = useRef<number[]>([]);
 
@@ -104,10 +106,22 @@ function App() {
   };
 
   useEffect(() => {
-    const initialTimer = window.setTimeout(() => {
+    // Beat 1 (0..305ms): Left-side header title hides completely before content floats up (325ms+)
+    const tHideLeft = window.setTimeout(() => {
+      setShowLeftTitle(false);
+    }, 305);
+    // Beat 3 (350..1130ms): Right-side glass controls capsule mends into view as content floats into top
+    const tRepair = window.setTimeout(() => {
+      setRepairGen(g => g + 1);
+      updateHeaderPhase('repairing');
+    }, 350);
+    const tDone = window.setTimeout(() => {
       updateHeaderPhase('repaired');
-    }, 880);
-    headerTimersRef.current.push(initialTimer);
+    }, 350 + 780);
+    const tFloatClear = window.setTimeout(() => {
+      setIsSectionFloating(false);
+    }, 950);
+    headerTimersRef.current.push(tHideLeft, tRepair, tDone, tFloatClear);
     return () => clearHeaderTimers();
   }, []);
 
@@ -143,23 +157,39 @@ function App() {
     localStorage.setItem('app-mode', m);
     setSidebarOpen(false); // Close mobile sidebar on navigation
 
-    // Reset viewport scroll and float the selected section to the top
+    // Reset viewport scroll; content holds below header until left title hides (at 305ms), then floats up
     if (mainContentAreaRef.current) {
       mainContentAreaRef.current.scrollTop = 0;
     }
+    setShowLeftTitle(true);
     setFloatGen(g => g + 1);
+    setTransitionGen(g => g + 1);
     setIsSectionFloating(true);
 
-    // Wind-gust shreds the banner, then repairs it for the selected section
-    updateHeaderPhase('shredding');
-    const t1 = window.setTimeout(() => {
+    const wasVisible = headerPhaseRef.current === 'repaired' || headerPhaseRef.current === 'repairing';
+    updateHeaderPhase(wasVisible ? 'shredding' : 'waiting');
+
+    if (wasVisible) {
+      const tWait = window.setTimeout(() => {
+        updateHeaderPhase('waiting');
+      }, 210);
+      headerTimersRef.current.push(tWait);
+    }
+
+    const tHideLeft = window.setTimeout(() => {
+      setShowLeftTitle(false);
+    }, 305);
+    const tRepair = window.setTimeout(() => {
       setRepairGen(g => g + 1);
       updateHeaderPhase('repairing');
-    }, 190);
-    const t2 = window.setTimeout(() => {
+    }, 350);
+    const tDone = window.setTimeout(() => {
       updateHeaderPhase('repaired');
-    }, 190 + 880);
-    headerTimersRef.current.push(t1, t2);
+    }, 350 + 780);
+    const tFloatClear = window.setTimeout(() => {
+      setIsSectionFloating(false);
+    }, 950);
+    headerTimersRef.current.push(tHideLeft, tRepair, tDone, tFloatClear);
   };
 
   const [activeVar, setActiveVar] = useState<string>('db');
@@ -399,6 +429,13 @@ function App() {
     ? (floatGen % 2 === 1 ? 'section-float-pass-a' : 'section-float-pass-b')
     : '';
 
+  let activeCategoryId = 'systemCheck';
+  CATEGORIES.forEach(cat => {
+    if (cat.items.some(i => i.id === mode)) {
+      activeCategoryId = cat.id;
+    }
+  });
+
   return (
     <ToastProvider>
       <div className="app-layout">
@@ -407,8 +444,14 @@ function App() {
         <div
           className="app-main-wrapper is-floated"
           data-mode={mode}
+          data-category={activeCategoryId}
           data-header-phase={headerPhase}
         >
+          {/* Ambient updraft horizon glow while section floats to the top */}
+          {isSectionFloating && (
+            <div key={`updraft-${floatGen}`} className="section-updraft-aura" aria-hidden="true" />
+          )}
+
           <button
             className="floating-sidebar-trigger"
             onClick={() => setSidebarOpen(true)}
@@ -418,15 +461,22 @@ function App() {
             <Menu size={20} />
           </button>
 
-          <RepairedFlagHeader
+          {/* Beat 1: Left-side header title hides completely BEFORE content floats up */}
+          {showLeftTitle && (
+            <HeaderLeftTitle key={`left-title-${transitionGen}`} mode={mode} />
+          )}
+
+          {/* Beat 3: Sleek right-side glass controls capsule mends together out of wind-swept shards */}
+          <HeaderControlsCapsule
             mode={mode}
             theme={theme}
             phase={headerPhase}
             repairGen={repairGen}
             onToggleTheme={toggleTheme}
             onInteractEarly={() => {
-              if (headerPhaseRef.current === 'repairing') {
+              if (headerPhaseRef.current !== 'repaired') {
                 clearHeaderTimers();
+                setShowLeftTitle(false);
                 updateHeaderPhase('repaired');
               }
             }}
@@ -853,6 +903,15 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
 // ─── Sidebar Navigation ───────────────────────────────────────────────────────
 function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, onModeChange: (m: AppMode) => void, isOpen: boolean, onClose: () => void }) {
   const { t } = useTranslation();
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const activeBtn = navRef.current?.querySelector('.sidebar-nav-btn.active') as HTMLElement | null;
+    if (activeBtn) {
+      activeBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [mode]);
+
   return (
     <>
       <div className={`app-sidebar-overlay ${isOpen ? 'open' : ''}`} onClick={onClose} />
@@ -868,7 +927,7 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, on
           </button>
         </div>
 
-        <nav className="app-sidebar-nav">
+        <nav className="app-sidebar-nav" ref={navRef}>
           {CATEGORIES.map((category, idx) => (
             <div key={idx} className="sidebar-category" data-category={category.id}>
               <h4 className="sidebar-category-title">{t(`app.categories.${category.id}`)}</h4>
@@ -959,20 +1018,61 @@ function LanguagePicker({ closeSignal }: { closeSignal?: number }) {
   );
 }
 
-// ─── Tattered Strip Spec for Wind-Damaged Flag Repair ─────────────────────────
-const FLAG_STRIPS = [
-  { idx: 0, tearY: '-12px', skew: '10deg',  rot: '-5deg',  delay: '0ms'   },
-  { idx: 1, tearY: '15px',  skew: '-12deg', rot: '6deg',   delay: '34ms'  },
-  { idx: 2, tearY: '-18px', skew: '14deg',  rot: '-8deg',  delay: '68ms'  },
-  { idx: 3, tearY: '21px',  skew: '-15deg', rot: '9deg',   delay: '102ms' },
-  { idx: 4, tearY: '-24px', skew: '17deg',  rot: '-10deg', delay: '136ms' },
-  { idx: 5, tearY: '26px',  skew: '-19deg', rot: '12deg',  delay: '170ms' },
-  { idx: 6, tearY: '-29px', skew: '21deg',  rot: '-13deg', delay: '204ms' },
-  { idx: 7, tearY: '32px',  skew: '-23deg', rot: '15deg',  delay: '238ms' },
+// ─── Ephemeral Left-Side Header Title (Hides Cleanly Before Content Floats Up) ──
+function HeaderLeftTitle({ mode }: { mode: AppMode }) {
+  const { t } = useTranslation();
+  let title = t('app.title');
+  let ActiveIcon: React.ElementType = Shield;
+  let categoryName = '';
+  let categoryId = 'systemCheck';
+
+  CATEGORIES.forEach(cat => {
+    const item = cat.items.find(i => i.id === mode);
+    if (item) {
+      title = t(`app.nav.${item.id}`);
+      ActiveIcon = item.icon;
+      categoryName = t(`app.categories.${cat.id}`);
+      categoryId = cat.id;
+    }
+  });
+
+  const renderBadgeAndTitle = () => (
+    <div className="header-left-ghost-inner">
+      <div className={`metric-icon-wrap header-badge-${categoryId} header-left-ghost-badge`}>
+        <ActiveIcon size={17} />
+      </div>
+      <div className="header-left-ghost-text">
+        <span className="header-left-ghost-heading">{title}</span>
+        {categoryName && <span className="header-left-ghost-cat">{categoryName}</span>}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="header-left-ghost-wrap" data-category={categoryId} aria-hidden="true">
+      <div className="header-left-ghost-stack">
+        <div className="title-wind-slice slice-top">{renderBadgeAndTitle()}</div>
+        <div className="title-wind-slice slice-mid">{renderBadgeAndTitle()}</div>
+        <div className="title-wind-slice slice-bot">{renderBadgeAndTitle()}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Wind-Swept Glass Shard Spec for Right-Side Controls Capsule ─────────────
+const CAPSULE_SHARDS = [
+  { idx: 0, driftY: '-9px',  skew: '8deg',   rot: '-3deg',  rotY: '-18deg', delay: '0ms'   },
+  { idx: 1, driftY: '11px',  skew: '-9deg',  rot: '4deg',   rotY: '20deg',  delay: '26ms'  },
+  { idx: 2, driftY: '-14px', skew: '11deg',  rot: '-5deg',  rotY: '-23deg', delay: '52ms'  },
+  { idx: 3, driftY: '16px',  skew: '-12deg', rot: '6deg',   rotY: '26deg',  delay: '78ms'  },
+  { idx: 4, driftY: '-18px', skew: '14deg',  rot: '-8deg',  rotY: '-28deg', delay: '104ms' },
+  { idx: 5, driftY: '21px',  skew: '-15deg', rot: '9deg',   rotY: '31deg',  delay: '130ms' },
+  { idx: 6, driftY: '-23px', skew: '17deg',  rot: '-10deg', rotY: '-34deg', delay: '156ms' },
+  { idx: 7, driftY: '25px',  skew: '-18deg', rot: '12deg',  rotY: '36deg',  delay: '182ms' },
 ];
 
-// ─── Right-Side Wind-Repaired Flag Controls Banner ────────────────────────────
-function RepairedFlagHeader({
+// ─── Sleek Right-Side Frosted-Glass Controls Capsule (Wind-Mended Motion) ────
+function HeaderControlsCapsule({
   mode,
   theme,
   phase,
@@ -982,7 +1082,7 @@ function RepairedFlagHeader({
 }: {
   mode: AppMode;
   theme: Theme;
-  phase: 'shredding' | 'repairing' | 'repaired';
+  phase: HeaderPhase;
   repairGen: number;
   onToggleTheme: () => void;
   onInteractEarly: () => void;
@@ -998,47 +1098,58 @@ function RepairedFlagHeader({
 
   return (
     <div
-      className={`flag-header-dock phase-${phase}`}
+      className={`controls-capsule-dock phase-${phase}`}
       data-category={categoryId}
       onPointerDown={onInteractEarly}
       role="region"
       aria-label="Quick settings"
     >
-      <div className="flag-banner-frame">
-        {/* Healed frosted-glass pennant body */}
-        <div className="flag-unified-glass" aria-hidden="true">
-          <span className="flag-swallowtail-notch" />
-          <span className="flag-weave-sheen" />
+      <div className="controls-capsule-frame">
+        {/* Clean, modern rounded frosted-glass pill (not a flag) */}
+        <div className="capsule-glass-shell" aria-hidden="true">
+          <span className="capsule-glass-sheen" />
         </div>
 
-        {/* Tattered fluttering strips & loose wind threads during shred / repair */}
-        {phase !== 'repaired' && (
-          <div key={`${phase}-${repairGen}`} className="flag-tattered-loom" aria-hidden="true">
-            {FLAG_STRIPS.map(s => (
+        {/* Wind-damaged translucent glass ribbons rippling & mending seamlessly together */}
+        {(phase === 'shredding' || phase === 'repairing') && (
+          <div key={`${phase}-${repairGen}`} className="capsule-mend-loom" aria-hidden="true">
+            {CAPSULE_SHARDS.map(s => (
               <span
                 key={s.idx}
-                className={`flag-strip strip-${s.idx} ${s.idx % 2 === 0 ? 'tear-even' : 'tear-odd'} ${s.idx === 7 ? 'is-fly-tip' : ''}`}
+                className={`capsule-mend-shard shard-${s.idx} ${s.idx % 2 === 0 ? 'shard-even' : 'shard-odd'} ${s.idx === 7 ? 'is-left-edge' : ''}`}
                 style={{
-                  '--strip-i': s.idx,
-                  '--tear-y': s.tearY,
+                  '--shard-i': s.idx,
+                  '--drift-y': s.driftY,
                   '--skew-deg': s.skew,
                   '--rot-deg': s.rot,
-                  '--strip-delay': s.delay,
+                  '--rot-y': s.rotY,
+                  '--shard-delay': s.delay,
                 } as React.CSSProperties}
-              />
+              >
+                <span className="shard-fold-glint" />
+              </span>
             ))}
-            <svg className="flag-wind-svg" viewBox="0 0 280 64" preserveAspectRatio="none">
-              <path className="wind-thread wt-1" d="M -30,13 C 22,1 74,25 140,10 C 196,-2 238,14 278,10" />
-              <path className="wind-thread wt-2" d="M -38,33 C 16,49 88,17 154,34 C 208,46 244,28 278,32" />
-              <path className="wind-thread wt-3" d="M -24,52 C 32,37 98,59 166,48 C 218,40 248,54 278,52" />
+
+            {/* Subtle aerodynamic wind-light filaments guiding the mend */}
+            <svg className="capsule-wind-svg" viewBox="0 0 260 52" preserveAspectRatio="none">
+              <path
+                className="capsule-wind-filament wf-1"
+                d="M -22,14 C 32,4 92,24 158,11 C 204,3 234,14 258,12"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                className="capsule-wind-filament wf-2"
+                d="M -28,36 C 28,48 98,22 168,37 C 212,46 238,34 258,36"
+                vectorEffect="non-scaling-stroke"
+              />
             </svg>
           </div>
         )}
 
-        {/* Theme & language controls exposed as the flag repairs right-to-left */}
-        <div className="flag-controls-payload">
+        {/* Theme & language controls exposed as the glass capsule mends */}
+        <div className="capsule-controls-payload">
           <LanguagePicker closeSignal={repairGen} />
-          <span className="flag-controls-divider" aria-hidden="true" />
+          <span className="capsule-controls-divider" aria-hidden="true" />
           <button
             className="theme-toggle"
             onClick={onToggleTheme}
@@ -1047,15 +1158,6 @@ function RepairedFlagHeader({
             {theme === 'dark' ? <Moon size={17} /> : theme === 'light' ? <Sun size={17} /> : <Monitor size={17} />}
           </button>
         </div>
-      </div>
-
-      {/* Right-edge Flagpole / Mast */}
-      <div className="flag-mast" aria-hidden="true">
-        <span className="flag-mast-finial top" />
-        <span className="flag-mast-halyard top" />
-        <span className="flag-mast-pole" />
-        <span className="flag-mast-halyard bottom" />
-        <span className="flag-mast-finial bottom" />
       </div>
     </div>
   );
