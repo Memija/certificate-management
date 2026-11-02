@@ -19,6 +19,7 @@ import { LearningTerm } from './LearningTerm';
 import { ToastProvider, useToast } from './ToastContext';
 import { splitPurposes, translatePurpose, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
+import { fetchLocalApiJson, getWebFallbackSecureBootVars, WebApiUnavailableError } from './utils/webFallbacks';
 import './index.css';
 
 export type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
@@ -216,12 +217,9 @@ function App() {
     }
 
     try {
-      const response = await fetch(`/api/secureboot?var=all${elevate ? '&elevate=true' : ''}`);
-      const json = await response.json();
-
-      if (!response.ok) {
-        throw new Error(json.error || 'Failed to fetch');
-      }
+      const json = await fetchLocalApiJson<{ data: Record<string, string> }>(
+        `/api/secureboot?var=all${elevate ? '&elevate=true' : ''}`
+      );
 
       setVariablesCache(json.data);
       setNeedsElevation(false);
@@ -229,7 +227,12 @@ function App() {
       // Parse the active variable ('db' initially)
       parseAndSet('db', json.data['db']);
     } catch (err: any) {
-      if (!elevate) {
+      if (err instanceof WebApiUnavailableError || err?.isWebFallback) {
+        const fallbackVars = getWebFallbackSecureBootVars();
+        setVariablesCache(fallbackVars);
+        setNeedsElevation(false);
+        parseAndSet('db', fallbackVars['db']);
+      } else if (!elevate) {
         setNeedsElevation(true);
       } else {
         const errorMsg = err.message || '';
@@ -1174,7 +1177,7 @@ function Footer() {
           <span>{t('app.title')}</span>
         </div>
         <div className="app-footer-right">
-          <span>100% client-side core · Extensible Backend Plugins</span>
+          <span>{t('app.footer.tagline', 'In-Browser Cryptography · Local & Web Ready')}</span>
         </div>
       </div>
     </footer>

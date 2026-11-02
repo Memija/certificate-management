@@ -1441,6 +1441,9 @@
           "cliExplanation": "Converts a Base64 PEM certificate into pure binary DER format."
         }
       }
+    },
+    "footer": {
+      "tagline": "In-Browser Cryptography · Local & Web Ready"
     }
   },
   "common": {

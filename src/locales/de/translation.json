@@ -1441,6 +1441,9 @@
           "cliExplanation": "Konvertiert ein Base64-PEM-Zertifikat in das reine binäre DER-Format."
         }
       }
+    },
+    "footer": {
+      "tagline": "Browser-Kryptografie · Lokal- & Web-bereit"
     }
   },
   "common": {

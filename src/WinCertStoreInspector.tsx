@@ -11,6 +11,7 @@ import { useToast } from './ToastContext';
 import { splitPurposes, translatePurpose, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 import { matchesSearch } from './utils/textSearch';
+import { fetchLocalApiJson, getWebFallbackCertStore, WebApiUnavailableError } from './utils/webFallbacks';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -470,28 +471,20 @@ export function WinCertStoreInspector() {
 
     try {
       const url = `/api/certstore?store=${store}&location=${loc}${elevate ? '&elevate=true' : ''}`;
-      const res = await fetch(url);
-      const json = await res.json();
-
-      if (!res.ok) {
-        const msg: string = json.error || 'Failed to fetch';
-        if (msg.toLowerCase().includes('canceled by the user') || msg.toLowerCase().includes('cancelled by the user')) {
-          setError('userCanceled');
-        } else if (!elevate && (msg.toLowerCase().includes('access') || msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('privilege'))) {
-          setNeedsElevation(true);
-        } else {
-          setError(msg);
-        }
-        return;
-      }
-
+      const json = await fetchLocalApiJson<{ data: CertStoreEntry[] }>(url);
       setCerts(json.data || []);
     } catch (err: any) {
-      const errorMsg = err.message || '';
-      if (errorMsg.toLowerCase().includes('canceled by the user') || errorMsg.toLowerCase().includes('cancelled by the user')) {
-        setError('userCanceled');
+      if (err instanceof WebApiUnavailableError || err?.isWebFallback) {
+        setCerts(getWebFallbackCertStore(store, loc));
       } else {
-        setError(errorMsg);
+        const errorMsg = err.message || '';
+        if (errorMsg.toLowerCase().includes('canceled by the user') || errorMsg.toLowerCase().includes('cancelled by the user')) {
+          setError('userCanceled');
+        } else if (!elevate && (errorMsg.toLowerCase().includes('access') || errorMsg.toLowerCase().includes('denied') || errorMsg.toLowerCase().includes('privilege'))) {
+          setNeedsElevation(true);
+        } else {
+          setError(errorMsg);
+        }
       }
     } finally {
       setLoading(false);

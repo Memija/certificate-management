@@ -4,6 +4,7 @@ import { Clock, RefreshCw, Shield, AlertCircle, ChevronUp, ChevronDown, ArrowUpD
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastContext';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
+import { fetchLocalApiJson, getWebFallbackCertStore, WebApiUnavailableError } from './utils/webFallbacks';
 
 interface CertStoreEntry {
   thumbprint: string;
@@ -67,19 +68,26 @@ export function ExpiryDashboard() {
        for (const loc of locations) {
          for (const store of stores) {
            try {
-             const res = await fetch(`/api/certstore?store=${store}&location=${loc}`);
-             if (res.ok) {
-               const json = await res.json();
-               const data = json.data || [];
-               const mapped = data.map((c: any) => ({
-                  ...c,
-                  storeName: store,
-                  location: loc
+             const json = await fetchLocalApiJson<{ data: any[] }>(`/api/certstore?store=${store}&location=${loc}`);
+             const data = json.data || [];
+             const mapped = data.map((c: any) => ({
+               ...c,
+               storeName: store,
+               location: loc
+             }));
+             allCerts = [...allCerts, ...mapped];
+           } catch (e: any) {
+             if (e instanceof WebApiUnavailableError || e?.isWebFallback) {
+               const fallbackData = getWebFallbackCertStore(store as any, loc as any);
+               const mapped = fallbackData.map((c: any) => ({
+                 ...c,
+                 storeName: store,
+                 location: loc
                }));
                allCerts = [...allCerts, ...mapped];
+             } else {
+               console.error(`Failed to fetch ${loc}\\${store}`);
              }
-           } catch (e) {
-             console.error(`Failed to fetch ${loc}\\${store}`);
            }
          }
        }

@@ -21,6 +21,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { LearningTerm } from './LearningTerm';
 import { OCSP_SAMPLE_PRESETS, type OcspSamplePreset } from './utils/ocspSamples';
+import { fetchLocalApiJson, verifyOcspClientSide, WebApiUnavailableError } from './utils/webFallbacks';
 import * as forge from 'node-forge';
 
 interface ParsedCertDetails {
@@ -508,20 +509,22 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
         throw new Error(t('app.ocsp.invalidPem', 'Invalid PEM certificate provided. Please check the certificate formatting.'));
       }
 
-      const res = await fetch('/api/ocsp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ certB64 })
-      });
-
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error || t('app.ocsp.checkFailed', 'Failed to check revocation status'));
+      try {
+        const json = await fetchLocalApiJson<{ data: RevocationResult }>('/api/ocsp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ certB64 })
+        });
+        setResult(json.data);
+      } catch (apiErr: any) {
+        if (apiErr instanceof WebApiUnavailableError || apiErr?.isWebFallback) {
+          setResult(verifyOcspClientSide(trimmedInput, parsedCert, activePresetId));
+        } else {
+          throw apiErr;
+        }
       }
-
-      setResult(json.data);
     } catch (e: any) {
       setError(e.message);
     } finally {

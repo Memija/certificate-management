@@ -1441,6 +1441,9 @@
           "cliExplanation": "Mengonversi sertifikat Base64 PEM menjadi format biner DER murni."
         }
       }
+    },
+    "footer": {
+      "tagline": "Kriptografi di Browser · Siap untuk Lokal & Web"
     }
   },
   "common": {

@@ -1449,6 +1449,9 @@
           "cliExplanation": "Konwertuje certyfikat Base64 PEM do czystego formatu binarnego DER."
         }
       }
+    },
+    "footer": {
+      "tagline": "Kryptografia w przeglądarce · Gotowe do pracy lokalnej i w sieci Web"
     }
   },
   "common": {

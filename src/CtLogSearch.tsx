@@ -19,6 +19,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { LearningTerm } from './LearningTerm';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 import { CT_LOG_PRESETS, type CtEntry, type CtLogPreset } from './utils/ctLogSamples';
+import { fetchLocalApiJson, searchCtLogsClientSide, WebApiUnavailableError } from './utils/webFallbacks';
 
 export function CtLogSearch() {
   const { t, i18n } = useTranslation();
@@ -55,11 +56,15 @@ export function CtLogSearch() {
     setSearchedDomain(trimmed);
 
     try {
-      const response = await fetch(`/api/ctsearch?domain=${encodeURIComponent(trimmed)}`);
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || t('app.ctLog.searchFailedError', 'Failed to fetch CT logs from crt.sh. The service may be experiencing high traffic.'));
+      let result: { data: CtEntry[]; provider?: 'crt.sh' | 'certspotter' | 'sample'; rateLimited?: boolean };
+      try {
+        result = await fetchLocalApiJson(`/api/ctsearch?domain=${encodeURIComponent(trimmed)}`);
+      } catch (apiErr: any) {
+        if (apiErr instanceof WebApiUnavailableError || apiErr?.isWebFallback) {
+          result = await searchCtLogsClientSide(trimmed, preset);
+        } else {
+          throw apiErr;
+        }
       }
 
       // Deduplicate and merge live results with historical audit log records if available
@@ -90,7 +95,7 @@ export function CtLogSearch() {
       );
 
       setResults(sorted);
-      setIsSampleData(false);
+      setIsSampleData(result.provider === 'sample');
       setProviderInfo({
         provider: result.provider || 'crt.sh',
         rateLimited: !!result.rateLimited

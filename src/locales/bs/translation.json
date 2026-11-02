@@ -1445,6 +1445,9 @@
           "cliExplanation": "Konvertuje Base64 PEM certifikat u čisti binarni DER format."
         }
       }
+    },
+    "footer": {
+      "tagline": "Kriptografija u pregledniku · Spremno za lokalni i web rad"
     }
   },
   "common": {

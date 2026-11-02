@@ -20,6 +20,7 @@ function secureBootApiPlugin() {
         
         if (!varName) {
           res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: 'Missing "var" query parameter' }));
           return;
         }
@@ -126,6 +127,7 @@ try {
              }
              if (!base64Str) {
                res.statusCode = 404;
+               res.setHeader('Content-Type', 'application/json');
                res.end(JSON.stringify({ error: `Variable ${varName} not found or empty.` }));
                return;
              }
@@ -137,11 +139,15 @@ try {
         } catch (error: any) {
           console.error(`Failed to get Secure Boot variable ${varName}:`, error.message);
           res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ 
             error: `Failed to access variable. ${error.message}` 
           }));
         }
       });
+    },
+    configurePreviewServer(server: any) {
+      this.configureServer(server);
     }
   }
 }
@@ -162,6 +168,7 @@ function certStoreApiPlugin() {
         const VALID_LOCATIONS = ['CurrentUser', 'LocalMachine'];
         if (!VALID_STORES.includes(storeName) || !VALID_LOCATIONS.includes(storeLocation)) {
           res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: 'Invalid store or location parameter' }));
           return;
         }
@@ -301,6 +308,7 @@ try {
           if (parsed && !Array.isArray(parsed) && parsed.error) {
             const msg: string = parsed.error;
             res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ error: msg }));
             return;
           }
@@ -347,9 +355,13 @@ try {
           console.error('[certstore]', msg);
 
           res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: msg }));
         }
       });
+    },
+    configurePreviewServer(server: any) {
+      this.configureServer(server);
     },
   };
 }
@@ -814,6 +826,9 @@ function tlsScannerApiPlugin() {
           sendJson(500, { error: `Failed to scan TLS. ${error.message}` });
         }
       });
+    },
+    configurePreviewServer(server: any) {
+      this.configureServer(server);
     }
   }
 }
@@ -826,6 +841,7 @@ function ocspApiPlugin() {
       server.middlewares.use('/api/ocsp', async (req: any, res: any) => {
         if (req.method !== 'POST') {
           res.statusCode = 405;
+          res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: 'Method Not Allowed' }));
           return;
         }
@@ -866,6 +882,7 @@ function ocspApiPlugin() {
                    errorMsg = 'The provided data is a CRL, not an X.509 certificate.';
                  }
                  res.statusCode = 400;
+                 res.setHeader('Content-Type', 'application/json');
                  res.end(JSON.stringify({ error: errorMsg }));
                  return;
               }
@@ -920,10 +937,14 @@ function ocspApiPlugin() {
               }));
            } catch (e: any) {
               res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ error: e.message }));
            }
         });
       });
+    },
+    configurePreviewServer(server: any) {
+      this.configureServer(server);
     }
   }
 }
@@ -939,6 +960,7 @@ function ctSearchApiPlugin() {
         
         if (!domain) {
           res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: 'Missing "domain" query parameter' }));
           return;
         }
@@ -1023,6 +1045,9 @@ function ctSearchApiPlugin() {
           res.end(JSON.stringify({ error: error.message }));
         }
       });
+    },
+    configurePreviewServer(server: any) {
+      this.configureServer(server);
     }
   }
 }

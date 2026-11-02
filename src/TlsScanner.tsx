@@ -34,6 +34,7 @@ import {
 import * as forge from 'node-forge';
 import { useToast } from './ToastContext';
 import { formatExtensionValue } from './utils/purposeFormatter';
+import { fetchLocalApiJson, scanTlsClientSide, WebApiUnavailableError } from './utils/webFallbacks';
 
 const DN_LABELS: Record<string, string> = {
   CN: 'Common Name',
@@ -587,14 +588,22 @@ export function TlsScanner() {
     setScanResult(null);
 
     try {
-      const res = await fetch(`/api/tlsscanner?host=${encodeURIComponent(targetHost)}&port=${targetPort}`);
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error || t('app.tlsScanner.errors.scanFailed', 'Failed to scan endpoint'));
+      let rawData: any;
+      try {
+        const json = await fetchLocalApiJson<{ data: any }>(
+          `/api/tlsscanner?host=${encodeURIComponent(targetHost)}&port=${targetPort}`
+        );
+        rawData = json.data;
+      } catch (apiErr: any) {
+        if (apiErr instanceof WebApiUnavailableError || apiErr?.isWebFallback) {
+          rawData = scanTlsClientSide(targetHost, targetPort);
+        } else {
+          throw apiErr;
+        }
       }
 
       // Enrich certificate chain with fallback PEM and extensions parsing
-      const enrichedChain = (json.data.chain || []).map((c: any) => {
+      const enrichedChain = (rawData.chain || []).map((c: any) => {
         // Ensure PEM is available
         if (!c.pem && c.rawB64) {
           c.pem = derB64ToPem(c.rawB64);
@@ -626,7 +635,7 @@ export function TlsScanner() {
       });
 
       setScanResult({
-        ...json.data,
+        ...rawData,
         chain: enrichedChain,
       });
     } catch (e: any) {
