@@ -173,7 +173,7 @@ function VisualTreeNode({
               style={{ color: isExpired ? 'var(--danger-color)' : 'var(--text-primary)', cursor: 'help' }}
               title={formatExpiryTooltip(c.validTo, t, i18n.language)}
             >
-              {new Date(c.validTo).toLocaleDateString()}{' '}
+              {new Date(c.validTo).toLocaleDateString(i18n.language)}{' '}
               <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>
                 ({formatExpiry(c.validTo, t, i18n.language)})
               </span>
@@ -458,7 +458,7 @@ function SingleCertificateView({
 
         <div className="details-label">{t('app.chain.validity', 'Validity')}</div>
         <div className="details-value">
-          {new Date(c.validFrom).toLocaleDateString()} - {new Date(c.validTo).toLocaleDateString()}{' '}
+          {new Date(c.validFrom).toLocaleDateString(i18n.language)} - {new Date(c.validTo).toLocaleDateString(i18n.language)}{' '}
           <span
             style={{ fontSize: '0.8rem', color: isExpired ? 'var(--danger-color)' : 'var(--text-secondary)', marginLeft: '0.35rem', cursor: 'help' }}
             title={formatExpiryTooltip(c.validTo, t, i18n.language)}
@@ -724,7 +724,7 @@ function NodeInspector({
 
           <div className="details-label">{t('app.chain.validity', 'Validity')}</div>
           <div className="details-value">
-            {new Date(c.validFrom).toLocaleDateString()} - {new Date(c.validTo).toLocaleDateString()}{' '}
+            {new Date(c.validFrom).toLocaleDateString(i18n.language)} - {new Date(c.validTo).toLocaleDateString(i18n.language)}{' '}
             <span
               style={{ fontSize: '0.8rem', color: isExpired ? 'var(--danger-color)' : 'var(--text-secondary)', marginLeft: '0.35rem', cursor: 'help' }}
               title={formatExpiryTooltip(c.validTo, t, i18n.language)}
@@ -1492,7 +1492,7 @@ export function ChainValidator() {
                               <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{t('app.certDetails.issuer', 'Issuer')}: {c.issuer}</p>
                             </div>
                             <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                              {t('app.certDetails.validTo', 'Expires')}: {new Date(c.validTo).toLocaleDateString()}{' '}
+                              {t('app.certDetails.validTo', 'Expires')}: {new Date(c.validTo).toLocaleDateString(i18n.language)}{' '}
                               <span
                                 style={{ color: isExp ? 'var(--danger-color)' : 'var(--text-secondary)', cursor: 'help' }}
                                 title={formatExpiryTooltip(c.validTo, t, i18n.language)}

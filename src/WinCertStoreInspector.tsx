@@ -172,7 +172,7 @@ function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEn
                 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}
                 title={formatExpiryTooltip(entry.notAfter, t, i18n.language)}
               >
-                {t('app.winCertStore.certCard.expires', 'Expires')}: {new Date(entry.notAfter).toLocaleDateString()}{' '}
+                {t('app.winCertStore.certCard.expires', 'Expires')}: {new Date(entry.notAfter).toLocaleDateString(i18n.language)}{' '}
                 <span style={{ color: isExpired ? 'var(--danger-color)' : expiringSoon ? 'var(--warning-color)' : 'var(--text-secondary)' }}>
                   ({formatExpiry(entry.notAfter, t, i18n.language)})
                 </span>
@@ -233,11 +233,11 @@ function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEn
             <div className="details-value">{entry.issuer}</div>
 
             <div className="details-label">{t('app.winCertStore.certCard.validFrom', 'Valid From')}</div>
-            <div className="details-value">{new Date(entry.notBefore).toLocaleDateString()}</div>
+            <div className="details-value">{new Date(entry.notBefore).toLocaleDateString(i18n.language)}</div>
 
             <div className="details-label">{t('app.winCertStore.certCard.validTo', 'Valid To')}</div>
             <div className="details-value">
-              {new Date(entry.notAfter).toLocaleDateString()}{' '}
+              {new Date(entry.notAfter).toLocaleDateString(i18n.language)}{' '}
               <span
                 style={{
                   fontSize: '0.8rem',

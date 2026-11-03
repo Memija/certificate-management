@@ -6741,3 +6741,176 @@ pre,
     display: none !important;
   }
 }
+
+
+/* ─── Education Topic Modal Structured Formatting ────────────────────────── */
+.edu-overview-card {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.edu-overview-lead {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: rgba(14, 165, 233, 0.06);
+  border: 1px solid var(--glass-border-subtle);
+  border-left: 3px solid var(--edu-topic-accent, var(--accent-color));
+  color: var(--text-primary);
+  font-size: 0.94rem;
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+[data-theme="light"] .edu-overview-lead {
+  background: rgba(14, 165, 233, 0.05);
+}
+
+.edu-overview-clauses {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.edu-overview-clause {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.89rem;
+  color: var(--text-secondary);
+  line-height: 1.68;
+}
+
+.edu-overview-clause-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--edu-topic-accent, var(--accent-color));
+  opacity: 0.75;
+  margin-top: 0.58rem;
+  flex-shrink: 0;
+}
+
+.edu-code-chip {
+  display: inline-block;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.79em;
+  font-weight: 600;
+  padding: 0.14rem 0.48rem;
+  margin: 0 0.1rem;
+  border-radius: 6px;
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--text-accent);
+  border: 1px solid rgba(14, 165, 233, 0.28);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+[data-theme="light"] .edu-code-chip {
+  background: rgba(2, 132, 199, 0.09);
+  color: #0369a1;
+  border-color: rgba(2, 132, 199, 0.25);
+}
+
+.edu-tech-token {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.84em;
+  font-weight: 600;
+  padding: 0.08rem 0.36rem;
+  border-radius: 5px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border-subtle);
+}
+
+.edu-acronym-badge {
+  display: inline-block;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.8em;
+  font-weight: 700;
+  padding: 0.08rem 0.42rem;
+  margin-left: 0.25rem;
+  border-radius: 5px;
+  background: rgba(14, 165, 233, 0.14);
+  color: var(--edu-topic-accent, var(--text-accent));
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.edu-pem-anatomy {
+  margin-top: 0.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border-subtle);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.edu-pem-anatomy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.edu-pem-anatomy-code {
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.edu-pem-anatomy-code.payload {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.edu-pem-anatomy-label {
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.edu-keypoint-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.edu-keypoint-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border-subtle);
+}
+
+.edu-keypoint-bullet {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--edu-topic-accent, var(--text-accent));
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}

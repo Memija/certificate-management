@@ -20,6 +20,18 @@ import { ToastProvider, useToast } from './ToastContext';
 import { splitPurposes, translatePurpose, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 import { fetchLocalApiJson, getWebFallbackSecureBootVars, WebApiUnavailableError } from './utils/webFallbacks';
+import {
+  getInitialThemePreference,
+  resolveEffectiveTheme,
+  setUserThemePreference,
+  setUserLanguagePreference,
+  normalizeLanguageTag,
+  detectSystemLanguage,
+  isLanguageCustomized,
+  isThemeCustomized,
+  syncSystemSettingsFromApi,
+  type SupportedLanguage
+} from './utils/systemSettings';
 import './index.css';
 
 export type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
@@ -71,7 +83,7 @@ const CATEGORIES = [
 ];
 
 function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [mode, setMode] = useState<AppMode>(() => {
     const params = new URLSearchParams(window.location.search);
     const queryMode = params.get('mode') as AppMode;
@@ -79,9 +91,7 @@ function App() {
     return (localStorage.getItem('app-mode') as AppMode) || 'secure-boot';
   });
 
-  const [theme, setTheme] = useState<Theme>(() => {
-    return (localStorage.getItem('app-theme') as Theme) || 'dark';
-  });
+  const [theme, setTheme] = useState<Theme>(() => getInitialThemePreference());
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -128,28 +138,47 @@ function App() {
 
   useEffect(() => {
     const applyTheme = () => {
-      let activeTheme = theme;
-      if (theme === 'system') {
-        activeTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
+      const activeTheme = resolveEffectiveTheme(theme);
       document.documentElement.setAttribute('data-theme', activeTheme);
-      localStorage.setItem('app-theme', theme);
     };
 
     applyTheme();
 
     if (theme === 'system') {
       const mq = window.matchMedia('(prefers-color-scheme: dark)');
-      const listener = () => applyTheme();
+      const listener = (e: MediaQueryListEvent) => {
+        if (window.__SYSTEM_SETTINGS__) {
+          window.__SYSTEM_SETTINGS__.colorScheme = e.matches ? 'dark' : 'light';
+        }
+        applyTheme();
+      };
       mq.addEventListener('change', listener);
       return () => mq.removeEventListener('change', listener);
     }
   }, [theme]);
 
-  const toggleTheme = () => setTheme((t: Theme) => {
-    if (t === 'dark') return 'light';
-    if (t === 'light') return 'system';
-    return 'dark';
+  useEffect(() => {
+    syncSystemSettingsFromApi().then((sys) => {
+      if (!sys) return;
+      if (!isLanguageCustomized()) {
+        const detected = detectSystemLanguage(sys);
+        if (detected && normalizeLanguageTag(i18n.language) !== detected) {
+          i18n.changeLanguage(detected);
+        }
+      }
+      if (!isThemeCustomized()) {
+        document.documentElement.setAttribute('data-theme', resolveEffectiveTheme('system', sys));
+      }
+    });
+  }, [i18n]);
+
+  const toggleTheme = () => setTheme((prev: Theme) => {
+    let next: Theme;
+    if (prev === 'dark') next = 'light';
+    else if (prev === 'light') next = 'system';
+    else next = 'dark';
+    setUserThemePreference(next);
+    return next;
   });
 
   const switchMode = (m: AppMode) => {
@@ -562,7 +591,7 @@ function SignatureItem({ signature }: { signature: any }) {
 }
 
 function BootHealthWarnings({ lists }: { lists: EfiSignatureList[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const warnings: string[] = [];
   const criticals: string[] = [];
 
@@ -681,11 +710,11 @@ function BootHealthWarnings({ lists }: { lists: EfiSignatureList[] }) {
             <strong style={{ color: 'var(--text-primary)', fontSize: '0.92rem' }}>{t('app.secureBoot.functionalTitle')}</strong>
             <ul style={{ margin: '0.5rem 0 0 0', color: 'var(--text-secondary)', paddingLeft: '1.5rem', lineHeight: '1.7', fontSize: '0.88rem' }}>
               <li>
-                <strong>{t('app.secureBoot.windowsBoot')}:</strong> {hasMsWindowsCert ? <span className="badge badge-success" style={{ marginLeft: '0.4rem' }}><span className="badge-dot" />{t('app.secureBoot.validUntil', { date: latestWindowsDate.toLocaleDateString() })}</span> : <span className="badge badge-danger" style={{ marginLeft: '0.4rem' }}><span className="badge-dot pulse" />{t('app.secureBoot.invalid')}</span>}
+                <strong>{t('app.secureBoot.windowsBoot')}:</strong> {hasMsWindowsCert ? <span className="badge badge-success" style={{ marginLeft: '0.4rem' }}><span className="badge-dot" />{t('app.secureBoot.validUntil', { date: latestWindowsDate.toLocaleDateString(i18n.language) })}</span> : <span className="badge badge-danger" style={{ marginLeft: '0.4rem' }}><span className="badge-dot pulse" />{t('app.secureBoot.invalid')}</span>}
                 {hasMsWindowsCert && <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{t('app.secureBoot.governedBy', { subject: latestWindowsSubject })}</div>}
               </li>
               <li style={{ marginTop: '0.75rem' }}>
-                <strong>{t('app.secureBoot.thirdPartyBoot')}:</strong> {hasMsUefiCert ? <span className="badge badge-success" style={{ marginLeft: '0.4rem' }}><span className="badge-dot" />{t('app.secureBoot.validUntil', { date: latestUefiDate.toLocaleDateString() })}</span> : <span className="badge badge-danger" style={{ marginLeft: '0.4rem' }}><span className="badge-dot pulse" />{t('app.secureBoot.invalid')}</span>}
+                <strong>{t('app.secureBoot.thirdPartyBoot')}:</strong> {hasMsUefiCert ? <span className="badge badge-success" style={{ marginLeft: '0.4rem' }}><span className="badge-dot" />{t('app.secureBoot.validUntil', { date: latestUefiDate.toLocaleDateString(i18n.language) })}</span> : <span className="badge badge-danger" style={{ marginLeft: '0.4rem' }}><span className="badge-dot pulse" />{t('app.secureBoot.invalid')}</span>}
                 {hasMsUefiCert && <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{t('app.secureBoot.governedBy', { subject: latestUefiSubject })}</div>}
               </li>
             </ul>
@@ -788,11 +817,11 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
         <div className="details-value">{cert.issuer}</div>
 
         <div className="details-label">{t('app.certDetails.validFrom', 'Valid From')}</div>
-        <div className="details-value">{new Date(cert.validFrom).toLocaleString()}</div>
+        <div className="details-value">{new Date(cert.validFrom).toLocaleString(i18n.language)}</div>
 
         <div className="details-label">{t('app.certDetails.validTo', 'Valid To')}</div>
         <div className="details-value">
-          {new Date(cert.validTo).toLocaleString()}{' '}
+          {new Date(cert.validTo).toLocaleString(i18n.language)}{' '}
           <span
             style={{ fontSize: '0.82rem', color: cert.isExpired ? 'var(--danger-color)' : 'var(--text-secondary)', marginLeft: '0.35rem', cursor: 'help' }}
             title={formatExpiryTooltip(cert.validTo, t, i18n.language)}
@@ -979,7 +1008,11 @@ function LanguagePicker({ closeSignal }: { closeSignal?: number }) {
   const [open, setOpen] = useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
-  const current = LANGUAGES.find(l => l.code === i18n.language) ?? LANGUAGES[0];
+  const normalizedLang = normalizeLanguageTag(i18n.resolvedLanguage || i18n.language) || 'en';
+  const current =
+    LANGUAGES.find(l => l.code === normalizedLang) ??
+    LANGUAGES.find(l => l.code === 'en') ??
+    LANGUAGES[0];
 
   React.useEffect(() => {
     if (closeSignal !== undefined) {
@@ -1007,8 +1040,12 @@ function LanguagePicker({ closeSignal }: { closeSignal?: number }) {
           {LANGUAGES.map(lang => (
             <li key={lang.code}>
               <button
-                className={`lang-option ${lang.code === i18n.language ? 'active' : ''}`}
-                onClick={() => { i18n.changeLanguage(lang.code); setOpen(false); }}
+                className={`lang-option ${lang.code === current.code ? 'active' : ''}`}
+                onClick={() => {
+                  setUserLanguagePreference(lang.code as SupportedLanguage);
+                  i18n.changeLanguage(lang.code);
+                  setOpen(false);
+                }}
               >
                 <img src={`/flags/${lang.flag}.png`} alt={lang.label} className="lang-flag" />
                 <span>{lang.label}</span>

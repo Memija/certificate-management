@@ -165,7 +165,7 @@ export function formatExpiryTooltip(
 
   const breakdown = getExpiryBreakdown(targetDate, baseDate);
   const formattedRelative = formatExpiry(targetDate, t, lang, { baseDate });
-  const dateFormatted = d.toLocaleDateString();
+  const dateFormatted = d.toLocaleDateString(lang);
 
   const daysLabel = breakdown.isExpired
     ? t('app.expiry.tooltipDaysAgo', { days: breakdown.totalDays, defaultValue: `${breakdown.totalDays} days ago` })

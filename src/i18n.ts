@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { getInitialLanguage, normalizeLanguageTag, SUPPORTED_LANGUAGES } from './utils/systemSettings';
 
 import en from './locales/en/translation.json';
 import de from './locales/de/translation.json';
@@ -18,16 +19,41 @@ const resources = {
   pl: { translation: pl }
 };
 
+const initialLanguage = getInitialLanguage();
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: initialLanguage,
     fallbackLng: 'en',
+    supportedLngs: [...SUPPORTED_LANGUAGES],
     interpolation: {
       escapeValue: false
+    },
+    detection: {
+      order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage'],
+      convertDetectedLanguage: (lng: string) => normalizeLanguageTag(lng) || 'en'
     }
   });
+
+const syncDocumentLocale = (lng: string) => {
+  if (typeof document !== 'undefined') {
+    const normalized = normalizeLanguageTag(lng) || 'en';
+    document.documentElement.lang = normalized;
+    const title = i18n.t('app.title');
+    if (title && title !== 'app.title') {
+      document.title = title;
+    }
+  }
+};
+
+syncDocumentLocale(i18n.language || initialLanguage);
+i18n.on('languageChanged', (lng) => {
+  syncDocumentLocale(lng);
+});
 
 if (import.meta.hot) {
   import.meta.hot.accept([

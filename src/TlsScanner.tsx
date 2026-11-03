@@ -475,7 +475,7 @@ function parseHostInput(input: string): { host: string; port?: number } {
 }
 
 export function TlsScanner() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [host, setHost] = useState('');
   const [port, setPort] = useState(443);
   const [loading, setLoading] = useState(false);
@@ -1028,7 +1028,7 @@ export function TlsScanner() {
 
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border-subtle)', paddingTop: '0.45rem' }}>
                           <span style={{ fontFamily: 'var(--font-mono)' }}>{formatKeyDescription(cert, t)}</span>
-                          <span>{new Date(cert.valid_to).toLocaleDateString()}</span>
+                          <span>{new Date(cert.valid_to).toLocaleDateString(i18n.language)}</span>
                         </div>
                       </div>
 
@@ -1242,12 +1242,12 @@ export function TlsScanner() {
 
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
                             <span>
-                              <strong>{t('app.tlsScanner.validFrom', 'Valid From')}:</strong> {new Date(cert.valid_from).toLocaleString()}
+                              <strong>{t('app.tlsScanner.validFrom', 'Valid From')}:</strong> {new Date(cert.valid_from).toLocaleString(i18n.language)}
                             </span>
                             <span>
                               <strong>{t('app.tlsScanner.validTo', 'Valid To')}:</strong>{' '}
                               <span style={{ color: isExpired ? 'var(--danger-color)' : undefined, fontWeight: isExpired ? 600 : undefined }}>
-                                {new Date(cert.valid_to).toLocaleString()}
+                                {new Date(cert.valid_to).toLocaleString(i18n.language)}
                               </span>
                             </span>
                           </div>

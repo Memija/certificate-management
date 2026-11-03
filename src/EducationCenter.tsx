@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   BookOpen, 
   Search, 
@@ -54,6 +54,36 @@ const CATEGORIES: CategoryDef[] = [
     color: 'var(--cat-tools)'
   }
 ];
+
+const CARD_TOKEN_REGEX =
+  /(['"]---BEGIN\.\.\.['"]|['"]---END\.\.\.['"]|\bBase64(?:-[A-Za-zÄÖÜäöüß]+)?\b|\bASN\.1(?:-[A-Za-zÄÖÜäöüß]+)?\b|\bX\.509\b|\bPKCS#10\b|\bSHA-(?:256|384|512)\b|\bcrt\.sh\b)/g;
+
+function renderCardDef(text: string, keyPrefix: string): React.ReactNode {
+  const parts = text.split(CARD_TOKEN_REGEX);
+  return parts.map((part, idx) => {
+    if (!part) return null;
+    if (
+      (part.startsWith("'") && part.endsWith("'") && (part.includes('BEGIN') || part.includes('END'))) ||
+      (part.startsWith('"') && part.endsWith('"') && (part.includes('BEGIN') || part.includes('END')))
+    ) {
+      return (
+        <code key={`${keyPrefix}-c-${idx}`} className="edu-code-chip">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    if (CARD_TOKEN_REGEX.test(part)) {
+      CARD_TOKEN_REGEX.lastIndex = 0;
+      return (
+        <span key={`${keyPrefix}-t-${idx}`} className="edu-tech-token">
+          {part}
+        </span>
+      );
+    }
+    CARD_TOKEN_REGEX.lastIndex = 0;
+    return <React.Fragment key={`${keyPrefix}-s-${idx}`}>{part}</React.Fragment>;
+  });
+}
 
 export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => void }) {
   const [search, setSearch] = useState('');
@@ -234,7 +264,7 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
                           </h4>
                         </div>
                         <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6, flex: 1 }}>
-                          {termDef}
+                          {renderCardDef(termDef, key)}
                         </p>
 
                         <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--glass-border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

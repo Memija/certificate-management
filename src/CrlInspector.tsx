@@ -163,10 +163,10 @@ function ReasonBadge({ reason, localizedText }: { reason: string; localizedText:
 }
 
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null, locale?: string): string {
   if (!dateStr) return 'N/A';
   try {
-    return new Date(dateStr).toLocaleString();
+    return new Date(dateStr).toLocaleString(locale);
   } catch {
     return dateStr;
   }
@@ -185,7 +185,7 @@ function CRLDetails({
   onReplace: () => void;
   onClear: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showPem, setShowPem] = useState(false);
   const [showExts, setShowExts] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -215,7 +215,7 @@ function CRLDetails({
     return crl.revokedCertificates.filter((item) => {
       const reasonKey = getReasonKey(item.reason);
       const localizedReason = reasonKey ? t(`app.crl.reasons.${reasonKey}`, item.reason).toLowerCase() : '';
-      const formattedDate = formatDate(item.revocationDate).toLowerCase();
+      const formattedDate = formatDate(item.revocationDate, i18n.language).toLowerCase();
       const rawDate = (item.revocationDate || '').toLowerCase();
       const serial = item.serialNumber.toLowerCase();
 
@@ -235,7 +235,7 @@ function CRLDetails({
 
       return false;
     });
-  }, [crl.revokedCertificates, searchTerm, t]);
+  }, [crl.revokedCertificates, searchTerm, t, i18n.language]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRevoked.length / pageSize));
   const currentSlice = useMemo(() => {
@@ -350,14 +350,14 @@ function CRLDetails({
           <div className="details-label">{t('app.crl.thisUpdate', 'This Update')}</div>
           <div className="details-value" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <Calendar size={14} style={{ color: 'var(--text-secondary)' }} />
-            <span>{formatDate(crl.thisUpdate)}</span>
+            <span>{formatDate(crl.thisUpdate, i18n.language)}</span>
           </div>
 
           <div className="details-label">{t('app.crl.nextUpdate', 'Next Update')}</div>
           <div className="details-value" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <Calendar size={14} style={{ color: crl.isExpired ? '#ef4444' : 'var(--text-secondary)' }} />
             <span style={{ color: crl.isExpired ? '#ef4444' : 'inherit', fontWeight: crl.isExpired ? 600 : 400 }}>
-              {formatDate(crl.nextUpdate)} {crl.isExpired ? `(${t('app.certDetails.expired', 'Expired')})` : ''}
+              {formatDate(crl.nextUpdate, i18n.language)} {crl.isExpired ? `(${t('app.certDetails.expired', 'Expired')})` : ''}
             </span>
           </div>
 
@@ -440,7 +440,7 @@ function CRLDetails({
                           <CopyButton value={entry.serialNumber} />
                         </td>
                         <td style={{ color: 'var(--text-secondary)' }}>
-                          {formatDate(entry.revocationDate)}
+                          {formatDate(entry.revocationDate, i18n.language)}
                         </td>
                         <td>
                           <ReasonBadge reason={entry.reason} localizedText={localizedReason} />

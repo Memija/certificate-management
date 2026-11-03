@@ -302,7 +302,7 @@ export function ExpiryDashboard() {
                                </div>
                              </td>
                               <td style={{ fontSize: '0.85rem' }}>
-                                <div style={{ fontWeight: 500 }}>{new Date(c.notAfter).toLocaleDateString()}</div>
+                                <div style={{ fontWeight: 500 }}>{new Date(c.notAfter).toLocaleDateString(i18n.language)}</div>
                                 <div
                                   style={{
                                     fontSize: '0.75rem',
@@ -514,7 +514,7 @@ export function ExpiryDashboard() {
                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                            <Clock size={13} style={{ color: diffDays < 0 ? 'var(--danger-color)' : 'var(--warning-color)' }} />
                            <span style={{ fontWeight: 600, color: diffDays < 0 ? 'var(--danger-color)' : 'var(--warning-color)' }}>
-                             {new Date(c.notAfter).toLocaleDateString()}
+                             {new Date(c.notAfter).toLocaleDateString(i18n.language)}
                            </span>
                            <span style={{ fontSize: '0.75rem', color: diffDays < 0 ? 'var(--danger-color)' : 'var(--warning-color)' }}>
                              ({formatExpiry(c.notAfter, t, i18n.language)})

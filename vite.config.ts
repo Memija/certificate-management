@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { exec } from 'child_process'
+import { exec, execFileSync } from 'child_process'
 import { promisify } from 'util'
 import * as os from 'os'
 import * as path from 'path'
@@ -1052,7 +1052,183 @@ function ctSearchApiPlugin() {
   }
 }
 
+// ─── SYSTEM SETTINGS API (OS Language & Color Scheme) ─────────────────────────
+function systemSettingsApiPlugin() {
+  let cachedSettings: any = null;
+  let cachedAt = 0;
+
+  const queryRegValue = (keyPath: string, valueName: string): string => {
+    try {
+      return execFileSync('reg', ['query', keyPath, '/v', valueName], {
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 1500,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch {
+      return '';
+    }
+  };
+
+  const parseMultiSz = (raw: string): string[] => {
+    const m = raw.match(/REG_MULTI_SZ\s+([^\r\n]+)/i);
+    if (!m || !m[1]) return [];
+    return m[1]
+      .trim()
+      .split('\\0')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  };
+
+  const parseSz = (raw: string): string => {
+    const m = raw.match(/REG_SZ\s+([^\r\n]+)/i);
+    return m && m[1] ? m[1].trim() : '';
+  };
+
+  const parseDword = (raw: string): number | null => {
+    const m = raw.match(/REG_DWORD\s+(0x[0-9a-fA-F]+|\d+)/i);
+    if (!m || !m[1]) return null;
+    const val = m[1].trim();
+    const num = parseInt(val, val.toLowerCase().startsWith('0x') ? 16 : 10);
+    return Number.isNaN(num) ? null : num;
+  };
+
+  const normalizeSupportedLang = (tag: string): string | null => {
+    if (!tag) return null;
+    const lower = tag.trim().replace(/_/g, '-').toLowerCase();
+    if (lower === 'sr-cyrl' || lower.startsWith('sr-cyrl-')) return 'sr-Cyrl';
+    if (lower === 'sr-latn' || lower.startsWith('sr-latn-')) return 'bs';
+    const primary = lower.split('-')[0];
+    switch (primary) {
+      case 'de':
+        return 'de';
+      case 'bs':
+      case 'hr':
+        return 'bs';
+      case 'sr':
+        return 'sr-Cyrl';
+      case 'id':
+      case 'in':
+        return 'id';
+      case 'pl':
+        return 'pl';
+      case 'en':
+        return 'en';
+      default:
+        return null;
+    }
+  };
+
+  const readSystemSettings = () => {
+    const now = Date.now();
+    if (cachedSettings && now - cachedAt < 1000) {
+      return cachedSettings;
+    }
+
+    let userLanguages: string[] = [];
+    let uiLanguages: string[] = [];
+    let locale = '';
+    let region = '';
+    let colorScheme: 'light' | 'dark' | null = null;
+
+    if (process.platform === 'win32') {
+      userLanguages = parseMultiSz(
+        queryRegValue('HKCU\\Control Panel\\International\\User Profile', 'Languages')
+      );
+      uiLanguages = parseMultiSz(
+        queryRegValue('HKCU\\Control Panel\\Desktop', 'PreferredUILanguages')
+      );
+      locale = parseSz(queryRegValue('HKCU\\Control Panel\\International', 'LocaleName'));
+      region = parseSz(queryRegValue('HKCU\\Control Panel\\International\\Geo', 'Name'));
+
+      const appsLight = parseDword(
+        queryRegValue(
+          'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize',
+          'AppsUseLightTheme'
+        )
+      );
+      if (appsLight === 1) {
+        colorScheme = 'light';
+      } else if (appsLight === 0) {
+        colorScheme = 'dark';
+      } else {
+        const sysLight = parseDword(
+          queryRegValue(
+            'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize',
+            'SystemUsesLightTheme'
+          )
+        );
+        if (sysLight === 1) colorScheme = 'light';
+        else if (sysLight === 0) colorScheme = 'dark';
+      }
+    }
+
+    if (!locale) {
+      try {
+        locale = Intl.DateTimeFormat().resolvedOptions().locale || '';
+      } catch {
+        locale = process.env.LANG || process.env.LC_ALL || 'en-US';
+      }
+    }
+
+    if (userLanguages.length === 0 && locale) {
+      userLanguages = [locale];
+    }
+
+    let preferredAppLanguage = 'en';
+    const candidates = [...userLanguages, ...uiLanguages, locale];
+    for (const c of candidates) {
+      const norm = normalizeSupportedLang(c);
+      if (norm) {
+        preferredAppLanguage = norm;
+        break;
+      }
+    }
+
+    cachedSettings = {
+      userLanguages,
+      uiLanguages,
+      locale,
+      region,
+      preferredAppLanguage,
+      colorScheme,
+    };
+    cachedAt = now;
+    return cachedSettings;
+  };
+
+  return {
+    name: 'system-settings-api',
+    transformIndexHtml(html: string, ctx: any) {
+      if (!ctx?.server) return html;
+      try {
+        const settings = readSystemSettings();
+        const scriptTag = `<script>window.__SYSTEM_SETTINGS__ = ${JSON.stringify(settings)};</script>`;
+        return html.replace('</head>', `  ${scriptTag}\n  </head>`);
+      } catch {
+        return html;
+      }
+    },
+    configureServer(server: any) {
+      server.middlewares.use('/api/system-settings', (_req: any, res: any) => {
+        try {
+          const settings = readSystemSettings();
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ data: settings }));
+        } catch (err: any) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+    },
+    configurePreviewServer(server: any) {
+      this.configureServer(server);
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), secureBootApiPlugin(), certStoreApiPlugin(), tlsScannerApiPlugin(), ocspApiPlugin(), ctSearchApiPlugin()],
+  plugins: [react(), systemSettingsApiPlugin(), secureBootApiPlugin(), certStoreApiPlugin(), tlsScannerApiPlugin(), ocspApiPlugin(), ctSearchApiPlugin()],
 })

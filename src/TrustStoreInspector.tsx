@@ -58,11 +58,11 @@ function CertificateDetails({ cert, privateKeyPem }: { cert: ParsedCertificate; 
         <div className="details-value">{cert.issuer}</div>
 
         <div className="details-label">{t('app.trustStore.certDetails.validFrom', 'Valid From')}</div>
-        <div className="details-value">{new Date(cert.validFrom).toLocaleString()}</div>
+        <div className="details-value">{new Date(cert.validFrom).toLocaleString(i18n.language)}</div>
 
         <div className="details-label">{t('app.trustStore.certDetails.validTo', 'Valid To')}</div>
         <div className="details-value" style={{ color: cert.isExpired ? 'var(--danger-color)' : 'var(--text-primary)' }}>
-          {new Date(cert.validTo).toLocaleString()}{' '}
+          {new Date(cert.validTo).toLocaleString(i18n.language)}{' '}
           <span
             style={{ marginLeft: '0.4rem', fontSize: '0.85em', color: cert.isExpired ? 'var(--danger-color)' : 'var(--text-secondary)', cursor: 'help' }}
             title={formatExpiryTooltip(cert.validTo, t, i18n.language)}
@@ -525,7 +525,7 @@ function FileTrustStore({
                           {t('app.certDetails.expired', 'Expired')} ({formatExpiry(entry.certificate.validTo, t, i18n.language)})
                         </span>
                       : <span>
-                          {t('app.trustStore.inspector.validTo', 'Valid to {{date}}', { date: new Date(entry.certificate.validTo).toLocaleDateString() })} ({formatExpiry(entry.certificate.validTo, t, i18n.language)})
+                          {t('app.trustStore.inspector.validTo', 'Valid to {{date}}', { date: new Date(entry.certificate.validTo).toLocaleDateString(i18n.language) })} ({formatExpiry(entry.certificate.validTo, t, i18n.language)})
                         </span>
                     }
                   </div>
