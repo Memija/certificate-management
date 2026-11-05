@@ -982,11 +982,6 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, on
             </div>
           ))}
         </nav>
-
-        <div className="app-sidebar-footer">
-          <span>v{APP_VERSION}</span>
-          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Secure PKI</span>
-        </div>
       </aside>
     </>
   );
@@ -1205,16 +1200,11 @@ function HeaderControlsCapsule({
 
 // ─── Footer ──────────────────────────────────────────────────────────────────
 function Footer() {
-  const { t } = useTranslation();
   return (
     <footer className="app-footer">
       <div className="app-footer-inner">
-        <div className="app-footer-left">
-          <img src="/logo.svg" alt="" style={{ width: 18, height: 18, opacity: 0.6, borderRadius: 4 }} />
-          <span>{t('app.title')}</span>
-        </div>
-        <div className="app-footer-right">
-          <span>{t('app.footer.tagline', 'In-Browser Cryptography · Local & Web Ready')}</span>
+        <div className="app-footer-right" style={{ marginLeft: 'auto' }}>
+          <span className="mono">v{APP_VERSION}</span>
         </div>
       </div>
     </footer>
