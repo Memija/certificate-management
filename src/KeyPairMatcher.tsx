@@ -173,14 +173,25 @@ export function KeyPairMatcher() {
 
   return (
     <div className="main-content">
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {t('app.keyMatcher.title', 'Key Pair Modulus Matcher')}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem' }}>
-            {t('app.keyMatcher.subtitle', 'Paste a Certificate (or CSR) and a Private Key in PEM format to mathematically verify if their RSA public key moduli match.')}
-          </p>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div className="premium-header-panel theme-key">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap key">
+              <Key size={26} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: 'var(--purple-color)' }}>
+                <FileKey size={14} />
+                <span>{t('app.categories.keyManagement', 'Key Management')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                {t('app.keyMatcher.title', 'Key Pair Modulus Matcher')}
+              </h2>
+              <p className="premium-header-desc" style={{ marginBottom: 0 }}>
+                {t('app.keyMatcher.subtitle', 'Paste a Certificate (or CSR) and a Private Key in PEM format to mathematically verify if their RSA public key moduli match.')}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* ─── Test Sample Presets Bar ─── */}

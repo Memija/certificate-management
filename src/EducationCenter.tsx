@@ -125,19 +125,27 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
     <div className="main-content">
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div className="metric-icon-wrap" style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 1rem auto', background: 'var(--cat-learning-bg)', color: 'var(--cat-learning)', border: '1px solid var(--cat-learning-border)', boxShadow: '0 2px 12px var(--cat-learning-glow)' }}>
-            <BookOpen size={28} />
+        <div className="premium-header-panel theme-learning">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap learning">
+              <BookOpen size={26} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: 'var(--cat-learning)' }}>
+                <BookOpen size={14} />
+                <span>{t('app.categories.learning', 'Learning')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                {t('app.educationCenter.title', t('app.nav.education-center', 'Education Center'))}
+              </h2>
+              <p className="premium-header-desc" style={{ marginBottom: 0 }}>
+                {t(
+                  'app.educationCenter.subtitle',
+                  'Learn the core concepts behind PKI, digital certificates, and Secure Boot. Browse the glossary below to understand the terminology used throughout the application.'
+                )}
+              </p>
+            </div>
           </div>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>
-            {t('app.educationCenter.title', t('app.nav.education-center', 'Education Center'))}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '640px', margin: '0 auto' }}>
-            {t(
-              'app.educationCenter.subtitle',
-              'Learn the core concepts behind PKI, digital certificates, and Secure Boot. Browse the glossary below to understand the terminology used throughout the application.'
-            )}
-          </p>
         </div>
 
         {/* Search Bar */}

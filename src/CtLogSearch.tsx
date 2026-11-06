@@ -209,27 +209,35 @@ export function CtLogSearch() {
 
   return (
     <div className="main-content">
-      <div style={{ maxWidth: '1050px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         
         {/* Page Header */}
-        <div style={{ marginBottom: '1.75rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'var(--info-bg)', color: 'var(--info-color)', border: '1px solid var(--info-border)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-            <span>{t('app.ctLog.eyebrow', 'Public Audit & RFC 6962')}</span>
+        <div className="premium-header-panel theme-network">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap network">
+              <Search size={26} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: 'var(--info-color)' }}>
+                <Globe size={14} />
+                <span>{t('app.ctLog.eyebrow', 'Public Audit & RFC 6962')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                {t('app.ctLog.title', 'Certificate Transparency (CT) Log Search')}
+              </h2>
+              <p className="premium-header-desc" style={{ marginBottom: 0 }}>
+                <Trans
+                  i18nKey="app.ctLog.subtitle"
+                  defaults="Search public <0>Certificate Transparency (CT)</0> logs to discover all certificates ever issued for a specific domain name or wildcard."
+                  components={[
+                    <LearningTerm key="0" termId="ctlog">
+                      Certificate Transparency (CT)
+                    </LearningTerm>
+                  ]}
+                />
+              </p>
+            </div>
           </div>
-          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.65rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {t('app.ctLog.title', 'Certificate Transparency (CT) Log Search')}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem', lineHeight: 1.5 }}>
-            <Trans
-              i18nKey="app.ctLog.subtitle"
-              defaults="Search public <0>Certificate Transparency (CT)</0> logs to discover all certificates ever issued for a specific domain name or wildcard."
-              components={[
-                <LearningTerm key="0" termId="ctlog">
-                  Certificate Transparency (CT)
-                </LearningTerm>
-              ]}
-            />
-          </p>
         </div>
 
         {/* Quick Examples / Presets Bar */}

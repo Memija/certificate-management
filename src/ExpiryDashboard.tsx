@@ -173,18 +173,31 @@ export function ExpiryDashboard() {
 
   return (
     <div className="main-content">
-      <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
-        <div className="expiry-top-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h2 style={{ margin: '0 0 0.4rem 0' }}>{t('app.nav.expiry-dashboard', 'Certificate Expiry Dashboard')}</h2>
-            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.92rem' }}>
-              {t('app.dashboard.subtitle', 'Overview of certificates that are expired or expiring within 30 days in your CurrentUser and LocalMachine stores.')}
-            </p>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div className="premium-header-panel theme-system">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap system">
+              <Clock size={26} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: 'var(--text-accent)' }}>
+                <Shield size={14} />
+                <span>{t('app.categories.systemCheck', 'System Check')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                {t('app.nav.expiry-dashboard', 'Certificate Expiry Dashboard')}
+              </h2>
+              <p className="premium-header-desc" style={{ marginBottom: 0 }}>
+                {t('app.dashboard.subtitle', 'Overview of certificates that are expired or expiring within 30 days in your CurrentUser and LocalMachine stores.')}
+              </p>
+            </div>
           </div>
-          <button className="btn btn-secondary" onClick={fetchStores} disabled={loading} style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
-            <RefreshCw size={15} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
-            {loading ? t('app.dashboard.scanning', 'Scanning...') : t('app.winCertStore.refresh', 'Refresh Stores')}
-          </button>
+          <div className="premium-header-actions">
+            <button className="btn btn-secondary btn-sm" onClick={fetchStores} disabled={loading} style={{ gap: '0.45rem' }}>
+              <RefreshCw size={14} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
+              {loading ? t('app.dashboard.scanning', 'Scanning...') : t('app.winCertStore.refresh', 'Refresh Stores')}
+            </button>
+          </div>
         </div>
 
         {error && (

@@ -233,9 +233,42 @@ function App() {
   const [needsElevation, setNeedsElevation] = useState<boolean>(false);
   const [elevating, setElevating] = useState<boolean>(false);
 
-  useEffect(() => {
-    loadAllVariables(false);
-  }, []);
+  const parseAndSet = (varName: string, base64Data: string | undefined) => {
+    setActiveVar(varName);
+    setSignatureLists([]);
+    setRawCert(null);
+    setError('');
+
+    if (!base64Data) {
+      return; // Empty
+    }
+
+    try {
+      const binaryString = atob(base64Data);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const buffer = bytes.buffer;
+
+      const lists = parseEfiSignatureLists(buffer);
+      if (lists.length > 0) {
+        setSignatureLists(lists);
+        return;
+      }
+
+      const raw = parseRawX509(buffer);
+      if (raw) {
+        setRawCert(raw);
+        return;
+      }
+
+      setError(`Could not parse ${varName} as an EFI Signature List or X.509 certificate.`);
+    } catch (err: any) {
+      setError(`Error parsing ${varName}: ${err.message}`);
+    }
+  };
 
   const loadAllVariables = async (elevate: boolean) => {
     setError('');
@@ -277,42 +310,9 @@ function App() {
     }
   };
 
-  const parseAndSet = (varName: string, base64Data: string | undefined) => {
-    setActiveVar(varName);
-    setSignatureLists([]);
-    setRawCert(null);
-    setError('');
-
-    if (!base64Data) {
-      return; // Empty
-    }
-
-    try {
-      const binaryString = atob(base64Data);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      const buffer = bytes.buffer;
-
-      const lists = parseEfiSignatureLists(buffer);
-      if (lists.length > 0) {
-        setSignatureLists(lists);
-        return;
-      }
-
-      const raw = parseRawX509(buffer);
-      if (raw) {
-        setRawCert(raw);
-        return;
-      }
-
-      setError(`Could not parse ${varName} as an EFI Signature List or X.509 certificate.`);
-    } catch (err: any) {
-      setError(`Error parsing ${varName}: ${err.message}`);
-    }
-  };
+  useEffect(() => {
+    loadAllVariables(false);
+  }, []);
 
   const handleTabClick = (varName: string) => {
     parseAndSet(varName, variablesCache[varName]);
@@ -375,21 +375,51 @@ function App() {
         }
         return (
           <div className="main-content">
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem', position: 'relative', zIndex: 10 }}>
-              <div className="glass-card" style={{ display: 'inline-flex', padding: '0.35rem', gap: '0.35rem', borderRadius: '12px', background: 'var(--input-bg)' }}>
-                {['db', 'dbx', 'KEK', 'PK'].map(v => (
+            <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+              <div className="premium-header-panel theme-system">
+                <div className="premium-header-content">
+                  <div className="premium-header-icon-wrap system">
+                    <Shield size={26} />
+                  </div>
+                  <div className="premium-header-body">
+                    <div className="premium-header-eyebrow" style={{ color: 'var(--text-accent)' }}>
+                      <ShieldCheck size={14} />
+                      <span>{t('app.categories.systemCheck', 'System Check')}</span>
+                    </div>
+                    <h2 className="premium-header-title">
+                      {t('app.header.secureBootTitle', 'UEFI Secure Boot Inspector')}
+                    </h2>
+                    <p className="premium-header-desc" style={{ marginBottom: '0.85rem' }}>
+                      {t('app.header.secureBootSubtitle', 'Inspect UEFI NVRAM signature databases (db, dbx, KEK, PK) and verify platform boot certificates.')}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <div className="glass-card" style={{ display: 'inline-flex', padding: '0.3rem', gap: '0.35rem', borderRadius: '11px', background: 'var(--input-bg)' }}>
+                        {['db', 'dbx', 'KEK', 'PK'].map(v => (
+                          <button
+                            key={v}
+                            data-var={v}
+                            className={`secboot-var-btn ${activeVar === v ? 'active' : ''}`}
+                            onClick={() => handleTabClick(v)}
+                          >
+                            <LearningTerm termId={v.toLowerCase() as any}>{v}</LearningTerm>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="premium-header-actions">
                   <button
-                    key={v}
-                    data-var={v}
-                    className={`secboot-var-btn ${activeVar === v ? 'active' : ''}`}
-                    onClick={() => handleTabClick(v)}
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => loadAllVariables(false)}
+                    disabled={loading}
+                    style={{ gap: '0.45rem' }}
                   >
-                    <LearningTerm termId={v.toLowerCase() as any}>{v}</LearningTerm>
+                    <RefreshCw size={15} className={loading ? 'spin' : ''} />
+                    {t('common.refresh', 'Refresh')}
                   </button>
-                ))}
+                </div>
               </div>
-            </div>
-            <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
               {activeVar === 'db' && signatureLists.length > 0 && (
                 <BootHealthWarnings lists={signatureLists} />
               )}

@@ -98,7 +98,7 @@ function CertificateDetails({ cert, privateKeyPem }: { cert: ParsedCertificate; 
           <summary style={{ cursor: 'pointer', color: 'var(--text-accent)', marginBottom: '0.5rem' }}>
             {t('app.trustStore.certDetails.viewExtensions', 'View Extensions')} ({cert.extensions.length})
           </summary>
-          <div className="details-grid" style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px' }}>
+          <div className="details-grid" style={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border-subtle)', padding: '1rem', borderRadius: '8px' }}>
             {cert.extensions.map((ext, idx) => (
               <div key={idx} style={{ display: 'contents' }}>
                 <div className="details-label">

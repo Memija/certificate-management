@@ -700,18 +700,26 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
 
   return (
     <div className="main-content">
-      <div style={{ maxWidth: '880px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         {/* Page Header */}
-        <div style={{ marginBottom: '1.75rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-color)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-            <span>{t('app.ocsp.eyebrow', 'Real-Time Revocation · RFC 6960 & RFC 5280')}</span>
+        <div className="premium-header-panel theme-network">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap network">
+              <Activity size={26} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: 'var(--info-color)' }}>
+                <ShieldCheck size={14} />
+                <span>{t('app.ocsp.eyebrow', 'Real-Time Revocation · RFC 6960 & RFC 5280')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                {t('app.ocsp.title', 'Online Revocation Checker')}
+              </h2>
+              <p className="premium-header-desc" style={{ marginBottom: 0 }}>
+                {t('app.ocsp.subtitle', 'Check real-time revocation status using OCSP and CRL endpoints extracted directly from the certificate.')}
+              </p>
+            </div>
           </div>
-          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.65rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {t('app.ocsp.title', 'Online Revocation Checker')}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.95rem', lineHeight: 1.5 }}>
-            {t('app.ocsp.subtitle', 'Check real-time revocation status using OCSP and CRL endpoints extracted directly from the certificate.')}
-          </p>
         </div>
 
         {/* Examples / Presets Bar */}

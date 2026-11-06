@@ -564,7 +564,37 @@ export function WinCertStoreInspector() {
 
   return (
     <div className="main-content">
-      <div style={{ maxWidth: '950px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div className="premium-header-panel theme-system">
+          <div className="premium-header-content">
+            <div className="premium-header-icon-wrap system">
+              <Server size={26} />
+            </div>
+            <div className="premium-header-body">
+              <div className="premium-header-eyebrow" style={{ color: 'var(--text-accent)' }}>
+                <ShieldCheck size={14} />
+                <span>{t('app.categories.systemCheck', 'System Check')}</span>
+              </div>
+              <h2 className="premium-header-title">
+                {t('app.header.winCertTitle', 'Windows Certificate Store Inspector')}
+              </h2>
+              <p className="premium-header-desc" style={{ marginBottom: 0 }}>
+                {t('app.header.winCertSubtitle', 'Browse, filter, and inspect certificates installed in CurrentUser and LocalMachine stores.')}
+              </p>
+            </div>
+          </div>
+          <div className="premium-header-actions">
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => fetchStore(activeStore, location)}
+              title={t('app.winCertStore.refresh', 'Reload')}
+              style={{ gap: '0.45rem' }}
+            >
+              <RefreshCw size={14} style={loading ? { animation: 'spin 1s linear infinite' } : undefined} />
+              {t('app.winCertStore.refresh', 'Refresh')}
+            </button>
+          </div>
+        </div>
 
         <LocationAndStoreTabs
           location={location} activeStore={activeStore}
@@ -581,14 +611,6 @@ export function WinCertStoreInspector() {
             <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{t(`app.winCertStore.stores.${storeInfo.name}.label`, storeInfo.label)}</div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: 2 }}>{t(`app.winCertStore.stores.${storeInfo.name}.desc`, storeInfo.desc)}</div>
           </div>
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => fetchStore(activeStore, location)}
-            title={t('app.winCertStore.refresh', 'Reload')}
-          >
-            <RefreshCw size={13} style={loading ? { animation: 'spin 1s linear infinite' } : undefined} />
-            {t('app.winCertStore.refresh', 'Refresh')}
-          </button>
         </div>
 
         {/* Skeleton Loading state */}

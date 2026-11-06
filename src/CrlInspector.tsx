@@ -361,8 +361,8 @@ function CRLDetails({
             </span>
           </div>
 
-          <div style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{t('app.crl.sha256', 'SHA-256 Fingerprint')}</div>
-          <div style={{ fontFamily: 'monospace', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.4rem', wordBreak: 'break-all' }}>
+          <div className="details-label">{t('app.crl.sha256', 'SHA-256 Fingerprint')}</div>
+          <div className="details-value mono" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', wordBreak: 'break-all' }}>
             {crl.fingerprintSha256}
             <CopyButton value={crl.fingerprintSha256} />
           </div>
@@ -851,11 +851,12 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
 
   return (
     <div
-      style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}
+      className="main-content"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
       {/* Premium Header */}
       <div className="premium-header-panel theme-crl">
         <div className="premium-header-content">
@@ -1141,6 +1142,7 @@ export function CrlInspector({ onNavigate }: { onNavigate?: (mode: AppMode) => v
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -1103,7 +1103,7 @@ export function ChainValidator() {
               <GitFork size={24} />
             </div>
             <div className="premium-header-body">
-              <div className="premium-header-eyebrow" style={{ color: '#c084fc' }}>
+              <div className="premium-header-eyebrow" style={{ color: 'var(--purple-color)' }}>
                 <GitFork size={12} />
                 <span>{t('app.chain.eyebrow', 'Path Validation & Hierarchy')}</span>
               </div>
