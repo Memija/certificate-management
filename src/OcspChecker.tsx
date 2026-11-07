@@ -705,11 +705,11 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
         <div className="premium-header-panel theme-network">
           <div className="premium-header-content">
             <div className="premium-header-icon-wrap network">
-              <Activity size={26} />
+              <ShieldAlert size={26} />
             </div>
             <div className="premium-header-body">
-              <div className="premium-header-eyebrow" style={{ color: 'var(--info-color)' }}>
-                <ShieldCheck size={14} />
+              <div className="premium-header-eyebrow" style={{ color: 'var(--accent-color)' }}>
+                <Activity size={14} />
                 <span>{t('app.ocsp.eyebrow', 'Real-Time Revocation · RFC 6960 & RFC 5280')}</span>
               </div>
               <h2 className="premium-header-title">
@@ -978,7 +978,7 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
             <div 
               className="animate-fade-in" 
               style={{ 
-                background: 'rgba(255, 255, 255, 0.03)', 
+                background: 'var(--input-bg)', 
                 border: '1px solid var(--glass-border-subtle)', 
                 borderRadius: '8px', 
                 padding: '0.9rem 1.1rem', 
@@ -1231,7 +1231,7 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
             </div>
 
             {/* Diagnostic certutil Raw Log */}
-            <details style={{ background: 'rgba(0, 0, 0, 0.2)', borderRadius: '8px', border: '1px solid var(--glass-border-subtle)', padding: '0.75rem 1rem' }}>
+            <details style={{ background: 'var(--input-bg)', borderRadius: '8px', border: '1px solid var(--glass-border-subtle)', padding: '0.75rem 1rem' }}>
               <summary style={{ cursor: 'pointer', color: 'var(--text-accent)', fontSize: '0.88rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Terminal size={15} style={{ color: 'var(--accent-color)', flexShrink: 0 }} />

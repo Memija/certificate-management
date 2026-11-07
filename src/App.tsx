@@ -36,7 +36,6 @@ import './index.css';
 
 export type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
 export type Theme = 'dark' | 'light' | 'system';
-export type HeaderPhase = 'waiting' | 'shredding' | 'repairing' | 'repaired';
 
 const APP_VERSION = '1.4.0';
 
@@ -94,47 +93,7 @@ function App() {
   const [theme, setTheme] = useState<Theme>(() => getInitialThemePreference());
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Sequenced choreography: 1. Hide left title -> 2. Float content to top -> 3. Mend right-side glass controls capsule
-  const [headerPhase, setHeaderPhase] = useState<HeaderPhase>('waiting');
-  const headerPhaseRef = useRef<HeaderPhase>('waiting');
-  const [showLeftTitle, setShowLeftTitle] = useState<boolean>(true);
-  const [floatGen, setFloatGen] = useState<number>(1);
-  const [isSectionFloating, setIsSectionFloating] = useState<boolean>(true);
-  const [repairGen, setRepairGen] = useState<number>(0);
-  const [transitionGen, setTransitionGen] = useState<number>(1);
   const mainContentAreaRef = useRef<HTMLDivElement>(null);
-  const headerTimersRef = useRef<number[]>([]);
-
-  const updateHeaderPhase = (next: HeaderPhase) => {
-    headerPhaseRef.current = next;
-    setHeaderPhase(next);
-  };
-
-  const clearHeaderTimers = () => {
-    headerTimersRef.current.forEach(id => window.clearTimeout(id));
-    headerTimersRef.current = [];
-  };
-
-  useEffect(() => {
-    // Beat 1 (0..305ms): Left-side header title hides completely before content floats up (325ms+)
-    const tHideLeft = window.setTimeout(() => {
-      setShowLeftTitle(false);
-    }, 305);
-    // Beat 3 (350..1130ms): Right-side glass controls capsule mends into view as content floats into top
-    const tRepair = window.setTimeout(() => {
-      setRepairGen(g => g + 1);
-      updateHeaderPhase('repairing');
-    }, 350);
-    const tDone = window.setTimeout(() => {
-      updateHeaderPhase('repaired');
-    }, 350 + 780);
-    const tFloatClear = window.setTimeout(() => {
-      setIsSectionFloating(false);
-    }, 950);
-    headerTimersRef.current.push(tHideLeft, tRepair, tDone, tFloatClear);
-    return () => clearHeaderTimers();
-  }, []);
 
   useEffect(() => {
     const applyTheme = () => {
@@ -182,44 +141,12 @@ function App() {
   });
 
   const switchMode = (m: AppMode) => {
-    clearHeaderTimers();
     setMode(m);
     localStorage.setItem('app-mode', m);
     setSidebarOpen(false); // Close mobile sidebar on navigation
-
-    // Reset viewport scroll; content holds below header until left title hides (at 305ms), then floats up
     if (mainContentAreaRef.current) {
       mainContentAreaRef.current.scrollTop = 0;
     }
-    setShowLeftTitle(true);
-    setFloatGen(g => g + 1);
-    setTransitionGen(g => g + 1);
-    setIsSectionFloating(true);
-
-    const wasVisible = headerPhaseRef.current === 'repaired' || headerPhaseRef.current === 'repairing';
-    updateHeaderPhase(wasVisible ? 'shredding' : 'waiting');
-
-    if (wasVisible) {
-      const tWait = window.setTimeout(() => {
-        updateHeaderPhase('waiting');
-      }, 210);
-      headerTimersRef.current.push(tWait);
-    }
-
-    const tHideLeft = window.setTimeout(() => {
-      setShowLeftTitle(false);
-    }, 305);
-    const tRepair = window.setTimeout(() => {
-      setRepairGen(g => g + 1);
-      updateHeaderPhase('repairing');
-    }, 350);
-    const tDone = window.setTimeout(() => {
-      updateHeaderPhase('repaired');
-    }, 350 + 780);
-    const tFloatClear = window.setTimeout(() => {
-      setIsSectionFloating(false);
-    }, 950);
-    headerTimersRef.current.push(tHideLeft, tRepair, tDone, tFloatClear);
   };
 
   const [activeVar, setActiveVar] = useState<string>('db');
@@ -393,7 +320,7 @@ function App() {
                       {t('app.header.secureBootSubtitle', 'Inspect UEFI NVRAM signature databases (db, dbx, KEK, PK) and verify platform boot certificates.')}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                      <div className="glass-card" style={{ display: 'inline-flex', padding: '0.3rem', gap: '0.35rem', borderRadius: '11px', background: 'var(--input-bg)' }}>
+                      <div className="glass-card secboot-var-bar" style={{ display: 'inline-flex', padding: '0.3rem', gap: '0.35rem', borderRadius: '11px', background: 'var(--input-bg)' }}>
                         {['db', 'dbx', 'KEK', 'PK'].map(v => (
                           <button
                             key={v}
@@ -487,10 +414,6 @@ function App() {
     }
   };
 
-  const floatAnimClass = isSectionFloating
-    ? (floatGen % 2 === 1 ? 'section-float-pass-a' : 'section-float-pass-b')
-    : '';
-
   let activeCategoryId = 'systemCheck';
   CATEGORIES.forEach(cat => {
     if (cat.items.some(i => i.id === mode)) {
@@ -507,54 +430,26 @@ function App() {
           className="app-main-wrapper is-floated"
           data-mode={mode}
           data-category={activeCategoryId}
-          data-header-phase={headerPhase}
         >
-          {/* Ambient updraft horizon glow while section floats to the top */}
-          {isSectionFloating && (
-            <div key={`updraft-${floatGen}`} className="section-updraft-aura" aria-hidden="true" />
-          )}
+          <div className="top-controls-bar">
+            <button
+              className="floating-sidebar-trigger"
+              onClick={() => setSidebarOpen(true)}
+              title={t('app.aria.openSidebar')}
+              aria-label={t('app.aria.openSidebar')}
+            >
+              <Menu size={20} />
+            </button>
 
-          <button
-            className="floating-sidebar-trigger"
-            onClick={() => setSidebarOpen(true)}
-            title={t('app.aria.openSidebar')}
-            aria-label={t('app.aria.openSidebar')}
-          >
-            <Menu size={20} />
-          </button>
-
-          {/* Beat 1: Left-side header title hides completely BEFORE content floats up */}
-          {showLeftTitle && (
-            <HeaderLeftTitle key={`left-title-${transitionGen}`} mode={mode} />
-          )}
-
-          {/* Beat 3: Sleek right-side glass controls capsule mends together out of wind-swept shards */}
-          <HeaderControlsCapsule
-            mode={mode}
-            theme={theme}
-            phase={headerPhase}
-            repairGen={repairGen}
-            onToggleTheme={toggleTheme}
-            onInteractEarly={() => {
-              if (headerPhaseRef.current !== 'repaired') {
-                clearHeaderTimers();
-                setShowLeftTitle(false);
-                updateHeaderPhase('repaired');
-              }
-            }}
-          />
+            <HeaderControlsCapsule
+              mode={mode}
+              theme={theme}
+              onToggleTheme={toggleTheme}
+            />
+          </div>
 
           <div className="main-content-area" ref={mainContentAreaRef}>
-            <div
-              className={`section-float-stage ${floatAnimClass}`}
-              onAnimationEnd={(e) => {
-                if (e.target === e.currentTarget) {
-                  setIsSectionFloating(false);
-                }
-              }}
-            >
-              {renderContent()}
-            </div>
+            {renderContent()}
           </div>
           <Footer />
         </div>
@@ -1083,74 +978,15 @@ function LanguagePicker({ closeSignal }: { closeSignal?: number }) {
   );
 }
 
-// ─── Ephemeral Left-Side Header Title (Hides Cleanly Before Content Floats Up) ──
-function HeaderLeftTitle({ mode }: { mode: AppMode }) {
-  const { t } = useTranslation();
-  let title = t('app.title');
-  let ActiveIcon: React.ElementType = Shield;
-  let categoryName = '';
-  let categoryId = 'systemCheck';
-
-  CATEGORIES.forEach(cat => {
-    const item = cat.items.find(i => i.id === mode);
-    if (item) {
-      title = t(`app.nav.${item.id}`);
-      ActiveIcon = item.icon;
-      categoryName = t(`app.categories.${cat.id}`);
-      categoryId = cat.id;
-    }
-  });
-
-  const renderBadgeAndTitle = () => (
-    <div className="header-left-ghost-inner">
-      <div className={`metric-icon-wrap header-badge-${categoryId} header-left-ghost-badge`}>
-        <ActiveIcon size={17} />
-      </div>
-      <div className="header-left-ghost-text">
-        <span className="header-left-ghost-heading">{title}</span>
-        {categoryName && <span className="header-left-ghost-cat">{categoryName}</span>}
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="header-left-ghost-wrap" data-category={categoryId} aria-hidden="true">
-      <div className="header-left-ghost-stack">
-        <div className="title-wind-slice slice-top">{renderBadgeAndTitle()}</div>
-        <div className="title-wind-slice slice-mid">{renderBadgeAndTitle()}</div>
-        <div className="title-wind-slice slice-bot">{renderBadgeAndTitle()}</div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Wind-Swept Glass Shard Spec for Right-Side Controls Capsule ─────────────
-const CAPSULE_SHARDS = [
-  { idx: 0, driftY: '-9px',  skew: '8deg',   rot: '-3deg',  rotY: '-18deg', delay: '0ms'   },
-  { idx: 1, driftY: '11px',  skew: '-9deg',  rot: '4deg',   rotY: '20deg',  delay: '26ms'  },
-  { idx: 2, driftY: '-14px', skew: '11deg',  rot: '-5deg',  rotY: '-23deg', delay: '52ms'  },
-  { idx: 3, driftY: '16px',  skew: '-12deg', rot: '6deg',   rotY: '26deg',  delay: '78ms'  },
-  { idx: 4, driftY: '-18px', skew: '14deg',  rot: '-8deg',  rotY: '-28deg', delay: '104ms' },
-  { idx: 5, driftY: '21px',  skew: '-15deg', rot: '9deg',   rotY: '31deg',  delay: '130ms' },
-  { idx: 6, driftY: '-23px', skew: '17deg',  rot: '-10deg', rotY: '-34deg', delay: '156ms' },
-  { idx: 7, driftY: '25px',  skew: '-18deg', rot: '12deg',  rotY: '36deg',  delay: '182ms' },
-];
-
-// ─── Sleek Right-Side Frosted-Glass Controls Capsule (Wind-Mended Motion) ────
+// ─── Static Short Right-Side Frosted-Glass Controls Capsule ──────────────────
 function HeaderControlsCapsule({
   mode,
   theme,
-  phase,
-  repairGen,
   onToggleTheme,
-  onInteractEarly,
 }: {
   mode: AppMode;
   theme: Theme;
-  phase: HeaderPhase;
-  repairGen: number;
   onToggleTheme: () => void;
-  onInteractEarly: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -1163,57 +999,15 @@ function HeaderControlsCapsule({
 
   return (
     <div
-      className={`controls-capsule-dock phase-${phase}`}
+      className="controls-capsule-dock"
       data-category={categoryId}
-      onPointerDown={onInteractEarly}
       role="region"
       aria-label="Quick settings"
     >
       <div className="controls-capsule-frame">
-        {/* Clean, modern rounded frosted-glass pill (not a flag) */}
-        <div className="capsule-glass-shell" aria-hidden="true">
-          <span className="capsule-glass-sheen" />
-        </div>
-
-        {/* Wind-damaged translucent glass ribbons rippling & mending seamlessly together */}
-        {(phase === 'shredding' || phase === 'repairing') && (
-          <div key={`${phase}-${repairGen}`} className="capsule-mend-loom" aria-hidden="true">
-            {CAPSULE_SHARDS.map(s => (
-              <span
-                key={s.idx}
-                className={`capsule-mend-shard shard-${s.idx} ${s.idx % 2 === 0 ? 'shard-even' : 'shard-odd'} ${s.idx === 7 ? 'is-left-edge' : ''}`}
-                style={{
-                  '--shard-i': s.idx,
-                  '--drift-y': s.driftY,
-                  '--skew-deg': s.skew,
-                  '--rot-deg': s.rot,
-                  '--rot-y': s.rotY,
-                  '--shard-delay': s.delay,
-                } as React.CSSProperties}
-              >
-                <span className="shard-fold-glint" />
-              </span>
-            ))}
-
-            {/* Subtle aerodynamic wind-light filaments guiding the mend */}
-            <svg className="capsule-wind-svg" viewBox="0 0 260 52" preserveAspectRatio="none">
-              <path
-                className="capsule-wind-filament wf-1"
-                d="M -22,14 C 32,4 92,24 158,11 C 204,3 234,14 258,12"
-                vectorEffect="non-scaling-stroke"
-              />
-              <path
-                className="capsule-wind-filament wf-2"
-                d="M -28,36 C 28,48 98,22 168,37 C 212,46 238,34 258,36"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-          </div>
-        )}
-
-        {/* Theme & language controls exposed as the glass capsule mends */}
+        <div className="capsule-glass-shell" aria-hidden="true" />
         <div className="capsule-controls-payload">
-          <LanguagePicker closeSignal={repairGen} />
+          <LanguagePicker />
           <span className="capsule-controls-divider" aria-hidden="true" />
           <button
             className="theme-toggle"

@@ -375,7 +375,7 @@ function SingleCertificateView({
       </div>
 
       {/* Chain Context & Position Box */}
-      <div className="glass-card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
+      <div className="glass-card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', background: 'var(--input-bg)' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {/* Issuer relationship */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -1122,7 +1122,7 @@ export function ChainValidator() {
                   <span>{t('app.chain.pills.sigVerify', 'Signature Verification')}</span>
                 </span>
                 <span className="premium-header-tag">
-                  <GitFork size={12} style={{ color: '#c084fc' }} />
+                  <GitFork size={12} style={{ color: 'var(--purple-color)' }} />
                   <span>{t('app.chain.pills.treeGraph', 'Interactive Tree Graph')}</span>
                 </span>
                 <span className="premium-header-tag">

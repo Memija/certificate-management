@@ -261,7 +261,7 @@ export function EducationTopicModal({
             style={{ 
               padding: '1rem 1.25rem', 
               borderRadius: 12, 
-              background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(15, 23, 42, 0.4) 100%)',
+              background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, var(--card-bg) 100%)',
               border: '1px solid rgba(14, 165, 233, 0.3)',
               display: 'flex',
               alignItems: 'center',

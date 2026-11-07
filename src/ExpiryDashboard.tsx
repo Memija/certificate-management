@@ -194,7 +194,7 @@ export function ExpiryDashboard() {
           </div>
           <div className="premium-header-actions">
             <button className="btn btn-secondary btn-sm" onClick={fetchStores} disabled={loading} style={{ gap: '0.45rem' }}>
-              <RefreshCw size={14} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
+              <RefreshCw size={14} style={loading ? { animation: 'spin 1s linear infinite' } : undefined} />
               {loading ? t('app.dashboard.scanning', 'Scanning...') : t('app.winCertStore.refresh', 'Refresh Stores')}
             </button>
           </div>
@@ -537,7 +537,7 @@ export function ExpiryDashboard() {
 
                        <div
                          className="copy-trigger-wrap"
-                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.35rem 0.6rem', background: 'rgba(0,0,0,0.1)', borderRadius: '6px' }}
+                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.35rem 0.6rem', background: 'var(--input-bg)', border: '1px solid var(--glass-border-subtle)', borderRadius: '6px' }}
                          onClick={() => {
                            navigator.clipboard.writeText(c.thumbprint);
                            showToast(t('app.dashboard.copiedThumbprint', { name: cn, defaultValue: `Copied thumbprint for ${cn}` }), 'success');

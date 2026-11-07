@@ -126,8 +126,8 @@ function CSRDetails({
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
               padding: '0.3rem 0.75rem', borderRadius: 20, fontSize: '0.82rem', fontWeight: 600,
-              background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc',
-              border: '1px solid rgba(168, 85, 247, 0.3)',
+              background: 'var(--purple-bg)', color: 'var(--purple-color)',
+              border: '1px solid var(--purple-border)',
             }}>
               <Key size={13} /> {t('app.csr.editor.privateKeyAvailable', 'Private Key Available')}
             </span>
@@ -214,7 +214,7 @@ function CSRDetails({
             {showExts ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
           </div>
           {showExts && (
-            <div className="details-grid" style={{ background: 'rgba(0,0,0,0.1)', padding: '0.75rem', borderRadius: 6 }}>
+            <div className="details-grid" style={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border-subtle)', padding: '0.75rem', borderRadius: 8 }}>
               {csr.requestedExtensions.map((ext, idx) => (
                 <div key={idx} style={{ display: 'contents' }}>
                   <div className="details-label">
@@ -387,7 +387,7 @@ function CSRCard({
               <span>{cn}</span>
               {item.privateKeyPem && (
                 <span title={t('app.csr.editor.privateKeyAvailable', 'Private Key Available')} style={{ display: 'inline-flex' }}>
-                  <Key size={13} style={{ color: '#c084fc' }} />
+                  <Key size={13} style={{ color: 'var(--purple-color)' }} />
                 </span>
               )}
             </div>
@@ -729,7 +729,7 @@ export function CsrInspector({ onNavigate }: { onNavigate?: (mode: any) => void 
                     <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cn}</span>
                     {hasKey && (
                       <span title={t('app.csr.editor.privateKeyAvailable', 'Private Key Available')} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <Key size={11} style={{ color: '#c084fc', flexShrink: 0, marginLeft: 2 }} />
+                        <Key size={11} style={{ color: 'var(--purple-color)', flexShrink: 0, marginLeft: 2 }} />
                       </span>
                     )}
                     <span

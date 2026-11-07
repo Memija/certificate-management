@@ -586,7 +586,7 @@ export function CtLogSearch() {
                       </div>
 
                       {/* Serial Number Row */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', background: 'rgba(255, 255, 255, 0.02)', padding: '0.35rem 0.6rem', borderRadius: '4px', border: '1px solid var(--glass-border-subtle)', fontSize: '0.74rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', background: 'var(--input-bg)', padding: '0.35rem 0.6rem', borderRadius: '4px', border: '1px solid var(--glass-border-subtle)', fontSize: '0.74rem' }}>
                         <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono, monospace)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           Serial: {entry.serial_number}
                         </span>

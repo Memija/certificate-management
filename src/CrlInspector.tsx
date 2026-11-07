@@ -606,7 +606,7 @@ function CRLDetails({
             <div style={{ position: 'absolute', right: 8, top: 8 }}>
               <CopyButton value={crl.pem} />
             </div>
-            <pre style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', borderRadius: 6, padding: '1rem', overflowX: 'auto', fontSize: '0.8rem', color: 'var(--text-secondary)', maxHeight: '280px' }}>
+            <pre className="code-block" style={{ maxHeight: '280px', margin: 0 }}>
               {crl.pem}
             </pre>
           </div>
