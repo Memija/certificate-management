@@ -1,0 +1,811 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROOT SHELL & WARHAMMER 40K ADEPTUS MECHANICUS SERVITOR ORGANIZER STYLES
+   Scoped to .root-sanctum-* and .servitor-* to avoid sub-app CSS collisions
+═══════════════════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/* ─── Persistent 3D WebGL Canvas & Interactive HUD Layer ─────────────────── */
+.servitor-canvas-wrap {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9200;
+  overflow: hidden;
+}
+
+.servitor-webgl-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.servitor-roam-hit-target {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 112px;
+  height: 112px;
+  margin-left: -56px;
+  margin-top: -56px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px dashed transparent;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 9250;
+  padding: 0;
+  outline: none;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+}
+
+.servitor-roam-hit-target:hover,
+.servitor-roam-hit-target.is-active {
+  border-color: rgba(217, 119, 6, 0.72);
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.14) 0%, transparent 72%);
+  box-shadow:
+    0 0 24px rgba(220, 38, 38, 0.34),
+    inset 0 0 14px rgba(217, 119, 6, 0.25);
+}
+
+.servitor-roam-hover-pill {
+  position: absolute;
+  left: 50%;
+  bottom: -29px;
+  transform: translateX(-50%) translateY(4px);
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: rgba(18, 12, 10, 0.94);
+  border: 1px solid rgba(194, 138, 56, 0.65);
+  color: #fde68a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.75);
+}
+
+.servitor-roam-hit-target:hover .servitor-roam-hover-pill {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── Floating Mechanicus Auspex Telemetry Readout during Scans ──────────── */
+.servitor-scan-telemetry {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9240;
+  padding: 7px 12px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, rgba(28, 10, 12, 0.94) 0%, rgba(16, 13, 11, 0.96) 100%);
+  border: 1px solid rgba(194, 138, 56, 0.65);
+  border-left: 3px solid #dc2626;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.78),
+    0 0 20px rgba(220, 38, 38, 0.28);
+  backdrop-filter: blur(8px);
+  color: #fef3c7;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  line-height: 1.35;
+  max-width: 268px;
+  animation: servitorHudFadeIn 0.2s ease-out;
+}
+
+.servitor-scan-telemetry-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #f87171;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-size: 9.5px;
+  text-transform: uppercase;
+}
+
+.servitor-scan-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: servitorPulse 0.75s infinite alternate;
+}
+
+.servitor-scan-telemetry-target {
+  color: #fde68a;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.servitor-scan-telemetry-sub {
+  color: #4ade80;
+  font-size: 9px;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+/* ─── Floating Quick-Menu Popover (When Clicking Roaming Servitor) ───────── */
+.servitor-quick-popover {
+  position: fixed;
+  width: 306px;
+  z-index: 9300;
+  pointer-events: auto;
+  background: linear-gradient(165deg, rgba(22, 16, 14, 0.97) 0%, rgba(11, 9, 8, 0.99) 100%);
+  border: 1px solid rgba(182, 137, 56, 0.62);
+  border-radius: 6px;
+  box-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.85),
+    0 0 28px rgba(180, 28, 28, 0.22),
+    inset 0 0 0 1px rgba(255, 215, 130, 0.08);
+  backdrop-filter: blur(16px);
+  padding: 14px;
+  color: #f5efe6;
+  animation: servitorHudFadeIn 0.18s ease-out;
+}
+
+.servitor-quick-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(182, 137, 56, 0.28);
+}
+
+.servitor-quick-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.servitor-quick-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: #ef4444;
+  text-transform: uppercase;
+}
+
+.servitor-quick-title {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fde68a;
+}
+
+.servitor-quick-close {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(182, 137, 56, 0.32);
+  color: #d6c7b2;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.servitor-quick-close:hover {
+  background: rgba(185, 28, 28, 0.28);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #fecaca;
+}
+
+.servitor-quick-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border-radius: 5px;
+  border: 1px solid rgba(182, 137, 56, 0.22);
+  background: rgba(255, 245, 225, 0.03);
+  color: #e7dfd3;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.servitor-quick-btn:hover {
+  background: rgba(182, 137, 56, 0.16);
+  border-color: rgba(217, 158, 56, 0.65);
+  color: #fef3c7;
+}
+
+.servitor-quick-btn.primary-hub {
+  background: linear-gradient(135deg, rgba(124, 20, 25, 0.55) 0%, rgba(78, 14, 18, 0.65) 100%);
+  border-color: rgba(217, 158, 56, 0.58);
+  color: #fde68a;
+  margin-bottom: 10px;
+}
+
+.servitor-quick-btn.primary-hub:hover {
+  background: linear-gradient(135deg, rgba(160, 26, 32, 0.72) 0%, rgba(102, 18, 24, 0.8) 100%);
+  color: #ffffff;
+}
+
+.servitor-quick-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a89984;
+  margin: 8px 2px 6px;
+}
+
+.servitor-quick-app-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.servitor-quick-btn.is-current {
+  border-color: rgba(217, 158, 56, 0.52);
+  background: rgba(182, 137, 56, 0.1);
+}
+
+.servitor-quick-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.servitor-quick-mini-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(182, 137, 56, 0.28);
+  color: #d6c7b2;
+  transition: all 0.15s ease;
+}
+
+.servitor-quick-mini-btn:hover {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(153, 27, 27, 0.28);
+  color: #fde68a;
+}
+
+/* ─── Root Organizer Sanctum Page ("/") — Grimdark Adeptus Mechanicus ───── */
+.root-sanctum-page {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 27% 45%, rgba(220, 38, 38, 0.16) 0%, transparent 36%),
+    radial-gradient(circle at 27% 50%, rgba(217, 119, 6, 0.12) 0%, transparent 48%),
+    radial-gradient(ellipse 62% 55% at 75% 46%, rgba(120, 20, 24, 0.12) 0%, transparent 62%),
+    linear-gradient(180deg, #0b0908 0%, #120e0d 50%, #070606 100%);
+  color: #f5efe6;
+}
+
+.root-sanctum-grid-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(182, 137, 56, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(182, 137, 56, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 35%, transparent 100%);
+}
+
+.root-sanctum-scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.26) 4px
+  );
+  opacity: 0.65;
+}
+
+.root-sanctum-topbar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid rgba(182, 137, 56, 0.32);
+  background: linear-gradient(90deg, rgba(20, 12, 12, 0.88) 0%, rgba(12, 10, 9, 0.88) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.root-sanctum-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.root-sanctum-cog-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6e1015 0%, #2e080b 100%);
+  border: 1px solid rgba(202, 152, 62, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbbf24;
+  box-shadow:
+    0 0 18px rgba(220, 38, 38, 0.28),
+    inset 0 0 8px rgba(251, 191, 36, 0.2);
+}
+
+.root-sanctum-brand-text h1 {
+  margin: 0;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+
+.root-sanctum-brand-text span {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #d6c7b2;
+  opacity: 0.8;
+  letter-spacing: 0.1em;
+}
+
+.root-sanctum-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px;
+  border-radius: 4px;
+  background: rgba(28, 18, 12, 0.85);
+  border: 1px solid rgba(182, 137, 56, 0.48);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: #fde68a;
+}
+
+.root-sanctum-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 9px #4ade80;
+}
+
+/* Main two-column organizer layout */
+.root-sanctum-stage {
+  position: relative;
+  z-index: 20;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(300px, 45%) minmax(340px, 55%);
+  align-items: center;
+  max-width: 1380px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 36px 40px;
+  gap: 24px;
+}
+
+.root-sanctum-servitor-pedestal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 500px;
+  padding-bottom: 8px;
+  pointer-events: none;
+}
+
+.root-sanctum-vox-caption {
+  margin-top: auto;
+  padding: 10px 18px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(24, 14, 13, 0.92) 0%, rgba(14, 10, 9, 0.95) 100%);
+  border: 1px solid rgba(182, 137, 56, 0.55);
+  border-top: 2px solid #dc2626;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.78);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #fde68a;
+  text-align: center;
+  letter-spacing: 0.05em;
+  max-width: 410px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.root-sanctum-vox-caption strong {
+  display: block;
+  color: #f87171;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  margin-bottom: 4px;
+}
+
+/* Right-side Mechanicus Cogitator Altar / Menu Panel */
+.root-sanctum-menu-panel {
+  position: relative;
+  background: linear-gradient(160deg, rgba(24, 19, 16, 0.9) 0%, rgba(12, 10, 9, 0.95) 100%);
+  border: 1px solid rgba(182, 137, 56, 0.52);
+  border-radius: 8px;
+  padding: 30px 32px;
+  box-shadow:
+    0 30px 75px rgba(0, 0, 0, 0.85),
+    0 0 42px rgba(180, 28, 28, 0.14),
+    inset 0 0 0 1px rgba(251, 191, 36, 0.08);
+  backdrop-filter: blur(14px);
+  transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.42s ease;
+}
+
+.root-sanctum-menu-panel.is-transitioning-out {
+  opacity: 0;
+  transform: scale(0.94) translateX(28px);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* Tarnished Brass Gothic Corner Brackets */
+.root-sanctum-menu-panel::before,
+.root-sanctum-menu-panel::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: #d49b3d;
+  border-style: solid;
+  pointer-events: none;
+}
+
+.root-sanctum-menu-panel::before {
+  top: -2px;
+  left: -2px;
+  border-width: 3px 0 0 3px;
+}
+
+.root-sanctum-menu-panel::after {
+  bottom: -2px;
+  right: -2px;
+  border-width: 0 3px 3px 0;
+}
+
+.root-menu-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #ef4444;
+  margin-bottom: 8px;
+}
+
+.root-menu-heading {
+  margin: 0 0 8px;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: clamp(1.5rem, 2.5vw, 2.05rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #fffbeb 0%, #fcd34d 55%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.root-menu-subtitle {
+  margin: 0 0 22px;
+  font-size: 0.91rem;
+  line-height: 1.55;
+  color: #bfb3a3;
+}
+
+.root-menu-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.root-app-card {
+  position: relative;
+  border-radius: 6px;
+  padding: 20px 22px;
+  background: linear-gradient(145deg, rgba(32, 23, 20, 0.9) 0%, rgba(16, 13, 12, 0.96) 100%);
+  border: 1px solid rgba(182, 137, 56, 0.42);
+  border-left: 4px solid #991b1b;
+  transition: all 0.22s ease;
+  cursor: pointer;
+}
+
+.root-app-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(234, 179, 8, 0.82);
+  border-left-color: #ef4444;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.72),
+    0 0 28px rgba(220, 38, 38, 0.22);
+}
+
+.root-app-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.root-app-card-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.root-app-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6e1015 0%, #2a080a 100%);
+  border: 1px solid rgba(202, 152, 62, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbbf24;
+  flex-shrink: 0;
+  box-shadow: 0 0 18px rgba(185, 28, 28, 0.35);
+}
+
+.root-app-designation {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #f87171;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.root-app-title {
+  margin: 0;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fef3c7;
+}
+
+.root-app-subtitle {
+  font-size: 0.82rem;
+  color: #bfb3a3;
+  margin-top: 2px;
+}
+
+.root-app-route-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(20, 35, 24, 0.75);
+  border: 1px solid rgba(74, 222, 128, 0.38);
+  color: #86efac;
+  white-space: nowrap;
+}
+
+.root-app-desc {
+  margin: 10px 0 15px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #d6ccc0;
+}
+
+.root-app-submodules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.root-app-submodule-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: rgba(255, 245, 220, 0.04);
+  border: 1px solid rgba(182, 137, 56, 0.3);
+  color: #e7dfd3;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.root-app-submodule-chip:hover {
+  background: rgba(153, 27, 27, 0.42);
+  border-color: rgba(234, 179, 8, 0.75);
+  color: #fef3c7;
+}
+
+.root-app-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(182, 137, 56, 0.2);
+}
+
+.root-app-version {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #9c8e7b;
+}
+
+.root-app-launch-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(234, 179, 8, 0.75);
+  background: linear-gradient(135deg, #8c141b 0%, #590a0f 100%);
+  color: #fde68a;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(153, 27, 27, 0.45);
+  transition: all 0.18s ease;
+}
+
+.root-app-card:hover .root-app-launch-cta {
+  transform: translateX(3px);
+  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  box-shadow: 0 8px 26px rgba(220, 38, 38, 0.55);
+}
+
+/* Extensible Plug-In Slot Footer Card */
+.root-plugin-slot-banner {
+  margin-top: 16px;
+  padding: 13px 16px;
+  border-radius: 5px;
+  border: 1px dashed rgba(182, 137, 56, 0.35);
+  background: rgba(18, 14, 12, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #a89984;
+  font-size: 0.81rem;
+}
+
+.root-plugin-slot-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: #fde68a;
+  background: rgba(120, 20, 24, 0.35);
+  border: 1px solid rgba(182, 137, 56, 0.38);
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Sub-application route wrapper & lazy loading state */
+.subapp-route-stage {
+  animation: subappReveal 0.45s ease-out;
+  min-height: 100vh;
+}
+
+.subapp-loading-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #090808;
+  color: #fde68a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+
+@keyframes servitorPulse {
+  from {
+    opacity: 0.45;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes servitorHudFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes subappReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 959px) {
+  .root-sanctum-topbar {
+    padding: 14px 18px;
+  }
+
+  .root-sanctum-stage {
+    grid-template-columns: 1fr;
+    padding: 16px 18px 32px;
+    gap: 12px;
+  }
+
+  .root-sanctum-servitor-pedestal {
+    min-height: 250px;
+    padding-bottom: 4px;
+  }
+
+  .root-sanctum-menu-panel {
+    padding: 20px 18px;
+  }
+
+  .root-app-card-top {
+    flex-direction: column;
+  }
+}

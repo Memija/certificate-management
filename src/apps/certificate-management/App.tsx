@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { parseEfiSignatureLists, parseRawX509, type EfiSignatureList, type ParsedCertificate } from './utils/efiParser';
-import { Shield, ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, FolderOpen, Sun, Moon, FileKey, Monitor, ShieldAlert, Link as LinkIcon, Key, Zap, FileArchive, Globe, Activity, LayoutDashboard, Menu, X, Search, BookOpen, Download, Copy, Check, Eye, EyeOff } from 'lucide-react';
+import { Shield, ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, FolderOpen, Sun, Moon, FileKey, Monitor, ShieldAlert, Link as LinkIcon, Key, Zap, FileArchive, Globe, Activity, LayoutDashboard, Menu, X, Search, BookOpen, Download, Copy, Check, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { TrustStoreInspector } from './TrustStoreInspector';
 import { CsrInspector } from './CsrInspector';
 import { WinCertStoreInspector } from './WinCertStoreInspector';
@@ -81,7 +81,13 @@ const CATEGORIES = [
   }
 ];
 
-function App() {
+export interface CertificateAppProps {
+  externalMode?: AppMode | null;
+  onExternalModeSync?: (mode: AppMode) => void;
+  onBackToRoot?: () => void;
+}
+
+function App({ externalMode, onExternalModeSync, onBackToRoot }: CertificateAppProps = {}) {
   const { t, i18n } = useTranslation();
   const [mode, setMode] = useState<AppMode>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -89,6 +95,13 @@ function App() {
     if (queryMode) return queryMode;
     return (localStorage.getItem('app-mode') as AppMode) || 'secure-boot';
   });
+
+  useEffect(() => {
+    if (externalMode) {
+      setMode((prev) => (prev === externalMode ? prev : externalMode));
+      localStorage.setItem('app-mode', externalMode);
+    }
+  }, [externalMode]);
 
   const [theme, setTheme] = useState<Theme>(() => getInitialThemePreference());
 
@@ -143,6 +156,7 @@ function App() {
   const switchMode = (m: AppMode) => {
     setMode(m);
     localStorage.setItem('app-mode', m);
+    onExternalModeSync?.(m);
     setSidebarOpen(false); // Close mobile sidebar on navigation
     if (mainContentAreaRef.current) {
       mainContentAreaRef.current.scrollTop = 0;
@@ -424,7 +438,7 @@ function App() {
   return (
     <ToastProvider>
       <div className="app-layout">
-        <AppSidebar mode={mode} onModeChange={switchMode} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <AppSidebar mode={mode} onModeChange={switchMode} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onBackToRoot={onBackToRoot} />
 
         <div
           className="app-main-wrapper is-floated"
@@ -858,7 +872,7 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
 }
 
 // ─── Sidebar Navigation ───────────────────────────────────────────────────────
-function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, onModeChange: (m: AppMode) => void, isOpen: boolean, onClose: () => void }) {
+function AppSidebar({ mode, onModeChange, isOpen, onClose, onBackToRoot }: { mode: AppMode, onModeChange: (m: AppMode) => void, isOpen: boolean, onClose: () => void, onBackToRoot?: () => void }) {
   const { t } = useTranslation();
   const navRef = useRef<HTMLElement>(null);
 
@@ -883,6 +897,29 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, on
             <X size={20} />
           </button>
         </div>
+
+        {onBackToRoot && (
+          <div style={{ padding: '0 0.85rem 0.6rem 0.85rem', borderBottom: '1px solid var(--glass-border-subtle)', marginBottom: '0.35rem' }}>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onBackToRoot();
+              }}
+              className="sidebar-nav-btn"
+              style={{
+                width: '100%',
+                color: 'var(--text-accent)',
+                background: 'rgba(16, 185, 129, 0.08)',
+                border: '1px solid rgba(52, 211, 153, 0.22)',
+                fontWeight: 600,
+              }}
+            >
+              <ArrowLeft size={16} />
+              <span>Root Menu</span>
+            </button>
+          </div>
+        )}
 
         <nav className="app-sidebar-nav" ref={navRef}>
           {CATEGORIES.map((category, idx) => (
