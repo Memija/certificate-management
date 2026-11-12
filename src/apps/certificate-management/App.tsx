@@ -907,6 +907,7 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose, onBackToRoot }: { mod
                 onBackToRoot();
               }}
               className="sidebar-nav-btn"
+              title="Return to the Servitorium"
               style={{
                 width: '100%',
                 color: 'var(--text-accent)',
@@ -916,7 +917,7 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose, onBackToRoot }: { mod
               }}
             >
               <ArrowLeft size={16} />
-              <span>Root Menu</span>
+              <span>Servitorium</span>
             </button>
           </div>
         )}

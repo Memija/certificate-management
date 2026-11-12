@@ -21,6 +21,18 @@ body,
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
+html,
+body {
+  background-color: #090808;
+  color: #f1f5f9;
+}
+
+html[data-theme='light'],
+html[data-theme='light'] body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
 /* ─── Persistent 3D WebGL Canvas & Interactive HUD Layer ─────────────────── */
 .servitor-canvas-wrap {
   position: fixed;
@@ -39,58 +51,68 @@ body,
   pointer-events: none;
 }
 
-.servitor-roam-hit-target {
+/* ─── Non-Obstructive Footer-Edge Control Pill on Sub-Apps ──────────────── */
+.servitor-dock-pill {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 112px;
-  height: 112px;
-  margin-left: -56px;
-  margin-top: -56px;
-  border-radius: 50%;
-  background: transparent;
-  border: 1px dashed transparent;
-  pointer-events: auto;
-  cursor: pointer;
-  z-index: 9250;
-  padding: 0;
-  outline: none;
-  transition: border-color 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
-}
-
-.servitor-roam-hit-target:hover,
-.servitor-roam-hit-target.is-active {
-  border-color: rgba(217, 119, 6, 0.72);
-  background: radial-gradient(circle, rgba(220, 38, 38, 0.14) 0%, transparent 72%);
-  box-shadow:
-    0 0 24px rgba(220, 38, 38, 0.34),
-    inset 0 0 14px rgba(217, 119, 6, 0.25);
-}
-
-.servitor-roam-hover-pill {
-  position: absolute;
-  left: 50%;
-  bottom: -29px;
-  transform: translateX(-50%) translateY(4px);
-  white-space: nowrap;
-  padding: 3px 10px;
-  border-radius: 4px;
-  background: rgba(18, 12, 10, 0.94);
-  border: 1px solid rgba(194, 138, 56, 0.65);
+  bottom: 7px;
+  right: 92px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(18, 13, 11, 0.88);
+  border: 1px solid rgba(182, 137, 56, 0.48);
   color: #fde68a;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.18s ease;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.75);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  z-index: 9260;
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  transition: all 0.18s ease;
 }
 
-.servitor-roam-hit-target:hover .servitor-roam-hover-pill {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+.servitor-dock-pill:hover,
+.servitor-dock-pill.is-active {
+  background: rgba(34, 18, 16, 0.96);
+  border-color: rgba(234, 179, 8, 0.82);
+  color: #fffbeb;
+  box-shadow: 0 4px 18px rgba(220, 38, 38, 0.3);
+}
+
+.servitor-dock-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  flex-shrink: 0;
+}
+
+.servitor-dock-pill.is-standby .servitor-dock-led {
+  background: #f59e0b;
+  box-shadow: 0 0 5px rgba(245, 158, 11, 0.65);
+  opacity: 0.8;
+}
+
+.servitor-dock-pill.is-scanning .servitor-dock-led {
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: servitorPulse 0.7s infinite alternate;
+}
+
+.servitor-dock-pill.is-cloaked {
+  opacity: 0.65;
+}
+
+.servitor-dock-pill.is-cloaked .servitor-dock-led {
+  background: #64748b;
+  box-shadow: none;
 }
 
 /* ─── Floating Mechanicus Auspex Telemetry Readout during Scans ──────────── */
@@ -152,7 +174,7 @@ body,
   margin-top: 2px;
 }
 
-/* ─── Floating Quick-Menu Popover (When Clicking Roaming Servitor) ───────── */
+/* ─── Floating Quick-Menu Popover (Anchored Cleanly Above Footer Corner) ── */
 .servitor-quick-popover {
   position: fixed;
   width: 306px;
@@ -169,6 +191,11 @@ body,
   padding: 14px;
   color: #f5efe6;
   animation: servitorHudFadeIn 0.18s ease-out;
+}
+
+.servitor-quick-popover-docked {
+  right: 16px;
+  bottom: 42px;
 }
 
 .servitor-quick-header {
@@ -752,6 +779,51 @@ body,
   color: #fde68a;
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
+}
+
+.shell-error-fallback {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 35%, #190e0e 0%, #090808 100%);
+}
+
+.shell-error-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 24px;
+  border-radius: 6px;
+  background: rgba(18, 13, 12, 0.96);
+  border: 1px solid rgba(182, 137, 56, 0.58);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+  color: #f5efe6;
+}
+
+.shell-error-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f87171;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.shell-error-msg {
+  margin: 0 0 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d6c7b2;
+}
+
+.shell-error-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 @keyframes servitorPulse {

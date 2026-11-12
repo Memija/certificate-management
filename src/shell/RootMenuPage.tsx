@@ -37,8 +37,8 @@ export const RootMenuPage: React.FC<RootMenuPageProps> = ({
             <Cpu size={19} />
           </div>
           <div className="root-sanctum-brand-text">
-            <h1>Adeptus Mechanicus // Logis-Nexus</h1>
-            <span>IMPERIAL COGITATOR ORGANIZER // MULTI-ROUTE SANCTUM</span>
+            <h1>Adeptus Mechanicus // Servitorium</h1>
+            <span>SERVITOR STASIS-ALCOVE // NOOSPHERE CONDUIT</span>
           </div>
         </div>
 

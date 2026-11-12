@@ -25,16 +25,84 @@ export interface ServitorFrameTelemetry {
   scanTargetScreen: { x: number; y: number } | null;
 }
 
-interface DynamicCable {
-  mesh: THREE.Mesh;
+const CABLE_SEGMENT_COUNT = 14;
+const UP_AXIS = new THREE.Vector3(0, 1, 0);
+
+interface ArticulatedCable {
+  segmentMeshes: THREE.Mesh[];
+  jointMeshes: THREE.Mesh[];
   ribRings: THREE.Mesh[];
   basePoints: THREE.Vector3[];
+  livePoints: THREE.Vector3[];
   phaseOffset: number;
   amp: number;
-  radialSegments: number;
   radius: number;
   tipGroup?: THREE.Group;
   tipSpinMesh?: THREE.Mesh;
+}
+
+interface ArticulatedParchmentStrip {
+  pivots: THREE.Group[];
+  baseRotZ: number;
+  phase: number;
+}
+
+interface EmberCloudLayer {
+  points: THREE.Points;
+  material: THREE.PointsMaterial;
+  phaseOffset: number;
+  swaySeed: number;
+}
+
+/**
+ * Zero-allocation 4-point Catmull-Rom spline evaluator (u in [0, 1]).
+ */
+function evalFourPointCatmullRom(
+  pts: readonly THREE.Vector3[],
+  u: number,
+  out: THREE.Vector3
+): THREE.Vector3 {
+  const clamped = u <= 0 ? 0 : u >= 1 ? 1 : u;
+  const scaled = clamped * 3;
+  const span = scaled >= 2 ? 2 : Math.floor(scaled);
+  const t = scaled - span;
+  const t2 = t * t;
+  const t3 = t2 * t;
+
+  const p0 = pts[0];
+  const p1 = pts[1];
+  const p2 = pts[2];
+  const p3 = pts[3];
+
+  const c1 = pts[span];
+  const c2 = pts[span + 1];
+
+  const c0x = span === 0 ? 2 * p0.x - p1.x : pts[span - 1].x;
+  const c0y = span === 0 ? 2 * p0.y - p1.y : pts[span - 1].y;
+  const c0z = span === 0 ? 2 * p0.z - p1.z : pts[span - 1].z;
+
+  const c3x = span === 2 ? 2 * p3.x - p2.x : pts[span + 2].x;
+  const c3y = span === 2 ? 2 * p3.y - p2.y : pts[span + 2].y;
+  const c3z = span === 2 ? 2 * p3.z - p2.z : pts[span + 2].z;
+
+  out.set(
+    0.5 *
+      (2 * c1.x +
+        (-c0x + c2.x) * t +
+        (2 * c0x - 5 * c1.x + 4 * c2.x - c3x) * t2 +
+        (-c0x + 3 * c1.x - 3 * c2.x + c3x) * t3),
+    0.5 *
+      (2 * c1.y +
+        (-c0y + c2.y) * t +
+        (2 * c0y - 5 * c1.y + 4 * c2.y - c3y) * t2 +
+        (-c0y + 3 * c1.y - 3 * c2.y + c3y) * t3),
+    0.5 *
+      (2 * c1.z +
+        (-c0z + c2.z) * t +
+        (2 * c0z - 5 * c1.z + 4 * c2.z - c3z) * t2 +
+        (-c0z + 3 * c1.z - 3 * c2.z + c3z) * t3)
+  );
+  return out;
 }
 
 interface FleshBoneTextures {
@@ -487,21 +555,22 @@ export class ServitorSceneController {
   private scanConeMesh: THREE.Mesh;
   private scanCoreLine: THREE.Mesh;
   private scanReticleGroup: THREE.Group;
-  private parchmentStrips: Array<{
-    mesh: THREE.Mesh;
-    baseZ: Float32Array;
-    baseX: Float32Array;
-    phase: number;
-  }> = [];
-  private cables: DynamicCable[] = [];
-  private emberParticles: THREE.Points;
-  private emberVelocities: Float32Array;
+  private parchmentStrips: ArticulatedParchmentStrip[] = [];
+  private cables: ArticulatedCable[] = [];
+  private emberClouds: EmberCloudLayer[] = [];
 
   private mode: ServitorMode = 'menu';
   private roamingState: RoamingSubState = 'patrol';
   private pointerNorm = new THREE.Vector2(0, 0);
+  private pointerPx = -9999;
+  private pointerPy = -9999;
   private hoveredMenuPoint: { x: number; y: number } | null = null;
   private isSkullHovered = false;
+  private userWorking = false;
+  private overlayModalOpen = false;
+  private cloaked = false;
+  private currentCanvasOpacity = 1.0;
+  private appliedCanvasOpacity = -1;
 
   private currentPos = new THREE.Vector3(-2.2, 0.2, 0);
   private velocity = new THREE.Vector3();
@@ -522,11 +591,39 @@ export class ServitorSceneController {
   private activeScanTarget: ScanTargetInfo | null = null;
   private requestScanTargetCallback: (() => ScanTargetInfo | null) | null = null;
 
+  // Pre-allocated zero-GC scratch objects reused every animation frame
+  private scratchPrevPos = new THREE.Vector3();
+  private scratchLookTarget = new THREE.Vector3();
+  private scratchAnchor = new THREE.Vector3();
+  private scratchVecA = new THREE.Vector3();
+  private scratchVecB = new THREE.Vector3();
+  private scratchVecC = new THREE.Vector3();
+  private scratchUnproject = new THREE.Vector3();
+  private scratchProject = new THREE.Vector3();
+  private scratchEyeWorld = new THREE.Vector3();
+  private scratchTargetWorld = new THREE.Vector3();
+  private scratchInstantVel = new THREE.Vector3();
+  private scratchDummyObj = new THREE.Object3D();
+  private scratchEuler = new THREE.Euler();
+  private scratchQuat = new THREE.Quaternion();
+  private scratchScreenA = { x: 0, y: 0 };
+  private scratchScreenB = { x: 0, y: 0 };
+  private scratchSplineSamples: THREE.Vector3[] = Array.from(
+    { length: CABLE_SEGMENT_COUNT + 1 },
+    () => new THREE.Vector3()
+  );
+
   private clock = new THREE.Clock();
   private rafId: number | null = null;
   private disposed = false;
+  private contextLost = false;
+  private canvasEl: HTMLCanvasElement;
   private disposableTextures: THREE.Texture[] = [];
   private onTelemetry: ((telemetry: ServitorFrameTelemetry) => void) | null = null;
+  private onContextRestored: (() => void) | null = null;
+  private handleContextLostBound: (e: Event) => void;
+  private handleContextRestoredBound: () => void;
+  private handleVisibilityChangeBound: () => void;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -534,19 +631,46 @@ export class ServitorSceneController {
       initialMode?: ServitorMode;
       onTelemetry?: (t: ServitorFrameTelemetry) => void;
       onRequestScanTarget?: () => ScanTargetInfo | null;
+      onContextRestored?: () => void;
     }
   ) {
+    this.canvasEl = canvas;
     this.onTelemetry = options?.onTelemetry ?? null;
     this.requestScanTargetCallback = options?.onRequestScanTarget ?? null;
+    this.onContextRestored = options?.onContextRestored ?? null;
     this.mode = options?.initialMode ?? 'menu';
+
+    // Ensure canvas is visible on fresh mount
+    canvas.style.visibility = 'visible';
+
+    this.handleContextLostBound = (e: Event) => {
+      e.preventDefault();
+      this.contextLost = true;
+      // Hide canvas immediately so a lost WebGL context never paints a white sheet over the UI
+      this.canvasEl.style.opacity = '0';
+      this.canvasEl.style.visibility = 'hidden';
+    };
+    this.handleContextRestoredBound = () => {
+      if (this.disposed) return;
+      this.onContextRestored?.();
+    };
+    this.handleVisibilityChangeBound = () => {
+      if (!document.hidden) {
+        // Discard accumulated background delta so animation resumes cleanly without a jump
+        this.clock.getDelta();
+      }
+    };
+
+    canvas.addEventListener('webglcontextlost', this.handleContextLostBound, false);
+    canvas.addEventListener('webglcontextrestored', this.handleContextRestoredBound, false);
+    document.addEventListener('visibilitychange', this.handleVisibilityChangeBound);
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
       antialias: true,
-      powerPreference: 'high-performance',
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     this.renderer.setSize(window.innerWidth, window.innerHeight, false);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.12;
@@ -1281,22 +1405,40 @@ export class ServitorSceneController {
       sealAnchor.add(waxLip);
 
       sp.lengths.forEach((len, lIdx) => {
-        const stripGeom = new THREE.PlaneGeometry(0.175, len, 2, 16);
-        stripGeom.translate(lIdx === 0 ? -0.03 : 0.055, -len * 0.5, lIdx === 0 ? 0.012 : -0.01);
-        const posAttr = stripGeom.attributes.position;
-        const baseZ = new Float32Array(posAttr.count);
-        const baseX = new Float32Array(posAttr.count);
-        for (let k = 0; k < posAttr.count; k++) {
-          baseX[k] = posAttr.getX(k);
-          baseZ[k] = posAttr.getZ(k);
+        const segCount = 4;
+        const segLen = len / segCount;
+        const pivots: THREE.Group[] = [];
+        const baseRotZ = (lIdx === 0 ? -0.08 : 0.11) + spIdx * 0.04;
+
+        let parentNode: THREE.Object3D = sealAnchor;
+        for (let s = 0; s < segCount; s++) {
+          const pivot = new THREE.Group();
+          if (s === 0) {
+            pivot.position.set(lIdx === 0 ? -0.03 : 0.055, 0, lIdx === 0 ? 0.012 : -0.01);
+            pivot.rotation.z = baseRotZ;
+          } else {
+            pivot.position.set(0, -segLen, 0);
+          }
+          parentNode.add(pivot);
+          pivots.push(pivot);
+
+          const sliceGeom = new THREE.PlaneGeometry(0.175, segLen, 1, 1);
+          const uvAttr = sliceGeom.attributes.uv;
+          const vTop = 1 - s / segCount;
+          const vBot = 1 - (s + 1) / segCount;
+          for (let k = 0; k < uvAttr.count; k++) {
+            uvAttr.setY(k, uvAttr.getY(k) > 0.5 ? vTop : vBot);
+          }
+          sliceGeom.translate(0, -segLen * 0.5, 0);
+
+          const sliceMesh = new THREE.Mesh(sliceGeom, parchmentMat);
+          pivot.add(sliceMesh);
+          parentNode = pivot;
         }
-        const stripMesh = new THREE.Mesh(stripGeom, parchmentMat);
-        stripMesh.rotation.z = (lIdx === 0 ? -0.08 : 0.11) + spIdx * 0.04;
-        sealAnchor.add(stripMesh);
+
         this.parchmentStrips.push({
-          mesh: stripMesh,
-          baseZ,
-          baseX,
+          pivots,
+          baseRotZ,
           phase: spIdx * 2.1 + lIdx * 1.4,
         });
       });
@@ -1351,7 +1493,12 @@ export class ServitorSceneController {
     censerWarmLight.position.set(0, -0.45, 0.2);
     this.censerSwingGroup.add(censerWarmLight);
 
-    // ─── 11. Segmented Ribbed Mechadendrites (Servo-Claw + Chirurgeon Buzz-Saw)
+    // ─── 11. Segmented Ribbed Mechadendrites (Zero-Allocation Static Links) ───
+    const sharedCableCylGeom = new THREE.CylinderGeometry(1, 1, 1, 10, 1, false);
+    const sharedCableJointGeom = new THREE.SphereGeometry(1.06, 8, 6);
+    const sharedCableRibGeom = new THREE.TorusGeometry(1.24, 0.24, 6, 12);
+    sharedCableRibGeom.rotateX(Math.PI / 2);
+
     const cableDefs: Array<{
       pts: [number, number, number][];
       radius: number;
@@ -1415,19 +1562,32 @@ export class ServitorSceneController {
 
     cableDefs.forEach((cfg, idx) => {
       const basePoints = cfg.pts.map(([x, y, z]) => new THREE.Vector3(x, y, z));
-      const curve = new THREE.CatmullRomCurve3(basePoints);
-      const geom = new THREE.TubeGeometry(curve, 20, cfg.radius, 8, false);
-      const mesh = new THREE.Mesh(geom, cfg.mat);
-      this.rootAnchor.add(mesh);
+      const livePoints = basePoints.map((p) => p.clone());
+
+      const segmentMeshes: THREE.Mesh[] = [];
+      for (let s = 0; s < CABLE_SEGMENT_COUNT; s++) {
+        const segMesh = new THREE.Mesh(sharedCableCylGeom, cfg.mat);
+        this.rootAnchor.add(segMesh);
+        segmentMeshes.push(segMesh);
+      }
+
+      const jointMeshes: THREE.Mesh[] = [];
+      for (let j = 0; j < CABLE_SEGMENT_COUNT - 1; j++) {
+        const jMesh = new THREE.Mesh(sharedCableJointGeom, blackenedIronMat);
+        jMesh.scale.setScalar(cfg.radius);
+        this.rootAnchor.add(jMesh);
+        jointMeshes.push(jMesh);
+      }
 
       // Segmented brass/steel vertebral rings along the mechadendrite
       const ribRings: THREE.Mesh[] = [];
       const ringCount = 6;
       for (let r = 1; r <= ringCount; r++) {
         const ringMesh = new THREE.Mesh(
-          new THREE.TorusGeometry(cfg.radius * 1.24, 0.015, 6, 12),
+          sharedCableRibGeom,
           r % 2 === 0 ? balthasarBrassMat : leadbelcherIronMat
         );
+        ringMesh.scale.setScalar(cfg.radius);
         this.rootAnchor.add(ringMesh);
         ribRings.push(ringMesh);
       }
@@ -1496,12 +1656,13 @@ export class ServitorSceneController {
       }
 
       this.cables.push({
-        mesh,
+        segmentMeshes,
+        jointMeshes,
         ribRings,
         basePoints,
+        livePoints,
         phaseOffset: idx * 1.35,
         amp: 0.11 + idx * 0.018,
-        radialSegments: 8,
         radius: cfg.radius,
         tipGroup,
         tipSpinMesh,
@@ -1622,102 +1783,172 @@ export class ServitorSceneController {
     );
     this.scanReticleGroup.add(retInner);
 
-    // ─── 14. Rising Thurible Incense Embers & Forge Sparks ────────────────────
-    const emberCount = 46;
-    const emberPos = new Float32Array(emberCount * 3);
-    this.emberVelocities = new Float32Array(emberCount);
-    for (let i = 0; i < emberCount; i++) {
-      emberPos[i * 3] = (Math.random() - 0.5) * 2.2;
-      emberPos[i * 3 + 1] = -2.2 + Math.random() * 3.8;
-      emberPos[i * 3 + 2] = (Math.random() - 0.5) * 1.8;
-      this.emberVelocities[i] = 0.25 + Math.random() * 0.45;
-    }
-    const emberGeom = new THREE.BufferGeometry();
-    emberGeom.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
-    this.emberParticles = new THREE.Points(
-      emberGeom,
-      new THREE.PointsMaterial({
-        color: '#f59e0b',
+    // ─── 14. Rising Thurible Incense Embers (Static Buffer Dual-Phase Drift) ──
+    for (let layer = 0; layer < 2; layer++) {
+      const emberCount = 24;
+      const emberPos = new Float32Array(emberCount * 3);
+      for (let i = 0; i < emberCount; i++) {
+        emberPos[i * 3] = (Math.random() - 0.5) * 2.1;
+        emberPos[i * 3 + 1] = -1.6 + Math.random() * 2.4;
+        emberPos[i * 3 + 2] = (Math.random() - 0.5) * 1.7;
+      }
+      const emberGeom = new THREE.BufferGeometry();
+      emberGeom.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
+      const emberMat = new THREE.PointsMaterial({
+        color: layer === 0 ? '#f59e0b' : '#fb923c',
         size: 0.052,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.65,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
-      })
-    );
-    this.rootAnchor.add(this.emberParticles);
+      });
+      const points = new THREE.Points(emberGeom, emberMat);
+      this.rootAnchor.add(points);
+      this.emberClouds.push({
+        points,
+        material: emberMat,
+        phaseOffset: layer * 0.5,
+        swaySeed: layer * 2.4,
+      });
+    }
 
     this.snapToModeInitialPose();
     this.startLoop();
   }
 
-  private getMenuAnchorWorld(): { pos: THREE.Vector3; scale: number } {
+  private getMenuAnchorWorld(out: THREE.Vector3): { pos: THREE.Vector3; scale: number } {
     const w = window.innerWidth;
     const h = window.innerHeight;
     if (w < 960) {
-      const pos = this.screenToWorld(w * 0.5, h * 0.23, 0);
-      return { pos, scale: 0.62 };
+      this.screenToWorld(w * 0.5, h * 0.23, 0, out);
+      return { pos: out, scale: 0.62 };
     }
-    const pos = this.screenToWorld(w * 0.27, h * 0.46, 0);
-    return { pos, scale: 1.02 };
+    this.screenToWorld(w * 0.27, h * 0.46, 0, out);
+    return { pos: out, scale: 1.02 };
   }
 
-  private computePatrolWorldPos(t: number): THREE.Vector3 {
+  private computePatrolWorldPos(t: number, out: THREE.Vector3): THREE.Vector3 {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const marginX = Math.min(130, w * 0.14);
-    const marginY = Math.min(115, h * 0.14);
+    const s = t * 0.22 + this.patrolSeed;
 
-    const s = t * 0.25 + this.patrolSeed;
-    const nx = 0.5 + 0.42 * Math.cos(s) + 0.08 * Math.cos(s * 3);
-    const ny = 0.46 + 0.36 * Math.sin(s * 1.7) + 0.06 * Math.sin(s * 2.3);
+    if (w < 960) {
+      const px = w - 48 - Math.sin(s * 1.5) * 10;
+      const py = THREE.MathUtils.lerp(104, Math.max(140, h - 82), 0.5 + 0.5 * Math.sin(s));
+      return this.screenToWorld(px, py, 0, out);
+    }
 
-    const px = THREE.MathUtils.clamp(nx * w, marginX, w - marginX);
-    const py = THREE.MathUtils.clamp(ny * h, marginY, h - marginY);
-    return this.screenToWorld(px, py, 0);
+    // Strictly hug the unobstructed right-hand & bottom-right outer gutter
+    // (clear of the 270px left sidebar, top-right controls capsule, and central reading column)
+    const verticalWave = 0.5 + 0.5 * Math.sin(s);
+    const topSafe = 114;
+    const bottomSafe = Math.max(topSafe + 60, h - 84);
+    const py = THREE.MathUtils.lerp(topSafe, bottomSafe, verticalWave);
+
+    // Subtle horizontal drift only near the bottom-right margin
+    const bottomDrift = Math.max(0, verticalWave - 0.65) / 0.35;
+    const maxDriftPx = Math.min(160, Math.max(0, (w - 1180) * 0.45));
+    const px =
+      w -
+      64 -
+      Math.sin(s * 2.1) * 14 -
+      bottomDrift * maxDriftPx * (0.5 + 0.5 * Math.cos(s * 1.3));
+
+    return this.screenToWorld(px, py, 0, out);
   }
 
-  private computeDockedWorldPos(): THREE.Vector3 {
+  private computeDockedWorldPos(out: THREE.Vector3): THREE.Vector3 {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    return this.screenToWorld(w - 94, h - 108, 0);
+    return this.screenToWorld(w - 54, Math.max(100, h - 78), 0, out);
+  }
+
+  private applyCursorEvasion(desiredWorld: THREE.Vector3, outWorld: THREE.Vector3): number {
+    outWorld.copy(desiredWorld);
+    if (this.pointerPx < -1000 || this.pointerPy < -1000) {
+      return 9999;
+    }
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const screenPt = this.worldToScreen(desiredWorld, this.scratchScreenA);
+    const dx = screenPt.x - this.pointerPx;
+    const dy = screenPt.y - this.pointerPy;
+    const dist = Math.hypot(dx, dy);
+    const repelRadius = 195;
+
+    if (dist >= repelRadius) {
+      return dist;
+    }
+
+    let targetX = screenPt.x;
+    let targetY = screenPt.y;
+
+    // If cursor moves into the bottom-right corner, lift the Servitor cleanly upward out of the corner
+    if (this.pointerPx > w - 240 && this.pointerPy > h - 240 && screenPt.x > w - 200) {
+      const lift = Math.pow(1 - dist / repelRadius, 1.15) * 210;
+      targetY = Math.max(104, screenPt.y - lift);
+      targetX = w - 54;
+    } else {
+      const ux = dist > 1 ? dx / dist : 0;
+      const uy = dist > 1 ? dy / dist : -1;
+      const push = Math.pow(1 - dist / repelRadius, 1.35) * 175;
+      const minSafeX = w >= 960 ? 320 : 48;
+      targetX = THREE.MathUtils.clamp(screenPt.x + ux * push, minSafeX, w - 48);
+      targetY = THREE.MathUtils.clamp(screenPt.y + uy * push, 98, Math.max(110, h - 72));
+    }
+
+    this.screenToWorld(targetX, targetY, 0, outWorld);
+    return dist;
   }
 
   private snapToModeInitialPose() {
     if (this.mode === 'menu') {
-      const { pos, scale } = this.getMenuAnchorWorld();
+      const { pos, scale } = this.getMenuAnchorWorld(this.scratchAnchor);
       this.currentPos.copy(pos);
       this.currentScale = scale;
+      this.currentCanvasOpacity = 1.0;
     } else {
-      const pos = this.computePatrolWorldPos(0);
+      const pos = this.computePatrolWorldPos(0, this.scratchAnchor);
       this.currentPos.copy(pos);
-      this.currentScale = 0.34;
+      this.currentScale = 0.25;
+      this.currentCanvasOpacity = 0.86;
     }
     this.rootAnchor.position.copy(this.currentPos);
     this.rootAnchor.scale.setScalar(this.currentScale);
   }
 
-  public screenToWorld(px: number, py: number, targetZ = 0): THREE.Vector3 {
-    const ndcX = (px / Math.max(1, window.innerWidth)) * 2 - 1;
-    const ndcY = -(py / Math.max(1, window.innerHeight)) * 2 + 1;
-    const vec = new THREE.Vector3(ndcX, ndcY, 0.5);
-    vec.unproject(this.camera);
-    const dir = vec.sub(this.camera.position).normalize();
-    const distance = (targetZ - this.camera.position.z) / dir.z;
-    return this.camera.position.clone().add(dir.multiplyScalar(distance));
+  public screenToWorld(
+    px: number,
+    py: number,
+    targetZ = 0,
+    out?: THREE.Vector3
+  ): THREE.Vector3 {
+    const result = out ?? new THREE.Vector3();
+    const safePx = Number.isFinite(px) ? px : window.innerWidth * 0.5;
+    const safePy = Number.isFinite(py) ? py : window.innerHeight * 0.5;
+    const ndcX = (safePx / Math.max(1, window.innerWidth)) * 2 - 1;
+    const ndcY = -(safePy / Math.max(1, window.innerHeight)) * 2 + 1;
+    this.scratchUnproject.set(ndcX, ndcY, 0.5).unproject(this.camera);
+    const dir = this.scratchUnproject.sub(this.camera.position).normalize();
+    const safeDirZ = Math.abs(dir.z) > 1e-5 ? dir.z : -1;
+    const distance = (targetZ - this.camera.position.z) / safeDirZ;
+    return result.copy(this.camera.position).addScaledVector(dir, distance);
   }
 
-  public worldToScreen(worldPos: THREE.Vector3): { x: number; y: number } {
-    const projected = worldPos.clone().project(this.camera);
-    return {
-      x: (projected.x * 0.5 + 0.5) * window.innerWidth,
-      y: (-projected.y * 0.5 + 0.5) * window.innerHeight,
-    };
+  public worldToScreen(
+    worldPos: THREE.Vector3,
+    out?: { x: number; y: number }
+  ): { x: number; y: number } {
+    const target = out ?? { x: 0, y: 0 };
+    this.scratchProject.copy(worldPos).project(this.camera);
+    target.x = (this.scratchProject.x * 0.5 + 0.5) * window.innerWidth;
+    target.y = (-this.scratchProject.y * 0.5 + 0.5) * window.innerHeight;
+    return target;
   }
 
   public handleResize() {
-    if (this.disposed) return;
-    const w = window.innerWidth;
+    if (this.disposed || this.contextLost) return;
+    const w = Math.max(1, window.innerWidth);
     const h = Math.max(1, window.innerHeight);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
@@ -1725,10 +1956,34 @@ export class ServitorSceneController {
   }
 
   public setPointerScreen(px: number, py: number) {
+    this.pointerPx = px;
+    this.pointerPy = py;
     this.pointerNorm.set(
       (px / Math.max(1, window.innerWidth)) * 2 - 1,
       -(py / Math.max(1, window.innerHeight)) * 2 + 1
     );
+  }
+
+  public clearPointer() {
+    this.pointerPx = -9999;
+    this.pointerPy = -9999;
+  }
+
+  public setWorkspaceObstructionState(state: {
+    userWorking: boolean;
+    modalOpen: boolean;
+    cloaked: boolean;
+  }) {
+    this.userWorking = state.userWorking;
+    this.overlayModalOpen = state.modalOpen;
+    this.cloaked = state.cloaked;
+
+    // Immediately abort any active scan beam if the user starts working, opens a modal, or cloaks
+    if ((state.userWorking || state.modalOpen || state.cloaked) && this.roamingState === 'scanning') {
+      this.roamingState = 'patrol';
+      this.activeScanTarget = null;
+      this.nextScanCountdown = 6.0;
+    }
   }
 
   public setHoveredMenuTarget(point: { x: number; y: number } | null) {
@@ -1798,35 +2053,49 @@ export class ServitorSceneController {
     const tick = () => {
       if (this.disposed) return;
       this.rafId = requestAnimationFrame(tick);
-      const dt = Math.min(this.clock.getDelta(), 0.05);
+
+      if (this.contextLost || document.hidden) {
+        return;
+      }
+
+      const rawDt = this.clock.getDelta();
+      const dt = Number.isFinite(rawDt) ? THREE.MathUtils.clamp(rawDt, 0.0001, 0.05) : 0.016;
       const elapsed = this.clock.elapsedTime;
       this.update(dt, elapsed);
-      this.renderer.render(this.scene, this.camera);
+      if (this.currentCanvasOpacity > 0.01) {
+        this.renderer.render(this.scene, this.camera);
+      }
     };
     this.rafId = requestAnimationFrame(tick);
   }
 
   private update(dt: number, elapsed: number) {
-    const prevPos = this.currentPos.clone();
+    const prevPos = this.scratchPrevPos.copy(this.currentPos);
     let desiredScale = this.currentScale;
-    const lookTargetWorld = new THREE.Vector3(0, 0, 9);
+    const lookTargetWorld = this.scratchLookTarget.set(0, 0, 9);
     let jawChatterAmount = 0;
     let lensSpinSpeed = 0.6;
     let barrelExtend = 0.11;
     let turretAngleTarget = 0;
 
     if (this.mode === 'menu') {
-      const { pos: anchorPos, scale } = this.getMenuAnchorWorld();
+      const { pos: anchorPos, scale } = this.getMenuAnchorWorld(this.scratchAnchor);
       // Heavy mechanical antigrav bobbing
-      const bobPos = anchorPos
-        .clone()
-        .add(new THREE.Vector3(Math.sin(elapsed * 0.95) * 0.08, Math.sin(elapsed * 1.75) * 0.13, 0));
-      this.currentPos.lerp(bobPos, 1 - Math.exp(-4.2 * dt));
+      this.scratchVecA.set(
+        anchorPos.x + Math.sin(elapsed * 0.95) * 0.08,
+        anchorPos.y + Math.sin(elapsed * 1.75) * 0.13,
+        anchorPos.z
+      );
+      this.currentPos.lerp(this.scratchVecA, 1 - Math.exp(-4.2 * dt));
       desiredScale = scale;
 
       if (this.hoveredMenuPoint) {
-        const wPt = this.screenToWorld(this.hoveredMenuPoint.x, this.hoveredMenuPoint.y, 2.5);
-        lookTargetWorld.copy(wPt);
+        this.screenToWorld(
+          this.hoveredMenuPoint.x,
+          this.hoveredMenuPoint.y,
+          2.5,
+          lookTargetWorld
+        );
         lensSpinSpeed = 2.8;
         barrelExtend = 0.2;
         jawChatterAmount = 0.42;
@@ -1846,7 +2115,7 @@ export class ServitorSceneController {
       const p = this.transitionProgress;
       const ease = p < 0.5 ? 16 * p * p * p * p * p : 1 - Math.pow(-2 * p + 2, 5) / 2;
 
-      const endPos = this.computePatrolWorldPos(this.patrolTime);
+      const endPos = this.computePatrolWorldPos(this.patrolTime, this.scratchAnchor);
       const swoopZ = Math.sin(p * Math.PI) * 3.2;
       const arcLiftY = Math.sin(p * Math.PI) * 0.82;
 
@@ -1854,7 +2123,7 @@ export class ServitorSceneController {
       this.currentPos.y += arcLiftY;
       this.currentPos.z = swoopZ;
 
-      desiredScale = THREE.MathUtils.lerp(this.transitionStartScale, 0.34, ease);
+      desiredScale = THREE.MathUtils.lerp(this.transitionStartScale, 0.25, ease);
       lookTargetWorld.set(0, 0, 12);
       lensSpinSpeed = 6.0;
       barrelExtend = 0.23;
@@ -1873,7 +2142,7 @@ export class ServitorSceneController {
       this.transitionProgress = Math.min(1, this.transitionProgress + dt / this.transitionDuration);
       const p = this.transitionProgress;
       const ease = 1 - Math.pow(1 - p, 4);
-      const { pos: menuPos, scale: menuScale } = this.getMenuAnchorWorld();
+      const { pos: menuPos, scale: menuScale } = this.getMenuAnchorWorld(this.scratchAnchor);
 
       this.currentPos.lerpVectors(this.transitionStartPos, menuPos, ease);
       this.currentPos.z = Math.sin(p * Math.PI) * 2.1;
@@ -1889,81 +2158,139 @@ export class ServitorSceneController {
         cb?.();
       }
     } else {
-      // ROAMING MODE
-      desiredScale = this.isSkullHovered || this.roamingState === 'menu-open' ? 0.39 : 0.34;
+      // ROAMING MODE (Non-obstructive perimeter vigil + active-work retreat + cursor evasion)
+      const shouldRetreatForWork =
+        (this.userWorking || this.overlayModalOpen) && this.roamingState !== 'menu-open';
 
-      if (this.roamingState === 'patrol') {
-        this.patrolTime += dt;
-        const targetPos = this.computePatrolWorldPos(this.patrolTime);
-        targetPos.y += Math.sin(elapsed * 2.4) * 0.08;
-        this.currentPos.lerp(targetPos, 1 - Math.exp(-2.5 * dt));
+      if (this.roamingState === 'menu-open') {
+        desiredScale = 0.28;
+      } else if (shouldRetreatForWork || this.roamingState === 'docked') {
+        desiredScale = 0.19;
+      } else {
+        desiredScale = this.isSkullHovered ? 0.28 : 0.25;
+      }
 
-        const futurePos = this.computePatrolWorldPos(this.patrolTime + 0.9);
+      let cursorDist = 9999;
+
+      if (this.roamingState === 'menu-open') {
+        const dockPos = this.computeDockedWorldPos(this.scratchAnchor);
+        dockPos.y += 0.28 + Math.sin(elapsed * 2.2) * 0.03;
+        this.currentPos.lerp(dockPos, 1 - Math.exp(-5.0 * dt));
+        lookTargetWorld.set(this.currentPos.x * 0.6, this.currentPos.y * 0.6, 10.5);
+        lensSpinSpeed = 1.8;
+        barrelExtend = 0.17;
+        jawChatterAmount = 0.25;
+      } else if (shouldRetreatForWork || this.roamingState === 'docked') {
+        const baseDock = this.computeDockedWorldPos(this.scratchAnchor);
+        baseDock.y += Math.sin(elapsed * 1.8) * 0.04;
+        cursorDist = this.applyCursorEvasion(baseDock, this.scratchVecA);
+        this.currentPos.lerp(this.scratchVecA, 1 - Math.exp(-5.2 * dt));
         lookTargetWorld.set(
-          futurePos.x * 0.75 + this.pointerNorm.x * 0.8,
-          futurePos.y * 0.75 + this.pointerNorm.y * 0.6,
-          5.8
+          this.currentPos.x - 0.6,
+          this.currentPos.y + 0.15,
+          8.8
+        );
+        lensSpinSpeed = 0.35;
+      } else if (this.roamingState === 'patrol') {
+        this.patrolTime += dt;
+        const rawPatrol = this.computePatrolWorldPos(this.patrolTime, this.scratchAnchor);
+        rawPatrol.y += Math.sin(elapsed * 2.2) * 0.06;
+        cursorDist = this.applyCursorEvasion(rawPatrol, this.scratchVecA);
+        this.currentPos.lerp(this.scratchVecA, 1 - Math.exp(-3.4 * dt));
+
+        const futurePos = this.computePatrolWorldPos(this.patrolTime + 0.9, this.scratchVecB);
+        lookTargetWorld.set(
+          futurePos.x * 0.7 - 0.8,
+          futurePos.y * 0.75 + this.pointerNorm.y * 0.4,
+          6.2
         );
 
-        this.nextScanCountdown -= dt;
-        if (this.nextScanCountdown <= 0) {
-          const candidate = this.requestScanTargetCallback?.() ?? null;
-          if (candidate) {
-            this.activeScanTarget = candidate;
-            this.roamingState = 'scanning';
-            this.scanTimer = 0;
-          } else {
-            this.nextScanCountdown = 4.0;
+        if (!this.cloaked) {
+          this.nextScanCountdown -= dt;
+          if (this.nextScanCountdown <= 0 && cursorDist > 210) {
+            const candidate = this.requestScanTargetCallback?.() ?? null;
+            if (candidate) {
+              this.activeScanTarget = candidate;
+              this.roamingState = 'scanning';
+              this.scanTimer = 0;
+            } else {
+              this.nextScanCountdown = 5.5;
+            }
           }
         }
       } else if (this.roamingState === 'scanning') {
         this.scanTimer += dt;
-        const hoverOffset = new THREE.Vector3(
-          Math.sin(elapsed * 1.8) * 0.02,
-          Math.cos(elapsed * 2.6) * 0.03,
-          0
-        );
-        this.currentPos.addScaledVector(hoverOffset, dt * 2.4);
+        const rawHover = this.computePatrolWorldPos(this.patrolTime, this.scratchAnchor);
+        cursorDist = this.applyCursorEvasion(rawHover, this.scratchVecA);
+        this.currentPos.lerp(this.scratchVecA, 1 - Math.exp(-4.0 * dt));
 
-        if (this.activeScanTarget) {
-          const sweepX = this.activeScanTarget.x + Math.sin(this.scanTimer * 3.6) * 44;
-          const sweepY = this.activeScanTarget.y + Math.cos(this.scanTimer * 2.4) * 18;
-          const targetWorld = this.screenToWorld(sweepX, sweepY, -0.4);
-          lookTargetWorld.copy(targetWorld);
-          lookTargetWorld.z = 2.9;
+        // If user moves cursor near the Servitor or near the scanned target, yield immediately!
+        const targetCursorDist = this.activeScanTarget
+          ? Math.hypot(
+              this.activeScanTarget.x - this.pointerPx,
+              this.activeScanTarget.y - this.pointerPy
+            )
+          : 9999;
+
+        if (cursorDist < 170 || targetCursorDist < 180) {
+          this.roamingState = 'patrol';
+          this.activeScanTarget = null;
+          this.nextScanCountdown = 6.5;
+        } else if (this.activeScanTarget) {
+          const sweepX = this.activeScanTarget.x + Math.sin(this.scanTimer * 3.2) * 36;
+          const sweepY = this.activeScanTarget.y + Math.cos(this.scanTimer * 2.1) * 14;
+          this.screenToWorld(sweepX, sweepY, -0.4, lookTargetWorld);
+          lookTargetWorld.z = 3.2;
         }
 
-        lensSpinSpeed = 5.0;
-        barrelExtend = 0.22;
-        jawChatterAmount = 0.75;
+        lensSpinSpeed = 4.5;
+        barrelExtend = 0.21;
+        jawChatterAmount = 0.65;
         turretAngleTarget = 0.18;
 
         if (this.scanTimer >= this.scanDuration) {
           this.roamingState = 'patrol';
           this.activeScanTarget = null;
-          this.nextScanCountdown = 5.0 + Math.random() * 2.5;
+          this.nextScanCountdown = 8.0 + Math.random() * 4.0;
         }
-      } else if (this.roamingState === 'docked') {
-        const dockPos = this.computeDockedWorldPos();
-        dockPos.y += Math.sin(elapsed * 2.0) * 0.06;
-        this.currentPos.lerp(dockPos, 1 - Math.exp(-4.0 * dt));
-        lookTargetWorld.set(
-          this.currentPos.x + this.pointerNorm.x * 1.4,
-          this.currentPos.y + this.pointerNorm.y * 1.2,
-          8.5
-        );
-      } else if (this.roamingState === 'menu-open') {
-        this.currentPos.y += Math.sin(elapsed * 2.2) * 0.002;
-        lookTargetWorld.set(this.currentPos.x * 0.6, this.currentPos.y * 0.6, 10.5);
-        lensSpinSpeed = 1.8;
-        barrelExtend = 0.17;
-        jawChatterAmount = 0.3;
       }
+
+      // Compute non-obstructive canvas opacity for roaming mode
+      let targetOpacity = 0.86;
+      if (this.cloaked) {
+        targetOpacity = 0.0;
+      } else if (this.roamingState === 'menu-open') {
+        targetOpacity = 0.96;
+      } else if (this.overlayModalOpen) {
+        targetOpacity = 0.1;
+      } else if (this.userWorking) {
+        targetOpacity = 0.28;
+      } else if (cursorDist < 195) {
+        targetOpacity = THREE.MathUtils.lerp(0.22, 0.86, cursorDist / 195);
+      }
+      this.currentCanvasOpacity = THREE.MathUtils.lerp(
+        this.currentCanvasOpacity,
+        targetOpacity,
+        1 - Math.exp(-7.5 * dt)
+      );
+    }
+
+    if (this.mode !== 'roaming') {
+      this.currentCanvasOpacity = THREE.MathUtils.lerp(
+        this.currentCanvasOpacity,
+        1.0,
+        1 - Math.exp(-9.0 * dt)
+      );
+    }
+
+    if (Math.abs(this.currentCanvasOpacity - this.appliedCanvasOpacity) > 0.004) {
+      this.appliedCanvasOpacity = this.currentCanvasOpacity;
+      this.renderer.domElement.style.opacity = this.currentCanvasOpacity.toFixed(3);
     }
 
     if (dt > 0.0001) {
-      const instantVel = this.currentPos.clone().sub(prevPos).divideScalar(dt);
-      this.velocity.lerp(instantVel, 1 - Math.exp(-8 * dt));
+      this.scratchInstantVel.copy(this.currentPos).sub(prevPos).divideScalar(dt);
+      this.velocity.lerp(this.scratchInstantVel, 1 - Math.exp(-8 * dt));
     }
 
     this.currentScale = THREE.MathUtils.lerp(
@@ -1974,17 +2301,16 @@ export class ServitorSceneController {
     this.rootAnchor.position.copy(this.currentPos);
     this.rootAnchor.scale.setScalar(this.currentScale);
 
-    // Head orientation + subtle inertial roll
-    const dummy = new THREE.Object3D();
-    dummy.position.copy(this.currentPos);
-    dummy.lookAt(lookTargetWorld);
+    // Head orientation + subtle inertial roll (zero-allocation)
+    this.scratchDummyObj.position.copy(this.currentPos);
+    this.scratchDummyObj.lookAt(lookTargetWorld);
     const bankZ = THREE.MathUtils.clamp(-this.velocity.x * 0.06, -0.32, 0.32);
-    const bankEuler = new THREE.Euler().setFromQuaternion(dummy.quaternion, 'YXZ');
-    bankEuler.y = THREE.MathUtils.clamp(bankEuler.y, -0.8, 0.8);
-    bankEuler.x = THREE.MathUtils.clamp(bankEuler.x, -0.55, 0.55);
-    bankEuler.z += bankZ;
-    const targetQuat = new THREE.Quaternion().setFromEuler(bankEuler);
-    this.currentHeadQuat.slerp(targetQuat, 1 - Math.exp(-6.2 * dt));
+    this.scratchEuler.setFromQuaternion(this.scratchDummyObj.quaternion, 'YXZ');
+    this.scratchEuler.y = THREE.MathUtils.clamp(this.scratchEuler.y, -0.8, 0.8);
+    this.scratchEuler.x = THREE.MathUtils.clamp(this.scratchEuler.x, -0.55, 0.55);
+    this.scratchEuler.z += bankZ;
+    this.scratchQuat.setFromEuler(this.scratchEuler);
+    this.currentHeadQuat.slerp(this.scratchQuat, 1 - Math.exp(-6.2 * dt));
     this.headTiltGroup.quaternion.copy(this.currentHeadQuat);
 
     // Respirator jaw heave & binary vox-furnace flicker
@@ -2013,9 +2339,9 @@ export class ServitorSceneController {
     this.eyeGlowSprite.scale.set(flareSize, flareSize, 1);
 
     // Bubbling cranial stim-vial luminescence & blinking vox-mast rune lamp
-    this.bioVialMats.forEach((mat, idx) => {
-      mat.emissiveIntensity = 1.9 + Math.sin(elapsed * 4.5 + idx * 2.1) * 0.75;
-    });
+    for (let i = 0; i < this.bioVialMats.length; i++) {
+      this.bioVialMats[i].emissiveIntensity = 1.9 + Math.sin(elapsed * 4.5 + i * 2.1) * 0.75;
+    }
     this.antennaLampMat.emissiveIntensity = Math.sin(elapsed * 4.4) > 0.3 ? 3.5 : 0.45;
 
     // Swinging gothic incense thurible with inertial pendulum lag
@@ -2031,58 +2357,84 @@ export class ServitorSceneController {
     );
     this.censerCoreMat.emissiveIntensity = 2.6 + Math.sin(elapsed * 9.0) * 0.7;
 
-    // Fluttering ragged parchment purity-seal litanies
-    this.parchmentStrips.forEach((strip) => {
-      const posAttr = strip.mesh.geometry.attributes.position;
-      for (let k = 0; k < posAttr.count; k++) {
-        const y = posAttr.getY(k);
-        const weight = Math.min(1, Math.abs(y) / 0.85);
+    // Fluttering ragged parchment purity-seal litanies (articulated hinges — zero buffer churn)
+    for (let sIdx = 0; sIdx < this.parchmentStrips.length; sIdx++) {
+      const strip = this.parchmentStrips[sIdx];
+      const pivots = strip.pivots;
+      for (let p = 0; p < pivots.length; p++) {
+        const weight = (p + 1) / pivots.length;
+        const waveX = Math.sin(elapsed * 4.6 - p * 1.05 + strip.phase) * 0.09 * weight;
         const waveZ =
-          Math.sin(elapsed * 4.8 - weight * 4.5 + strip.phase) * 0.085 * weight * weight;
-        const waveX =
-          Math.cos(elapsed * 3.2 - weight * 3.0 + strip.phase) * 0.032 * weight -
-          this.velocity.x * 0.028 * weight;
-        posAttr.setZ(k, strip.baseZ[k] + waveZ);
-        posAttr.setX(k, strip.baseX[k] + waveX);
+          Math.cos(elapsed * 3.1 - p * 0.85 + strip.phase) * 0.045 * weight -
+          THREE.MathUtils.clamp(this.velocity.x * 0.035, -0.18, 0.18) * weight;
+        pivots[p].rotation.x = waveX;
+        pivots[p].rotation.z = (p === 0 ? strip.baseRotZ : 0) + waveZ;
       }
-      posAttr.needsUpdate = true;
-      strip.mesh.geometry.computeVertexNormals();
-    });
+    }
 
-    // Undulating ribbed mechadendrites, servo-claw & spinning Chirurgeon bone-saw
-    this.cables.forEach((cable) => {
-      const livePts = cable.basePoints.map((bp, idx) => {
-        const rotatedAnchor = bp.clone().applyQuaternion(this.currentHeadQuat);
+    // Undulating ribbed mechadendrites, servo-claw & spinning Chirurgeon bone-saw (zero-allocation)
+    for (let cIdx = 0; cIdx < this.cables.length; cIdx++) {
+      const cable = this.cables[cIdx];
+      const basePts = cable.basePoints;
+      const livePts = cable.livePoints;
+
+      for (let idx = 0; idx < basePts.length; idx++) {
+        const bp = basePts[idx];
+        this.scratchVecA.copy(bp).applyQuaternion(this.currentHeadQuat);
         if (idx === 0) {
-          return rotatedAnchor;
+          livePts[idx].copy(this.scratchVecA);
+        } else {
+          const tWeight = idx / (basePts.length - 1);
+          livePts[idx].copy(bp).lerp(this.scratchVecA, Math.max(0, 1 - tWeight * 0.78));
+          livePts[idx].x +=
+            Math.sin(elapsed * 2.2 + cable.phaseOffset - idx * 0.9) * cable.amp * tWeight -
+            this.velocity.x * 0.09 * tWeight;
+          livePts[idx].y += -this.velocity.y * 0.05 * tWeight;
+          livePts[idx].z +=
+            Math.cos(elapsed * 1.85 + cable.phaseOffset - idx * 0.8) * cable.amp * 0.8 * tWeight;
         }
-        const tWeight = idx / (cable.basePoints.length - 1);
-        const blendedBase = bp.clone().lerp(rotatedAnchor, Math.max(0, 1 - tWeight * 0.78));
-        const swayX =
-          Math.sin(elapsed * 2.2 + cable.phaseOffset - idx * 0.9) * cable.amp * tWeight -
-          this.velocity.x * 0.09 * tWeight;
-        const swayZ =
-          Math.cos(elapsed * 1.85 + cable.phaseOffset - idx * 0.8) * cable.amp * 0.8 * tWeight;
-        const swayY = -this.velocity.y * 0.05 * tWeight;
-        return new THREE.Vector3(
-          blendedBase.x + swayX,
-          blendedBase.y + swayY,
-          blendedBase.z + swayZ
+      }
+
+      for (let s = 0; s <= CABLE_SEGMENT_COUNT; s++) {
+        evalFourPointCatmullRom(livePts, s / CABLE_SEGMENT_COUNT, this.scratchSplineSamples[s]);
+      }
+
+      for (let s = 0; s < CABLE_SEGMENT_COUNT; s++) {
+        const pA = this.scratchSplineSamples[s];
+        const pB = this.scratchSplineSamples[s + 1];
+        const segMesh = cable.segmentMeshes[s];
+
+        segMesh.position.set(
+          (pA.x + pB.x) * 0.5,
+          (pA.y + pB.y) * 0.5,
+          (pA.z + pB.z) * 0.5
         );
-      });
+        this.scratchVecB.copy(pB).sub(pA);
+        const segLen = Math.max(0.001, this.scratchVecB.length());
+        this.scratchVecB.multiplyScalar(1 / segLen);
+        this.scratchQuat.setFromUnitVectors(UP_AXIS, this.scratchVecB);
+        segMesh.quaternion.copy(this.scratchQuat);
+        segMesh.scale.set(cable.radius, segLen * 1.08, cable.radius);
 
-      const curve = new THREE.CatmullRomCurve3(livePts);
-      const nextGeom = new THREE.TubeGeometry(curve, 18, cable.radius, cable.radialSegments, false);
-      cable.mesh.geometry.dispose();
-      cable.mesh.geometry = nextGeom;
+        if (s < cable.jointMeshes.length) {
+          cable.jointMeshes[s].position.copy(pB);
+        }
+      }
 
-      cable.ribRings.forEach((ring, rIdx) => {
-        const u = (rIdx + 1) / (cable.ribRings.length + 1);
-        const pt = curve.getPoint(u);
-        const tan = curve.getTangent(u);
-        ring.position.copy(pt);
-        ring.lookAt(pt.clone().add(tan));
-      });
+      const ringCount = cable.ribRings.length;
+      for (let rIdx = 0; rIdx < ringCount; rIdx++) {
+        const u = (rIdx + 1) / (ringCount + 1);
+        const ring = cable.ribRings[rIdx];
+        evalFourPointCatmullRom(livePts, u, this.scratchVecA);
+        evalFourPointCatmullRom(livePts, Math.min(1, u + 0.03), this.scratchVecB);
+        ring.position.copy(this.scratchVecA);
+        this.scratchVecC.copy(this.scratchVecB).sub(this.scratchVecA);
+        if (this.scratchVecC.lengthSq() > 1e-6) {
+          this.scratchVecC.normalize();
+          this.scratchQuat.setFromUnitVectors(UP_AXIS, this.scratchVecC);
+          ring.quaternion.copy(this.scratchQuat);
+        }
+      }
 
       if (cable.tipGroup) {
         const lastPt = livePts[livePts.length - 1];
@@ -2094,21 +2446,16 @@ export class ServitorSceneController {
         // High-speed whirring Chirurgeon bone-saw!
         cable.tipSpinMesh.rotation.x += dt * (this.roamingState === 'scanning' ? 24.0 : 9.5);
       }
-    });
-
-    // Rising incense embers & forge sparks
-    const emberAttr = this.emberParticles.geometry.attributes.position;
-    for (let i = 0; i < emberAttr.count; i++) {
-      let ey = emberAttr.getY(i) + this.emberVelocities[i] * dt;
-      let ex = emberAttr.getX(i) + Math.sin(elapsed * 2.0 + i) * 0.15 * dt;
-      if (ey > 1.85) {
-        ey = -2.1;
-        ex = (Math.random() - 0.5) * 1.6;
-      }
-      emberAttr.setX(i, ex);
-      emberAttr.setY(i, ey);
     }
-    emberAttr.needsUpdate = true;
+
+    // Rising incense embers & forge sparks (dual-phase drift — zero buffer uploads)
+    for (let i = 0; i < this.emberClouds.length; i++) {
+      const layer = this.emberClouds[i];
+      const phase = (elapsed * 0.16 + layer.phaseOffset) % 1;
+      layer.points.position.y = -1.0 + phase * 2.15;
+      layer.points.position.x = Math.sin(elapsed * 1.25 + layer.swaySeed) * 0.14;
+      layer.material.opacity = Math.sin(phase * Math.PI) * 0.68;
+    }
 
     // Holographic projection rings in menu mode
     const showHolo = this.mode === 'menu' || this.mode === 'transition-to-menu';
@@ -2126,19 +2473,18 @@ export class ServitorSceneController {
       const sweepY = this.activeScanTarget.y + Math.cos(this.scanTimer * 2.4) * 20;
       scanTargetScreenOut = { x: sweepX, y: sweepY };
 
-      const eyeWorld = new THREE.Vector3();
-      this.eyeTipMarker.getWorldPosition(eyeWorld);
-      const targetWorld = this.screenToWorld(sweepX, sweepY, -0.2);
+      this.eyeTipMarker.getWorldPosition(this.scratchEyeWorld);
+      this.screenToWorld(sweepX, sweepY, -0.2, this.scratchTargetWorld);
 
-      const dist = eyeWorld.distanceTo(targetWorld);
+      const dist = Math.max(0.05, this.scratchEyeWorld.distanceTo(this.scratchTargetWorld));
       this.scanBeamGroup.visible = true;
-      this.scanBeamGroup.position.copy(eyeWorld);
-      this.scanBeamGroup.lookAt(targetWorld);
+      this.scanBeamGroup.position.copy(this.scratchEyeWorld);
+      this.scanBeamGroup.lookAt(this.scratchTargetWorld);
       this.scanConeMesh.scale.set(1, 1, dist);
       this.scanCoreLine.scale.set(1, 1, dist);
 
       this.scanReticleGroup.visible = true;
-      this.scanReticleGroup.position.copy(targetWorld);
+      this.scanReticleGroup.position.copy(this.scratchTargetWorld);
       this.scanReticleGroup.rotation.z = elapsed * 2.8;
       const retPulse = 0.85 + Math.sin(elapsed * 10) * 0.14;
       this.scanReticleGroup.scale.setScalar(retPulse);
@@ -2148,10 +2494,13 @@ export class ServitorSceneController {
     }
 
     if (this.onTelemetry) {
-      const screenCenter = this.worldToScreen(this.currentPos);
-      const edgeSample = this.worldToScreen(
-        this.currentPos.clone().add(new THREE.Vector3(this.currentScale * 1.2, 0, 0))
+      const screenCenter = this.worldToScreen(this.currentPos, this.scratchScreenA);
+      this.scratchVecA.set(
+        this.currentPos.x + this.currentScale * 1.2,
+        this.currentPos.y,
+        this.currentPos.z
       );
+      const edgeSample = this.worldToScreen(this.scratchVecA, this.scratchScreenB);
       const hitRadius = Math.max(44, Math.abs(edgeSample.x - screenCenter.x));
 
       this.onTelemetry({
@@ -2172,16 +2521,30 @@ export class ServitorSceneController {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
     }
+    this.canvasEl.removeEventListener('webglcontextlost', this.handleContextLostBound, false);
+    this.canvasEl.removeEventListener(
+      'webglcontextrestored',
+      this.handleContextRestoredBound,
+      false
+    );
+    document.removeEventListener('visibilitychange', this.handleVisibilityChangeBound);
+
+    const geometries = new Set<THREE.BufferGeometry>();
+    const materials = new Set<THREE.Material>();
     this.scene.traverse((obj) => {
       if (obj instanceof THREE.Mesh || obj instanceof THREE.Points) {
-        obj.geometry?.dispose();
+        if (obj.geometry) geometries.add(obj.geometry);
         if (Array.isArray(obj.material)) {
-          obj.material.forEach((m) => m.dispose());
-        } else {
-          obj.material?.dispose();
+          obj.material.forEach((m) => materials.add(m));
+        } else if (obj.material) {
+          materials.add(obj.material);
         }
+      } else if (obj instanceof THREE.Sprite && obj.material) {
+        materials.add(obj.material);
       }
     });
+    geometries.forEach((g) => g.dispose());
+    materials.forEach((m) => m.dispose());
     this.disposableTextures.forEach((t) => t.dispose());
     this.renderer.dispose();
   }
