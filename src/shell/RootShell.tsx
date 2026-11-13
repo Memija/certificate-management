@@ -1,5 +1,7 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   Anchor,
@@ -12,6 +14,19 @@ import {
   RefreshCw,
   X,
 } from 'lucide-react';
+import i18n from '../apps/certificate-management/i18n';
+import {
+  detectSystemLanguage,
+  getInitialThemePreference,
+  isLanguageCustomized,
+  isThemeCustomized,
+  normalizeLanguageTag,
+  resolveEffectiveTheme,
+  setUserThemePreference,
+  syncSystemSettingsFromApi,
+  THEME_CHANGED_EVENT,
+  type ThemePreference,
+} from '../apps/certificate-management/utils/systemSettings';
 import { REGISTERED_APPS } from './appRegistry';
 import { RootMenuPage } from './RootMenuPage';
 import {
@@ -20,10 +35,15 @@ import {
   type ScanTargetInfo,
   type ServitorMode,
 } from './ServitorScene3D';
+import type { ServitorRelayState } from './types';
 import './shell.css';
 
 interface ErrorBoundaryProps {
   onReturnHome: () => void;
+  headerText: string;
+  defaultErrorText: string;
+  reinitializeText: string;
+  returnHomeText: string;
   children: React.ReactNode;
 }
 
@@ -49,10 +69,10 @@ class RouteStageErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorB
           <div className="shell-error-card">
             <div className="shell-error-header">
               <AlertTriangle size={22} />
-              <span>++ COGITATOR SANCTUM FAULT DETECTED ++</span>
+              <span>{this.props.headerText}</span>
             </div>
             <p className="shell-error-msg">
-              {this.state.error.message || 'An unexpected rendering exception occurred.'}
+              {this.state.error.message || this.props.defaultErrorText}
             </p>
             <div className="shell-error-actions">
               <button
@@ -61,7 +81,7 @@ class RouteStageErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorB
                 onClick={() => this.setState({ error: null })}
               >
                 <RefreshCw size={15} />
-                <span>Re-initialize Sanctum</span>
+                <span>{this.props.reinitializeText}</span>
               </button>
               <button
                 type="button"
@@ -73,7 +93,7 @@ class RouteStageErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorB
                 }}
               >
                 <Home size={15} />
-                <span>Return to the Servitorium</span>
+                <span>{this.props.returnHomeText}</span>
               </button>
             </div>
           </div>
@@ -84,16 +104,19 @@ class RouteStageErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorB
   }
 }
 
-const DEFAULT_VOX_MESSAGE = '++ AWAITING DIRECTIVE // SELECT APPLICATION ROUTE ++';
 const WORK_IDLE_COOLDOWN_MS = 5500;
 const CLOAK_STORAGE_KEY = 'servitor-cloaked-preference';
 
-const LITANY_STATUSES = [
-  'SANCTITY VERIFIED // 01001111',
-  'MACHINE SPIRIT APPEASED // OK',
-  'CIPHER INTEGRITY NOMINAL',
-  'NOOSPHERE CHECKSUM VALID',
-];
+const SCAN_SENTINEL_DEFAULT_PANEL = '__DEFAULT_PANEL__';
+const SCAN_SENTINEL_PERIMETER = '__PERIMETER_SECTOR__';
+const SCAN_SENTINEL_VIEWPORT = '__VIEWPORT_SANCTITY__';
+
+const SCAN_STATUS_KEYS = [
+  'servitor.scan.status1',
+  'servitor.scan.status2',
+  'servitor.scan.status3',
+  'servitor.scan.status4',
+] as const;
 
 function clampNum(val: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, val));
@@ -142,8 +165,8 @@ function pickVisibleDomScanTarget(lastLabelRef: React.MutableRefObject<string>):
 
     const heading = el.querySelector('h1, h2, h3, h4, strong');
     const rawText = (heading?.textContent || el.getAttribute('aria-label') || '').trim();
-    const cleaned = rawText.replace(/\s+/g, ' ').slice(0, 32).toUpperCase();
-    const label = cleaned || 'PKI COGITATOR PANEL';
+    const cleaned = rawText.replace(/\s+/g, ' ').slice(0, 32).toLocaleUpperCase();
+    const label = cleaned || SCAN_SENTINEL_DEFAULT_PANEL;
 
     // Aim cleanly near the right edge of the panel so the scan cone never cuts across the whole screen
     const targetX = clampNum(rect.right - Math.min(rect.width * 0.2, 110), vw * 0.55, vw - 90);
@@ -163,14 +186,16 @@ function pickVisibleDomScanTarget(lastLabelRef: React.MutableRefObject<string>):
   return {
     x: vw - 160,
     y: vh * (0.3 + Math.random() * 0.4),
-    label: 'PERIMETER SECTOR TELEMETRY',
+    label: SCAN_SENTINEL_PERIMETER,
   };
 }
 
 function ShellCoordinator() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 
+  const normalizedLang = normalizeLanguageTag(i18n.resolvedLanguage || i18n.language) || 'en';
   const isRootRoute = location.pathname === '/';
 
   const canvasWrapRef = useRef<HTMLDivElement | null>(null);
@@ -211,11 +236,18 @@ function ShellCoordinator() {
   });
   const [isUserWorking, setIsUserWorking] = useState(false);
   const [isSubAppModalOpen, setIsSubAppModalOpen] = useState(false);
+  const [subAppFooterSlot, setSubAppFooterSlot] = useState<HTMLElement | null>(null);
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [activeScanLabel, setActiveScanLabel] = useState<string | null>(null);
-  const [litanyIndex, setLitanyIndex] = useState(0);
+  const [scanStatusIndex, setScanStatusIndex] = useState(0);
   const [isTransitioningOut, setIsTransitioningOut] = useState(false);
-  const [voxMessage, setVoxMessage] = useState(DEFAULT_VOX_MESSAGE);
+  const [relayState, setRelayState] = useState<ServitorRelayState>({ kind: 'awaiting' });
+  const [themePref, setThemePref] = useState<ThemePreference>(() => getInitialThemePreference());
+  const [effectiveTheme, setEffectiveTheme] = useState<'dark' | 'light'>(() =>
+    resolveEffectiveTheme(getInitialThemePreference())
+  );
+  const effectiveThemeRef = useRef<'dark' | 'light'>(effectiveTheme);
+  effectiveThemeRef.current = effectiveTheme;
 
   const lazyAppRoutes = useMemo(
     () =>
@@ -225,6 +257,62 @@ function ShellCoordinator() {
       })),
     []
   );
+
+  // Synchronize theme preference across shell & sub-apps + OS media query
+  useEffect(() => {
+    const onThemeEvent = (e: Event) => {
+      const next = (e as CustomEvent<ThemePreference>).detail;
+      if (next === 'dark' || next === 'light' || next === 'system') {
+        setThemePref((prev) => (prev === next ? prev : next));
+      }
+    };
+    window.addEventListener(THEME_CHANGED_EVENT, onThemeEvent);
+    return () => window.removeEventListener(THEME_CHANGED_EVENT, onThemeEvent);
+  }, []);
+
+  useEffect(() => {
+    const apply = () => {
+      const resolved = resolveEffectiveTheme(themePref);
+      setEffectiveTheme(resolved);
+      document.documentElement.setAttribute('data-theme', resolved);
+    };
+    apply();
+
+    if (themePref === 'system' && typeof window.matchMedia === 'function') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const listener = (e: MediaQueryListEvent) => {
+        if (window.__SYSTEM_SETTINGS__) {
+          window.__SYSTEM_SETTINGS__.colorScheme = e.matches ? 'dark' : 'light';
+        }
+        apply();
+      };
+      mq.addEventListener('change', listener);
+      return () => mq.removeEventListener('change', listener);
+    }
+  }, [themePref]);
+
+  // Sync OS language & theme preference on initial mount (even when landing directly on `/`)
+  useEffect(() => {
+    let cancelled = false;
+    syncSystemSettingsFromApi().then((sys) => {
+      if (cancelled || !sys) return;
+      if (!isLanguageCustomized()) {
+        const osLang = detectSystemLanguage(sys);
+        const currentLang = normalizeLanguageTag(i18n.resolvedLanguage || i18n.language);
+        if (osLang && osLang !== currentLang) {
+          i18n.changeLanguage(osLang);
+        }
+      }
+      if (!isThemeCustomized()) {
+        const resolved = resolveEffectiveTheme('system', sys);
+        setEffectiveTheme(resolved);
+        document.documentElement.setAttribute('data-theme', resolved);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Mount persistent Three.js Servitor Scene (and auto-recover if WebGL context is restored)
   useEffect(() => {
@@ -237,16 +325,17 @@ function ShellCoordinator() {
     try {
       ctrl = new ServitorSceneController(canvas, {
         initialMode,
+        initialTheme: effectiveThemeRef.current,
         onRequestScanTarget: () => pickVisibleDomScanTarget(lastScanLabelRef),
         onContextRestored: () => {
           setSceneEpoch((n) => n + 1);
         },
-        onTelemetry: (t) => {
+        onTelemetry: (telemetry) => {
           const prev = lastTelemetryRef.current;
 
           if (scanBadgeRef.current) {
-            const bx = Math.max(16, t.screenX - 248);
-            const by = clampNum(t.screenY - 22, 72, window.innerHeight - 92);
+            const bx = Math.max(16, telemetry.screenX - 248);
+            const by = clampNum(telemetry.screenY - 22, 72, window.innerHeight - 92);
             if (Math.abs(bx - prev.bx) > 0.4 || Math.abs(by - prev.by) > 0.4) {
               prev.bx = bx;
               prev.by = by;
@@ -254,19 +343,19 @@ function ShellCoordinator() {
             }
           }
 
-          if (t.mode !== prev.mode) {
-            prev.mode = t.mode;
-            setServitorMode(t.mode);
+          if (telemetry.mode !== prev.mode) {
+            prev.mode = telemetry.mode;
+            setServitorMode(telemetry.mode);
           }
-          if (t.roamingState !== prev.roamingState) {
-            prev.roamingState = t.roamingState;
-            setRoamingState(t.roamingState);
+          if (telemetry.roamingState !== prev.roamingState) {
+            prev.roamingState = telemetry.roamingState;
+            setRoamingState(telemetry.roamingState);
           }
-          if (t.activeScanLabel !== prev.activeScanLabel) {
-            prev.activeScanLabel = t.activeScanLabel;
-            setActiveScanLabel(t.activeScanLabel);
-            if (t.activeScanLabel) {
-              setLitanyIndex((idx) => (idx + 1) % LITANY_STATUSES.length);
+          if (telemetry.activeScanLabel !== prev.activeScanLabel) {
+            prev.activeScanLabel = telemetry.activeScanLabel;
+            setActiveScanLabel(telemetry.activeScanLabel);
+            if (telemetry.activeScanLabel) {
+              setScanStatusIndex((idx) => (idx + 1) % SCAN_STATUS_KEYS.length);
             }
           }
         },
@@ -298,7 +387,11 @@ function ShellCoordinator() {
     };
   }, [sceneEpoch]);
 
-  // Push workspace obstruction state into the 3D controller whenever it changes
+  // Push active theme & workspace obstruction state into the 3D controller whenever they change
+  useEffect(() => {
+    controllerRef.current?.setTheme(effectiveTheme);
+  }, [effectiveTheme, sceneEpoch]);
+
   useEffect(() => {
     controllerRef.current?.setWorkspaceObstructionState({
       userWorking: !isRootRoute && isUserWorking,
@@ -312,6 +405,7 @@ function ShellCoordinator() {
     if (isRootRoute) {
       setIsUserWorking(false);
       setIsSubAppModalOpen(false);
+      setSubAppFooterSlot(null);
       return;
     }
 
@@ -330,7 +424,9 @@ function ShellCoordinator() {
       if (e && e.target instanceof Node) {
         if (
           dockPillRef.current?.contains(e.target) ||
-          popoverRef.current?.contains(e.target)
+          popoverRef.current?.contains(e.target) ||
+          (e.target instanceof Element &&
+            Boolean(e.target.closest('.lang-picker, .theme-toggle')))
         ) {
           return;
         }
@@ -356,6 +452,10 @@ function ShellCoordinator() {
       rafModalCheck = window.requestAnimationFrame(() => {
         rafModalCheck = null;
         setIsSubAppModalOpen(detectSubAppModalOpen());
+        const footerSlot =
+          document.querySelector<HTMLElement>('.app-footer-right') ??
+          document.querySelector<HTMLElement>('.app-footer-inner');
+        setSubAppFooterSlot((prev) => (prev === footerSlot ? prev : footerSlot));
       });
     };
 
@@ -414,7 +514,7 @@ function ShellCoordinator() {
     setQuickMenuOpen(false);
     if (isRootRoute) {
       setIsTransitioningOut(false);
-      setVoxMessage(DEFAULT_VOX_MESSAGE);
+      setRelayState({ kind: 'awaiting' });
       controllerRef.current?.syncRouteMode('menu');
     } else {
       controllerRef.current?.syncRouteMode('roaming');
@@ -459,7 +559,7 @@ function ShellCoordinator() {
     (targetUrl: string, appTitle: string) => {
       if (isTransitioningOut) return;
       setIsTransitioningOut(true);
-      setVoxMessage(`++ ENGAGING TRANSIT: ${appTitle.toUpperCase()} ++`);
+      setRelayState({ kind: 'transit', title: appTitle });
       controllerRef.current?.setHoveredMenuTarget(null);
 
       if (controllerRef.current) {
@@ -475,10 +575,10 @@ function ShellCoordinator() {
   );
 
   const handleHoverMenuTarget = useCallback(
-    (point: { x: number; y: number } | null, voxHint?: string) => {
+    (point: { x: number; y: number } | null, relayHint?: ServitorRelayState) => {
       controllerRef.current?.setHoveredMenuTarget(point);
       if (!isTransitioningOut) {
-        setVoxMessage(voxHint ?? DEFAULT_VOX_MESSAGE);
+        setRelayState(relayHint ?? { kind: 'awaiting' });
       }
     },
     [isTransitioningOut]
@@ -488,14 +588,6 @@ function ShellCoordinator() {
     if (quickMenuOpen) {
       closeQuickMenu();
       return;
-    }
-    if (isCloaked) {
-      setIsCloaked(false);
-      try {
-        localStorage.setItem(CLOAK_STORAGE_KEY, 'false');
-      } catch {
-        // ignore storage errors
-      }
     }
     setQuickMenuOpen(true);
     controllerRef.current?.setRoamingSubState('menu-open');
@@ -527,8 +619,9 @@ function ShellCoordinator() {
   const handleToggleDock = () => {
     const nextDocked = !isDockedPreference;
     setIsDockedPreference(nextDocked);
-    setQuickMenuOpen(false);
-    controllerRef.current?.setRoamingSubState(nextDocked ? 'docked' : 'patrol');
+    if (!quickMenuOpen) {
+      controllerRef.current?.setRoamingSubState(nextDocked ? 'docked' : 'patrol');
+    }
   };
 
   const handleToggleCloak = () => {
@@ -539,9 +632,17 @@ function ShellCoordinator() {
     } catch {
       // ignore storage errors
     }
-    setQuickMenuOpen(false);
-    controllerRef.current?.setRoamingSubState(isDockedPreference ? 'docked' : 'patrol');
+    if (!quickMenuOpen) {
+      controllerRef.current?.setRoamingSubState(isDockedPreference ? 'docked' : 'patrol');
+    }
   };
+
+  const handleToggleTheme = useCallback(() => {
+    const next: ThemePreference =
+      themePref === 'dark' ? 'light' : themePref === 'light' ? 'system' : 'dark';
+    setThemePref(next);
+    setUserThemePreference(next);
+  }, [themePref]);
 
   const showSubAppControls = !isRootRoute && servitorMode === 'roaming';
   const showScanTelemetry =
@@ -552,16 +653,53 @@ function ShellCoordinator() {
     !isSubAppModalOpen &&
     !isCloaked;
 
+  let resolvedScanTargetLabel = activeScanLabel ?? '';
+  if (activeScanLabel === SCAN_SENTINEL_DEFAULT_PANEL) {
+    resolvedScanTargetLabel = t('servitor.scan.defaultPanel');
+  } else if (activeScanLabel === SCAN_SENTINEL_PERIMETER) {
+    resolvedScanTargetLabel = t('servitor.scan.perimeterSector');
+  } else if (activeScanLabel === SCAN_SENTINEL_VIEWPORT) {
+    resolvedScanTargetLabel = t('servitor.scan.viewportSanctity');
+  }
+
   let statusStateClass = 'is-vigil';
   if (isCloaked) statusStateClass = 'is-cloaked';
   else if (roamingState === 'scanning') statusStateClass = 'is-scanning';
   else if (isUserWorking || isSubAppModalOpen || isDockedPreference) statusStateClass = 'is-standby';
+
+  const activeFooterPortalTarget =
+    showSubAppControls && subAppFooterSlot && subAppFooterSlot.isConnected
+      ? subAppFooterSlot
+      : null;
+
+  const dockPillButton = (
+    <button
+      ref={dockPillRef}
+      type="button"
+      className={`servitor-dock-pill ${activeFooterPortalTarget ? 'is-in-footer' : ''} ${
+        quickMenuOpen ? 'is-active' : ''
+      } ${statusStateClass}`}
+      onClick={handleDockPillClick}
+      onMouseEnter={() => controllerRef.current?.setSkullHovered(true)}
+      onMouseLeave={() => controllerRef.current?.setSkullHovered(false)}
+      title={t('servitor.controls.dockPillTooltip')}
+      aria-label={t('servitor.controls.dockPillTooltip')}
+    >
+      <span className="servitor-dock-led" />
+      {isCloaked ? <EyeOff size={12} /> : <Cpu size={12} />}
+      <span>{t('servitor.controls.dockPillLabel')}</span>
+    </button>
+  );
 
   return (
     <>
       <RouteStageErrorBoundary
         key={location.pathname.split('/')[1] || 'servitorium'}
         onReturnHome={handleReturnToRootHub}
+        headerText={t('servitor.error.header')}
+        defaultErrorText={t('servitor.error.defaultMsg')}
+        reinitializeText={t('servitor.error.reinitialize')}
+        returnHomeText={t('servitor.controls.returnToServitorium')}
       >
         <Routes>
           <Route
@@ -569,36 +707,42 @@ function ShellCoordinator() {
             element={
               <RootMenuPage
                 isTransitioningOut={isTransitioningOut}
-                voxMessage={voxMessage}
+                relayState={relayState}
+                theme={themePref}
+                onToggleTheme={handleToggleTheme}
                 onLaunchApp={handleLaunchFromRootMenu}
                 onHoverMenuTarget={handleHoverMenuTarget}
               />
             }
           />
 
-          {lazyAppRoutes.map(({ app, Component }) => (
-            <Route
-              key={app.id}
-              path={`${app.route}/*`}
-              element={
-                <div className="subapp-route-stage">
-                  <Suspense
-                    fallback={
-                      <div className="subapp-loading-screen">
-                        <RefreshCw
-                          size={28}
-                          style={{ animation: 'spin 1s linear infinite', color: '#d97706' }}
-                        />
-                        <span>++ INITIALIZING {app.title.toUpperCase()} ++</span>
-                      </div>
-                    }
-                  >
-                    <Component />
-                  </Suspense>
-                </div>
-              }
-            />
-          ))}
+          {lazyAppRoutes.map(({ app, Component }) => {
+            const localizedAppTitle = app.titleKey ? t(app.titleKey) : app.title;
+            return (
+              <Route
+                key={app.id}
+                path={`${app.route}/*`}
+                element={
+                  <div className="subapp-route-stage">
+                    <Suspense
+                      fallback={
+                        <div className="subapp-loading-screen">
+                          <RefreshCw size={28} className="subapp-loading-spinner" />
+                          <span>
+                            {t('servitor.loading.initializing', {
+                              title: localizedAppTitle.toLocaleUpperCase(normalizedLang),
+                            })}
+                          </span>
+                        </div>
+                      }
+                    >
+                      <Component />
+                    </Suspense>
+                  </div>
+                }
+              />
+            );
+          })}
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -612,29 +756,20 @@ function ShellCoordinator() {
       {/* Non-Obstructive Footer-Edge Control Pill & HUD on Plugged-In Routes */}
       {showSubAppControls && (
         <>
-          <button
-            ref={dockPillRef}
-            type="button"
-            className={`servitor-dock-pill ${quickMenuOpen ? 'is-active' : ''} ${statusStateClass}`}
-            onClick={handleDockPillClick}
-            onMouseEnter={() => controllerRef.current?.setSkullHovered(true)}
-            onMouseLeave={() => controllerRef.current?.setSkullHovered(false)}
-            title="Servitor IX — Open Cogitator Route Matrix"
-            aria-label="Servitor IX — Open Cogitator Route Matrix"
-          >
-            <span className="servitor-dock-led" />
-            <Cpu size={12} />
-            <span>Servitor IX</span>
-          </button>
+          {activeFooterPortalTarget
+            ? createPortal(dockPillButton, activeFooterPortalTarget)
+            : dockPillButton}
 
           {showScanTelemetry && (
             <div ref={scanBadgeRef} className="servitor-scan-telemetry" role="status">
               <div className="servitor-scan-telemetry-eyebrow">
                 <span className="servitor-scan-dot" />
-                <span>AUSPEX OPTIC SCAN</span>
+                <span>{t('servitor.scan.eyebrow')}</span>
               </div>
-              <div className="servitor-scan-telemetry-target">{activeScanLabel}</div>
-              <div className="servitor-scan-telemetry-sub">{LITANY_STATUSES[litanyIndex]}</div>
+              <div className="servitor-scan-telemetry-target">{resolvedScanTargetLabel}</div>
+              <div className="servitor-scan-telemetry-sub">
+                {t(SCAN_STATUS_KEYS[scanStatusIndex])}
+              </div>
             </div>
           )}
 
@@ -643,18 +778,22 @@ function ShellCoordinator() {
               ref={popoverRef}
               className="servitor-quick-popover servitor-quick-popover-docked"
               role="dialog"
-              aria-label="Servitor Quick Navigation"
+              aria-label={t('servitor.controls.quickNavAria')}
             >
               <div className="servitor-quick-header">
                 <div className="servitor-quick-title-group">
-                  <span className="servitor-quick-eyebrow">SERVITOR UNIT IX</span>
-                  <span className="servitor-quick-title">Cogitator Route Matrix</span>
+                  <span className="servitor-quick-eyebrow">
+                    {t('servitor.controls.unitEyebrow')}
+                  </span>
+                  <span className="servitor-quick-title">
+                    {t('servitor.controls.routeMatrixTitle')}
+                  </span>
                 </div>
                 <button
                   type="button"
                   className="servitor-quick-close"
                   onClick={closeQuickMenu}
-                  aria-label="Close menu"
+                  aria-label={t('servitor.controls.closeMenuAria')}
                 >
                   <X size={15} />
                 </button>
@@ -666,14 +805,17 @@ function ShellCoordinator() {
                 onClick={handleReturnToRootHub}
               >
                 <Home size={16} />
-                <span>Return to the Servitorium</span>
+                <span>{t('servitor.controls.returnToServitorium')}</span>
               </button>
 
-              <div className="servitor-quick-section-label">Consecrated Sanctums</div>
+              <div className="servitor-quick-section-label">
+                {t('servitor.controls.consecratedSanctums')}
+              </div>
               <div className="servitor-quick-app-list">
                 {REGISTERED_APPS.map((app) => {
                   const Icon = app.icon;
                   const isCurrent = location.pathname.startsWith(app.route);
+                  const appTitle = app.titleKey ? t(app.titleKey) : app.title;
                   return (
                     <button
                       key={app.id}
@@ -684,11 +826,16 @@ function ShellCoordinator() {
                         if (!isCurrent) navigate(app.route);
                       }}
                     >
-                      <Icon size={16} style={{ color: app.accentColor }} />
+                      <Icon
+                        size={16}
+                        className="servitor-quick-app-icon"
+                        style={{ '--app-accent': app.accentColor } as React.CSSProperties}
+                      />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div>{app.title}</div>
-                        <div style={{ fontSize: '10.5px', color: '#a89984', fontWeight: 400 }}>
-                          {app.route} {isCurrent ? '• Active' : ''}
+                        <div>{appTitle}</div>
+                        <div className="servitor-quick-route-meta">
+                          {app.route}{' '}
+                          {isCurrent ? `• ${t('servitor.controls.activeRouteBadge')}` : ''}
                         </div>
                       </div>
                     </button>
@@ -696,7 +843,9 @@ function ShellCoordinator() {
                 })}
               </div>
 
-              <div className="servitor-quick-section-label">Servitor Directives</div>
+              <div className="servitor-quick-section-label">
+                {t('servitor.controls.directivesSection')}
+              </div>
               <div className="servitor-quick-actions-row">
                 <button
                   type="button"
@@ -704,26 +853,36 @@ function ShellCoordinator() {
                   onClick={handleTriggerImmediateScan}
                 >
                   <Crosshair size={13} />
-                  <span>Auspex Scan</span>
+                  <span>{t('servitor.controls.opticScanBtn')}</span>
                 </button>
                 <button
                   type="button"
-                  className="servitor-quick-mini-btn"
+                  className={`servitor-quick-mini-btn ${isDockedPreference ? 'is-toggled' : ''}`}
+                  aria-pressed={isDockedPreference}
                   onClick={handleToggleDock}
                 >
                   {isDockedPreference ? <Compass size={13} /> : <Anchor size={13} />}
-                  <span>{isDockedPreference ? 'Perimeter Vigil' : 'Hold Corner'}</span>
+                  <span>
+                    {isDockedPreference
+                      ? t('servitor.controls.perimeterVigilBtn')
+                      : t('servitor.controls.holdCornerBtn')}
+                  </span>
                 </button>
               </div>
 
               <button
                 type="button"
-                className="servitor-quick-mini-btn"
+                className={`servitor-quick-mini-btn ${isCloaked ? 'is-toggled' : ''}`}
+                aria-pressed={isCloaked}
                 style={{ width: '100%', marginTop: '6px' }}
                 onClick={handleToggleCloak}
               >
                 {isCloaked ? <Eye size={13} /> : <EyeOff size={13} />}
-                <span>{isCloaked ? 'Summon Servitor Overlay' : 'Cloak Servitor While Working'}</span>
+                <span>
+                  {isCloaked
+                    ? t('servitor.controls.summonOverlayBtn')
+                    : t('servitor.controls.cloakWhileWorkingBtn')}
+                </span>
               </button>
             </div>
           )}

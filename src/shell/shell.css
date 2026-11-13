@@ -1,9 +1,326 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap');
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ROOT SHELL & WARHAMMER 40K ADEPTUS MECHANICUS SERVITOR ORGANIZER STYLES
-   Scoped to .root-sanctum-* and .servitor-* to avoid sub-app CSS collisions
+   ROOT SHELL & CIPHER RELIQUARY SERVITORIUM ORGANIZER STYLES
+   Scoped to .root-sanctum-* and .servitor-* with full Dark & Light Theme tokens
 ═══════════════════════════════════════════════════════════════════════════ */
+
+:root,
+[data-theme='dark'] {
+  /* Sub-App Servitor Control Pill */
+  --servitor-pill-bg: rgba(18, 13, 11, 0.88);
+  --servitor-pill-border: rgba(182, 137, 56, 0.48);
+  --servitor-pill-text: #fde68a;
+  --servitor-pill-icon: #fbbf24;
+  --servitor-pill-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --servitor-pill-hover-bg: rgba(34, 18, 16, 0.96);
+  --servitor-pill-hover-border: rgba(234, 179, 8, 0.82);
+  --servitor-pill-hover-text: #fffbeb;
+  --servitor-pill-hover-shadow: 0 4px 18px rgba(220, 38, 38, 0.3);
+
+  /* Optic Telemetry HUD */
+  --servitor-hud-bg: linear-gradient(135deg, rgba(28, 10, 12, 0.94) 0%, rgba(16, 13, 11, 0.96) 100%);
+  --servitor-hud-border: rgba(194, 138, 56, 0.65);
+  --servitor-hud-accent-bar: #dc2626;
+  --servitor-hud-shadow: 0 10px 28px rgba(0, 0, 0, 0.78), 0 0 20px rgba(220, 38, 38, 0.28);
+  --servitor-hud-eyebrow: #f87171;
+  --servitor-hud-target: #fde68a;
+  --servitor-hud-sub: #4ade80;
+
+  /* Quick-Menu Popover */
+  --servitor-pop-bg: linear-gradient(165deg, rgba(22, 16, 14, 0.97) 0%, rgba(11, 9, 8, 0.99) 100%);
+  --servitor-pop-border: rgba(182, 137, 56, 0.62);
+  --servitor-pop-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.85),
+    0 0 28px rgba(180, 28, 28, 0.22),
+    inset 0 0 0 1px rgba(255, 215, 130, 0.08);
+  --servitor-pop-text: #f5efe6;
+  --servitor-pop-divider: rgba(182, 137, 56, 0.28);
+  --servitor-pop-eyebrow: #ef4444;
+  --servitor-pop-title: #fde68a;
+  --servitor-pop-section: #a89984;
+  --servitor-pop-meta: #a89984;
+
+  --servitor-close-bg: rgba(255, 255, 255, 0.04);
+  --servitor-close-border: rgba(182, 137, 56, 0.32);
+  --servitor-close-text: #d6c7b2;
+  --servitor-close-hover-bg: rgba(185, 28, 28, 0.28);
+  --servitor-close-hover-border: rgba(239, 68, 68, 0.6);
+  --servitor-close-hover-text: #fecaca;
+
+  --servitor-btn-bg: rgba(255, 245, 225, 0.03);
+  --servitor-btn-border: rgba(182, 137, 56, 0.22);
+  --servitor-btn-text: #e7dfd3;
+  --servitor-btn-hover-bg: rgba(182, 137, 56, 0.16);
+  --servitor-btn-hover-border: rgba(217, 158, 56, 0.65);
+  --servitor-btn-hover-text: #fef3c7;
+  --servitor-btn-current-bg: rgba(182, 137, 56, 0.1);
+  --servitor-btn-current-border: rgba(217, 158, 56, 0.52);
+
+  --servitor-hub-bg: linear-gradient(135deg, rgba(124, 20, 25, 0.55) 0%, rgba(78, 14, 18, 0.65) 100%);
+  --servitor-hub-border: rgba(217, 158, 56, 0.58);
+  --servitor-hub-text: #fde68a;
+  --servitor-hub-hover-bg: linear-gradient(135deg, rgba(160, 26, 32, 0.72) 0%, rgba(102, 18, 24, 0.8) 100%);
+  --servitor-hub-hover-text: #ffffff;
+
+  --servitor-mini-bg: rgba(255, 255, 255, 0.03);
+  --servitor-mini-border: rgba(182, 137, 56, 0.28);
+  --servitor-mini-text: #d6c7b2;
+  --servitor-mini-hover-bg: rgba(153, 27, 27, 0.28);
+  --servitor-mini-hover-border: rgba(239, 68, 68, 0.6);
+  --servitor-mini-hover-text: #fde68a;
+  --servitor-mini-active-bg: rgba(182, 137, 56, 0.16);
+  --servitor-mini-active-border: rgba(234, 179, 8, 0.68);
+  --servitor-mini-active-text: #fef3c7;
+
+  /* Loading & Error Fallbacks */
+  --servitor-loading-bg: #090808;
+  --servitor-loading-text: #fde68a;
+  --servitor-loading-spinner: #d97706;
+  --servitor-error-page-bg: radial-gradient(circle at 50% 35%, #190e0e 0%, #090808 100%);
+  --servitor-error-card-bg: rgba(18, 13, 12, 0.96);
+  --servitor-error-card-border: rgba(182, 137, 56, 0.58);
+  --servitor-error-card-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+  --servitor-error-header: #f87171;
+  --servitor-error-msg: #d6c7b2;
+
+  /* Root Organizer ("/") Sanctum Tokens */
+  --sanctum-page-bg:
+    radial-gradient(circle at 27% 45%, rgba(220, 38, 38, 0.16) 0%, transparent 36%),
+    radial-gradient(circle at 27% 50%, rgba(217, 119, 6, 0.12) 0%, transparent 48%),
+    radial-gradient(ellipse 62% 55% at 75% 46%, rgba(120, 20, 24, 0.12) 0%, transparent 62%),
+    linear-gradient(180deg, #0b0908 0%, #120e0d 50%, #070606 100%);
+  --sanctum-page-text: #f5efe6;
+  --sanctum-grid-line: rgba(182, 137, 56, 0.045);
+  --sanctum-scanline-color: rgba(0, 0, 0, 0.26);
+  --sanctum-scanline-opacity: 0.65;
+
+  --sanctum-topbar-bg: linear-gradient(90deg, rgba(20, 12, 12, 0.88) 0%, rgba(12, 10, 9, 0.88) 100%);
+  --sanctum-topbar-border: rgba(182, 137, 56, 0.32);
+  --sanctum-brand-title: #fde68a;
+  --sanctum-brand-sub: #d6c7b2;
+
+  --sanctum-ctrl-bg: rgba(28, 18, 12, 0.88);
+  --sanctum-ctrl-border: rgba(182, 137, 56, 0.48);
+  --sanctum-ctrl-text: #fde68a;
+  --sanctum-ctrl-hover-bg: rgba(42, 22, 16, 0.96);
+  --sanctum-ctrl-hover-border: rgba(234, 179, 8, 0.82);
+  --sanctum-ctrl-hover-text: #fffbeb;
+
+  --sanctum-menu-dropdown-bg: linear-gradient(165deg, rgba(24, 16, 14, 0.98) 0%, rgba(11, 9, 8, 0.99) 100%);
+  --sanctum-menu-option-text: #e7dfd3;
+  --sanctum-menu-option-hover-bg: rgba(182, 137, 56, 0.18);
+  --sanctum-menu-option-hover-text: #fef3c7;
+  --sanctum-menu-option-active-bg: rgba(140, 20, 27, 0.45);
+  --sanctum-menu-option-active-text: #fde68a;
+
+  --sanctum-relay-bg: linear-gradient(180deg, rgba(24, 14, 13, 0.92) 0%, rgba(14, 10, 9, 0.95) 100%);
+  --sanctum-relay-border: rgba(182, 137, 56, 0.55);
+  --sanctum-relay-shadow: 0 14px 36px rgba(0, 0, 0, 0.78);
+  --sanctum-relay-header: #f87171;
+  --sanctum-relay-text: #fde68a;
+
+  --sanctum-panel-bg: linear-gradient(160deg, rgba(24, 19, 16, 0.9) 0%, rgba(12, 10, 9, 0.95) 100%);
+  --sanctum-panel-border: rgba(182, 137, 56, 0.52);
+  --sanctum-panel-shadow:
+    0 30px 75px rgba(0, 0, 0, 0.85),
+    0 0 42px rgba(180, 28, 28, 0.14),
+    inset 0 0 0 1px rgba(251, 191, 36, 0.08);
+  --sanctum-corner-bracket: #d49b3d;
+  --sanctum-eyebrow: #ef4444;
+  --sanctum-heading-grad: linear-gradient(135deg, #fffbeb 0%, #fcd34d 55%, #d97706 100%);
+  --sanctum-subtitle: #bfb3a3;
+
+  --sanctum-card-bg: linear-gradient(145deg, rgba(32, 23, 20, 0.9) 0%, rgba(16, 13, 12, 0.96) 100%);
+  --sanctum-card-border: rgba(182, 137, 56, 0.42);
+  --sanctum-card-left-bar: #991b1b;
+  --sanctum-card-hover-border: rgba(234, 179, 8, 0.82);
+  --sanctum-card-hover-left: #ef4444;
+  --sanctum-card-hover-shadow: 0 18px 42px rgba(0, 0, 0, 0.72), 0 0 28px rgba(220, 38, 38, 0.22);
+  --sanctum-card-designation: #f87171;
+  --sanctum-card-title: #fef3c7;
+  --sanctum-card-sub: #bfb3a3;
+  --sanctum-card-desc: #d6ccc0;
+  --sanctum-card-divider: rgba(182, 137, 56, 0.2);
+  --sanctum-card-version: #9c8e7b;
+
+  --sanctum-route-bg: rgba(20, 35, 24, 0.75);
+  --sanctum-route-border: rgba(74, 222, 128, 0.38);
+  --sanctum-route-text: #86efac;
+
+  --sanctum-chip-bg: rgba(255, 245, 220, 0.04);
+  --sanctum-chip-border: rgba(182, 137, 56, 0.3);
+  --sanctum-chip-text: #e7dfd3;
+  --sanctum-chip-hover-bg: rgba(153, 27, 27, 0.42);
+  --sanctum-chip-hover-border: rgba(234, 179, 8, 0.75);
+  --sanctum-chip-hover-text: #fef3c7;
+
+  --sanctum-banner-bg: rgba(18, 14, 12, 0.65);
+  --sanctum-banner-border: rgba(182, 137, 56, 0.35);
+  --sanctum-banner-text: #a89984;
+  --sanctum-banner-icon: #d97706;
+  --sanctum-code-bg: rgba(120, 20, 24, 0.35);
+  --sanctum-code-border: rgba(182, 137, 56, 0.38);
+  --sanctum-code-text: #fde68a;
+}
+
+[data-theme='light'] {
+  /* Sub-App Servitor Control Pill — Crisp Alabaster Slate & Burnished Brass */
+  --servitor-pill-bg: rgba(255, 255, 255, 0.94);
+  --servitor-pill-border: rgba(180, 120, 34, 0.42);
+  --servitor-pill-text: #1e293b;
+  --servitor-pill-icon: #b45309;
+  --servitor-pill-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  --servitor-pill-hover-bg: #fffbeb;
+  --servitor-pill-hover-border: rgba(185, 28, 28, 0.58);
+  --servitor-pill-hover-text: #7f1d1d;
+  --servitor-pill-hover-shadow: 0 4px 14px rgba(180, 83, 9, 0.16);
+
+  /* Optic Telemetry HUD — Light Frosted Alabaster Readout */
+  --servitor-hud-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.97) 0%, rgba(254, 250, 240, 0.98) 100%);
+  --servitor-hud-border: rgba(180, 125, 42, 0.48);
+  --servitor-hud-accent-bar: #dc2626;
+  --servitor-hud-shadow: 0 12px 28px rgba(15, 23, 42, 0.14), 0 0 14px rgba(220, 38, 38, 0.1);
+  --servitor-hud-eyebrow: #dc2626;
+  --servitor-hud-target: #0f172a;
+  --servitor-hud-sub: #059669;
+
+  /* Quick-Menu Popover — Light Alabaster & Burnished Brass */
+  --servitor-pop-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 246, 240, 0.99) 100%);
+  --servitor-pop-border: rgba(180, 125, 42, 0.44);
+  --servitor-pop-shadow:
+    0 20px 48px rgba(15, 23, 42, 0.16),
+    0 4px 14px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --servitor-pop-text: #0f172a;
+  --servitor-pop-divider: rgba(180, 125, 42, 0.22);
+  --servitor-pop-eyebrow: #b91c1c;
+  --servitor-pop-title: #1e293b;
+  --servitor-pop-section: #64748b;
+  --servitor-pop-meta: #64748b;
+
+  --servitor-close-bg: rgba(15, 23, 42, 0.04);
+  --servitor-close-border: rgba(15, 23, 42, 0.14);
+  --servitor-close-text: #475569;
+  --servitor-close-hover-bg: rgba(220, 38, 38, 0.1);
+  --servitor-close-hover-border: rgba(220, 38, 38, 0.45);
+  --servitor-close-hover-text: #b91c1c;
+
+  --servitor-btn-bg: rgba(241, 245, 249, 0.8);
+  --servitor-btn-border: rgba(15, 23, 42, 0.11);
+  --servitor-btn-text: #0f172a;
+  --servitor-btn-hover-bg: #fffbeb;
+  --servitor-btn-hover-border: rgba(217, 119, 6, 0.48);
+  --servitor-btn-hover-text: #78350f;
+  --servitor-btn-current-bg: rgba(254, 243, 199, 0.6);
+  --servitor-btn-current-border: rgba(180, 83, 9, 0.44);
+
+  --servitor-hub-bg: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+  --servitor-hub-border: #b91c1c;
+  --servitor-hub-text: #fef3c7;
+  --servitor-hub-hover-bg: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  --servitor-hub-hover-text: #ffffff;
+
+  --servitor-mini-bg: #f8fafc;
+  --servitor-mini-border: rgba(15, 23, 42, 0.14);
+  --servitor-mini-text: #334155;
+  --servitor-mini-hover-bg: rgba(254, 226, 226, 0.6);
+  --servitor-mini-hover-border: rgba(220, 38, 38, 0.48);
+  --servitor-mini-hover-text: #991b1b;
+  --servitor-mini-active-bg: rgba(254, 243, 199, 0.72);
+  --servitor-mini-active-border: rgba(180, 83, 9, 0.52);
+  --servitor-mini-active-text: #78350f;
+
+  /* Loading & Error Fallbacks */
+  --servitor-loading-bg: #f8fafc;
+  --servitor-loading-text: #92400e;
+  --servitor-loading-spinner: #d97706;
+  --servitor-error-page-bg: radial-gradient(circle at 50% 35%, #fef2f2 0%, #f8fafc 100%);
+  --servitor-error-card-bg: rgba(255, 255, 255, 0.98);
+  --servitor-error-card-border: rgba(180, 125, 42, 0.45);
+  --servitor-error-card-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+  --servitor-error-header: #dc2626;
+  --servitor-error-msg: #475569;
+
+  /* Root Organizer ("/") Sanctum Tokens — Illuminated Alabaster & Garnet Brass */
+  --sanctum-page-bg:
+    radial-gradient(circle at 27% 45%, rgba(220, 38, 38, 0.09) 0%, transparent 38%),
+    radial-gradient(circle at 27% 50%, rgba(217, 119, 6, 0.09) 0%, transparent 48%),
+    radial-gradient(ellipse 62% 55% at 75% 46%, rgba(180, 83, 9, 0.06) 0%, transparent 62%),
+    linear-gradient(180deg, #f8f6f1 0%, #f1ede3 52%, #e9e3d5 100%);
+  --sanctum-page-text: #1c1917;
+  --sanctum-grid-line: rgba(161, 98, 7, 0.075);
+  --sanctum-scanline-color: rgba(120, 80, 30, 0.06);
+  --sanctum-scanline-opacity: 0.45;
+
+  --sanctum-topbar-bg: linear-gradient(90deg, rgba(255, 253, 249, 0.92) 0%, rgba(248, 244, 236, 0.92) 100%);
+  --sanctum-topbar-border: rgba(180, 125, 42, 0.3);
+  --sanctum-brand-title: #1c1917;
+  --sanctum-brand-sub: #57534e;
+
+  --sanctum-ctrl-bg: rgba(255, 255, 255, 0.92);
+  --sanctum-ctrl-border: rgba(180, 125, 42, 0.42);
+  --sanctum-ctrl-text: #1c1917;
+  --sanctum-ctrl-hover-bg: #fffbeb;
+  --sanctum-ctrl-hover-border: rgba(185, 28, 28, 0.58);
+  --sanctum-ctrl-hover-text: #7f1d1d;
+
+  --sanctum-menu-dropdown-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.99) 0%, rgba(249, 246, 239, 0.99) 100%);
+  --sanctum-menu-option-text: #1c1917;
+  --sanctum-menu-option-hover-bg: rgba(254, 243, 199, 0.7);
+  --sanctum-menu-option-hover-text: #78350f;
+  --sanctum-menu-option-active-bg: rgba(185, 28, 28, 0.12);
+  --sanctum-menu-option-active-text: #991b1b;
+
+  --sanctum-relay-bg: linear-gradient(180deg, rgba(255, 254, 250, 0.95) 0%, rgba(249, 245, 236, 0.97) 100%);
+  --sanctum-relay-border: rgba(180, 125, 42, 0.48);
+  --sanctum-relay-shadow: 0 12px 30px rgba(28, 25, 23, 0.12);
+  --sanctum-relay-header: #b91c1c;
+  --sanctum-relay-text: #1c1917;
+
+  --sanctum-panel-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 247, 240, 0.97) 100%);
+  --sanctum-panel-border: rgba(180, 125, 42, 0.44);
+  --sanctum-panel-shadow:
+    0 24px 60px rgba(28, 25, 23, 0.12),
+    0 4px 16px rgba(180, 83, 9, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --sanctum-corner-bracket: #b45309;
+  --sanctum-eyebrow: #b91c1c;
+  --sanctum-heading-grad: linear-gradient(135deg, #1c1917 0%, #78350f 55%, #b91c1c 100%);
+  --sanctum-subtitle: #57534e;
+
+  --sanctum-card-bg: linear-gradient(145deg, #ffffff 0%, #faf7f0 100%);
+  --sanctum-card-border: rgba(180, 125, 42, 0.36);
+  --sanctum-card-left-bar: #b91c1c;
+  --sanctum-card-hover-border: rgba(180, 83, 9, 0.72);
+  --sanctum-card-hover-left: #dc2626;
+  --sanctum-card-hover-shadow: 0 16px 36px rgba(28, 25, 23, 0.12), 0 0 20px rgba(220, 38, 38, 0.08);
+  --sanctum-card-designation: #b91c1c;
+  --sanctum-card-title: #1c1917;
+  --sanctum-card-sub: #57534e;
+  --sanctum-card-desc: #44403c;
+  --sanctum-card-divider: rgba(180, 125, 42, 0.2);
+  --sanctum-card-version: #78716c;
+
+  --sanctum-route-bg: #ecfdf5;
+  --sanctum-route-border: rgba(5, 150, 105, 0.32);
+  --sanctum-route-text: #047857;
+
+  --sanctum-chip-bg: #f5f2eb;
+  --sanctum-chip-border: rgba(180, 125, 42, 0.3);
+  --sanctum-chip-text: #292524;
+  --sanctum-chip-hover-bg: #fef2f2;
+  --sanctum-chip-hover-border: rgba(185, 28, 28, 0.55);
+  --sanctum-chip-hover-text: #991b1b;
+
+  --sanctum-banner-bg: rgba(245, 242, 235, 0.8);
+  --sanctum-banner-border: rgba(180, 125, 42, 0.38);
+  --sanctum-banner-text: #57534e;
+  --sanctum-banner-icon: #b45309;
+  --sanctum-code-bg: rgba(185, 28, 28, 0.08);
+  --sanctum-code-border: rgba(180, 125, 42, 0.36);
+  --sanctum-code-text: #991b1b;
+}
 
 *,
 *::before,
@@ -54,50 +371,89 @@ html[data-theme='light'] body {
 /* ─── Non-Obstructive Footer-Edge Control Pill on Sub-Apps ──────────────── */
 .servitor-dock-pill {
   position: fixed;
-  bottom: 7px;
-  right: 92px;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: 5px;
+  bottom: calc((var(--footer-height, 48px) - 1px - 28px) / 2);
+  right: 88px;
+  height: 28px;
+  margin: 0;
+  padding: 0 11px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  background: rgba(18, 13, 11, 0.88);
-  border: 1px solid rgba(182, 137, 56, 0.48);
-  color: #fde68a;
+  background: var(--servitor-pill-bg);
+  border: 1px solid var(--servitor-pill-border);
+  color: var(--servitor-pill-text);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
   font-weight: 600;
+  line-height: 1;
   letter-spacing: 0.05em;
+  vertical-align: middle;
   cursor: pointer;
   z-index: 9260;
   pointer-events: auto;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-  transition: all 0.18s ease;
+  box-shadow: var(--servitor-pill-shadow);
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.servitor-dock-pill.is-in-footer {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  order: -1;
+  z-index: 2;
+}
+
+.app-footer .app-footer-right {
+  gap: 0.75rem;
+}
+
+.app-footer .app-footer-right > .mono {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.servitor-dock-pill > span:last-child {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.servitor-dock-pill svg {
+  display: block;
+  color: var(--servitor-pill-icon);
+  flex-shrink: 0;
 }
 
 .servitor-dock-pill:hover,
 .servitor-dock-pill.is-active {
-  background: rgba(34, 18, 16, 0.96);
-  border-color: rgba(234, 179, 8, 0.82);
-  color: #fffbeb;
-  box-shadow: 0 4px 18px rgba(220, 38, 38, 0.3);
+  background: var(--servitor-pill-hover-bg);
+  border-color: var(--servitor-pill-hover-border);
+  color: var(--servitor-pill-hover-text);
+  box-shadow: var(--servitor-pill-hover-shadow);
+}
+
+.servitor-dock-pill:hover svg,
+.servitor-dock-pill.is-active svg {
+  color: currentColor;
 }
 
 .servitor-dock-led {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 6px #4ade80;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.75);
   flex-shrink: 0;
 }
 
 .servitor-dock-pill.is-standby .servitor-dock-led {
   background: #f59e0b;
   box-shadow: 0 0 5px rgba(245, 158, 11, 0.65);
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .servitor-dock-pill.is-scanning .servitor-dock-led {
@@ -107,7 +463,7 @@ html[data-theme='light'] body {
 }
 
 .servitor-dock-pill.is-cloaked {
-  opacity: 0.65;
+  opacity: 0.72;
 }
 
 .servitor-dock-pill.is-cloaked .servitor-dock-led {
@@ -115,7 +471,65 @@ html[data-theme='light'] body {
   box-shadow: none;
 }
 
-/* ─── Floating Mechanicus Auspex Telemetry Readout during Scans ──────────── */
+/* ─── Sub-App Sidebar Back-to-Servitorium Button ─────────────────────────── */
+.app-sidebar .sidebar-servitorium-wrap,
+.sidebar-servitorium-wrap {
+  padding: 0.75rem 0.85rem;
+  margin: 0;
+  border-bottom: 1px solid var(--glass-border-subtle, rgba(255, 255, 255, 0.08));
+  flex-shrink: 0;
+}
+
+.app-sidebar .sidebar-nav-btn.sidebar-servitorium-btn,
+.sidebar-nav-btn.sidebar-servitorium-btn {
+  width: 100%;
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  line-height: 1.25;
+  color: var(--text-accent, #34d399);
+  background: var(--success-bg, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--success-border, rgba(16, 185, 129, 0.26));
+  font-weight: 600;
+}
+
+.app-sidebar .sidebar-nav-btn.sidebar-servitorium-btn svg,
+.sidebar-nav-btn.sidebar-servitorium-btn svg {
+  display: block;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-sidebar .sidebar-nav-btn.sidebar-servitorium-btn > span,
+.sidebar-nav-btn.sidebar-servitorium-btn > span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.25;
+}
+
+.app-sidebar .sidebar-nav-btn.sidebar-servitorium-btn:hover,
+.sidebar-nav-btn.sidebar-servitorium-btn:hover {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: var(--accent-color, #10b981);
+  color: var(--text-primary, #f8fafc);
+  transform: none;
+}
+
+.app-sidebar .sidebar-nav-btn.sidebar-servitorium-btn:hover svg,
+.sidebar-nav-btn.sidebar-servitorium-btn:hover svg {
+  transform: translateX(-2px);
+}
+
+[data-theme='light'] .app-sidebar .sidebar-nav-btn.sidebar-servitorium-btn:hover,
+[data-theme='light'] .sidebar-nav-btn.sidebar-servitorium-btn:hover {
+  background: rgba(5, 150, 105, 0.14);
+  border-color: rgba(5, 150, 105, 0.45);
+  color: #064e3b;
+}
+
+/* ─── Floating Optic Telemetry Readout during Scans ──────────────────────── */
 .servitor-scan-telemetry {
   position: fixed;
   top: 0;
@@ -124,14 +538,12 @@ html[data-theme='light'] body {
   z-index: 9240;
   padding: 7px 12px;
   border-radius: 4px;
-  background: linear-gradient(135deg, rgba(28, 10, 12, 0.94) 0%, rgba(16, 13, 11, 0.96) 100%);
-  border: 1px solid rgba(194, 138, 56, 0.65);
-  border-left: 3px solid #dc2626;
-  box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.78),
-    0 0 20px rgba(220, 38, 38, 0.28);
+  background: var(--servitor-hud-bg);
+  border: 1px solid var(--servitor-hud-border);
+  border-left: 3px solid var(--servitor-hud-accent-bar);
+  box-shadow: var(--servitor-hud-shadow);
   backdrop-filter: blur(8px);
-  color: #fef3c7;
+  color: var(--servitor-hud-target);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
   line-height: 1.35;
@@ -143,7 +555,7 @@ html[data-theme='light'] body {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #f87171;
+  color: var(--servitor-hud-eyebrow);
   font-weight: 700;
   letter-spacing: 0.1em;
   font-size: 9.5px;
@@ -160,7 +572,8 @@ html[data-theme='light'] body {
 }
 
 .servitor-scan-telemetry-target {
-  color: #fde68a;
+  color: var(--servitor-hud-target);
+  font-weight: 600;
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -168,9 +581,10 @@ html[data-theme='light'] body {
 }
 
 .servitor-scan-telemetry-sub {
-  color: #4ade80;
+  color: var(--servitor-hud-sub);
   font-size: 9px;
-  opacity: 0.9;
+  font-weight: 600;
+  opacity: 0.92;
   margin-top: 2px;
 }
 
@@ -180,22 +594,29 @@ html[data-theme='light'] body {
   width: 306px;
   z-index: 9300;
   pointer-events: auto;
-  background: linear-gradient(165deg, rgba(22, 16, 14, 0.97) 0%, rgba(11, 9, 8, 0.99) 100%);
-  border: 1px solid rgba(182, 137, 56, 0.62);
+  background: var(--servitor-pop-bg);
+  border: 1px solid var(--servitor-pop-border);
   border-radius: 6px;
-  box-shadow:
-    0 24px 58px rgba(0, 0, 0, 0.85),
-    0 0 28px rgba(180, 28, 28, 0.22),
-    inset 0 0 0 1px rgba(255, 215, 130, 0.08);
+  box-shadow: var(--servitor-pop-shadow);
   backdrop-filter: blur(16px);
   padding: 14px;
-  color: #f5efe6;
+  color: var(--servitor-pop-text);
   animation: servitorHudFadeIn 0.18s ease-out;
 }
 
 .servitor-quick-popover-docked {
-  right: 16px;
-  bottom: 42px;
+  right: 2rem;
+  bottom: calc(var(--footer-height, 48px) + 8px);
+}
+
+@media (max-width: 768px) {
+  .servitor-dock-pill:not(.is-in-footer) {
+    right: 72px;
+  }
+
+  .servitor-quick-popover-docked {
+    right: 1rem;
+  }
 }
 
 .servitor-quick-header {
@@ -204,7 +625,7 @@ html[data-theme='light'] body {
   justify-content: space-between;
   padding-bottom: 10px;
   margin-bottom: 10px;
-  border-bottom: 1px solid rgba(182, 137, 56, 0.28);
+  border-bottom: 1px solid var(--servitor-pop-divider);
 }
 
 .servitor-quick-title-group {
@@ -216,8 +637,9 @@ html[data-theme='light'] body {
 .servitor-quick-eyebrow {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
+  font-weight: 600;
   letter-spacing: 0.12em;
-  color: #ef4444;
+  color: var(--servitor-pop-eyebrow);
   text-transform: uppercase;
 }
 
@@ -226,70 +648,90 @@ html[data-theme='light'] body {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #fde68a;
+  color: var(--servitor-pop-title);
 }
 
 .servitor-quick-close {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(182, 137, 56, 0.32);
-  color: #d6c7b2;
+  background: var(--servitor-close-bg);
+  border: 1px solid var(--servitor-close-border);
+  color: var(--servitor-close-text);
   width: 26px;
   height: 26px;
+  margin: 0;
+  padding: 0;
   border-radius: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .servitor-quick-close:hover {
-  background: rgba(185, 28, 28, 0.28);
-  border-color: rgba(239, 68, 68, 0.6);
-  color: #fecaca;
+  background: var(--servitor-close-hover-bg);
+  border-color: var(--servitor-close-hover-border);
+  color: var(--servitor-close-hover-text);
 }
 
 .servitor-quick-btn {
   width: 100%;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 9px;
   padding: 9px 11px;
   border-radius: 5px;
-  border: 1px solid rgba(182, 137, 56, 0.22);
-  background: rgba(255, 245, 225, 0.03);
-  color: #e7dfd3;
+  border: 1px solid var(--servitor-btn-border);
+  background: var(--servitor-btn-bg);
+  color: var(--servitor-btn-text);
+  font-family: inherit;
   font-size: 12.5px;
   font-weight: 600;
+  line-height: 1.25;
   text-align: left;
   cursor: pointer;
   transition: all 0.16s ease;
 }
 
+.servitor-quick-close svg,
+.servitor-quick-btn svg,
+.servitor-quick-mini-btn svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.servitor-quick-btn > span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.25;
+}
+
 .servitor-quick-btn:hover {
-  background: rgba(182, 137, 56, 0.16);
-  border-color: rgba(217, 158, 56, 0.65);
-  color: #fef3c7;
+  background: var(--servitor-btn-hover-bg);
+  border-color: var(--servitor-btn-hover-border);
+  color: var(--servitor-btn-hover-text);
 }
 
 .servitor-quick-btn.primary-hub {
-  background: linear-gradient(135deg, rgba(124, 20, 25, 0.55) 0%, rgba(78, 14, 18, 0.65) 100%);
-  border-color: rgba(217, 158, 56, 0.58);
-  color: #fde68a;
+  background: var(--servitor-hub-bg);
+  border-color: var(--servitor-hub-border);
+  color: var(--servitor-hub-text);
   margin-bottom: 10px;
 }
 
 .servitor-quick-btn.primary-hub:hover {
-  background: linear-gradient(135deg, rgba(160, 26, 32, 0.72) 0%, rgba(102, 18, 24, 0.8) 100%);
-  color: #ffffff;
+  background: var(--servitor-hub-hover-bg);
+  color: var(--servitor-hub-hover-text);
 }
 
 .servitor-quick-section-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #a89984;
+  color: var(--servitor-pop-section);
   margin: 8px 2px 6px;
 }
 
@@ -300,8 +742,23 @@ html[data-theme='light'] body {
 }
 
 .servitor-quick-btn.is-current {
-  border-color: rgba(217, 158, 56, 0.52);
-  background: rgba(182, 137, 56, 0.1);
+  border-color: var(--servitor-btn-current-border);
+  background: var(--servitor-btn-current-bg);
+}
+
+.servitor-quick-app-icon {
+  color: var(--app-accent, #34d399);
+  flex-shrink: 0;
+}
+
+[data-theme='light'] .servitor-quick-app-icon {
+  filter: brightness(0.76) saturate(1.18);
+}
+
+.servitor-quick-route-meta {
+  font-size: 10.5px;
+  color: var(--servitor-pop-meta);
+  font-weight: 400;
 }
 
 .servitor-quick-actions-row {
@@ -312,28 +769,37 @@ html[data-theme='light'] body {
 }
 
 .servitor-quick-mini-btn {
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 7px 8px;
   border-radius: 5px;
+  font-family: inherit;
   font-size: 11px;
   font-weight: 600;
+  line-height: 1.25;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(182, 137, 56, 0.28);
-  color: #d6c7b2;
+  background: var(--servitor-mini-bg);
+  border: 1px solid var(--servitor-mini-border);
+  color: var(--servitor-mini-text);
   transition: all 0.15s ease;
 }
 
 .servitor-quick-mini-btn:hover {
-  border-color: rgba(239, 68, 68, 0.6);
-  background: rgba(153, 27, 27, 0.28);
-  color: #fde68a;
+  border-color: var(--servitor-mini-hover-border);
+  background: var(--servitor-mini-hover-bg);
+  color: var(--servitor-mini-hover-text);
 }
 
-/* ─── Root Organizer Sanctum Page ("/") — Grimdark Adeptus Mechanicus ───── */
+.servitor-quick-mini-btn.is-toggled {
+  background: var(--servitor-mini-active-bg);
+  border-color: var(--servitor-mini-active-border);
+  color: var(--servitor-mini-active-text);
+}
+
+/* ─── Root Organizer Sanctum Page ("/") ──────────────────────────────────── */
 .root-sanctum-page {
   position: relative;
   min-height: 100vh;
@@ -341,12 +807,9 @@ html[data-theme='light'] body {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(circle at 27% 45%, rgba(220, 38, 38, 0.16) 0%, transparent 36%),
-    radial-gradient(circle at 27% 50%, rgba(217, 119, 6, 0.12) 0%, transparent 48%),
-    radial-gradient(ellipse 62% 55% at 75% 46%, rgba(120, 20, 24, 0.12) 0%, transparent 62%),
-    linear-gradient(180deg, #0b0908 0%, #120e0d 50%, #070606 100%);
-  color: #f5efe6;
+  background: var(--sanctum-page-bg);
+  color: var(--sanctum-page-text);
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 .root-sanctum-grid-backdrop {
@@ -354,8 +817,8 @@ html[data-theme='light'] body {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(182, 137, 56, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(182, 137, 56, 0.045) 1px, transparent 1px);
+    linear-gradient(var(--sanctum-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--sanctum-grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 35%, transparent 100%);
 }
@@ -368,9 +831,9 @@ html[data-theme='light'] body {
     0deg,
     transparent 0px,
     transparent 3px,
-    rgba(0, 0, 0, 0.26) 4px
+    var(--sanctum-scanline-color) 4px
   );
-  opacity: 0.65;
+  opacity: var(--sanctum-scanline-opacity);
 }
 
 .root-sanctum-topbar {
@@ -380,8 +843,8 @@ html[data-theme='light'] body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 32px;
-  border-bottom: 1px solid rgba(182, 137, 56, 0.32);
-  background: linear-gradient(90deg, rgba(20, 12, 12, 0.88) 0%, rgba(12, 10, 9, 0.88) 100%);
+  border-bottom: 1px solid var(--sanctum-topbar-border);
+  background: var(--sanctum-topbar-bg);
   backdrop-filter: blur(10px);
 }
 
@@ -391,7 +854,7 @@ html[data-theme='light'] body {
   gap: 13px;
 }
 
-.root-sanctum-cog-badge {
+.root-sanctum-cipher-badge {
   width: 38px;
   height: 38px;
   border-radius: 6px;
@@ -402,7 +865,7 @@ html[data-theme='light'] body {
   justify-content: center;
   color: #fbbf24;
   box-shadow:
-    0 0 18px rgba(220, 38, 38, 0.28),
+    0 0 18px rgba(220, 38, 38, 0.24),
     inset 0 0 8px rgba(251, 191, 36, 0.2);
 }
 
@@ -413,38 +876,147 @@ html[data-theme='light'] body {
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: #fde68a;
+  color: var(--sanctum-brand-title);
 }
 
 .root-sanctum-brand-text span {
   display: block;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  color: #d6c7b2;
-  opacity: 0.8;
+  color: var(--sanctum-brand-sub);
+  opacity: 0.85;
   letter-spacing: 0.1em;
+}
+
+.root-sanctum-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.root-sanctum-lang-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.root-sanctum-lang-trigger,
+.root-sanctum-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 30px;
+  margin: 0;
+  padding: 0 10px;
+  border-radius: 4px;
+  background: var(--sanctum-ctrl-bg);
+  border: 1px solid var(--sanctum-ctrl-border);
+  color: var(--sanctum-ctrl-text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.root-sanctum-theme-toggle {
+  width: 32px;
+  padding: 0;
+}
+
+.root-sanctum-lang-trigger:hover,
+.root-sanctum-theme-toggle:hover {
+  background: var(--sanctum-ctrl-hover-bg);
+  border-color: var(--sanctum-ctrl-hover-border);
+  color: var(--sanctum-ctrl-hover-text);
+}
+
+.root-sanctum-lang-flag {
+  width: 16px;
+  height: 12px;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(128, 128, 128, 0.25);
+}
+
+.root-sanctum-lang-chevron {
+  opacity: 0.78;
+  transition: transform 0.16s ease;
+}
+
+.root-sanctum-lang-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.root-sanctum-lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 176px;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  border-radius: 5px;
+  background: var(--sanctum-menu-dropdown-bg);
+  border: 1px solid var(--servitor-pop-border);
+  box-shadow: var(--servitor-pop-shadow);
+  z-index: 60;
+  animation: servitorHudFadeIn 0.15s ease-out;
+}
+
+.root-sanctum-lang-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sanctum-menu-option-text);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.root-sanctum-lang-option:hover {
+  background: var(--sanctum-menu-option-hover-bg);
+  color: var(--sanctum-menu-option-hover-text);
+}
+
+.root-sanctum-lang-option.is-active {
+  background: var(--sanctum-menu-option-active-bg);
+  color: var(--sanctum-menu-option-active-text);
+  font-weight: 700;
 }
 
 .root-sanctum-status-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 13px;
+  height: 30px;
+  padding: 0 13px;
   border-radius: 4px;
-  background: rgba(28, 18, 12, 0.85);
-  border: 1px solid rgba(182, 137, 56, 0.48);
+  background: var(--sanctum-ctrl-bg);
+  border: 1px solid var(--sanctum-ctrl-border);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
+  font-weight: 600;
   letter-spacing: 0.08em;
-  color: #fde68a;
+  color: var(--sanctum-ctrl-text);
 }
 
 .root-sanctum-status-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 9px #4ade80;
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.75);
 }
 
 /* Main two-column organizer layout */
@@ -472,42 +1044,40 @@ html[data-theme='light'] body {
   pointer-events: none;
 }
 
-.root-sanctum-vox-caption {
+.root-sanctum-relay-caption {
   margin-top: auto;
   padding: 10px 18px;
   border-radius: 4px;
-  background: linear-gradient(180deg, rgba(24, 14, 13, 0.92) 0%, rgba(14, 10, 9, 0.95) 100%);
-  border: 1px solid rgba(182, 137, 56, 0.55);
+  background: var(--sanctum-relay-bg);
+  border: 1px solid var(--sanctum-relay-border);
   border-top: 2px solid #dc2626;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.78);
+  box-shadow: var(--sanctum-relay-shadow);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #fde68a;
+  font-weight: 600;
+  color: var(--sanctum-relay-text);
   text-align: center;
   letter-spacing: 0.05em;
   max-width: 410px;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.root-sanctum-vox-caption strong {
+.root-sanctum-relay-caption strong {
   display: block;
-  color: #f87171;
+  color: var(--sanctum-relay-header);
   font-size: 9.5px;
   letter-spacing: 0.14em;
   margin-bottom: 4px;
 }
 
-/* Right-side Mechanicus Cogitator Altar / Menu Panel */
+/* Right-side Cipher Reliquary Sanctum Directory / Menu Panel */
 .root-sanctum-menu-panel {
   position: relative;
-  background: linear-gradient(160deg, rgba(24, 19, 16, 0.9) 0%, rgba(12, 10, 9, 0.95) 100%);
-  border: 1px solid rgba(182, 137, 56, 0.52);
+  background: var(--sanctum-panel-bg);
+  border: 1px solid var(--sanctum-panel-border);
   border-radius: 8px;
   padding: 30px 32px;
-  box-shadow:
-    0 30px 75px rgba(0, 0, 0, 0.85),
-    0 0 42px rgba(180, 28, 28, 0.14),
-    inset 0 0 0 1px rgba(251, 191, 36, 0.08);
+  box-shadow: var(--sanctum-panel-shadow);
   backdrop-filter: blur(14px);
   transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
@@ -528,7 +1098,7 @@ html[data-theme='light'] body {
   position: absolute;
   width: 24px;
   height: 24px;
-  border-color: #d49b3d;
+  border-color: var(--sanctum-corner-bracket);
   border-style: solid;
   pointer-events: none;
 }
@@ -551,9 +1121,10 @@ html[data-theme='light'] body {
   gap: 8px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
+  font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #ef4444;
+  color: var(--sanctum-eyebrow);
   margin-bottom: 8px;
 }
 
@@ -564,7 +1135,7 @@ html[data-theme='light'] body {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #fffbeb 0%, #fcd34d 55%, #d97706 100%);
+  background: var(--sanctum-heading-grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -573,7 +1144,7 @@ html[data-theme='light'] body {
   margin: 0 0 22px;
   font-size: 0.91rem;
   line-height: 1.55;
-  color: #bfb3a3;
+  color: var(--sanctum-subtitle);
 }
 
 .root-menu-cards {
@@ -586,20 +1157,18 @@ html[data-theme='light'] body {
   position: relative;
   border-radius: 6px;
   padding: 20px 22px;
-  background: linear-gradient(145deg, rgba(32, 23, 20, 0.9) 0%, rgba(16, 13, 12, 0.96) 100%);
-  border: 1px solid rgba(182, 137, 56, 0.42);
-  border-left: 4px solid #991b1b;
+  background: var(--sanctum-card-bg);
+  border: 1px solid var(--sanctum-card-border);
+  border-left: 4px solid var(--sanctum-card-left-bar);
   transition: all 0.22s ease;
   cursor: pointer;
 }
 
 .root-app-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(234, 179, 8, 0.82);
-  border-left-color: #ef4444;
-  box-shadow:
-    0 18px 42px rgba(0, 0, 0, 0.72),
-    0 0 28px rgba(220, 38, 38, 0.22);
+  border-color: var(--sanctum-card-hover-border);
+  border-left-color: var(--sanctum-card-hover-left);
+  box-shadow: var(--sanctum-card-hover-shadow);
 }
 
 .root-app-card-top {
@@ -627,14 +1196,15 @@ html[data-theme='light'] body {
   justify-content: center;
   color: #fbbf24;
   flex-shrink: 0;
-  box-shadow: 0 0 18px rgba(185, 28, 28, 0.35);
+  box-shadow: 0 0 18px rgba(185, 28, 28, 0.28);
 }
 
 .root-app-designation {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.12em;
-  color: #f87171;
+  color: var(--sanctum-card-designation);
   text-transform: uppercase;
   margin-bottom: 2px;
 }
@@ -645,23 +1215,24 @@ html[data-theme='light'] body {
   font-size: 1.22rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: #fef3c7;
+  color: var(--sanctum-card-title);
 }
 
 .root-app-subtitle {
   font-size: 0.82rem;
-  color: #bfb3a3;
+  color: var(--sanctum-card-sub);
   margin-top: 2px;
 }
 
 .root-app-route-badge {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
+  font-weight: 600;
   padding: 4px 10px;
   border-radius: 4px;
-  background: rgba(20, 35, 24, 0.75);
-  border: 1px solid rgba(74, 222, 128, 0.38);
-  color: #86efac;
+  background: var(--sanctum-route-bg);
+  border: 1px solid var(--sanctum-route-border);
+  color: var(--sanctum-route-text);
   white-space: nowrap;
 }
 
@@ -669,7 +1240,7 @@ html[data-theme='light'] body {
   margin: 10px 0 15px;
   font-size: 0.88rem;
   line-height: 1.55;
-  color: #d6ccc0;
+  color: var(--sanctum-card-desc);
 }
 
 .root-app-submodules {
@@ -682,19 +1253,20 @@ html[data-theme='light'] body {
 .root-app-submodule-chip {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
+  font-weight: 500;
   padding: 5px 10px;
   border-radius: 4px;
-  background: rgba(255, 245, 220, 0.04);
-  border: 1px solid rgba(182, 137, 56, 0.3);
-  color: #e7dfd3;
+  background: var(--sanctum-chip-bg);
+  border: 1px solid var(--sanctum-chip-border);
+  color: var(--sanctum-chip-text);
   cursor: pointer;
   transition: all 0.16s ease;
 }
 
 .root-app-submodule-chip:hover {
-  background: rgba(153, 27, 27, 0.42);
-  border-color: rgba(234, 179, 8, 0.75);
-  color: #fef3c7;
+  background: var(--sanctum-chip-hover-bg);
+  border-color: var(--sanctum-chip-hover-border);
+  color: var(--sanctum-chip-hover-text);
 }
 
 .root-app-card-footer {
@@ -702,13 +1274,13 @@ html[data-theme='light'] body {
   align-items: center;
   justify-content: space-between;
   padding-top: 12px;
-  border-top: 1px solid rgba(182, 137, 56, 0.2);
+  border-top: 1px solid var(--sanctum-card-divider);
 }
 
 .root-app-version {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #9c8e7b;
+  color: var(--sanctum-card-version);
 }
 
 .root-app-launch-cta {
@@ -726,14 +1298,14 @@ html[data-theme='light'] body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(153, 27, 27, 0.45);
+  box-shadow: 0 6px 20px rgba(153, 27, 27, 0.35);
   transition: all 0.18s ease;
 }
 
 .root-app-card:hover .root-app-launch-cta {
   transform: translateX(3px);
   background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
-  box-shadow: 0 8px 26px rgba(220, 38, 38, 0.55);
+  box-shadow: 0 8px 26px rgba(220, 38, 38, 0.45);
 }
 
 /* Extensible Plug-In Slot Footer Card */
@@ -741,22 +1313,28 @@ html[data-theme='light'] body {
   margin-top: 16px;
   padding: 13px 16px;
   border-radius: 5px;
-  border: 1px dashed rgba(182, 137, 56, 0.35);
-  background: rgba(18, 14, 12, 0.65);
+  border: 1px dashed var(--sanctum-banner-border);
+  background: var(--sanctum-banner-bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: #a89984;
+  color: var(--sanctum-banner-text);
   font-size: 0.81rem;
+}
+
+.root-plugin-slot-icon {
+  color: var(--sanctum-banner-icon);
+  flex-shrink: 0;
 }
 
 .root-plugin-slot-code {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10.5px;
-  color: #fde68a;
-  background: rgba(120, 20, 24, 0.35);
-  border: 1px solid rgba(182, 137, 56, 0.38);
+  font-weight: 600;
+  color: var(--sanctum-code-text);
+  background: var(--sanctum-code-bg);
+  border: 1px solid var(--sanctum-code-border);
   padding: 3px 8px;
   border-radius: 4px;
   white-space: nowrap;
@@ -775,10 +1353,16 @@ html[data-theme='light'] body {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  background: #090808;
-  color: #fde68a;
+  background: var(--servitor-loading-bg);
+  color: var(--servitor-loading-text);
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
+  font-weight: 600;
+}
+
+.subapp-loading-spinner {
+  animation: servitorSpin 1s linear infinite;
+  color: var(--servitor-loading-spinner);
 }
 
 .shell-error-fallback {
@@ -787,7 +1371,7 @@ html[data-theme='light'] body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(circle at 50% 35%, #190e0e 0%, #090808 100%);
+  background: var(--servitor-error-page-bg);
 }
 
 .shell-error-card {
@@ -795,17 +1379,17 @@ html[data-theme='light'] body {
   max-width: 460px;
   padding: 24px;
   border-radius: 6px;
-  background: rgba(18, 13, 12, 0.96);
-  border: 1px solid rgba(182, 137, 56, 0.58);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
-  color: #f5efe6;
+  background: var(--servitor-error-card-bg);
+  border: 1px solid var(--servitor-error-card-border);
+  box-shadow: var(--servitor-error-card-shadow);
+  color: var(--servitor-pop-text);
 }
 
 .shell-error-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #f87171;
+  color: var(--servitor-error-header);
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 700;
@@ -817,13 +1401,22 @@ html[data-theme='light'] body {
   margin: 0 0 18px;
   font-size: 13px;
   line-height: 1.5;
-  color: #d6c7b2;
+  color: var(--servitor-error-msg);
 }
 
 .shell-error-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+@keyframes servitorSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes servitorPulse {

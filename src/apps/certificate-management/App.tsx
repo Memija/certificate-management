@@ -30,6 +30,7 @@ import {
   isLanguageCustomized,
   isThemeCustomized,
   syncSystemSettingsFromApi,
+  THEME_CHANGED_EVENT,
   type SupportedLanguage
 } from './utils/systemSettings';
 import './index.css';
@@ -144,14 +145,22 @@ function App({ externalMode, onExternalModeSync, onBackToRoot }: CertificateAppP
     });
   }, [i18n]);
 
-  const toggleTheme = () => setTheme((prev: Theme) => {
-    let next: Theme;
-    if (prev === 'dark') next = 'light';
-    else if (prev === 'light') next = 'system';
-    else next = 'dark';
+  useEffect(() => {
+    const onExternalThemeChange = (e: Event) => {
+      const next = (e as CustomEvent<Theme>).detail;
+      if (next === 'dark' || next === 'light' || next === 'system') {
+        setTheme((prev) => (prev === next ? prev : next));
+      }
+    };
+    window.addEventListener(THEME_CHANGED_EVENT, onExternalThemeChange);
+    return () => window.removeEventListener(THEME_CHANGED_EVENT, onExternalThemeChange);
+  }, []);
+
+  const toggleTheme = () => {
+    const next: Theme = theme === 'dark' ? 'light' : theme === 'light' ? 'system' : 'dark';
+    setTheme(next);
     setUserThemePreference(next);
-    return next;
-  });
+  };
 
   const switchMode = (m: AppMode) => {
     setMode(m);
@@ -899,25 +908,18 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose, onBackToRoot }: { mod
         </div>
 
         {onBackToRoot && (
-          <div style={{ padding: '0 0.85rem 0.6rem 0.85rem', borderBottom: '1px solid var(--glass-border-subtle)', marginBottom: '0.35rem' }}>
+          <div className="sidebar-servitorium-wrap">
             <button
               type="button"
               onClick={() => {
                 onClose();
                 onBackToRoot();
               }}
-              className="sidebar-nav-btn"
-              title="Return to the Servitorium"
-              style={{
-                width: '100%',
-                color: 'var(--text-accent)',
-                background: 'rgba(16, 185, 129, 0.08)',
-                border: '1px solid rgba(52, 211, 153, 0.22)',
-                fontWeight: 600,
-              }}
+              className="sidebar-nav-btn sidebar-servitorium-btn"
+              title={t('servitor.controls.returnToServitorium')}
             >
-              <ArrowLeft size={16} />
-              <span>Servitorium</span>
+              <ArrowLeft size={17} />
+              <span>{t('servitor.controls.servitoriumShort')}</span>
             </button>
           </div>
         )}

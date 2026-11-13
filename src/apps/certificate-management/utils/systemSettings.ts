@@ -25,6 +25,7 @@ declare global {
 
 export const THEME_STORAGE_KEY = 'app-theme';
 export const THEME_CUSTOMIZED_KEY = 'app-theme-customized';
+export const THEME_CHANGED_EVENT = 'app-theme-preference-changed';
 export const LANG_STORAGE_KEY = 'i18nextLng';
 export const LANG_CUSTOMIZED_KEY = 'app-language-customized';
 
@@ -264,6 +265,9 @@ export function setUserThemePreference(theme: ThemePreference): void {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {
     // ignore
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent<ThemePreference>(THEME_CHANGED_EVENT, { detail: theme }));
   }
 }
 

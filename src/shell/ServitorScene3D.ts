@@ -41,7 +41,7 @@ interface ArticulatedCable {
   tipSpinMesh?: THREE.Mesh;
 }
 
-interface ArticulatedParchmentStrip {
+interface ArticulatedCipherStrip {
   pivots: THREE.Group[];
   baseRotZ: number;
   phase: number;
@@ -110,13 +110,13 @@ interface FleshBoneTextures {
   bumpMap: THREE.CanvasTexture;
 }
 
-function createGrimdarkFleshBoneTextures(): FleshBoneTextures {
+function createCranialBoneTextures(): FleshBoneTextures {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Pallid corpse-flesh / aged bone gradient (Rakarth Flesh -> Ushabti -> Nuln Oil shadow)
+  // Pallid weathered bone & cybernetic tissue gradient
   const grad = ctx.createLinearGradient(0, 0, 0, 512);
   grad.addColorStop(0, '#c2b39c');
   grad.addColorStop(0.38, '#b09f86');
@@ -125,7 +125,7 @@ function createGrimdarkFleshBoneTextures(): FleshBoneTextures {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 512, 512);
 
-  // Mottled necrotic veins, bruised violet-crimson irritation near bionics, & grime
+  // Mottled weathering, vascular bruising near cybernetic seams, & patina
   for (let i = 0; i < 3600; i++) {
     const x = Math.random() * 512;
     const y = Math.random() * 512;
@@ -136,7 +136,6 @@ function createGrimdarkFleshBoneTextures(): FleshBoneTextures {
     } else if (roll < 0.72) {
       ctx.fillStyle = 'rgba(232, 220, 198, 0.05)';
     } else {
-      // Bruised livid purple/crimson around surgical zones
       ctx.fillStyle = 'rgba(92, 32, 44, 0.065)';
     }
     ctx.beginPath();
@@ -144,7 +143,7 @@ function createGrimdarkFleshBoneTextures(): FleshBoneTextures {
     ctx.fill();
   }
 
-  // Fine cranial fractures & dark oil streaks dripping from sockets
+  // Fine cranial fractures & dark lubricant streaks near sockets
   ctx.strokeStyle = 'rgba(32, 20, 14, 0.48)';
   for (let c = 0; c < 14; c++) {
     let cx = 70 + Math.random() * 370;
@@ -160,13 +159,13 @@ function createGrimdarkFleshBoneTextures(): FleshBoneTextures {
     ctx.stroke();
   }
 
-  // Imperial / Mechanicus lobotomy brand & serial tattoo on brow/cheek
+  // Cryptographic X.509 OID & SHA-256 hex serial engraving on brow/cheek
   ctx.fillStyle = 'rgba(28, 20, 16, 0.58)';
-  ctx.font = 'bold 12px serif';
-  ctx.fillText('IX-SERV // MORTIS-LOGIS', 268, 184);
+  ctx.font = 'bold 11px monospace';
+  ctx.fillText('UNIT-IX // X.509-RELIQUARY', 260, 184);
   ctx.font = 'bold 9px monospace';
-  ctx.fillText('01001111 01001101 01001110', 268, 198);
-  ctx.fillText('ADEPTUS MECHANICUS', 268, 211);
+  ctx.fillText('OID 2.5.29.19 // SHA-256', 260, 198);
+  ctx.fillText('0x9F86:D081:884C:7D65', 260, 211);
 
   // Bump map canvas for gritty pores, scars, & crevices
   const bumpCanvas = document.createElement('canvas');
@@ -237,23 +236,23 @@ function createPittedMetalBump(): THREE.CanvasTexture {
   return tex;
 }
 
-function createMarsCowlTexture(): THREE.CanvasTexture {
+function createCipherShroudTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Deep Mars-Crimson heavy robes shaded with Nuln Oil soot at folds & edges
+  // Deep oxblood-garnet & dark obsidian heavy woven cybernetic shroud
   const grad = ctx.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#7c1419');
-  grad.addColorStop(0.55, '#5e0d12');
-  grad.addColorStop(0.88, '#38070a');
-  grad.addColorStop(1, '#1d0507');
+  grad.addColorStop(0, '#66131c');
+  grad.addColorStop(0.55, '#470d14');
+  grad.addColorStop(0.88, '#29070b');
+  grad.addColorStop(1, '#140406');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 512, 512);
 
-  // Coarse heavy fabric weave
-  ctx.strokeStyle = 'rgba(20, 4, 6, 0.22)';
+  // Coarse heavy ballistic/woven fabric texture
+  ctx.strokeStyle = 'rgba(16, 4, 6, 0.24)';
   ctx.lineWidth = 1;
   for (let i = 0; i < 512; i += 4) {
     ctx.beginPath();
@@ -266,27 +265,65 @@ function createMarsCowlTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  // Soot & oil stains
+  // Subtle weathered patina
   for (let i = 0; i < 900; i++) {
     ctx.fillStyle =
-      Math.random() > 0.3 ? 'rgba(15, 5, 5, 0.09)' : 'rgba(165, 38, 42, 0.06)';
+      Math.random() > 0.3 ? 'rgba(12, 5, 6, 0.09)' : 'rgba(148, 34, 42, 0.05)';
     ctx.beginPath();
     ctx.arc(Math.random() * 512, Math.random() * 512, 2 + Math.random() * 9, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Iconic Adeptus Mechanicus Gold Cog-Tooth Trim along the front hood opening edges (u=0, u=1, and top crown v=0)
+  // Precision burnished-brass PCB circuit-bus filigree & solder-via nodes along hood edges
   ctx.fillStyle = '#b68938';
-  // Top crown border
-  ctx.fillRect(0, 0, 512, 18);
-  // Left & Right front cowl opening borders
-  ctx.fillRect(0, 0, 22, 512);
-  ctx.fillRect(490, 0, 22, 512);
-  ctx.fillRect(34, 0, 5, 512);
-  ctx.fillRect(473, 0, 5, 512);
-  for (let y = 0; y < 512; y += 26) {
-    ctx.fillRect(22, y, 12, 13);
-    ctx.fillRect(478, y, 12, 13);
+  // Top crown circuit bus band
+  ctx.fillRect(0, 0, 512, 14);
+  ctx.fillRect(0, 19, 512, 3);
+  // Left & Right front shroud opening continuous bus rails
+  ctx.fillRect(0, 0, 16, 512);
+  ctx.fillRect(496, 0, 16, 512);
+  ctx.fillRect(24, 0, 3, 512);
+  ctx.fillRect(485, 0, 3, 512);
+  ctx.fillRect(35, 0, 2, 512);
+  ctx.fillRect(475, 0, 2, 512);
+
+  // Angled 45-degree circuit trace bridges & circular micro-via pads
+  ctx.strokeStyle = '#c89b46';
+  ctx.lineWidth = 2;
+  for (let y = 18; y < 500; y += 34) {
+    // Left circuit trace + circular via pad
+    ctx.beginPath();
+    ctx.moveTo(16, y);
+    ctx.lineTo(25, y + 9);
+    ctx.lineTo(36, y + 9);
+    ctx.lineTo(44, y + 17);
+    ctx.stroke();
+
+    ctx.fillStyle = '#d4a64f';
+    ctx.beginPath();
+    ctx.arc(44, y + 17, 3.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#18100c';
+    ctx.beginPath();
+    ctx.arc(44, y + 17, 1.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Right mirrored circuit trace + circular via pad
+    ctx.beginPath();
+    ctx.moveTo(496, y);
+    ctx.lineTo(487, y + 9);
+    ctx.lineTo(476, y + 9);
+    ctx.lineTo(468, y + 17);
+    ctx.stroke();
+
+    ctx.fillStyle = '#d4a64f';
+    ctx.beginPath();
+    ctx.arc(468, y + 17, 3.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#18100c';
+    ctx.beginPath();
+    ctx.arc(468, y + 17, 1.4, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -330,48 +367,66 @@ function createHazardTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-function createParchmentTexture(): THREE.CanvasTexture {
+function createCipherPlateTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
+  // Anodized dark obsidian-titanium metallic key-plate surface
   const grad = ctx.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#d2be92');
-  grad.addColorStop(0.65, '#b69c6d');
-  grad.addColorStop(0.9, '#7d633d');
-  grad.addColorStop(1, '#362614');
+  grad.addColorStop(0, '#222730');
+  grad.addColorStop(0.55, '#171b22');
+  grad.addColorStop(1, '#0d1015');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 128, 512);
 
-  // Scorched dark edges
-  ctx.strokeStyle = 'rgba(38, 22, 10, 0.75)';
+  // Outer burnished-brass frame
+  ctx.strokeStyle = '#b68938';
   ctx.lineWidth = 6;
-  ctx.strokeRect(2, 2, 124, 508);
+  ctx.strokeRect(3, 3, 122, 506);
 
-  // Crimson Mechanicus double rubric border
-  ctx.strokeStyle = 'rgba(128, 16, 22, 0.68)';
+  // Inner copper-gold circuit bus border
+  ctx.strokeStyle = 'rgba(212, 166, 79, 0.72)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(11, 13, 106, 486);
+
+  // Hexagonal X.509 cryptographic key-sigil header
+  ctx.strokeStyle = '#d4a64f';
   ctx.lineWidth = 2.5;
-  ctx.strokeRect(10, 12, 108, 486);
-
-  // Gothic skull/cog header icon + dense High Gothic blackletter lines
-  ctx.fillStyle = 'rgba(125, 16, 22, 0.8)';
   ctx.beginPath();
-  ctx.arc(64, 42, 13, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#d2be92';
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+    const hx = 64 + Math.cos(a) * 15;
+    const hy = 44 + Math.sin(a) * 15;
+    if (i === 0) ctx.moveTo(hx, hy);
+    else ctx.lineTo(hx, hy);
+  }
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.fillStyle = '#34d399';
   ctx.beginPath();
-  ctx.arc(64, 42, 6, 0, Math.PI * 2);
+  ctx.arc(64, 44, 4.5, 0, Math.PI * 2);
   ctx.fill();
 
-  for (let y = 72; y < 478; y += 13) {
-    const isRubric = y % 78 === 72;
-    ctx.fillStyle = isRubric ? 'rgba(135, 18, 24, 0.82)' : 'rgba(32, 22, 12, 0.74)';
-    const lineW = 62 + ((y * 23) % 38);
-    ctx.fillRect(18, y, lineW, isRubric ? 4.5 : 2.8);
-    // Faux gothic serif ticks
-    for (let lx = 20; lx < 18 + lineW; lx += 9) {
-      ctx.fillRect(lx, y - 1.5, 2, 5.5);
+  // Etched SHA-256 / PEM cipher bit-lanes & hash blocks
+  for (let y = 76; y < 478; y += 14) {
+    const isHeaderRow = y % 84 === 76;
+    ctx.fillStyle = isHeaderRow ? 'rgba(212, 166, 79, 0.88)' : 'rgba(148, 163, 184, 0.58)';
+    if (isHeaderRow) {
+      ctx.fillRect(18, y, 92, 4);
+    } else {
+      let cx = 18;
+      let seed = y * 17;
+      while (cx < 104) {
+        seed = (seed * 31 + 13) % 97;
+        const segW = 6 + (seed % 14);
+        if (cx + segW <= 108) {
+          ctx.fillRect(cx, y, segW, 3);
+        }
+        cx += segW + 4;
+      }
     }
   }
 
@@ -397,12 +452,12 @@ function createGlowSpriteTexture(innerColor: string, midColor: string): THREE.Ca
 }
 
 /**
- * Sculpts a gaunt, menacing Warhammer 40k Servitor cranium & upper visage:
- * overhanging scowling supraorbital brow, sharp jutting zygomatic arches,
- * deeply excavated corpse-like cheeks, pitch-dark orbital & piriform cavities,
- * and bruised inflammation around surgical implant boundaries.
+ * Sculpts a gaunt gothic-cybernetic servitor cranium & upper visage:
+ * overhanging supraorbital brow, sharp jutting zygomatic arches,
+ * deeply hollowed cheeks, pitch-dark orbital & piriform cavities,
+ * and surgical shading around cybernetic implant boundaries.
  */
-function sculptWarhammerCraniumGeometry(): THREE.BufferGeometry {
+function sculptCyberneticCraniumGeometry(): THREE.BufferGeometry {
   const geom = new THREE.SphereGeometry(1.0, 64, 52);
   const pos = geom.attributes.position;
   const colors = new Float32Array(pos.count * 3);
@@ -538,7 +593,7 @@ export class ServitorSceneController {
   private rootAnchor: THREE.Group;
   private headTiltGroup: THREE.Group;
   private jawPivot: THREE.Group;
-  private voxFurnaceMat: THREE.MeshStandardMaterial;
+  private relayCoreMat: THREE.MeshStandardMaterial;
   private turretRevolverGroup: THREE.Group;
   private eyeOuterRing: THREE.Group;
   private eyeBarrel: THREE.Group;
@@ -555,7 +610,16 @@ export class ServitorSceneController {
   private scanConeMesh: THREE.Mesh;
   private scanCoreLine: THREE.Mesh;
   private scanReticleGroup: THREE.Group;
-  private parchmentStrips: ArticulatedParchmentStrip[] = [];
+  private ambientLight: THREE.AmbientLight;
+  private coldFillLight: THREE.DirectionalLight;
+  private orbitRing1Mat: THREE.MeshBasicMaterial;
+  private orbitRing2Mat: THREE.MeshBasicMaterial;
+  private holoConeMat: THREE.MeshBasicMaterial;
+  private scanConeMat: THREE.MeshBasicMaterial;
+  private scanCoreMat: THREE.MeshBasicMaterial;
+  private retOuterMat: THREE.MeshBasicMaterial;
+  private retInnerMat: THREE.MeshBasicMaterial;
+  private cipherStrips: ArticulatedCipherStrip[] = [];
   private cables: ArticulatedCable[] = [];
   private emberClouds: EmberCloudLayer[] = [];
 
@@ -629,6 +693,7 @@ export class ServitorSceneController {
     canvas: HTMLCanvasElement,
     options?: {
       initialMode?: ServitorMode;
+      initialTheme?: 'dark' | 'light';
       onTelemetry?: (t: ServitorFrameTelemetry) => void;
       onRequestScanTarget?: () => ScanTargetInfo | null;
       onContextRestored?: () => void;
@@ -686,8 +751,8 @@ export class ServitorSceneController {
     this.camera.position.set(0, 0, 12.2);
 
     // ─── Grimdark Chiaroscuro Lighting (Candle/Furnace Key + Blood Rim + Cold Steel Fill)
-    const ambient = new THREE.AmbientLight('#4a433e', 0.58);
-    this.scene.add(ambient);
+    this.ambientLight = new THREE.AmbientLight('#4a433e', 0.58);
+    this.scene.add(this.ambientLight);
 
     const warmForgeKey = new THREE.DirectionalLight('#ffdfa8', 2.85);
     warmForgeKey.position.set(4.2, 5.2, 7.2);
@@ -697,9 +762,9 @@ export class ServitorSceneController {
     crimsonRim.position.set(-6.5, 2.2, -3.5);
     this.scene.add(crimsonRim);
 
-    const coldCryptFill = new THREE.DirectionalLight('#64748b', 0.9);
-    coldCryptFill.position.set(2.5, -5.5, 3.0);
-    this.scene.add(coldCryptFill);
+    this.coldFillLight = new THREE.DirectionalLight('#64748b', 0.9);
+    this.coldFillLight.position.set(2.5, -5.5, 3.0);
+    this.scene.add(this.coldFillLight);
 
     this.rootAnchor = new THREE.Group();
     this.scene.add(this.rootAnchor);
@@ -707,12 +772,12 @@ export class ServitorSceneController {
     this.headTiltGroup = new THREE.Group();
     this.rootAnchor.add(this.headTiltGroup);
 
-    // ─── Procedural Grimdark PBR Textures & Materials ─────────────────────────
-    const { map: fleshMap, bumpMap: fleshBump } = createGrimdarkFleshBoneTextures();
+    // ─── Procedural Gothic-Cybernetic PBR Textures & Materials ─────────────────
+    const { map: fleshMap, bumpMap: fleshBump } = createCranialBoneTextures();
     const metalBump = createPittedMetalBump();
-    const cowlTex = createMarsCowlTexture();
+    const cowlTex = createCipherShroudTexture();
     const hazardTex = createHazardTexture();
-    const parchmentTex = createParchmentTexture();
+    const cipherPlateTex = createCipherPlateTexture();
     const crimsonFlareTex = createGlowSpriteTexture(
       'rgba(255, 235, 225, 1)',
       'rgba(235, 18, 32, 0.78)'
@@ -723,7 +788,7 @@ export class ServitorSceneController {
       metalBump,
       cowlTex,
       hazardTex,
-      parchmentTex,
+      cipherPlateTex,
       crimsonFlareTex
     );
 
@@ -736,7 +801,7 @@ export class ServitorSceneController {
       metalness: 0.05,
     });
 
-    const leadbelcherIronMat = new THREE.MeshStandardMaterial({
+    const forgedIronMat = new THREE.MeshStandardMaterial({
       color: '#26292e',
       bumpMap: metalBump,
       bumpScale: 0.028,
@@ -752,7 +817,7 @@ export class ServitorSceneController {
       metalness: 0.84,
     });
 
-    const balthasarBrassMat = new THREE.MeshStandardMaterial({
+    const burnishedBrassMat = new THREE.MeshStandardMaterial({
       color: '#ab7b32',
       bumpMap: metalBump,
       bumpScale: 0.018,
@@ -768,7 +833,7 @@ export class ServitorSceneController {
       metalness: 0.86,
     });
 
-    const marsCowlMat = new THREE.MeshStandardMaterial({
+    const cipherShroudMat = new THREE.MeshStandardMaterial({
       map: cowlTex,
       bumpMap: metalBump,
       bumpScale: 0.022,
@@ -785,16 +850,16 @@ export class ServitorSceneController {
       metalness: 0.45,
     });
 
-    // ─── 1. Gaunt Sculpted Servitor Cranium & Upper Teeth ─────────────────────
-    const craniumMesh = new THREE.Mesh(sculptWarhammerCraniumGeometry(), servitorFleshBoneMat);
+    // ─── 1. Gaunt Sculpted Servitor Cranium & Nose Clamp ───────────────────────
+    const craniumMesh = new THREE.Mesh(sculptCyberneticCraniumGeometry(), servitorFleshBoneMat);
     this.headTiltGroup.add(craniumMesh);
 
     // Iron surgical bridge-clamp bolted across nose bridge
-    const noseClamp = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.055, 0.12), leadbelcherIronMat);
+    const noseClamp = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.055, 0.12), forgedIronMat);
     noseClamp.position.set(0, 0.05, 0.98);
     this.headTiltGroup.add(noseClamp);
 
-    // ─── 2. Adeptus Mechanicus Mars-Crimson Hood/Cowl & Heavy Brass Gorget ────
+    // ─── 2. Circuit-Trimmed Oxblood Cipher Shroud & Heavy Brass Gorget ─────────
     // In Three.js SphereGeometry, phi=0.5*PI is +Z (front face) and phi=1.5*PI is -Z (back of head).
     // phiStart=0.84*PI, phiLength=1.32*PI wraps the right, back, and left while leaving +Z open!
     const cowlGeom = new THREE.SphereGeometry(
@@ -807,7 +872,7 @@ export class ServitorSceneController {
       Math.PI * 0.78
     );
     cowlGeom.scale(0.95, 1.12, 1.09);
-    // Flare lower cowl skirt outward like heavy Mechanicus vestments
+    // Flare lower shroud skirt outward around the gorget collar
     const cowlPos = cowlGeom.attributes.position;
     for (let i = 0; i < cowlPos.count; i++) {
       const cx = cowlPos.getX(i);
@@ -826,10 +891,10 @@ export class ServitorSceneController {
       }
     }
     cowlGeom.computeVertexNormals();
-    const cowlMesh = new THREE.Mesh(cowlGeom, marsCowlMat);
+    const cowlMesh = new THREE.Mesh(cowlGeom, cipherShroudMat);
     this.headTiltGroup.add(cowlMesh);
 
-    // Heavy Riveted Iron & Brass Mechanicus Gorget Collar around neck base
+    // Heavy Riveted Iron & Burnished Brass Gorget Collar around neck base
     const gorgetGroup = new THREE.Group();
     gorgetGroup.position.set(0, -0.78, 0.04);
     gorgetGroup.rotation.x = 0.16;
@@ -837,13 +902,13 @@ export class ServitorSceneController {
 
     const gorgetOuter = new THREE.Mesh(
       new THREE.CylinderGeometry(0.68, 0.86, 0.32, 24, 1, true),
-      leadbelcherIronMat
+      forgedIronMat
     );
     gorgetGroup.add(gorgetOuter);
 
     const gorgetTopBrassRim = new THREE.Mesh(
       new THREE.TorusGeometry(0.68, 0.038, 10, 28),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     gorgetTopBrassRim.rotation.x = Math.PI / 2;
     gorgetTopBrassRim.position.y = 0.15;
@@ -851,7 +916,7 @@ export class ServitorSceneController {
 
     const gorgetBottomBrassRim = new THREE.Mesh(
       new THREE.TorusGeometry(0.85, 0.042, 10, 28),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     gorgetBottomBrassRim.rotation.x = Math.PI / 2;
     gorgetBottomBrassRim.position.y = -0.15;
@@ -860,14 +925,14 @@ export class ServitorSceneController {
     // Conical brass studs around the front of the gorget
     for (let i = -4; i <= 4; i++) {
       const a = i * 0.26;
-      const stud = new THREE.Mesh(new THREE.ConeGeometry(0.032, 0.065, 6), balthasarBrassMat);
+      const stud = new THREE.Mesh(new THREE.ConeGeometry(0.032, 0.065, 6), burnishedBrassMat);
       stud.position.set(Math.sin(a) * 0.78, 0, Math.cos(a) * 0.78);
       stud.rotation.x = Math.PI / 2;
       stud.rotation.z = -a;
       gorgetGroup.add(stud);
     }
 
-    // ─── 3. Bolted Left Lobotomy Plate & Surgical Staples ─────────────────────
+    // ─── 3. Bolted Left Cranial Armor Plate & Surgical Staples ─────────────────
     // phi in [-0.05*PI .. 0.45*PI] covers the left-frontal hemisphere (x < 0, z > 0) right up to the staple seam!
     const lobotomyGeom = new THREE.SphereGeometry(
       1.022,
@@ -879,10 +944,10 @@ export class ServitorSceneController {
       Math.PI * 0.44
     );
     lobotomyGeom.scale(0.87, 1.085, 1.055);
-    const lobotomyPlate = new THREE.Mesh(lobotomyGeom, leadbelcherIronMat);
+    const lobotomyPlate = new THREE.Mesh(lobotomyGeom, forgedIronMat);
     this.headTiltGroup.add(lobotomyPlate);
 
-    // Row of surgical iron staples stitching flesh directly to cranial lobotomy seam
+    // Row of surgical iron staples along left cranial plate seam
     for (let s = 0; s < 8; s++) {
       const t = s / 7;
       const sy = 0.26 + t * 0.56;
@@ -890,7 +955,7 @@ export class ServitorSceneController {
       const sz = Math.sqrt(Math.max(0.1, 1.04 - sx * sx - (sy / 1.08) * (sy / 1.08)));
       const staple = new THREE.Mesh(
         new THREE.BoxGeometry(0.085, 0.018, 0.032),
-        leadbelcherIronMat
+        forgedIronMat
       );
       staple.position.set(sx, sy, sz);
       staple.rotation.z = 0.28;
@@ -898,53 +963,66 @@ export class ServitorSceneController {
       this.headTiltGroup.add(staple);
     }
 
-    // ─── 4. Forehead Opus Mechanicus Cog-and-Skull Crest ──────────────────────
-    const opusGroup = new THREE.Group();
-    opusGroup.position.set(0, 0.52, 0.96);
-    opusGroup.rotation.x = -0.36;
-    this.headTiltGroup.add(opusGroup);
+    // ─── 4. Forehead Octagonal X.509 Cipher Keystone Medallion ─────────────────
+    const keystoneGroup = new THREE.Group();
+    keystoneGroup.position.set(0, 0.52, 0.96);
+    keystoneGroup.rotation.x = -0.36;
+    this.headTiltGroup.add(keystoneGroup);
 
-    const opusRim = new THREE.Mesh(
-      new THREE.TorusGeometry(0.175, 0.03, 10, 24),
-      balthasarBrassMat
+    // Beveled octagonal burnished-brass escutcheon bezel
+    const keystoneBezel = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.18, 0.205, 0.036, 8),
+      burnishedBrassMat
     );
-    opusGroup.add(opusRim);
+    keystoneBezel.rotation.x = Math.PI / 2;
+    keystoneBezel.rotation.z = Math.PI / 8;
+    keystoneGroup.add(keystoneBezel);
 
-    for (let i = 0; i < 14; i++) {
-      const a = (i / 14) * Math.PI * 2;
-      const cogTooth = new THREE.Mesh(
-        new THREE.BoxGeometry(0.04, 0.062, 0.036),
-        balthasarBrassMat
-      );
-      cogTooth.position.set(Math.cos(a) * 0.205, Math.sin(a) * 0.205, 0);
-      cogTooth.rotation.z = a + Math.PI / 2;
-      opusGroup.add(cogTooth);
-    }
-
-    const opusDisc = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.16, 0.16, 0.028, 20),
+    // Recessed blackened-iron octagonal cipher dial
+    const keystoneDial = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.146, 0.146, 0.044, 8),
       blackenedIronMat
     );
-    opusDisc.rotation.x = Math.PI / 2;
-    opusGroup.add(opusDisc);
+    keystoneDial.rotation.x = Math.PI / 2;
+    keystoneDial.rotation.z = Math.PI / 8;
+    keystoneGroup.add(keystoneDial);
 
-    // Split Bone/Iron Mechanicus Skull relief at center of forehead cog
-    const crestSkull = new THREE.Mesh(
-      new THREE.SphereGeometry(0.078, 14, 12),
-      new THREE.MeshStandardMaterial({ color: '#d8cdb8', roughness: 0.45, metalness: 0.35 })
+    // Inner precision brass bus ring
+    const keystoneInnerRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.108, 0.013, 8, 24),
+      burnishedBrassMat
     );
-    crestSkull.scale.set(0.84, 1.08, 0.55);
-    crestSkull.position.set(0, 0.015, 0.022);
-    opusGroup.add(crestSkull);
+    keystoneInnerRing.position.z = 0.022;
+    keystoneGroup.add(keystoneInnerRing);
 
-    const crestJaw = new THREE.Mesh(
-      new THREE.BoxGeometry(0.075, 0.05, 0.05),
-      balthasarBrassMat
+    // 4 cardinal diamond circuit-bus pins (N, E, S, W compass points)
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2;
+      const pin = new THREE.Mesh(
+        new THREE.BoxGeometry(0.038, 0.038, 0.032),
+        burnishedBrassMat
+      );
+      pin.position.set(Math.cos(a) * 0.168, Math.sin(a) * 0.168, 0.012);
+      pin.rotation.z = a + Math.PI / 4;
+      keystoneGroup.add(pin);
+    }
+
+    // Faceted glowing amber-gold cryptographic octahedron keystone at center
+    const keystoneGem = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.068, 0),
+      new THREE.MeshStandardMaterial({
+        color: '#fbbf24',
+        emissive: '#d97706',
+        emissiveIntensity: 1.9,
+        roughness: 0.18,
+        metalness: 0.35,
+      })
     );
-    crestJaw.position.set(0, -0.055, 0.022);
-    opusGroup.add(crestJaw);
+    keystoneGem.scale.set(0.95, 1.15, 0.55);
+    keystoneGem.position.set(0, 0, 0.032);
+    keystoneGroup.add(keystoneGem);
 
-    // ─── 5. Right Orbit: Warhammer Tri-Lens Revolver Augmetic Turret ──────────
+    // ─── 5. Right Orbit: Tri-Lens Revolver Optical Turret ──────────────────────
     const turretMount = new THREE.Group();
     turretMount.position.set(0.33, 0.06, 0.76);
     turretMount.rotation.y = 0.12;
@@ -953,7 +1031,7 @@ export class ServitorSceneController {
     // Brutalist octagonal iron cheek/brow armor plate bolted around right socket
     const socketArmor = new THREE.Mesh(
       new THREE.CylinderGeometry(0.31, 0.34, 0.18, 8),
-      leadbelcherIronMat
+      forgedIronMat
     );
     socketArmor.rotation.x = Math.PI / 2;
     turretMount.add(socketArmor);
@@ -962,7 +1040,7 @@ export class ServitorSceneController {
       const ba = (b / 8) * Math.PI * 2 + Math.PI / 8;
       const bolt = new THREE.Mesh(
         new THREE.CylinderGeometry(0.022, 0.022, 0.05, 6),
-        balthasarBrassMat
+        burnishedBrassMat
       );
       bolt.rotation.x = Math.PI / 2;
       bolt.position.set(Math.cos(ba) * 0.28, Math.sin(ba) * 0.28, 0.085);
@@ -975,12 +1053,12 @@ export class ServitorSceneController {
 
     const revolverPlate = new THREE.Mesh(
       new THREE.CylinderGeometry(0.26, 0.27, 0.055, 18),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     revolverPlate.rotation.x = Math.PI / 2;
     this.turretRevolverGroup.add(revolverPlate);
 
-    // PRIMARY LENS: Mammoth Blood-Crimson Telescoping Auspex Barrel with Brass Crosshairs
+    // PRIMARY LENS: Crimson Telescoping Optical Barrel with Brass Crosshairs
     const primaryHousing = new THREE.Group();
     primaryHousing.position.set(-0.03, -0.02, 0.03);
     this.turretRevolverGroup.add(primaryHousing);
@@ -990,7 +1068,7 @@ export class ServitorSceneController {
 
     const knurledRing = new THREE.Mesh(
       new THREE.TorusGeometry(0.185, 0.028, 10, 24),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     this.eyeOuterRing.add(knurledRing);
 
@@ -1018,7 +1096,7 @@ export class ServitorSceneController {
 
     const barrelBrassLip = new THREE.Mesh(
       new THREE.TorusGeometry(0.148, 0.02, 10, 24),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     barrelBrassLip.position.z = 0.105;
     this.eyeBarrel.add(barrelBrassLip);
@@ -1027,7 +1105,7 @@ export class ServitorSceneController {
     for (let c = 0; c < 2; c++) {
       const hair = new THREE.Mesh(
         new THREE.BoxGeometry(0.27, 0.009, 0.012),
-        balthasarBrassMat
+        burnishedBrassMat
       );
       hair.position.z = 0.142;
       hair.rotation.z = (c * Math.PI) / 2;
@@ -1079,7 +1157,7 @@ export class ServitorSceneController {
     // SECONDARY TURRET LENS: Cathode-Amber Targeter at upper-right
     const secBarrel = new THREE.Mesh(
       new THREE.CylinderGeometry(0.068, 0.078, 0.24, 14),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     secBarrel.rotation.x = Math.PI / 2;
     secBarrel.position.set(0.16, 0.14, 0.11);
@@ -1096,10 +1174,10 @@ export class ServitorSceneController {
     secLens.position.set(0.16, 0.14, 0.22);
     this.turretRevolverGroup.add(secLens);
 
-    // TERTIARY TURRET LENS: Long Needle Phosphor-Green Auspex Scope at lower-right
+    // TERTIARY TURRET LENS: Long Needle Phosphor-Green Optical Scope at lower-right
     const tertBarrel = new THREE.Mesh(
       new THREE.CylinderGeometry(0.042, 0.052, 0.32, 12),
-      leadbelcherIronMat
+      forgedIronMat
     );
     tertBarrel.rotation.x = Math.PI / 2;
     tertBarrel.position.set(0.17, -0.14, 0.14);
@@ -1116,7 +1194,7 @@ export class ServitorSceneController {
     tertLens.position.set(0.17, -0.14, 0.3);
     this.turretRevolverGroup.add(tertLens);
 
-    // ─── 6. Left Eye: Grimdark Slit-Visor Bionic Plug in Hollow Orbit ─────────
+    // ─── 6. Left Eye: Slit-Visor Cybernetic Sensor Plug in Hollow Orbit ────────
     const leftEyeGroup = new THREE.Group();
     leftEyeGroup.position.set(-0.32, 0.06, 0.72);
     leftEyeGroup.rotation.y = -0.15;
@@ -1131,14 +1209,14 @@ export class ServitorSceneController {
 
     const visorSlitBarTop = new THREE.Mesh(
       new THREE.BoxGeometry(0.28, 0.065, 0.05),
-      leadbelcherIronMat
+      forgedIronMat
     );
     visorSlitBarTop.position.set(0, 0.042, 0.055);
     leftEyeGroup.add(visorSlitBarTop);
 
     const visorSlitBarBot = new THREE.Mesh(
       new THREE.BoxGeometry(0.28, 0.065, 0.05),
-      leadbelcherIronMat
+      forgedIronMat
     );
     visorSlitBarBot.position.set(0, -0.042, 0.055);
     leftEyeGroup.add(visorSlitBarBot);
@@ -1154,7 +1232,7 @@ export class ServitorSceneController {
     visorRedSlit.position.set(0, 0, 0.052);
     leftEyeGroup.add(visorRedSlit);
 
-    // ─── 7. Brutalist Warhammer Vox-Respirator Jaw-Cage & Twin Canisters ──────
+    // ─── 7. Heavy Telemetry-Respirator Jaw-Cage & Twin Filter Canisters ────────
     this.jawPivot = new THREE.Group();
     this.jawPivot.position.set(0, -0.32, 0.16);
     this.headTiltGroup.add(this.jawPivot);
@@ -1163,7 +1241,7 @@ export class ServitorSceneController {
     for (const side of [-1, 1]) {
       const pistonOuter = new THREE.Mesh(
         new THREE.CylinderGeometry(0.052, 0.052, 0.36, 10),
-        balthasarBrassMat
+        burnishedBrassMat
       );
       pistonOuter.position.set(side * 0.46, -0.08, 0.28);
       pistonOuter.rotation.x = 0.48;
@@ -1182,36 +1260,36 @@ export class ServitorSceneController {
       -Math.PI * 0.5,
       Math.PI
     );
-    const muzzleShell = new THREE.Mesh(muzzleGeom, leadbelcherIronMat);
+    const muzzleShell = new THREE.Mesh(muzzleGeom, forgedIronMat);
     muzzleShell.position.set(0, -0.28, 0.44);
     this.jawPivot.add(muzzleShell);
 
     const muzzleBrassTrimTop = new THREE.Mesh(
       new THREE.BoxGeometry(0.54, 0.055, 0.32),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     muzzleBrassTrimTop.position.set(0, -0.07, 0.56);
     this.jawPivot.add(muzzleBrassTrimTop);
 
     const muzzleChinProw = new THREE.Mesh(
       new THREE.BoxGeometry(0.48, 0.11, 0.38),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     muzzleChinProw.position.set(0, -0.49, 0.56);
     this.jawPivot.add(muzzleChinProw);
 
-    // Glowing Furnace-Amber / Cathode Vox-Core behind iron grille teeth
-    this.voxFurnaceMat = new THREE.MeshStandardMaterial({
+    // Glowing Cathode Relay-Core behind iron grille bars
+    this.relayCoreMat = new THREE.MeshStandardMaterial({
       color: '#f59e0b',
       emissive: '#ea580c',
       emissiveIntensity: 2.1,
       roughness: 0.3,
     });
-    const voxCore = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.28, 0.16), this.voxFurnaceMat);
-    voxCore.position.set(0, -0.28, 0.62);
-    this.jawPivot.add(voxCore);
+    const relayCore = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.28, 0.16), this.relayCoreMat);
+    relayCore.position.set(0, -0.28, 0.62);
+    this.jawPivot.add(relayCore);
 
-    // 9 Brutalist vertical iron grille teeth bars across mouth grate
+    // 9 vertical iron grille bars across mouth grate
     for (let g = -4; g <= 4; g++) {
       const a = g * 0.115;
       const bar = new THREE.Mesh(
@@ -1223,7 +1301,7 @@ export class ServitorSceneController {
       this.jawPivot.add(bar);
     }
 
-    // Twin Lateral Hazard-Striped Gas-Filter Canisters + Ribbed Throat Hoses
+    // Twin Lateral Hazard-Striped Filter Canisters + Ribbed Throat Hoses
     for (const side of [-1, 1]) {
       const canisterGroup = new THREE.Group();
       canisterGroup.position.set(side * 0.46, -0.32, 0.48);
@@ -1239,7 +1317,7 @@ export class ServitorSceneController {
 
       const canCap = new THREE.Mesh(
         new THREE.CylinderGeometry(0.13, 0.13, 0.045, 16),
-        balthasarBrassMat
+        burnishedBrassMat
       );
       canCap.position.y = -0.12;
       canisterGroup.add(canCap);
@@ -1269,8 +1347,7 @@ export class ServitorSceneController {
       }
     }
 
-    // ─── 8. Cranial Bio-Chem Stim Vials & Gothic Vox-Mast Antenna ─────────────
-    // Glowing alchemical glass vials in brass cages bolted right through the upper-right cowl
+    // ─── 8. Cranial Coolant Vials & Telemetry Dipole Transceiver Mast ──────────
     const vialConfigs = [
       { pos: [0.86, 0.84, 0.06] as const, rotZ: -0.56, rotX: -0.12, color: '#4ade80', em: '#16a34a' },
       { pos: [1.02, 0.54, -0.14] as const, rotZ: -0.86, rotX: -0.22, color: '#fbbf24', em: '#d97706' },
@@ -1285,7 +1362,7 @@ export class ServitorSceneController {
 
       const socketCollar = new THREE.Mesh(
         new THREE.CylinderGeometry(0.095, 0.11, 0.12, 12),
-        balthasarBrassMat
+        burnishedBrassMat
       );
       vGroup.add(socketCollar);
 
@@ -1306,7 +1383,7 @@ export class ServitorSceneController {
 
       const topCap = new THREE.Mesh(
         new THREE.CylinderGeometry(0.075, 0.088, 0.06, 12),
-        balthasarBrassMat
+        burnishedBrassMat
       );
       topCap.position.y = 0.34;
       vGroup.add(topCap);
@@ -1316,14 +1393,14 @@ export class ServitorSceneController {
         const ba = (b / 4) * Math.PI * 2;
         const strut = new THREE.Mesh(
           new THREE.CylinderGeometry(0.009, 0.009, 0.28, 6),
-          balthasarBrassMat
+          burnishedBrassMat
         );
         strut.position.set(Math.cos(ba) * 0.078, 0.18, Math.sin(ba) * 0.078);
         vGroup.add(strut);
       }
     });
 
-    // Imperial Gothic Cross-Barred Vox-Mast Antenna bolted through Left Cowl
+    // Telemetry Dipole Transceiver Mast bolted through Left Shroud
     const mastGroup = new THREE.Group();
     mastGroup.position.set(-0.84, 0.88, -0.06);
     mastGroup.rotation.z = 0.32;
@@ -1331,26 +1408,27 @@ export class ServitorSceneController {
 
     const mastSocket = new THREE.Mesh(
       new THREE.CylinderGeometry(0.075, 0.1, 0.16, 10),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     mastGroup.add(mastSocket);
 
     const mastSpire = new THREE.Mesh(
       new THREE.CylinderGeometry(0.012, 0.032, 0.96, 8),
-      leadbelcherIronMat
+      forgedIronMat
     );
     mastSpire.position.y = 0.52;
     mastGroup.add(mastSpire);
 
-    // Gothic cross-bars on antenna mast
-    for (const barY of [0.46, 0.72]) {
-      const barW = barY > 0.6 ? 0.22 : 0.32;
-      const crossBar = new THREE.Mesh(
-        new THREE.BoxGeometry(barW, 0.022, 0.022),
-        balthasarBrassMat
+    // Toroidal RF inductor coil & telemetry dipole ring on mast
+    for (const coilY of [0.38, 0.68]) {
+      const coilR = coilY > 0.55 ? 0.085 : 0.125;
+      const coilRing = new THREE.Mesh(
+        new THREE.TorusGeometry(coilR, 0.014, 8, 20),
+        burnishedBrassMat
       );
-      crossBar.position.y = barY;
-      mastGroup.add(crossBar);
+      coilRing.rotation.x = Math.PI / 2;
+      coilRing.position.y = coilY;
+      mastGroup.add(coilRing);
     }
 
     this.antennaLampMat = new THREE.MeshStandardMaterial({
@@ -1365,52 +1443,80 @@ export class ServitorSceneController {
     mastLamp.position.y = 1.02;
     mastGroup.add(mastLamp);
 
-    // ─── 9. Double Crimson Wax Purity Seals & Long Ragged Litany Scrolls ──────
-    const waxMat = new THREE.MeshStandardMaterial({
-      color: '#840d18',
+    // ─── 9. Hexagonal Brass Lock-Hasps & Articulated X.509 Cipher Key-Plates ───
+    const cipherPlateMat = new THREE.MeshStandardMaterial({
+      map: cipherPlateTex,
       bumpMap: metalBump,
-      bumpScale: 0.025,
-      roughness: 0.45,
-      metalness: 0.1,
-    });
-    const parchmentMat = new THREE.MeshStandardMaterial({
-      map: parchmentTex,
+      bumpScale: 0.014,
       side: THREE.DoubleSide,
-      roughness: 0.86,
-      metalness: 0.02,
+      roughness: 0.36,
+      metalness: 0.8,
     });
 
-    const sealPlacements = [
-      { pos: [-0.66, -0.58, 0.56] as const, rotY: -0.45, rotZ: -0.08, lengths: [0.95, 0.76] },
-      { pos: [0.68, -0.62, 0.48] as const, rotY: 0.52, rotZ: 0.1, lengths: [0.82] },
+    const claspPlacements = [
+      {
+        pos: [-0.66, -0.58, 0.56] as const,
+        rotY: -0.45,
+        rotZ: -0.08,
+        ledColor: '#34d399',
+        ledEmissive: '#059669',
+        lengths: [0.92, 0.74],
+      },
+      {
+        pos: [0.68, -0.62, 0.48] as const,
+        rotY: 0.52,
+        rotZ: 0.1,
+        ledColor: '#fbbf24',
+        ledEmissive: '#d97706',
+        lengths: [0.8],
+      },
     ];
 
-    sealPlacements.forEach((sp, spIdx) => {
-      const sealAnchor = new THREE.Group();
-      sealAnchor.position.set(sp.pos[0], sp.pos[1], sp.pos[2]);
-      sealAnchor.rotation.y = sp.rotY;
-      sealAnchor.rotation.z = sp.rotZ;
-      this.headTiltGroup.add(sealAnchor);
+    claspPlacements.forEach((cp, cpIdx) => {
+      const claspAnchor = new THREE.Group();
+      claspAnchor.position.set(cp.pos[0], cp.pos[1], cp.pos[2]);
+      claspAnchor.rotation.y = cp.rotY;
+      claspAnchor.rotation.z = cp.rotZ;
+      this.headTiltGroup.add(claspAnchor);
 
-      const waxStamp = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.135, 0.145, 0.05, 18),
-        waxMat
+      // Hexagonal blackened-iron cryptographic lock-clasp housing
+      const hexHousing = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.135, 0.148, 0.048, 6),
+        blackenedIronMat
       );
-      waxStamp.rotation.x = Math.PI / 2;
-      waxStamp.position.z = 0.035;
-      sealAnchor.add(waxStamp);
+      hexHousing.rotation.x = Math.PI / 2;
+      hexHousing.position.z = 0.034;
+      claspAnchor.add(hexHousing);
 
-      const waxLip = new THREE.Mesh(new THREE.TorusGeometry(0.118, 0.026, 8, 18), waxMat);
-      waxLip.position.z = 0.055;
-      sealAnchor.add(waxLip);
+      // Hexagonal burnished-brass collar bezel
+      const hexBezel = new THREE.Mesh(
+        new THREE.TorusGeometry(0.112, 0.022, 6, 6),
+        burnishedBrassMat
+      );
+      hexBezel.position.z = 0.056;
+      claspAnchor.add(hexBezel);
 
-      sp.lengths.forEach((len, lIdx) => {
+      // Glowing X.509 verification status jewel at center of lock-clasp
+      const statusJewel = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.044, 0),
+        new THREE.MeshStandardMaterial({
+          color: cp.ledColor,
+          emissive: cp.ledEmissive,
+          emissiveIntensity: 2.2,
+          roughness: 0.2,
+        })
+      );
+      statusJewel.scale.set(1, 1, 0.55);
+      statusJewel.position.z = 0.068;
+      claspAnchor.add(statusJewel);
+
+      cp.lengths.forEach((len, lIdx) => {
         const segCount = 4;
         const segLen = len / segCount;
         const pivots: THREE.Group[] = [];
-        const baseRotZ = (lIdx === 0 ? -0.08 : 0.11) + spIdx * 0.04;
+        const baseRotZ = (lIdx === 0 ? -0.08 : 0.11) + cpIdx * 0.04;
 
-        let parentNode: THREE.Object3D = sealAnchor;
+        let parentNode: THREE.Object3D = claspAnchor;
         for (let s = 0; s < segCount; s++) {
           const pivot = new THREE.Group();
           if (s === 0) {
@@ -1422,7 +1528,7 @@ export class ServitorSceneController {
           parentNode.add(pivot);
           pivots.push(pivot);
 
-          const sliceGeom = new THREE.PlaneGeometry(0.175, segLen, 1, 1);
+          const sliceGeom = new THREE.PlaneGeometry(0.168, segLen * 0.94, 1, 1);
           const uvAttr = sliceGeom.attributes.uv;
           const vTop = 1 - s / segCount;
           const vBot = 1 - (s + 1) / segCount;
@@ -1431,25 +1537,25 @@ export class ServitorSceneController {
           }
           sliceGeom.translate(0, -segLen * 0.5, 0);
 
-          const sliceMesh = new THREE.Mesh(sliceGeom, parchmentMat);
+          const sliceMesh = new THREE.Mesh(sliceGeom, cipherPlateMat);
           pivot.add(sliceMesh);
           parentNode = pivot;
         }
 
-        this.parchmentStrips.push({
+        this.cipherStrips.push({
           pivots,
           baseRotZ,
-          phase: spIdx * 2.1 + lIdx * 1.4,
+          phase: cpIdx * 2.1 + lIdx * 1.4,
         });
       });
     });
 
-    // ─── 10. Underside Gothic Brass Grav-Thurible (Incense Censer) ────────────
+    // ─── 10. Underside Brass Thermal Pendulum Reactor Core ─────────────────────
     this.censerSwingGroup = new THREE.Group();
     this.censerSwingGroup.position.set(0, -0.94, 0.02);
     this.headTiltGroup.add(this.censerSwingGroup);
 
-    // 3 Suspension chains connecting gorget underside to thurible
+    // 3 Suspension struts connecting gorget underside to pendulum core
     for (let ch = 0; ch < 3; ch++) {
       const ca = (ch / 3) * Math.PI * 2;
       const chainRod = new THREE.Mesh(
@@ -1464,14 +1570,14 @@ export class ServitorSceneController {
 
     const thuribleBody = new THREE.Mesh(
       new THREE.CylinderGeometry(0.28, 0.14, 0.34, 8),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     thuribleBody.position.y = -0.4;
     this.censerSwingGroup.add(thuribleBody);
 
     const thuribleSpike = new THREE.Mesh(
       new THREE.ConeGeometry(0.14, 0.22, 8),
-      balthasarBrassMat
+      burnishedBrassMat
     );
     thuribleSpike.rotation.x = Math.PI;
     thuribleSpike.position.y = -0.68;
@@ -1493,7 +1599,7 @@ export class ServitorSceneController {
     censerWarmLight.position.set(0, -0.45, 0.2);
     this.censerSwingGroup.add(censerWarmLight);
 
-    // ─── 11. Segmented Ribbed Mechadendrites (Zero-Allocation Static Links) ───
+    // ─── 11. Segmented Ribbed Conduit Tendrils (Zero-Allocation Static Links) ──
     const sharedCableCylGeom = new THREE.CylinderGeometry(1, 1, 1, 10, 1, false);
     const sharedCableJointGeom = new THREE.SphereGeometry(1.06, 8, 6);
     const sharedCableRibGeom = new THREE.TorusGeometry(1.24, 0.24, 6, 12);
@@ -1513,7 +1619,7 @@ export class ServitorSceneController {
           [0.95, -2.22, 0.34],
         ],
         radius: 0.062,
-        mat: leadbelcherIronMat,
+        mat: forgedIronMat,
         tipType: 'claw',
       },
       {
@@ -1524,7 +1630,7 @@ export class ServitorSceneController {
           [-0.88, -2.26, 0.3],
         ],
         radius: 0.058,
-        mat: leadbelcherIronMat,
+        mat: forgedIronMat,
         tipType: 'saw',
       },
       {
@@ -1579,13 +1685,13 @@ export class ServitorSceneController {
         jointMeshes.push(jMesh);
       }
 
-      // Segmented brass/steel vertebral rings along the mechadendrite
+      // Segmented brass/steel vertebral rings along the conduit tendril
       const ribRings: THREE.Mesh[] = [];
       const ringCount = 6;
       for (let r = 1; r <= ringCount; r++) {
         const ringMesh = new THREE.Mesh(
           sharedCableRibGeom,
-          r % 2 === 0 ? balthasarBrassMat : leadbelcherIronMat
+          r % 2 === 0 ? burnishedBrassMat : forgedIronMat
         );
         ringMesh.scale.setScalar(cfg.radius);
         this.rootAnchor.add(ringMesh);
@@ -1599,14 +1705,14 @@ export class ServitorSceneController {
         tipGroup = new THREE.Group();
         const wrist = new THREE.Mesh(
           new THREE.CylinderGeometry(0.095, 0.075, 0.14, 10),
-          balthasarBrassMat
+          burnishedBrassMat
         );
         tipGroup.add(wrist);
         for (let p = 0; p < 3; p++) {
           const a = (p / 3) * Math.PI * 2;
           const talon = new THREE.Mesh(
             new THREE.ConeGeometry(0.032, 0.24, 5),
-            leadbelcherIronMat
+            forgedIronMat
           );
           talon.position.set(Math.cos(a) * 0.08, -0.15, Math.sin(a) * 0.08);
           talon.rotation.x = Math.PI + Math.sin(a) * 0.38;
@@ -1618,14 +1724,14 @@ export class ServitorSceneController {
         tipGroup = new THREE.Group();
         const housing = new THREE.Mesh(
           new THREE.BoxGeometry(0.13, 0.16, 0.09),
-          balthasarBrassMat
+          burnishedBrassMat
         );
         tipGroup.add(housing);
 
-        // Spinning toothed Chirurgeon bone-saw disc!
+        // Spinning rotary optical encoder / micro-actuator disc
         const sawGroup = new THREE.Mesh(
           new THREE.CylinderGeometry(0.16, 0.16, 0.018, 16),
-          leadbelcherIronMat
+          forgedIronMat
         );
         sawGroup.rotation.z = Math.PI / 2;
         sawGroup.position.y = -0.15;
@@ -1633,7 +1739,7 @@ export class ServitorSceneController {
           const sa = (st / 12) * Math.PI * 2;
           const tooth = new THREE.Mesh(
             new THREE.ConeGeometry(0.025, 0.055, 4),
-            leadbelcherIronMat
+            forgedIronMat
           );
           tooth.position.set(Math.cos(sa) * 0.17, 0, Math.sin(sa) * 0.17);
           tooth.rotation.z = -Math.PI / 2;
@@ -1647,7 +1753,7 @@ export class ServitorSceneController {
         tipGroup = new THREE.Group();
         const needle = new THREE.Mesh(
           new THREE.ConeGeometry(0.045, 0.28, 8),
-          balthasarBrassMat
+          burnishedBrassMat
         );
         needle.rotation.x = Math.PI;
         needle.position.y = -0.12;
@@ -1669,33 +1775,35 @@ export class ServitorSceneController {
       });
     });
 
-    // ─── 12. Mechanicus Brass/Crimson Noosphere Orbit Rings & Hololith Cone ───
+    // ─── 12. Brass & Crimson Holographic Cipher Orbit Rings & Projection Cone ──
     this.holoOrbitRings = new THREE.Group();
     this.rootAnchor.add(this.holoOrbitRings);
 
+    this.orbitRing1Mat = new THREE.MeshBasicMaterial({
+      color: '#dc2626',
+      transparent: true,
+      opacity: 0.34,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
     const orbitRing1 = new THREE.Mesh(
       new THREE.TorusGeometry(1.78, 0.011, 8, 64),
-      new THREE.MeshBasicMaterial({
-        color: '#dc2626',
-        transparent: true,
-        opacity: 0.34,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
+      this.orbitRing1Mat
     );
     orbitRing1.rotation.x = 1.18;
     orbitRing1.rotation.y = 0.28;
     this.holoOrbitRings.add(orbitRing1);
 
+    this.orbitRing2Mat = new THREE.MeshBasicMaterial({
+      color: '#d97706',
+      transparent: true,
+      opacity: 0.26,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
     const orbitRing2 = new THREE.Mesh(
       new THREE.TorusGeometry(2.05, 0.009, 8, 64),
-      new THREE.MeshBasicMaterial({
-        color: '#d97706',
-        transparent: true,
-        opacity: 0.26,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
+      this.orbitRing2Mat
     );
     orbitRing2.rotation.x = -0.95;
     orbitRing2.rotation.z = 0.42;
@@ -1704,20 +1812,18 @@ export class ServitorSceneController {
     const holoConeGeom = new THREE.ConeGeometry(1.3, 4.2, 28, 1, true);
     holoConeGeom.translate(0, -2.1, 0);
     holoConeGeom.rotateX(-Math.PI / 2);
-    this.holoProjectorCone = new THREE.Mesh(
-      holoConeGeom,
-      new THREE.MeshBasicMaterial({
-        color: '#dc2626',
-        transparent: true,
-        opacity: 0.075,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-    );
+    this.holoConeMat = new THREE.MeshBasicMaterial({
+      color: '#dc2626',
+      transparent: true,
+      opacity: 0.075,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.holoProjectorCone = new THREE.Mesh(holoConeGeom, this.holoConeMat);
     this.eyeBarrel.add(this.holoProjectorCone);
 
-    // ─── 13. World-Space Volumetric Blood-Crimson Auspex Scan Beam ────────────
+    // ─── 13. World-Space Volumetric Crimson Optical Telemetry Scan Beam ─────────
     this.scanBeamGroup = new THREE.Group();
     this.scanBeamGroup.visible = false;
     this.scene.add(this.scanBeamGroup);
@@ -1725,61 +1831,59 @@ export class ServitorSceneController {
     const scanConeGeom = new THREE.ConeGeometry(0.35, 1.0, 28, 1, true);
     scanConeGeom.rotateX(-Math.PI / 2);
     scanConeGeom.translate(0, 0, 0.5);
-    this.scanConeMesh = new THREE.Mesh(
-      scanConeGeom,
-      new THREE.MeshBasicMaterial({
-        color: '#ef1a2d',
-        transparent: true,
-        opacity: 0.19,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-    );
+    this.scanConeMat = new THREE.MeshBasicMaterial({
+      color: '#ef1a2d',
+      transparent: true,
+      opacity: 0.19,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.scanConeMesh = new THREE.Mesh(scanConeGeom, this.scanConeMat);
     this.scanBeamGroup.add(this.scanConeMesh);
 
     const coreCylGeom = new THREE.CylinderGeometry(0.018, 0.009, 1.0, 8);
     coreCylGeom.rotateX(Math.PI / 2);
     coreCylGeom.translate(0, 0, 0.5);
-    this.scanCoreLine = new THREE.Mesh(
-      coreCylGeom,
-      new THREE.MeshBasicMaterial({
-        color: '#ff858f',
-        transparent: true,
-        opacity: 0.8,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-    );
+    this.scanCoreMat = new THREE.MeshBasicMaterial({
+      color: '#ff858f',
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.scanCoreLine = new THREE.Mesh(coreCylGeom, this.scanCoreMat);
     this.scanBeamGroup.add(this.scanCoreLine);
 
     this.scanReticleGroup = new THREE.Group();
     this.scanReticleGroup.visible = false;
     this.scene.add(this.scanReticleGroup);
 
+    this.retOuterMat = new THREE.MeshBasicMaterial({
+      color: '#ef1a2d',
+      transparent: true,
+      opacity: 0.72,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
     const retOuter = new THREE.Mesh(
       new THREE.RingGeometry(0.32, 0.365, 32),
-      new THREE.MeshBasicMaterial({
-        color: '#ef1a2d',
-        transparent: true,
-        opacity: 0.72,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
+      this.retOuterMat
     );
     this.scanReticleGroup.add(retOuter);
 
+    this.retInnerMat = new THREE.MeshBasicMaterial({
+      color: '#f59e0b',
+      transparent: true,
+      opacity: 0.65,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
     const retInner = new THREE.Mesh(
       new THREE.RingGeometry(0.13, 0.165, 8),
-      new THREE.MeshBasicMaterial({
-        color: '#f59e0b',
-        transparent: true,
-        opacity: 0.65,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
+      this.retInnerMat
     );
     this.scanReticleGroup.add(retInner);
 
@@ -1812,8 +1916,63 @@ export class ServitorSceneController {
       });
     }
 
+    if (options?.initialTheme) {
+      this.setTheme(options.initialTheme);
+    }
+
     this.snapToModeInitialPose();
     this.startLoop();
+  }
+
+  public setTheme(theme: 'dark' | 'light') {
+    const isLight = theme === 'light';
+    const blend = isLight ? THREE.NormalBlending : THREE.AdditiveBlending;
+
+    this.ambientLight.intensity = isLight ? 0.98 : 0.58;
+    this.coldFillLight.intensity = isLight ? 1.38 : 0.9;
+
+    this.orbitRing1Mat.blending = blend;
+    this.orbitRing1Mat.opacity = isLight ? 0.36 : 0.34;
+    this.orbitRing1Mat.color.set(isLight ? '#b91c1c' : '#dc2626');
+    this.orbitRing1Mat.needsUpdate = true;
+
+    this.orbitRing2Mat.blending = blend;
+    this.orbitRing2Mat.opacity = isLight ? 0.34 : 0.26;
+    this.orbitRing2Mat.color.set(isLight ? '#b45309' : '#d97706');
+    this.orbitRing2Mat.needsUpdate = true;
+
+    this.holoConeMat.blending = blend;
+    this.holoConeMat.opacity = isLight ? 0.095 : 0.075;
+    this.holoConeMat.color.set(isLight ? '#b91c1c' : '#dc2626');
+    this.holoConeMat.needsUpdate = true;
+
+    this.scanConeMat.blending = blend;
+    this.scanConeMat.opacity = isLight ? 0.16 : 0.19;
+    this.scanConeMat.color.set(isLight ? '#dc2626' : '#ef1a2d');
+    this.scanConeMat.needsUpdate = true;
+
+    this.scanCoreMat.blending = blend;
+    this.scanCoreMat.opacity = isLight ? 0.68 : 0.8;
+    this.scanCoreMat.color.set(isLight ? '#dc2626' : '#ff858f');
+    this.scanCoreMat.needsUpdate = true;
+
+    this.retOuterMat.blending = blend;
+    this.retOuterMat.opacity = isLight ? 0.8 : 0.72;
+    this.retOuterMat.color.set(isLight ? '#dc2626' : '#ef1a2d');
+    this.retOuterMat.needsUpdate = true;
+
+    this.retInnerMat.blending = blend;
+    this.retInnerMat.opacity = isLight ? 0.78 : 0.65;
+    this.retInnerMat.color.set(isLight ? '#d97706' : '#f59e0b');
+    this.retInnerMat.needsUpdate = true;
+
+    this.emberClouds.forEach((layer, idx) => {
+      layer.material.blending = blend;
+      layer.material.color.set(
+        isLight ? (idx === 0 ? '#d97706' : '#c2410c') : idx === 0 ? '#f59e0b' : '#fb923c'
+      );
+      layer.material.needsUpdate = true;
+    });
   }
 
   private getMenuAnchorWorld(out: THREE.Vector3): { pos: THREE.Vector3; scale: number } {
@@ -2008,7 +2167,7 @@ export class ServitorSceneController {
       this.requestScanTargetCallback?.() ?? {
         x: window.innerWidth * 0.5,
         y: window.innerHeight * 0.42,
-        label: 'COGITATOR VIEWPORT SANCTITY',
+        label: '__VIEWPORT_SANCTITY__',
       };
     this.activeScanTarget = resolved;
     this.roamingState = 'scanning';
@@ -2313,15 +2472,15 @@ export class ServitorSceneController {
     this.currentHeadQuat.slerp(this.scratchQuat, 1 - Math.exp(-6.2 * dt));
     this.headTiltGroup.quaternion.copy(this.currentHeadQuat);
 
-    // Respirator jaw heave & binary vox-furnace flicker
+    // Respirator jaw heave & binary relay-core flicker
     const heavyRespiratorBreath = (Math.sin(elapsed * 1.6) * 0.5 + 0.5) * 0.045;
     const binaryBurst =
       Math.abs(Math.sin(elapsed * 22.0) * Math.cos(elapsed * 8.5)) * 0.13 * jawChatterAmount;
     this.jawPivot.rotation.x = heavyRespiratorBreath + binaryBurst;
-    this.voxFurnaceMat.emissiveIntensity =
+    this.relayCoreMat.emissiveIntensity =
       1.5 + jawChatterAmount * 3.0 + Math.sin(elapsed * 17.0) * 0.4;
 
-    // Revolver turret snap & augmetic lens rotation
+    // Revolver turret snap & optical lens rotation
     this.turretRevolverGroup.rotation.z = THREE.MathUtils.lerp(
       this.turretRevolverGroup.rotation.z,
       turretAngleTarget,
@@ -2338,13 +2497,13 @@ export class ServitorSceneController {
     const flareSize = 0.82 + Math.sin(elapsed * 8.0) * 0.09 + (this.isSkullHovered ? 0.18 : 0);
     this.eyeGlowSprite.scale.set(flareSize, flareSize, 1);
 
-    // Bubbling cranial stim-vial luminescence & blinking vox-mast rune lamp
+    // Coolant vial luminescence & blinking transceiver beacon
     for (let i = 0; i < this.bioVialMats.length; i++) {
       this.bioVialMats[i].emissiveIntensity = 1.9 + Math.sin(elapsed * 4.5 + i * 2.1) * 0.75;
     }
     this.antennaLampMat.emissiveIntensity = Math.sin(elapsed * 4.4) > 0.3 ? 3.5 : 0.45;
 
-    // Swinging gothic incense thurible with inertial pendulum lag
+    // Swinging thermal reactor pendulum with inertial lag
     this.censerSwingGroup.rotation.z = THREE.MathUtils.clamp(
       -this.velocity.x * 0.12 + Math.sin(elapsed * 2.1) * 0.09,
       -0.45,
@@ -2357,9 +2516,9 @@ export class ServitorSceneController {
     );
     this.censerCoreMat.emissiveIntensity = 2.6 + Math.sin(elapsed * 9.0) * 0.7;
 
-    // Fluttering ragged parchment purity-seal litanies (articulated hinges — zero buffer churn)
-    for (let sIdx = 0; sIdx < this.parchmentStrips.length; sIdx++) {
-      const strip = this.parchmentStrips[sIdx];
+    // Articulated X.509 cipher key-plates sway (zero buffer churn)
+    for (let sIdx = 0; sIdx < this.cipherStrips.length; sIdx++) {
+      const strip = this.cipherStrips[sIdx];
       const pivots = strip.pivots;
       for (let p = 0; p < pivots.length; p++) {
         const weight = (p + 1) / pivots.length;
@@ -2372,7 +2531,7 @@ export class ServitorSceneController {
       }
     }
 
-    // Undulating ribbed mechadendrites, servo-claw & spinning Chirurgeon bone-saw (zero-allocation)
+    // Undulating ribbed conduit tendrils, actuator claw & rotary optical disc (zero-allocation)
     for (let cIdx = 0; cIdx < this.cables.length; cIdx++) {
       const cable = this.cables[cIdx];
       const basePts = cable.basePoints;
@@ -2443,12 +2602,12 @@ export class ServitorSceneController {
         cable.tipGroup.rotation.z = Math.sin(elapsed * 2.8 + cable.phaseOffset) * 0.22;
       }
       if (cable.tipSpinMesh) {
-        // High-speed whirring Chirurgeon bone-saw!
+        // High-speed rotary optical encoder disc
         cable.tipSpinMesh.rotation.x += dt * (this.roamingState === 'scanning' ? 24.0 : 9.5);
       }
     }
 
-    // Rising incense embers & forge sparks (dual-phase drift — zero buffer uploads)
+    // Rising thermal sparks (dual-phase drift — zero buffer uploads)
     for (let i = 0; i < this.emberClouds.length; i++) {
       const layer = this.emberClouds[i];
       const phase = (elapsed * 0.16 + layer.phaseOffset) % 1;
@@ -2466,7 +2625,7 @@ export class ServitorSceneController {
       this.holoOrbitRings.rotation.z -= dt * 0.16;
     }
 
-    // Volumetric Blood-Crimson Auspex Scan Beam
+    // Volumetric Crimson Optical Telemetry Scan Beam
     let scanTargetScreenOut: { x: number; y: number } | null = null;
     if (this.mode === 'roaming' && this.roamingState === 'scanning' && this.activeScanTarget) {
       const sweepX = this.activeScanTarget.x + Math.sin(this.scanTimer * 3.6) * 48;

@@ -1457,5 +1457,74 @@
     "clearAll": "Alle löschen",
     "remove": "Entfernen",
     "cancel": "Abbrechen"
+  },
+  "servitor": {
+    "brand": {
+      "title": "Chiffren-Reliquiar // Servitorium",
+      "subtitle": "SERVITOR-STASE-ALKOVEN // CHIFFREN-LEITUNG"
+    },
+    "status": {
+      "sanctumsOne": "{{count}} SANKTUM GEWEIHT",
+      "sanctumsOther": "{{count}} SANKTUMS GEWEIHT"
+    },
+    "relay": {
+      "header": "++ SERVITOR-EINHEIT IX // TELEMETRIE-RELAIS ++",
+      "awaitingDirective": "++ ERWARTE DIREKTIVE // ANWENDUNGSROUTE WÄHLEN ++",
+      "opticLock": "++ OPTIK-ERFASSUNG: {{title}} [{{route}}] ++",
+      "subRoutineReady": "++ SUBROUTINE BEREIT: {{label}} ++",
+      "engagingTransit": "++ TRANSIT EINGELEITET: {{title}} ++"
+    },
+    "menu": {
+      "ariaLabel": "Anwendungsmenü",
+      "eyebrow": "++ CHIFFREN-RELIQUIAR // SANKTUM-VERZEICHNIS ++",
+      "heading": "Chiffren-Routensanktums",
+      "subtitle": "Rufen Sie unten eine geweihte React-Anwendung auf. Schädel-Servitor IX richtet seinen Optik-Turm auf die Route aus, geht in das Sanktum über und hält Wache.",
+      "buildVersion": "VERSION v{{version}}",
+      "enterSanctum": "Sanktum betreten",
+      "pluginBanner": "Registrieren Sie weitere React-Anwendungen auf eigenen Routen über das Anwendungsregister."
+    },
+    "apps": {
+      "certMgmt": {
+        "subtitle": "Sanktum für PKI, X.509 & UEFI Secure Boot",
+        "designation": "CHIFFREN-MOD // 01-PKI",
+        "description": "Untersuchen Sie UEFI-Secure-Boot-NVRAM-Datenbanken, Windows- & Java-Trust-Stores, X.509-Zertifikatsketten, CSRs, CRLs, OCSP-Responder, TLS-Endpunkte und CT-Protokolle."
+      }
+    },
+    "controls": {
+      "servitoriumShort": "Servitorium",
+      "dockPillLabel": "Servitor IX",
+      "dockPillTooltip": "Servitor IX — Sanktum-Routenmatrix öffnen",
+      "quickNavAria": "Servitor-Schnellnavigation",
+      "unitEyebrow": "SERVITOR-EINHEIT IX",
+      "routeMatrixTitle": "Sanktum-Routenmatrix",
+      "closeMenuAria": "Menü schließen",
+      "returnToServitorium": "Zurück zum Servitorium",
+      "consecratedSanctums": "Geweihte Sanktums",
+      "activeRouteBadge": "Aktiv",
+      "directivesSection": "Servitor-Direktiven",
+      "opticScanBtn": "Optik-Scan",
+      "perimeterVigilBtn": "Perimeter-Wache",
+      "holdCornerBtn": "Ecke halten",
+      "summonOverlayBtn": "Servitor einblenden",
+      "cloakWhileWorkingBtn": "Servitor beim Arbeiten verbergen"
+    },
+    "scan": {
+      "eyebrow": "OPTISCHER TELEMETRIE-SCAN",
+      "defaultPanel": "PKI-CHIFFREN-MODUL",
+      "perimeterSector": "PERIMETER-SEKTOR-TELEMETRIE",
+      "viewportSanctity": "SANKTUM-SICHTFELD-INTEGRITÄT",
+      "status1": "SIGNATUR GEPRÜFT // 0x509",
+      "status2": "VERTRAUENSANKER BESTÄTIGT // OK",
+      "status3": "CHIFFREN-INTEGRITÄT NOMINAL",
+      "status4": "KETTEN-PRÜFSUMME GÜLTIG"
+    },
+    "loading": {
+      "initializing": "++ INITIALISIERE {{title}} ++"
+    },
+    "error": {
+      "header": "++ LAUFZEITFEHLER IM SANKTUM ERKANNT ++",
+      "defaultMsg": "Ein unerwarteter Darstellungsfehler ist aufgetreten.",
+      "reinitialize": "Sanktum neu initialisieren"
+    }
   }
 }

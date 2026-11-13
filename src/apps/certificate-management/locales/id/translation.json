@@ -1457,5 +1457,74 @@
     "clearAll": "Hapus Semua",
     "remove": "Hapus",
     "cancel": "Batal"
+  },
+  "servitor": {
+    "brand": {
+      "title": "Relikuari Sandi // Servitorium",
+      "subtitle": "CERUK STASIS SERVITOR // SALURAN SANDI"
+    },
+    "status": {
+      "sanctumsOne": "{{count}} SANKTUM DITAHBISKAN",
+      "sanctumsOther": "{{count}} SANKTUM DITAHBISKAN"
+    },
+    "relay": {
+      "header": "++ UNIT SERVITOR IX // RELAI TELEMETRI ++",
+      "awaitingDirective": "++ MENUNGGU DIREKTIF // PILIH RUTE APLIKASI ++",
+      "opticLock": "++ KUNCI OPTIK: {{title}} [{{route}}] ++",
+      "subRoutineReady": "++ SUB-RUTIN SIAP: {{label}} ++",
+      "engagingTransit": "++ MEMULAI TRANSISI: {{title}} ++"
+    },
+    "menu": {
+      "ariaLabel": "Menu Aplikasi",
+      "eyebrow": "++ RELIKUARI SANDI // DIREKTORI SANKTUM ++",
+      "heading": "Sanktum Rute Sandi",
+      "subtitle": "Jalankan aplikasi React yang telah ditahbiskan di bawah ini. Servitor Kranial IX akan mengunci turet optik pada rute tersebut, beralih ke sanktum, dan berjaga.",
+      "buildVersion": "VERSI v{{version}}",
+      "enterSanctum": "Masuk ke Sanktum",
+      "pluginBanner": "Daftarkan aplikasi React tambahan pada rute khusus melalui registri aplikasi."
+    },
+    "apps": {
+      "certMgmt": {
+        "subtitle": "Sanktum PKI, X.509 & UEFI Secure Boot",
+        "designation": "MOD-SANDI // 01-PKI",
+        "description": "Periksa basis data NVRAM UEFI Secure Boot, penyimpanan kepercayaan Windows & Java, rantai sertifikat X.509, CSR, CRL, penanggap OCSP, titik akhir TLS, dan log CT."
+      }
+    },
+    "controls": {
+      "servitoriumShort": "Servitorium",
+      "dockPillLabel": "Servitor IX",
+      "dockPillTooltip": "Servitor IX — Buka Matriks Rute Sanktum",
+      "quickNavAria": "Navigasi Cepat Servitor",
+      "unitEyebrow": "UNIT SERVITOR IX",
+      "routeMatrixTitle": "Matriks Rute Sanktum",
+      "closeMenuAria": "Tutup menu",
+      "returnToServitorium": "Kembali ke Servitorium",
+      "consecratedSanctums": "Sanktum Tertahbis",
+      "activeRouteBadge": "Aktif",
+      "directivesSection": "Direktif Servitor",
+      "opticScanBtn": "Pindai Optik",
+      "perimeterVigilBtn": "Patroli Perimeter",
+      "holdCornerBtn": "Tahan di Sudut",
+      "summonOverlayBtn": "Tampilkan Servitor",
+      "cloakWhileWorkingBtn": "Sembunyikan Servitor Saat Bekerja"
+    },
+    "scan": {
+      "eyebrow": "PEMINDAIAN TELEMETRI OPTIK",
+      "defaultPanel": "PANEL SANDI PKI",
+      "perimeterSector": "TELEMETRI SEKTOR PERIMETER",
+      "viewportSanctity": "INTEGRITAS LAYAR SANKTUM",
+      "status1": "TANDA TANGAN TERVERIFIKASI // 0x509",
+      "status2": "JANGKAR KEPERCAYAAN TERVERIFIKASI // OK",
+      "status3": "INTEGRITAS SANDI NOMINAL",
+      "status4": "CHECKSUM RANTAI VALID"
+    },
+    "loading": {
+      "initializing": "++ MENGINISIALISASI {{title}} ++"
+    },
+    "error": {
+      "header": "++ GANGGUAN RUNTIME SANKTUM TERDETEKSI ++",
+      "defaultMsg": "Terjadi kesalahan perenderan yang tidak terduga.",
+      "reinitialize": "Inisialisasi Ulang Sanktum"
+    }
   }
 }

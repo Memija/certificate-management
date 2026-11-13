@@ -1457,5 +1457,74 @@
     "clearAll": "Clear All",
     "remove": "Remove",
     "cancel": "Cancel"
+  },
+  "servitor": {
+    "brand": {
+      "title": "Cipher Reliquary // Servitorium",
+      "subtitle": "SERVITOR STASIS-ALCOVE // CIPHER CONDUIT"
+    },
+    "status": {
+      "sanctumsOne": "{{count}} SANCTUM CONSECRATED",
+      "sanctumsOther": "{{count}} SANCTUMS CONSECRATED"
+    },
+    "relay": {
+      "header": "++ SERVITOR UNIT IX // TELEMETRY RELAY ++",
+      "awaitingDirective": "++ AWAITING DIRECTIVE // SELECT APPLICATION ROUTE ++",
+      "opticLock": "++ OPTIC LOCK: {{title}} [{{route}}] ++",
+      "subRoutineReady": "++ SUB-ROUTINE READY: {{label}} ++",
+      "engagingTransit": "++ ENGAGING TRANSIT: {{title}} ++"
+    },
+    "menu": {
+      "ariaLabel": "Application Menu",
+      "eyebrow": "++ CIPHER RELIQUARY // SANCTUM DIRECTORY ++",
+      "heading": "Cipher Route Sanctums",
+      "subtitle": "Invoke a consecrated React application below. Cranial Servitor IX will lock its optic turret onto the route, transition into the sanctum, and maintain vigil.",
+      "buildVersion": "BUILD v{{version}}",
+      "enterSanctum": "Enter Sanctum",
+      "pluginBanner": "Register additional React applications on custom routes via the application registry."
+    },
+    "apps": {
+      "certMgmt": {
+        "subtitle": "PKI, X.509 & UEFI Secure Boot Sanctum",
+        "designation": "CIPHER-MOD // 01-PKI",
+        "description": "Inspect UEFI Secure Boot NVRAM databases, Windows & Java trust stores, X.509 certificate chains, CSRs, CRLs, OCSP responders, TLS endpoints, and CT logs."
+      }
+    },
+    "controls": {
+      "servitoriumShort": "Servitorium",
+      "dockPillLabel": "Servitor IX",
+      "dockPillTooltip": "Servitor IX — Open Sanctum Route Matrix",
+      "quickNavAria": "Servitor Quick Navigation",
+      "unitEyebrow": "SERVITOR UNIT IX",
+      "routeMatrixTitle": "Sanctum Route Matrix",
+      "closeMenuAria": "Close menu",
+      "returnToServitorium": "Return to the Servitorium",
+      "consecratedSanctums": "Consecrated Sanctums",
+      "activeRouteBadge": "Active",
+      "directivesSection": "Servitor Directives",
+      "opticScanBtn": "Optic Scan",
+      "perimeterVigilBtn": "Perimeter Vigil",
+      "holdCornerBtn": "Hold Corner",
+      "summonOverlayBtn": "Summon Servitor Overlay",
+      "cloakWhileWorkingBtn": "Cloak Servitor While Working"
+    },
+    "scan": {
+      "eyebrow": "OPTIC TELEMETRY SCAN",
+      "defaultPanel": "PKI CIPHER PANEL",
+      "perimeterSector": "PERIMETER SECTOR TELEMETRY",
+      "viewportSanctity": "SANCTUM VIEWPORT INTEGRITY",
+      "status1": "SIGNATURE VERIFIED // 0x509",
+      "status2": "TRUST ANCHOR VERIFIED // OK",
+      "status3": "CIPHER INTEGRITY NOMINAL",
+      "status4": "CHAIN CHECKSUM VALID"
+    },
+    "loading": {
+      "initializing": "++ INITIALIZING {{title}} ++"
+    },
+    "error": {
+      "header": "++ SANCTUM RUNTIME FAULT DETECTED ++",
+      "defaultMsg": "An unexpected rendering exception occurred.",
+      "reinitialize": "Re-initialize Sanctum"
+    }
   }
 }

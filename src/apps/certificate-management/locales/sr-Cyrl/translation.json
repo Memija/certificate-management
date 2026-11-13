@@ -1461,5 +1461,74 @@
     "clearAll": "Очисти све",
     "remove": "Уклони",
     "cancel": "Откажи"
+  },
+  "servitor": {
+    "brand": {
+      "title": "Шифрарски реликвијар // Сервиторијум",
+      "subtitle": "СТАЗИС-НИША СЕРВИТОРА // ШИФРАРСКИ ВОД"
+    },
+    "status": {
+      "sanctumsOne": "{{count}} СВЕТИЛИШТЕ ПОСВЕЋЕНО",
+      "sanctumsOther": "{{count}} СВЕТИЛИШТА ПОСВЕЋЕНА"
+    },
+    "relay": {
+      "header": "++ ЈЕДИНИЦА СЕРВИТОРА IX // ТЕЛЕМЕТРИЈСКИ РЕЛЕЈ ++",
+      "awaitingDirective": "++ ЧЕКАЊЕ ДИРЕКТИВЕ // ИЗАБЕРИТЕ РУТУ АПЛИКАЦИЈЕ ++",
+      "opticLock": "++ ОПТИЧКО ЗАКЉУЧАВАЊЕ: {{title}} [{{route}}] ++",
+      "subRoutineReady": "++ ПОТПРОГРАМ СПРЕМАН: {{label}} ++",
+      "engagingTransit": "++ ПОКРЕТАЊЕ ПРЕЛАЗА: {{title}} ++"
+    },
+    "menu": {
+      "ariaLabel": "Мени апликација",
+      "eyebrow": "++ ШИФРАРСКИ РЕЛИКВИЈАР // ИМЕНИК СВЕТИЛИШТА ++",
+      "heading": "Шифрарска светилишта рута",
+      "subtitle": "Покрените посвећену React апликацију испод. Кранијални Сервитор IX усмериће своју оптичку куполу на руту, прећи у светилиште и одржавати стражу.",
+      "buildVersion": "ВЕРЗИЈА v{{version}}",
+      "enterSanctum": "Уђи у светилиште",
+      "pluginBanner": "Региструјте додатне React апликације на прилагођеним рутама путем регистра апликација."
+    },
+    "apps": {
+      "certMgmt": {
+        "subtitle": "Светилиште за PKI, X.509 и UEFI Secure Boot",
+        "designation": "ШИФРА-МОД // 01-PKI",
+        "description": "Прегледајте UEFI Secure Boot NVRAM базе података, Windows и Java складишта поверења, X.509 ланце сертификата, CSR-ове, CRL-ове, OCSP одговараче, TLS крајње тачке и CT логове."
+      }
+    },
+    "controls": {
+      "servitoriumShort": "Сервиторијум",
+      "dockPillLabel": "Сервитор IX",
+      "dockPillTooltip": "Сервитор IX — Отвори матрицу рута светилишта",
+      "quickNavAria": "Брза навигација Сервитора",
+      "unitEyebrow": "ЈЕДИНИЦА СЕРВИТОРА IX",
+      "routeMatrixTitle": "Матрица рута светилишта",
+      "closeMenuAria": "Затвори мени",
+      "returnToServitorium": "Повратак у Сервиторијум",
+      "consecratedSanctums": "Посвећена светилишта",
+      "activeRouteBadge": "Активно",
+      "directivesSection": "Директиве Сервитора",
+      "opticScanBtn": "Оптичко скенирање",
+      "perimeterVigilBtn": "Периметарска стража",
+      "holdCornerBtn": "Задржи угао",
+      "summonOverlayBtn": "Прикажи Сервитора",
+      "cloakWhileWorkingBtn": "Сакриј Сервитора током рада"
+    },
+    "scan": {
+      "eyebrow": "ОПТИЧКО ТЕЛЕМЕТРИЈСКО СКЕНИРАЊЕ",
+      "defaultPanel": "PKI ШИФРАРСКИ ПАНЕЛ",
+      "perimeterSector": "ТЕЛЕМЕТРИЈА ПЕРИМЕТАРСКОГ СЕКТОРА",
+      "viewportSanctity": "ИНТЕГРИТЕТ ВИДНОГ ПОЉА СВЕТИЛИШТА",
+      "status1": "ПОТПИС ПОТВРЂЕН // 0x509",
+      "status2": "СИДРО ПОВЕРЕЊА ПОТВРЂЕНО // ОК",
+      "status3": "ИНТЕГРИТЕТ ШИФРЕ НОМИНАЛАН",
+      "status4": "КОНТРОЛНИ ЗБИР ЛАНЦА ВАЖЕЋИ"
+    },
+    "loading": {
+      "initializing": "++ ИНИЦИЈАЛИЗАЦИЈА: {{title}} ++"
+    },
+    "error": {
+      "header": "++ ОТКРИВЕН КВАР У РАДУ СВЕТИЛИШТА ++",
+      "defaultMsg": "Дошло је до неочекиване грешке при исцртавању.",
+      "reinitialize": "Поново покрени светилиште"
+    }
   }
 }
