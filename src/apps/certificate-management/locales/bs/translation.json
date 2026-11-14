@@ -1482,7 +1482,7 @@
       "ariaLabel": "Meni aplikacija",
       "eyebrow": "++ ŠIFRARSKI RELIKVIJAR // IMENIK SVETILIŠTA ++",
       "heading": "Šifrarska svetilišta ruta",
-      "subtitle": "Pokrenite posvećenu React aplikaciju ispod. Kranijalni Servitor IX usmjerit će svoju optičku kupolu na rutu, preći u svetilište i održavati stražu.",
+      "subtitle": "Pokrenite posvećenu React aplikaciju ispod. Šifrarski Servitor IX usmjerit će svoju optičku kupolu na rutu, preći u svetilište i održavati stražu.",
       "buildVersion": "VERZIJA v{{version}}",
       "enterSanctum": "Uđi u svetilište",
       "pluginBanner": "Registrujte dodatne React aplikacije na prilagođenim rutama putem registra aplikacija."

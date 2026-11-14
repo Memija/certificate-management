@@ -680,8 +680,8 @@ function ShellCoordinator() {
         quickMenuOpen ? 'is-active' : ''
       } ${statusStateClass}`}
       onClick={handleDockPillClick}
-      onMouseEnter={() => controllerRef.current?.setSkullHovered(true)}
-      onMouseLeave={() => controllerRef.current?.setSkullHovered(false)}
+      onMouseEnter={() => controllerRef.current?.setUnitHovered(true)}
+      onMouseLeave={() => controllerRef.current?.setUnitHovered(false)}
       title={t('servitor.controls.dockPillTooltip')}
       aria-label={t('servitor.controls.dockPillTooltip')}
     >

@@ -1486,7 +1486,7 @@
       "ariaLabel": "Menu aplikacji",
       "eyebrow": "++ RELIKWIARZ SZYFRÓW // KATALOG SANKTUARIÓW ++",
       "heading": "Sanktuaria Ścieżek Szyfrowych",
-      "subtitle": "Wywołaj konsekrowaną aplikację React poniżej. Czaszkowy Serwitor IX nakieruje wieżyczkę optyczną na wybraną ścieżkę, przejdzie do sanktuarium i obejmie wartę.",
+      "subtitle": "Wywołaj konsekrowaną aplikację React poniżej. Szyfrowy Serwitor IX nakieruje wieżyczkę optyczną na wybraną ścieżkę, przejdzie do sanktuarium i obejmie wartę.",
       "buildVersion": "WERSJA v{{version}}",
       "enterSanctum": "Wejdź do Sanktuarium",
       "pluginBanner": "Zarejestruj dodatkowe aplikacje React na własnych ścieżkach za pomocą rejestru aplikacji."

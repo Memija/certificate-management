@@ -1478,7 +1478,7 @@
       "ariaLabel": "Application Menu",
       "eyebrow": "++ CIPHER RELIQUARY // SANCTUM DIRECTORY ++",
       "heading": "Cipher Route Sanctums",
-      "subtitle": "Invoke a consecrated React application below. Cranial Servitor IX will lock its optic turret onto the route, transition into the sanctum, and maintain vigil.",
+      "subtitle": "Invoke a consecrated React application below. Cipher Servitor IX will lock its optic turret onto the route, transition into the sanctum, and maintain vigil.",
       "buildVersion": "BUILD v{{version}}",
       "enterSanctum": "Enter Sanctum",
       "pluginBanner": "Register additional React applications on custom routes via the application registry."

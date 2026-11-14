@@ -8,158 +8,158 @@
 :root,
 [data-theme='dark'] {
   /* Sub-App Servitor Control Pill */
-  --servitor-pill-bg: rgba(18, 13, 11, 0.88);
+  --servitor-pill-bg: rgba(13, 18, 28, 0.88);
   --servitor-pill-border: rgba(182, 137, 56, 0.48);
   --servitor-pill-text: #fde68a;
   --servitor-pill-icon: #fbbf24;
   --servitor-pill-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-  --servitor-pill-hover-bg: rgba(34, 18, 16, 0.96);
-  --servitor-pill-hover-border: rgba(234, 179, 8, 0.82);
-  --servitor-pill-hover-text: #fffbeb;
-  --servitor-pill-hover-shadow: 0 4px 18px rgba(220, 38, 38, 0.3);
+  --servitor-pill-hover-bg: rgba(20, 29, 46, 0.96);
+  --servitor-pill-hover-border: rgba(45, 212, 191, 0.72);
+  --servitor-pill-hover-text: #ecfeff;
+  --servitor-pill-hover-shadow: 0 4px 18px rgba(20, 184, 166, 0.28);
 
   /* Optic Telemetry HUD */
-  --servitor-hud-bg: linear-gradient(135deg, rgba(28, 10, 12, 0.94) 0%, rgba(16, 13, 11, 0.96) 100%);
-  --servitor-hud-border: rgba(194, 138, 56, 0.65);
-  --servitor-hud-accent-bar: #dc2626;
-  --servitor-hud-shadow: 0 10px 28px rgba(0, 0, 0, 0.78), 0 0 20px rgba(220, 38, 38, 0.28);
-  --servitor-hud-eyebrow: #f87171;
+  --servitor-hud-bg: linear-gradient(135deg, rgba(14, 22, 36, 0.94) 0%, rgba(9, 13, 22, 0.96) 100%);
+  --servitor-hud-border: rgba(182, 137, 56, 0.62);
+  --servitor-hud-accent-bar: #14b8a6;
+  --servitor-hud-shadow: 0 10px 28px rgba(0, 0, 0, 0.78), 0 0 20px rgba(20, 184, 166, 0.24);
+  --servitor-hud-eyebrow: #2dd4bf;
   --servitor-hud-target: #fde68a;
-  --servitor-hud-sub: #4ade80;
+  --servitor-hud-sub: #34d399;
 
   /* Quick-Menu Popover */
-  --servitor-pop-bg: linear-gradient(165deg, rgba(22, 16, 14, 0.97) 0%, rgba(11, 9, 8, 0.99) 100%);
-  --servitor-pop-border: rgba(182, 137, 56, 0.62);
+  --servitor-pop-bg: linear-gradient(165deg, rgba(16, 23, 36, 0.97) 0%, rgba(9, 12, 20, 0.99) 100%);
+  --servitor-pop-border: rgba(182, 137, 56, 0.58);
   --servitor-pop-shadow:
     0 24px 58px rgba(0, 0, 0, 0.85),
-    0 0 28px rgba(180, 28, 28, 0.22),
+    0 0 28px rgba(20, 184, 166, 0.16),
     inset 0 0 0 1px rgba(255, 215, 130, 0.08);
-  --servitor-pop-text: #f5efe6;
+  --servitor-pop-text: #f1f5f9;
   --servitor-pop-divider: rgba(182, 137, 56, 0.28);
-  --servitor-pop-eyebrow: #ef4444;
+  --servitor-pop-eyebrow: #2dd4bf;
   --servitor-pop-title: #fde68a;
-  --servitor-pop-section: #a89984;
-  --servitor-pop-meta: #a89984;
+  --servitor-pop-section: #94a3b8;
+  --servitor-pop-meta: #94a3b8;
 
   --servitor-close-bg: rgba(255, 255, 255, 0.04);
   --servitor-close-border: rgba(182, 137, 56, 0.32);
-  --servitor-close-text: #d6c7b2;
-  --servitor-close-hover-bg: rgba(185, 28, 28, 0.28);
-  --servitor-close-hover-border: rgba(239, 68, 68, 0.6);
-  --servitor-close-hover-text: #fecaca;
+  --servitor-close-text: #cbd5e1;
+  --servitor-close-hover-bg: rgba(20, 184, 166, 0.2);
+  --servitor-close-hover-border: rgba(45, 212, 191, 0.6);
+  --servitor-close-hover-text: #ccfbf1;
 
-  --servitor-btn-bg: rgba(255, 245, 225, 0.03);
+  --servitor-btn-bg: rgba(255, 255, 255, 0.03);
   --servitor-btn-border: rgba(182, 137, 56, 0.22);
-  --servitor-btn-text: #e7dfd3;
+  --servitor-btn-text: #e2e8f0;
   --servitor-btn-hover-bg: rgba(182, 137, 56, 0.16);
   --servitor-btn-hover-border: rgba(217, 158, 56, 0.65);
   --servitor-btn-hover-text: #fef3c7;
-  --servitor-btn-current-bg: rgba(182, 137, 56, 0.1);
-  --servitor-btn-current-border: rgba(217, 158, 56, 0.52);
+  --servitor-btn-current-bg: rgba(20, 184, 166, 0.12);
+  --servitor-btn-current-border: rgba(45, 212, 191, 0.48);
 
-  --servitor-hub-bg: linear-gradient(135deg, rgba(124, 20, 25, 0.55) 0%, rgba(78, 14, 18, 0.65) 100%);
-  --servitor-hub-border: rgba(217, 158, 56, 0.58);
+  --servitor-hub-bg: linear-gradient(135deg, rgba(24, 42, 68, 0.78) 0%, rgba(14, 24, 42, 0.88) 100%);
+  --servitor-hub-border: rgba(217, 158, 56, 0.6);
   --servitor-hub-text: #fde68a;
-  --servitor-hub-hover-bg: linear-gradient(135deg, rgba(160, 26, 32, 0.72) 0%, rgba(102, 18, 24, 0.8) 100%);
+  --servitor-hub-hover-bg: linear-gradient(135deg, rgba(15, 118, 110, 0.68) 0%, rgba(22, 42, 68, 0.88) 100%);
   --servitor-hub-hover-text: #ffffff;
 
   --servitor-mini-bg: rgba(255, 255, 255, 0.03);
   --servitor-mini-border: rgba(182, 137, 56, 0.28);
-  --servitor-mini-text: #d6c7b2;
-  --servitor-mini-hover-bg: rgba(153, 27, 27, 0.28);
-  --servitor-mini-hover-border: rgba(239, 68, 68, 0.6);
+  --servitor-mini-text: #cbd5e1;
+  --servitor-mini-hover-bg: rgba(20, 184, 166, 0.2);
+  --servitor-mini-hover-border: rgba(45, 212, 191, 0.58);
   --servitor-mini-hover-text: #fde68a;
   --servitor-mini-active-bg: rgba(182, 137, 56, 0.16);
   --servitor-mini-active-border: rgba(234, 179, 8, 0.68);
   --servitor-mini-active-text: #fef3c7;
 
   /* Loading & Error Fallbacks */
-  --servitor-loading-bg: #090808;
+  --servitor-loading-bg: #070a10;
   --servitor-loading-text: #fde68a;
-  --servitor-loading-spinner: #d97706;
-  --servitor-error-page-bg: radial-gradient(circle at 50% 35%, #190e0e 0%, #090808 100%);
-  --servitor-error-card-bg: rgba(18, 13, 12, 0.96);
+  --servitor-loading-spinner: #14b8a6;
+  --servitor-error-page-bg: radial-gradient(circle at 50% 35%, #161c2b 0%, #070a10 100%);
+  --servitor-error-card-bg: rgba(14, 19, 30, 0.96);
   --servitor-error-card-border: rgba(182, 137, 56, 0.58);
   --servitor-error-card-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
   --servitor-error-header: #f87171;
-  --servitor-error-msg: #d6c7b2;
+  --servitor-error-msg: #cbd5e1;
 
-  /* Root Organizer ("/") Sanctum Tokens */
+  /* Root Organizer ("/") Sanctum Tokens — Obsidian Slate-Indigo, Brass & Teal */
   --sanctum-page-bg:
-    radial-gradient(circle at 27% 45%, rgba(220, 38, 38, 0.16) 0%, transparent 36%),
-    radial-gradient(circle at 27% 50%, rgba(217, 119, 6, 0.12) 0%, transparent 48%),
-    radial-gradient(ellipse 62% 55% at 75% 46%, rgba(120, 20, 24, 0.12) 0%, transparent 62%),
-    linear-gradient(180deg, #0b0908 0%, #120e0d 50%, #070606 100%);
-  --sanctum-page-text: #f5efe6;
-  --sanctum-grid-line: rgba(182, 137, 56, 0.045);
+    radial-gradient(circle at 27% 45%, rgba(20, 184, 166, 0.14) 0%, transparent 38%),
+    radial-gradient(circle at 27% 50%, rgba(217, 119, 6, 0.11) 0%, transparent 48%),
+    radial-gradient(ellipse 62% 55% at 75% 46%, rgba(30, 58, 138, 0.16) 0%, transparent 62%),
+    linear-gradient(180deg, #070b12 0%, #0c121e 50%, #05080d 100%);
+  --sanctum-page-text: #f1f5f9;
+  --sanctum-grid-line: rgba(182, 137, 56, 0.048);
   --sanctum-scanline-color: rgba(0, 0, 0, 0.26);
-  --sanctum-scanline-opacity: 0.65;
+  --sanctum-scanline-opacity: 0.62;
 
-  --sanctum-topbar-bg: linear-gradient(90deg, rgba(20, 12, 12, 0.88) 0%, rgba(12, 10, 9, 0.88) 100%);
+  --sanctum-topbar-bg: linear-gradient(90deg, rgba(13, 19, 31, 0.9) 0%, rgba(8, 12, 20, 0.9) 100%);
   --sanctum-topbar-border: rgba(182, 137, 56, 0.32);
   --sanctum-brand-title: #fde68a;
-  --sanctum-brand-sub: #d6c7b2;
+  --sanctum-brand-sub: #cbd5e1;
 
-  --sanctum-ctrl-bg: rgba(28, 18, 12, 0.88);
+  --sanctum-ctrl-bg: rgba(16, 24, 38, 0.88);
   --sanctum-ctrl-border: rgba(182, 137, 56, 0.48);
   --sanctum-ctrl-text: #fde68a;
-  --sanctum-ctrl-hover-bg: rgba(42, 22, 16, 0.96);
-  --sanctum-ctrl-hover-border: rgba(234, 179, 8, 0.82);
+  --sanctum-ctrl-hover-bg: rgba(24, 36, 56, 0.96);
+  --sanctum-ctrl-hover-border: rgba(45, 212, 191, 0.72);
   --sanctum-ctrl-hover-text: #fffbeb;
 
-  --sanctum-menu-dropdown-bg: linear-gradient(165deg, rgba(24, 16, 14, 0.98) 0%, rgba(11, 9, 8, 0.99) 100%);
-  --sanctum-menu-option-text: #e7dfd3;
+  --sanctum-menu-dropdown-bg: linear-gradient(165deg, rgba(16, 23, 36, 0.98) 0%, rgba(8, 12, 20, 0.99) 100%);
+  --sanctum-menu-option-text: #e2e8f0;
   --sanctum-menu-option-hover-bg: rgba(182, 137, 56, 0.18);
   --sanctum-menu-option-hover-text: #fef3c7;
-  --sanctum-menu-option-active-bg: rgba(140, 20, 27, 0.45);
+  --sanctum-menu-option-active-bg: rgba(20, 184, 166, 0.24);
   --sanctum-menu-option-active-text: #fde68a;
 
-  --sanctum-relay-bg: linear-gradient(180deg, rgba(24, 14, 13, 0.92) 0%, rgba(14, 10, 9, 0.95) 100%);
+  --sanctum-relay-bg: linear-gradient(180deg, rgba(15, 22, 35, 0.92) 0%, rgba(9, 13, 22, 0.95) 100%);
   --sanctum-relay-border: rgba(182, 137, 56, 0.55);
   --sanctum-relay-shadow: 0 14px 36px rgba(0, 0, 0, 0.78);
-  --sanctum-relay-header: #f87171;
+  --sanctum-relay-header: #2dd4bf;
   --sanctum-relay-text: #fde68a;
 
-  --sanctum-panel-bg: linear-gradient(160deg, rgba(24, 19, 16, 0.9) 0%, rgba(12, 10, 9, 0.95) 100%);
-  --sanctum-panel-border: rgba(182, 137, 56, 0.52);
+  --sanctum-panel-bg: linear-gradient(160deg, rgba(16, 23, 36, 0.9) 0%, rgba(9, 13, 22, 0.95) 100%);
+  --sanctum-panel-border: rgba(182, 137, 56, 0.5);
   --sanctum-panel-shadow:
     0 30px 75px rgba(0, 0, 0, 0.85),
-    0 0 42px rgba(180, 28, 28, 0.14),
+    0 0 42px rgba(20, 184, 166, 0.11),
     inset 0 0 0 1px rgba(251, 191, 36, 0.08);
   --sanctum-corner-bracket: #d49b3d;
-  --sanctum-eyebrow: #ef4444;
+  --sanctum-eyebrow: #2dd4bf;
   --sanctum-heading-grad: linear-gradient(135deg, #fffbeb 0%, #fcd34d 55%, #d97706 100%);
-  --sanctum-subtitle: #bfb3a3;
+  --sanctum-subtitle: #94a3b8;
 
-  --sanctum-card-bg: linear-gradient(145deg, rgba(32, 23, 20, 0.9) 0%, rgba(16, 13, 12, 0.96) 100%);
-  --sanctum-card-border: rgba(182, 137, 56, 0.42);
-  --sanctum-card-left-bar: #991b1b;
+  --sanctum-card-bg: linear-gradient(145deg, rgba(20, 29, 45, 0.9) 0%, rgba(11, 16, 26, 0.96) 100%);
+  --sanctum-card-border: rgba(182, 137, 56, 0.4);
+  --sanctum-card-left-bar: #0d9488;
   --sanctum-card-hover-border: rgba(234, 179, 8, 0.82);
-  --sanctum-card-hover-left: #ef4444;
-  --sanctum-card-hover-shadow: 0 18px 42px rgba(0, 0, 0, 0.72), 0 0 28px rgba(220, 38, 38, 0.22);
-  --sanctum-card-designation: #f87171;
+  --sanctum-card-hover-left: #2dd4bf;
+  --sanctum-card-hover-shadow: 0 18px 42px rgba(0, 0, 0, 0.72), 0 0 28px rgba(20, 184, 166, 0.2);
+  --sanctum-card-designation: #2dd4bf;
   --sanctum-card-title: #fef3c7;
-  --sanctum-card-sub: #bfb3a3;
-  --sanctum-card-desc: #d6ccc0;
+  --sanctum-card-sub: #94a3b8;
+  --sanctum-card-desc: #cbd5e1;
   --sanctum-card-divider: rgba(182, 137, 56, 0.2);
-  --sanctum-card-version: #9c8e7b;
+  --sanctum-card-version: #94a3b8;
 
-  --sanctum-route-bg: rgba(20, 35, 24, 0.75);
-  --sanctum-route-border: rgba(74, 222, 128, 0.38);
-  --sanctum-route-text: #86efac;
+  --sanctum-route-bg: rgba(16, 36, 32, 0.78);
+  --sanctum-route-border: rgba(52, 211, 153, 0.38);
+  --sanctum-route-text: #6ee7b7;
 
-  --sanctum-chip-bg: rgba(255, 245, 220, 0.04);
+  --sanctum-chip-bg: rgba(255, 255, 255, 0.04);
   --sanctum-chip-border: rgba(182, 137, 56, 0.3);
-  --sanctum-chip-text: #e7dfd3;
-  --sanctum-chip-hover-bg: rgba(153, 27, 27, 0.42);
+  --sanctum-chip-text: #e2e8f0;
+  --sanctum-chip-hover-bg: rgba(13, 148, 136, 0.32);
   --sanctum-chip-hover-border: rgba(234, 179, 8, 0.75);
   --sanctum-chip-hover-text: #fef3c7;
 
-  --sanctum-banner-bg: rgba(18, 14, 12, 0.65);
+  --sanctum-banner-bg: rgba(13, 19, 30, 0.68);
   --sanctum-banner-border: rgba(182, 137, 56, 0.35);
-  --sanctum-banner-text: #a89984;
+  --sanctum-banner-text: #94a3b8;
   --sanctum-banner-icon: #d97706;
-  --sanctum-code-bg: rgba(120, 20, 24, 0.35);
+  --sanctum-code-bg: rgba(15, 118, 110, 0.24);
   --sanctum-code-border: rgba(182, 137, 56, 0.38);
   --sanctum-code-text: #fde68a;
 }
@@ -171,22 +171,22 @@
   --servitor-pill-text: #1e293b;
   --servitor-pill-icon: #b45309;
   --servitor-pill-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
-  --servitor-pill-hover-bg: #fffbeb;
-  --servitor-pill-hover-border: rgba(185, 28, 28, 0.58);
-  --servitor-pill-hover-text: #7f1d1d;
-  --servitor-pill-hover-shadow: 0 4px 14px rgba(180, 83, 9, 0.16);
+  --servitor-pill-hover-bg: #f0fdfa;
+  --servitor-pill-hover-border: rgba(13, 148, 136, 0.58);
+  --servitor-pill-hover-text: #0f766e;
+  --servitor-pill-hover-shadow: 0 4px 14px rgba(13, 148, 136, 0.15);
 
   /* Optic Telemetry HUD — Light Frosted Alabaster Readout */
-  --servitor-hud-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.97) 0%, rgba(254, 250, 240, 0.98) 100%);
+  --servitor-hud-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.97) 0%, rgba(248, 250, 252, 0.98) 100%);
   --servitor-hud-border: rgba(180, 125, 42, 0.48);
-  --servitor-hud-accent-bar: #dc2626;
-  --servitor-hud-shadow: 0 12px 28px rgba(15, 23, 42, 0.14), 0 0 14px rgba(220, 38, 38, 0.1);
-  --servitor-hud-eyebrow: #dc2626;
+  --servitor-hud-accent-bar: #0d9488;
+  --servitor-hud-shadow: 0 12px 28px rgba(15, 23, 42, 0.14), 0 0 14px rgba(13, 148, 136, 0.1);
+  --servitor-hud-eyebrow: #0f766e;
   --servitor-hud-target: #0f172a;
   --servitor-hud-sub: #059669;
 
   /* Quick-Menu Popover — Light Alabaster & Burnished Brass */
-  --servitor-pop-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 246, 240, 0.99) 100%);
+  --servitor-pop-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.99) 100%);
   --servitor-pop-border: rgba(180, 125, 42, 0.44);
   --servitor-pop-shadow:
     0 20px 48px rgba(15, 23, 42, 0.16),
@@ -194,7 +194,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --servitor-pop-text: #0f172a;
   --servitor-pop-divider: rgba(180, 125, 42, 0.22);
-  --servitor-pop-eyebrow: #b91c1c;
+  --servitor-pop-eyebrow: #0f766e;
   --servitor-pop-title: #1e293b;
   --servitor-pop-section: #64748b;
   --servitor-pop-meta: #64748b;
@@ -202,9 +202,9 @@
   --servitor-close-bg: rgba(15, 23, 42, 0.04);
   --servitor-close-border: rgba(15, 23, 42, 0.14);
   --servitor-close-text: #475569;
-  --servitor-close-hover-bg: rgba(220, 38, 38, 0.1);
-  --servitor-close-hover-border: rgba(220, 38, 38, 0.45);
-  --servitor-close-hover-text: #b91c1c;
+  --servitor-close-hover-bg: rgba(13, 148, 136, 0.1);
+  --servitor-close-hover-border: rgba(13, 148, 136, 0.45);
+  --servitor-close-hover-text: #0f766e;
 
   --servitor-btn-bg: rgba(241, 245, 249, 0.8);
   --servitor-btn-border: rgba(15, 23, 42, 0.11);
@@ -212,114 +212,114 @@
   --servitor-btn-hover-bg: #fffbeb;
   --servitor-btn-hover-border: rgba(217, 119, 6, 0.48);
   --servitor-btn-hover-text: #78350f;
-  --servitor-btn-current-bg: rgba(254, 243, 199, 0.6);
-  --servitor-btn-current-border: rgba(180, 83, 9, 0.44);
+  --servitor-btn-current-bg: rgba(204, 251, 241, 0.55);
+  --servitor-btn-current-border: rgba(13, 148, 136, 0.44);
 
-  --servitor-hub-bg: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
-  --servitor-hub-border: #b91c1c;
-  --servitor-hub-text: #fef3c7;
-  --servitor-hub-hover-bg: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  --servitor-hub-bg: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --servitor-hub-border: #b45309;
+  --servitor-hub-text: #fde68a;
+  --servitor-hub-hover-bg: linear-gradient(135deg, #0f766e 0%, #1e293b 100%);
   --servitor-hub-hover-text: #ffffff;
 
   --servitor-mini-bg: #f8fafc;
   --servitor-mini-border: rgba(15, 23, 42, 0.14);
   --servitor-mini-text: #334155;
-  --servitor-mini-hover-bg: rgba(254, 226, 226, 0.6);
-  --servitor-mini-hover-border: rgba(220, 38, 38, 0.48);
-  --servitor-mini-hover-text: #991b1b;
+  --servitor-mini-hover-bg: rgba(204, 251, 241, 0.6);
+  --servitor-mini-hover-border: rgba(13, 148, 136, 0.48);
+  --servitor-mini-hover-text: #0f766e;
   --servitor-mini-active-bg: rgba(254, 243, 199, 0.72);
   --servitor-mini-active-border: rgba(180, 83, 9, 0.52);
   --servitor-mini-active-text: #78350f;
 
   /* Loading & Error Fallbacks */
   --servitor-loading-bg: #f8fafc;
-  --servitor-loading-text: #92400e;
-  --servitor-loading-spinner: #d97706;
-  --servitor-error-page-bg: radial-gradient(circle at 50% 35%, #fef2f2 0%, #f8fafc 100%);
+  --servitor-loading-text: #0f766e;
+  --servitor-loading-spinner: #0d9488;
+  --servitor-error-page-bg: radial-gradient(circle at 50% 35%, #f1f5f9 0%, #f8fafc 100%);
   --servitor-error-card-bg: rgba(255, 255, 255, 0.98);
   --servitor-error-card-border: rgba(180, 125, 42, 0.45);
   --servitor-error-card-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
   --servitor-error-header: #dc2626;
   --servitor-error-msg: #475569;
 
-  /* Root Organizer ("/") Sanctum Tokens — Illuminated Alabaster & Garnet Brass */
+  /* Root Organizer ("/") Sanctum Tokens — Illuminated Slate-Alabaster, Brass & Teal */
   --sanctum-page-bg:
-    radial-gradient(circle at 27% 45%, rgba(220, 38, 38, 0.09) 0%, transparent 38%),
-    radial-gradient(circle at 27% 50%, rgba(217, 119, 6, 0.09) 0%, transparent 48%),
-    radial-gradient(ellipse 62% 55% at 75% 46%, rgba(180, 83, 9, 0.06) 0%, transparent 62%),
-    linear-gradient(180deg, #f8f6f1 0%, #f1ede3 52%, #e9e3d5 100%);
-  --sanctum-page-text: #1c1917;
-  --sanctum-grid-line: rgba(161, 98, 7, 0.075);
-  --sanctum-scanline-color: rgba(120, 80, 30, 0.06);
+    radial-gradient(circle at 27% 45%, rgba(13, 148, 136, 0.09) 0%, transparent 38%),
+    radial-gradient(circle at 27% 50%, rgba(217, 119, 6, 0.08) 0%, transparent 48%),
+    radial-gradient(ellipse 62% 55% at 75% 46%, rgba(30, 64, 175, 0.06) 0%, transparent 62%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 52%, #e2e8f0 100%);
+  --sanctum-page-text: #0f172a;
+  --sanctum-grid-line: rgba(161, 98, 7, 0.07);
+  --sanctum-scanline-color: rgba(15, 23, 42, 0.045);
   --sanctum-scanline-opacity: 0.45;
 
-  --sanctum-topbar-bg: linear-gradient(90deg, rgba(255, 253, 249, 0.92) 0%, rgba(248, 244, 236, 0.92) 100%);
+  --sanctum-topbar-bg: linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.92) 100%);
   --sanctum-topbar-border: rgba(180, 125, 42, 0.3);
-  --sanctum-brand-title: #1c1917;
-  --sanctum-brand-sub: #57534e;
+  --sanctum-brand-title: #0f172a;
+  --sanctum-brand-sub: #475569;
 
   --sanctum-ctrl-bg: rgba(255, 255, 255, 0.92);
   --sanctum-ctrl-border: rgba(180, 125, 42, 0.42);
-  --sanctum-ctrl-text: #1c1917;
-  --sanctum-ctrl-hover-bg: #fffbeb;
-  --sanctum-ctrl-hover-border: rgba(185, 28, 28, 0.58);
-  --sanctum-ctrl-hover-text: #7f1d1d;
+  --sanctum-ctrl-text: #0f172a;
+  --sanctum-ctrl-hover-bg: #f0fdfa;
+  --sanctum-ctrl-hover-border: rgba(13, 148, 136, 0.58);
+  --sanctum-ctrl-hover-text: #0f766e;
 
-  --sanctum-menu-dropdown-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.99) 0%, rgba(249, 246, 239, 0.99) 100%);
-  --sanctum-menu-option-text: #1c1917;
+  --sanctum-menu-dropdown-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.99) 0%, rgba(248, 250, 252, 0.99) 100%);
+  --sanctum-menu-option-text: #0f172a;
   --sanctum-menu-option-hover-bg: rgba(254, 243, 199, 0.7);
   --sanctum-menu-option-hover-text: #78350f;
-  --sanctum-menu-option-active-bg: rgba(185, 28, 28, 0.12);
-  --sanctum-menu-option-active-text: #991b1b;
+  --sanctum-menu-option-active-bg: rgba(13, 148, 136, 0.14);
+  --sanctum-menu-option-active-text: #0f766e;
 
-  --sanctum-relay-bg: linear-gradient(180deg, rgba(255, 254, 250, 0.95) 0%, rgba(249, 245, 236, 0.97) 100%);
+  --sanctum-relay-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.97) 100%);
   --sanctum-relay-border: rgba(180, 125, 42, 0.48);
-  --sanctum-relay-shadow: 0 12px 30px rgba(28, 25, 23, 0.12);
-  --sanctum-relay-header: #b91c1c;
-  --sanctum-relay-text: #1c1917;
+  --sanctum-relay-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
+  --sanctum-relay-header: #0f766e;
+  --sanctum-relay-text: #0f172a;
 
-  --sanctum-panel-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 247, 240, 0.97) 100%);
+  --sanctum-panel-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.97) 100%);
   --sanctum-panel-border: rgba(180, 125, 42, 0.44);
   --sanctum-panel-shadow:
-    0 24px 60px rgba(28, 25, 23, 0.12),
+    0 24px 60px rgba(15, 23, 42, 0.1),
     0 4px 16px rgba(180, 83, 9, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --sanctum-corner-bracket: #b45309;
-  --sanctum-eyebrow: #b91c1c;
-  --sanctum-heading-grad: linear-gradient(135deg, #1c1917 0%, #78350f 55%, #b91c1c 100%);
-  --sanctum-subtitle: #57534e;
+  --sanctum-eyebrow: #0f766e;
+  --sanctum-heading-grad: linear-gradient(135deg, #0f172a 0%, #78350f 55%, #0f766e 100%);
+  --sanctum-subtitle: #475569;
 
-  --sanctum-card-bg: linear-gradient(145deg, #ffffff 0%, #faf7f0 100%);
+  --sanctum-card-bg: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
   --sanctum-card-border: rgba(180, 125, 42, 0.36);
-  --sanctum-card-left-bar: #b91c1c;
+  --sanctum-card-left-bar: #0d9488;
   --sanctum-card-hover-border: rgba(180, 83, 9, 0.72);
-  --sanctum-card-hover-left: #dc2626;
-  --sanctum-card-hover-shadow: 0 16px 36px rgba(28, 25, 23, 0.12), 0 0 20px rgba(220, 38, 38, 0.08);
-  --sanctum-card-designation: #b91c1c;
-  --sanctum-card-title: #1c1917;
-  --sanctum-card-sub: #57534e;
-  --sanctum-card-desc: #44403c;
+  --sanctum-card-hover-left: #14b8a6;
+  --sanctum-card-hover-shadow: 0 16px 36px rgba(15, 23, 42, 0.1), 0 0 20px rgba(13, 148, 136, 0.1);
+  --sanctum-card-designation: #0f766e;
+  --sanctum-card-title: #0f172a;
+  --sanctum-card-sub: #475569;
+  --sanctum-card-desc: #334155;
   --sanctum-card-divider: rgba(180, 125, 42, 0.2);
-  --sanctum-card-version: #78716c;
+  --sanctum-card-version: #64748b;
 
   --sanctum-route-bg: #ecfdf5;
   --sanctum-route-border: rgba(5, 150, 105, 0.32);
   --sanctum-route-text: #047857;
 
-  --sanctum-chip-bg: #f5f2eb;
+  --sanctum-chip-bg: #f1f5f9;
   --sanctum-chip-border: rgba(180, 125, 42, 0.3);
-  --sanctum-chip-text: #292524;
-  --sanctum-chip-hover-bg: #fef2f2;
-  --sanctum-chip-hover-border: rgba(185, 28, 28, 0.55);
-  --sanctum-chip-hover-text: #991b1b;
+  --sanctum-chip-text: #1e293b;
+  --sanctum-chip-hover-bg: #f0fdfa;
+  --sanctum-chip-hover-border: rgba(13, 148, 136, 0.55);
+  --sanctum-chip-hover-text: #0f766e;
 
-  --sanctum-banner-bg: rgba(245, 242, 235, 0.8);
+  --sanctum-banner-bg: rgba(241, 245, 249, 0.85);
   --sanctum-banner-border: rgba(180, 125, 42, 0.38);
-  --sanctum-banner-text: #57534e;
+  --sanctum-banner-text: #475569;
   --sanctum-banner-icon: #b45309;
-  --sanctum-code-bg: rgba(185, 28, 28, 0.08);
+  --sanctum-code-bg: rgba(13, 148, 136, 0.1);
   --sanctum-code-border: rgba(180, 125, 42, 0.36);
-  --sanctum-code-text: #991b1b;
+  --sanctum-code-text: #0f766e;
 }
 
 *,
@@ -457,8 +457,8 @@ html[data-theme='light'] body {
 }
 
 .servitor-dock-pill.is-scanning .servitor-dock-led {
-  background: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
+  background: #2dd4bf;
+  box-shadow: 0 0 8px #14b8a6;
   animation: servitorPulse 0.7s infinite alternate;
 }
 
@@ -566,8 +566,8 @@ html[data-theme='light'] body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
+  background: #2dd4bf;
+  box-shadow: 0 0 8px #14b8a6;
   animation: servitorPulse 0.75s infinite alternate;
 }
 
@@ -858,15 +858,15 @@ html[data-theme='light'] body {
   width: 38px;
   height: 38px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #6e1015 0%, #2e080b 100%);
+  background: linear-gradient(135deg, #1b283d 0%, #0d1422 100%);
   border: 1px solid rgba(202, 152, 62, 0.72);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fbbf24;
   box-shadow:
-    0 0 18px rgba(220, 38, 38, 0.24),
-    inset 0 0 8px rgba(251, 191, 36, 0.2);
+    0 0 18px rgba(20, 184, 166, 0.2),
+    inset 0 0 8px rgba(251, 191, 36, 0.18);
 }
 
 .root-sanctum-brand-text h1 {
@@ -1050,7 +1050,7 @@ html[data-theme='light'] body {
   border-radius: 4px;
   background: var(--sanctum-relay-bg);
   border: 1px solid var(--sanctum-relay-border);
-  border-top: 2px solid #dc2626;
+  border-top: 2px solid #14b8a6;
   box-shadow: var(--sanctum-relay-shadow);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
@@ -1189,14 +1189,14 @@ html[data-theme='light'] body {
   width: 48px;
   height: 48px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #6e1015 0%, #2a080a 100%);
+  background: linear-gradient(135deg, #1b283d 0%, #0d1422 100%);
   border: 1px solid rgba(202, 152, 62, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fbbf24;
+  color: #2dd4bf;
   flex-shrink: 0;
-  box-shadow: 0 0 18px rgba(185, 28, 28, 0.28);
+  box-shadow: 0 0 18px rgba(20, 184, 166, 0.22);
 }
 
 .root-app-designation {
@@ -1289,8 +1289,8 @@ html[data-theme='light'] body {
   gap: 8px;
   padding: 9px 16px;
   border-radius: 4px;
-  border: 1px solid rgba(234, 179, 8, 0.75);
-  background: linear-gradient(135deg, #8c141b 0%, #590a0f 100%);
+  border: 1px solid rgba(217, 158, 56, 0.72);
+  background: linear-gradient(135deg, #1b2d48 0%, #0f1b2e 100%);
   color: #fde68a;
   font-family: 'Cinzel', Georgia, serif;
   font-size: 0.84rem;
@@ -1298,14 +1298,16 @@ html[data-theme='light'] body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(153, 27, 27, 0.35);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.22);
   transition: all 0.18s ease;
 }
 
 .root-app-card:hover .root-app-launch-cta {
   transform: translateX(3px);
-  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
-  box-shadow: 0 8px 26px rgba(220, 38, 38, 0.45);
+  border-color: rgba(45, 212, 191, 0.8);
+  background: linear-gradient(135deg, #0f766e 0%, #172554 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 26px rgba(20, 184, 166, 0.35);
 }
 
 /* Extensible Plug-In Slot Footer Card */

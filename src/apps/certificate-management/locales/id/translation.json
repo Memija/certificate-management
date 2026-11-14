@@ -1478,7 +1478,7 @@
       "ariaLabel": "Menu Aplikasi",
       "eyebrow": "++ RELIKUARI SANDI // DIREKTORI SANKTUM ++",
       "heading": "Sanktum Rute Sandi",
-      "subtitle": "Jalankan aplikasi React yang telah ditahbiskan di bawah ini. Servitor Kranial IX akan mengunci turet optik pada rute tersebut, beralih ke sanktum, dan berjaga.",
+      "subtitle": "Jalankan aplikasi React yang telah ditahbiskan di bawah ini. Servitor Sandi IX akan mengunci turet optik pada rute tersebut, beralih ke sanktum, dan berjaga.",
       "buildVersion": "VERSI v{{version}}",
       "enterSanctum": "Masuk ke Sanktum",
       "pluginBanner": "Daftarkan aplikasi React tambahan pada rute khusus melalui registri aplikasi."
