@@ -1461,32 +1461,32 @@
   "servitor": {
     "brand": {
       "title": "Cipher Reliquary // Servitorium",
-      "subtitle": "SERVITOR STASIS-ALCOVE // CIPHER CONDUIT"
+      "subtitle": "Servitor Stasis-Alcove // Cipher Conduit"
     },
     "status": {
-      "sanctumsOne": "{{count}} SANCTUM CONSECRATED",
-      "sanctumsOther": "{{count}} SANCTUMS CONSECRATED"
+      "sanctumsOne": "{{count}} Sanctum Consecrated",
+      "sanctumsOther": "{{count}} Sanctums Consecrated"
     },
     "relay": {
-      "header": "++ SERVITOR UNIT IX // TELEMETRY RELAY ++",
-      "awaitingDirective": "++ AWAITING DIRECTIVE // SELECT APPLICATION ROUTE ++",
-      "opticLock": "++ OPTIC LOCK: {{title}} [{{route}}] ++",
-      "subRoutineReady": "++ SUB-ROUTINE READY: {{label}} ++",
-      "engagingTransit": "++ ENGAGING TRANSIT: {{title}} ++"
+      "header": "++ Servitor Unit IX // Telemetry Relay ++",
+      "awaitingDirective": "++ Awaiting Directive // Select Application Route ++",
+      "opticLock": "++ Optic Lock: {{title}} [{{route}}] ++",
+      "subRoutineReady": "++ Sub-Routine Ready: {{label}} ++",
+      "engagingTransit": "++ Engaging Transit: {{title}} ++"
     },
     "menu": {
       "ariaLabel": "Application Menu",
-      "eyebrow": "++ CIPHER RELIQUARY // SANCTUM DIRECTORY ++",
+      "eyebrow": "++ Cipher Reliquary // Sanctum Directory ++",
       "heading": "Cipher Route Sanctums",
       "subtitle": "Invoke a consecrated React application below. Cipher Servitor IX will lock its optic turret onto the route, transition into the sanctum, and maintain vigil.",
-      "buildVersion": "BUILD v{{version}}",
+      "buildVersion": "Build v{{version}}",
       "enterSanctum": "Enter Sanctum",
       "pluginBanner": "Register additional React applications on custom routes via the application registry."
     },
     "apps": {
       "certMgmt": {
         "subtitle": "PKI, X.509 & UEFI Secure Boot Sanctum",
-        "designation": "CIPHER-MOD // 01-PKI",
+        "designation": "Cipher-Mod // 01-PKI",
         "description": "Inspect UEFI Secure Boot NVRAM databases, Windows & Java trust stores, X.509 certificate chains, CSRs, CRLs, OCSP responders, TLS endpoints, and CT logs."
       }
     },
@@ -1495,7 +1495,7 @@
       "dockPillLabel": "Servitor IX",
       "dockPillTooltip": "Servitor IX — Open Sanctum Route Matrix",
       "quickNavAria": "Servitor Quick Navigation",
-      "unitEyebrow": "SERVITOR UNIT IX",
+      "unitEyebrow": "Servitor Unit IX",
       "routeMatrixTitle": "Sanctum Route Matrix",
       "closeMenuAria": "Close menu",
       "returnToServitorium": "Return to the Servitorium",
@@ -1509,20 +1509,20 @@
       "cloakWhileWorkingBtn": "Cloak Servitor While Working"
     },
     "scan": {
-      "eyebrow": "OPTIC TELEMETRY SCAN",
-      "defaultPanel": "PKI CIPHER PANEL",
-      "perimeterSector": "PERIMETER SECTOR TELEMETRY",
-      "viewportSanctity": "SANCTUM VIEWPORT INTEGRITY",
-      "status1": "SIGNATURE VERIFIED // 0x509",
-      "status2": "TRUST ANCHOR VERIFIED // OK",
-      "status3": "CIPHER INTEGRITY NOMINAL",
-      "status4": "CHAIN CHECKSUM VALID"
+      "eyebrow": "Optic Telemetry Scan",
+      "defaultPanel": "PKI Cipher Panel",
+      "perimeterSector": "Perimeter Sector Telemetry",
+      "viewportSanctity": "Sanctum Viewport Integrity",
+      "status1": "Signature Verified // 0x509",
+      "status2": "Trust Anchor Verified // OK",
+      "status3": "Cipher Integrity Nominal",
+      "status4": "Chain Checksum Valid"
     },
     "loading": {
-      "initializing": "++ INITIALIZING {{title}} ++"
+      "initializing": "++ Initializing {{title}} ++"
     },
     "error": {
-      "header": "++ SANCTUM RUNTIME FAULT DETECTED ++",
+      "header": "++ Sanctum Runtime Fault Detected ++",
       "defaultMsg": "An unexpected rendering exception occurred.",
       "reinitialize": "Re-initialize Sanctum"
     }

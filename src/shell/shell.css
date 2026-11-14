@@ -557,9 +557,8 @@ html[data-theme='light'] body {
   gap: 6px;
   color: var(--servitor-hud-eyebrow);
   font-weight: 700;
-  letter-spacing: 0.1em;
-  font-size: 9.5px;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
 }
 
 .servitor-scan-dot {
@@ -636,11 +635,10 @@ html[data-theme='light'] body {
 
 .servitor-quick-eyebrow {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   color: var(--servitor-pop-eyebrow);
-  text-transform: uppercase;
 }
 
 .servitor-quick-title {
@@ -727,10 +725,9 @@ html[data-theme='light'] body {
 
 .servitor-quick-section-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--servitor-pop-section);
   margin: 8px 2px 6px;
 }
@@ -872,20 +869,19 @@ html[data-theme='light'] body {
 .root-sanctum-brand-text h1 {
   margin: 0;
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 16px;
+  font-size: 16.5px;
   font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--sanctum-brand-title);
 }
 
 .root-sanctum-brand-text span {
   display: block;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   color: var(--sanctum-brand-sub);
   opacity: 0.85;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
 }
 
 .root-sanctum-topbar-actions {
@@ -1005,9 +1001,9 @@ html[data-theme='light'] body {
   background: var(--sanctum-ctrl-bg);
   border: 1px solid var(--sanctum-ctrl-border);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.03em;
   color: var(--sanctum-ctrl-text);
 }
 
@@ -1053,11 +1049,11 @@ html[data-theme='light'] body {
   border-top: 2px solid #14b8a6;
   box-shadow: var(--sanctum-relay-shadow);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--sanctum-relay-text);
   text-align: center;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   max-width: 410px;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
@@ -1065,8 +1061,8 @@ html[data-theme='light'] body {
 .root-sanctum-relay-caption strong {
   display: block;
   color: var(--sanctum-relay-header);
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
   margin-bottom: 4px;
 }
 
@@ -1120,10 +1116,9 @@ html[data-theme='light'] body {
   align-items: center;
   gap: 8px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--sanctum-eyebrow);
   margin-bottom: 8px;
 }
@@ -1133,8 +1128,7 @@ html[data-theme='light'] body {
   font-family: 'Cinzel', Georgia, serif;
   font-size: clamp(1.5rem, 2.5vw, 2.05rem);
   font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   background: var(--sanctum-heading-grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1201,11 +1195,10 @@ html[data-theme='light'] body {
 
 .root-app-designation {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   color: var(--sanctum-card-designation);
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 
@@ -1293,10 +1286,9 @@ html[data-theme='light'] body {
   background: linear-gradient(135deg, #1b2d48 0%, #0f1b2e 100%);
   color: #fde68a;
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(13, 148, 136, 0.22);
   transition: all 0.18s ease;

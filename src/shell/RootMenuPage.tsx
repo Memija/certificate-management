@@ -86,18 +86,18 @@ export const RootMenuPage: React.FC<RootMenuPageProps> = ({
   switch (relayState.kind) {
     case 'opticLock':
       renderedRelayText = t('servitor.relay.opticLock', {
-        title: relayState.title.toLocaleUpperCase(normalizedLang),
+        title: relayState.title,
         route: relayState.route,
       });
       break;
     case 'subRoutine':
       renderedRelayText = t('servitor.relay.subRoutineReady', {
-        label: relayState.label.toLocaleUpperCase(normalizedLang),
+        label: relayState.label,
       });
       break;
     case 'transit':
       renderedRelayText = t('servitor.relay.engagingTransit', {
-        title: relayState.title.toLocaleUpperCase(normalizedLang),
+        title: relayState.title,
       });
       break;
     default:

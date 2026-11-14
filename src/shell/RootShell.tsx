@@ -165,7 +165,7 @@ function pickVisibleDomScanTarget(lastLabelRef: React.MutableRefObject<string>):
 
     const heading = el.querySelector('h1, h2, h3, h4, strong');
     const rawText = (heading?.textContent || el.getAttribute('aria-label') || '').trim();
-    const cleaned = rawText.replace(/\s+/g, ' ').slice(0, 32).toLocaleUpperCase();
+    const cleaned = rawText.replace(/\s+/g, ' ').slice(0, 36);
     const label = cleaned || SCAN_SENTINEL_DEFAULT_PANEL;
 
     // Aim cleanly near the right edge of the panel so the scan cone never cuts across the whole screen
@@ -195,7 +195,6 @@ function ShellCoordinator() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const normalizedLang = normalizeLanguageTag(i18n.resolvedLanguage || i18n.language) || 'en';
   const isRootRoute = location.pathname === '/';
 
   const canvasWrapRef = useRef<HTMLDivElement | null>(null);
@@ -730,7 +729,7 @@ function ShellCoordinator() {
                           <RefreshCw size={28} className="subapp-loading-spinner" />
                           <span>
                             {t('servitor.loading.initializing', {
-                              title: localizedAppTitle.toLocaleUpperCase(normalizedLang),
+                              title: localizedAppTitle,
                             })}
                           </span>
                         </div>

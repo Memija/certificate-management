@@ -1461,32 +1461,32 @@
   "servitor": {
     "brand": {
       "title": "Relikuari Sandi // Servitorium",
-      "subtitle": "CERUK STASIS SERVITOR // SALURAN SANDI"
+      "subtitle": "Ceruk Stasis Servitor // Saluran Sandi"
     },
     "status": {
-      "sanctumsOne": "{{count}} SANKTUM DITAHBISKAN",
-      "sanctumsOther": "{{count}} SANKTUM DITAHBISKAN"
+      "sanctumsOne": "{{count}} Sanktum Ditahbiskan",
+      "sanctumsOther": "{{count}} Sanktum Ditahbiskan"
     },
     "relay": {
-      "header": "++ UNIT SERVITOR IX // RELAI TELEMETRI ++",
-      "awaitingDirective": "++ MENUNGGU DIREKTIF // PILIH RUTE APLIKASI ++",
-      "opticLock": "++ KUNCI OPTIK: {{title}} [{{route}}] ++",
-      "subRoutineReady": "++ SUB-RUTIN SIAP: {{label}} ++",
-      "engagingTransit": "++ MEMULAI TRANSISI: {{title}} ++"
+      "header": "++ Unit Servitor IX // Relai Telemetri ++",
+      "awaitingDirective": "++ Menunggu Direktif // Pilih Rute Aplikasi ++",
+      "opticLock": "++ Kunci Optik: {{title}} [{{route}}] ++",
+      "subRoutineReady": "++ Sub-Rutin Siap: {{label}} ++",
+      "engagingTransit": "++ Memulai Transisi: {{title}} ++"
     },
     "menu": {
       "ariaLabel": "Menu Aplikasi",
-      "eyebrow": "++ RELIKUARI SANDI // DIREKTORI SANKTUM ++",
+      "eyebrow": "++ Relikuari Sandi // Direktori Sanktum ++",
       "heading": "Sanktum Rute Sandi",
       "subtitle": "Jalankan aplikasi React yang telah ditahbiskan di bawah ini. Servitor Sandi IX akan mengunci turet optik pada rute tersebut, beralih ke sanktum, dan berjaga.",
-      "buildVersion": "VERSI v{{version}}",
+      "buildVersion": "Versi v{{version}}",
       "enterSanctum": "Masuk ke Sanktum",
       "pluginBanner": "Daftarkan aplikasi React tambahan pada rute khusus melalui registri aplikasi."
     },
     "apps": {
       "certMgmt": {
         "subtitle": "Sanktum PKI, X.509 & UEFI Secure Boot",
-        "designation": "MOD-SANDI // 01-PKI",
+        "designation": "Mod-Sandi // 01-PKI",
         "description": "Periksa basis data NVRAM UEFI Secure Boot, penyimpanan kepercayaan Windows & Java, rantai sertifikat X.509, CSR, CRL, penanggap OCSP, titik akhir TLS, dan log CT."
       }
     },
@@ -1495,7 +1495,7 @@
       "dockPillLabel": "Servitor IX",
       "dockPillTooltip": "Servitor IX — Buka Matriks Rute Sanktum",
       "quickNavAria": "Navigasi Cepat Servitor",
-      "unitEyebrow": "UNIT SERVITOR IX",
+      "unitEyebrow": "Unit Servitor IX",
       "routeMatrixTitle": "Matriks Rute Sanktum",
       "closeMenuAria": "Tutup menu",
       "returnToServitorium": "Kembali ke Servitorium",
@@ -1509,20 +1509,20 @@
       "cloakWhileWorkingBtn": "Sembunyikan Servitor Saat Bekerja"
     },
     "scan": {
-      "eyebrow": "PEMINDAIAN TELEMETRI OPTIK",
-      "defaultPanel": "PANEL SANDI PKI",
-      "perimeterSector": "TELEMETRI SEKTOR PERIMETER",
-      "viewportSanctity": "INTEGRITAS LAYAR SANKTUM",
-      "status1": "TANDA TANGAN TERVERIFIKASI // 0x509",
-      "status2": "JANGKAR KEPERCAYAAN TERVERIFIKASI // OK",
-      "status3": "INTEGRITAS SANDI NOMINAL",
-      "status4": "CHECKSUM RANTAI VALID"
+      "eyebrow": "Pemindaian Telemetri Optik",
+      "defaultPanel": "Panel Sandi PKI",
+      "perimeterSector": "Telemetri Sektor Perimeter",
+      "viewportSanctity": "Integritas Layar Sanktum",
+      "status1": "Tanda Tangan Terverifikasi // 0x509",
+      "status2": "Jangkar Kepercayaan Terverifikasi // OK",
+      "status3": "Integritas Sandi Nominal",
+      "status4": "Checksum Rantai Valid"
     },
     "loading": {
-      "initializing": "++ MENGINISIALISASI {{title}} ++"
+      "initializing": "++ Menginisialisasi {{title}} ++"
     },
     "error": {
-      "header": "++ GANGGUAN RUNTIME SANKTUM TERDETEKSI ++",
+      "header": "++ Gangguan Runtime Sanktum Terdeteksi ++",
       "defaultMsg": "Terjadi kesalahan perenderan yang tidak terduga.",
       "reinitialize": "Inisialisasi Ulang Sanktum"
     }

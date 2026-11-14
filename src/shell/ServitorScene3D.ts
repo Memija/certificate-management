@@ -110,18 +110,56 @@ interface AutomatonArmorTextures {
   bumpMap: THREE.CanvasTexture;
 }
 
+function createVaultEnvironmentEquirect(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d')!;
+
+  // Moody sanctum vault reflection dome: balanced metallic specular without overexposure
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, 128);
+  skyGrad.addColorStop(0, '#94a3b8');
+  skyGrad.addColorStop(0.3, '#64748b');
+  skyGrad.addColorStop(0.58, '#334155');
+  skyGrad.addColorStop(0.82, '#1e293b');
+  skyGrad.addColorStop(1, '#0f172a');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, 256, 128);
+
+  // Controlled warm brass key reflection on upper-right hemisphere
+  const keyGlow = ctx.createRadialGradient(176, 38, 6, 176, 38, 60);
+  keyGlow.addColorStop(0, 'rgba(253, 230, 188, 0.58)');
+  keyGlow.addColorStop(0.5, 'rgba(217, 119, 6, 0.22)');
+  keyGlow.addColorStop(1, 'rgba(217, 119, 6, 0)');
+  ctx.fillStyle = keyGlow;
+  ctx.fillRect(0, 0, 256, 128);
+
+  // Subtle emerald-teal rim reflection accent on left hemisphere
+  const rimGlow = ctx.createRadialGradient(64, 52, 6, 64, 52, 50);
+  rimGlow.addColorStop(0, 'rgba(94, 234, 212, 0.45)');
+  rimGlow.addColorStop(0.55, 'rgba(20, 184, 166, 0.18)');
+  rimGlow.addColorStop(1, 'rgba(20, 184, 166, 0)');
+  ctx.fillStyle = rimGlow;
+  ctx.fillRect(0, 0, 256, 128);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 function createAutomatonHelmTextures(): AutomatonArmorTextures {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Forged brushed gunmetal-titanium & damascened slate-steel armor gradient
+  // Balanced mid-tone weathered pewter & tempered satin-titanium armor gradient
   const grad = ctx.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#738196');
-  grad.addColorStop(0.38, '#556275');
-  grad.addColorStop(0.72, '#394354');
-  grad.addColorStop(1, '#1f2632');
+  grad.addColorStop(0, '#9aa8bc');
+  grad.addColorStop(0.38, '#7e8da3');
+  grad.addColorStop(0.72, '#5f6e84');
+  grad.addColorStop(1, '#414d60');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 512, 512);
 
@@ -131,7 +169,7 @@ function createAutomatonHelmTextures(): AutomatonArmorTextures {
     const y = Math.random() * 512;
     const len = 8 + Math.random() * 34;
     ctx.strokeStyle =
-      Math.random() > 0.48 ? 'rgba(226, 232, 240, 0.055)' : 'rgba(15, 23, 42, 0.085)';
+      Math.random() > 0.48 ? 'rgba(226, 232, 240, 0.09)' : 'rgba(15, 23, 42, 0.095)';
     ctx.lineWidth = 0.8 + Math.random() * 0.9;
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -139,42 +177,51 @@ function createAutomatonHelmTextures(): AutomatonArmorTextures {
     ctx.stroke();
   }
 
-  // Subtle tempered-steel sheen & metallic patina
-  for (let i = 0; i < 1400; i++) {
+  // Subtle tempered-pewter sheen & metallic patina
+  for (let i = 0; i < 1200; i++) {
     const x = Math.random() * 512;
     const y = Math.random() * 512;
-    const r = 0.8 + Math.random() * 3.8;
+    const r = 0.8 + Math.random() * 3.6;
     ctx.fillStyle =
-      Math.random() > 0.5 ? 'rgba(15, 23, 42, 0.07)' : 'rgba(186, 204, 226, 0.045)';
+      Math.random() > 0.5 ? 'rgba(15, 23, 42, 0.065)' : 'rgba(226, 232, 240, 0.065)';
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Precision machined armor panel bevel seams & burnished-brass inlay hairlines
-  ctx.strokeStyle = 'rgba(12, 18, 28, 0.62)';
-  ctx.lineWidth = 1.6;
+  // Precision CNC-machined armor panel bevel seams + subtle edge highlight lips
   for (const seamY of [146, 248, 342]) {
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.55)';
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.moveTo(36, seamY);
     ctx.lineTo(208, seamY + 12);
     ctx.lineTo(304, seamY + 12);
     ctx.lineTo(476, seamY);
     ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(226, 232, 240, 0.24)';
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.moveTo(36, seamY + 2);
+    ctx.lineTo(208, seamY + 14);
+    ctx.lineTo(304, seamY + 14);
+    ctx.lineTo(476, seamY + 2);
+    ctx.stroke();
   }
 
-  ctx.strokeStyle = 'rgba(212, 166, 79, 0.34)';
+  ctx.strokeStyle = 'rgba(212, 166, 79, 0.42)';
   ctx.lineWidth = 1.0;
   ctx.beginPath();
   ctx.moveTo(256, 64);
   ctx.lineTo(256, 360);
   ctx.stroke();
 
-  // Cryptographic X.509 OID & SHA-256 hex serial laser-etched on cheek armor plane
-  ctx.fillStyle = 'rgba(212, 166, 79, 0.62)';
+  // Cryptographic X.509 OID & SHA-256 hex serial laser-etched on pewter cheek armor plane
+  ctx.fillStyle = 'rgba(226, 179, 88, 0.76)';
   ctx.font = 'bold 11px monospace';
   ctx.fillText('UNIT-IX // X.509-AUTOMATON', 266, 184);
-  ctx.fillStyle = 'rgba(226, 232, 240, 0.54)';
+  ctx.fillStyle = 'rgba(226, 232, 240, 0.64)';
   ctx.font = 'bold 9px monospace';
   ctx.fillText('OID 2.5.29.19 // SHA-256', 266, 198);
   ctx.fillText('0x9F86:D081:884C:7D65', 266, 211);
@@ -467,8 +514,8 @@ function sculptAutomatonMaskGeometry(): THREE.BufferGeometry {
   const pos = geom.attributes.position;
   const colors = new Float32Array(pos.count * 3);
   const brightAlloy = new THREE.Color('#ffffff');
-  const recessVoid = new THREE.Color('#090d14');
-  const bevelShadow = new THREE.Color('#3b4659');
+  const recessVoid = new THREE.Color('#111824');
+  const bevelShadow = new THREE.Color('#526075');
 
   const v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
@@ -575,6 +622,7 @@ export class ServitorSceneController {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
+  private envRenderTarget: THREE.WebGLRenderTarget;
   private rootAnchor: THREE.Group;
   private headTiltGroup: THREE.Group;
   private jawPivot: THREE.Group;
@@ -729,6 +777,16 @@ export class ServitorSceneController {
 
     this.scene = new THREE.Scene();
 
+    // Moody sanctum vault PMREM reflection map: true metallic sheen without overexposure
+    const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    pmremGenerator.compileEquirectangularShader();
+    const envEquirect = createVaultEnvironmentEquirect();
+    this.envRenderTarget = pmremGenerator.fromEquirectangular(envEquirect);
+    this.scene.environment = this.envRenderTarget.texture;
+    this.scene.environmentIntensity = 0.52;
+    envEquirect.dispose();
+    pmremGenerator.dispose();
+
     this.camera = new THREE.PerspectiveCamera(
       38,
       window.innerWidth / Math.max(1, window.innerHeight),
@@ -738,19 +796,19 @@ export class ServitorSceneController {
     this.camera.position.set(0, 0, 12.2);
 
     // ─── Regal Cybernetic Chiaroscuro Lighting (Warm Brass Key + Teal Rim + Slate Fill)
-    this.ambientLight = new THREE.AmbientLight('#444c58', 0.62);
+    this.ambientLight = new THREE.AmbientLight('#4b5565', 0.68);
     this.scene.add(this.ambientLight);
 
-    const warmBrassKey = new THREE.DirectionalLight('#ffe4b5', 2.85);
+    const warmBrassKey = new THREE.DirectionalLight('#ffe8bf', 2.9);
     warmBrassKey.position.set(4.2, 5.2, 7.2);
     this.scene.add(warmBrassKey);
 
-    const tealIndigoRim = new THREE.DirectionalLight('#14b8a6', 2.05);
+    const tealIndigoRim = new THREE.DirectionalLight('#14b8a6', 2.08);
     tealIndigoRim.position.set(-6.5, 2.2, -3.5);
     this.scene.add(tealIndigoRim);
 
-    this.coldFillLight = new THREE.DirectionalLight('#64748b', 0.95);
-    this.coldFillLight.position.set(2.5, -5.5, 3.0);
+    this.coldFillLight = new THREE.DirectionalLight('#728399', 1.02);
+    this.coldFillLight.position.set(2.5, -5.5, 3.2);
     this.scene.add(this.coldFillLight);
 
     this.rootAnchor = new THREE.Group();
@@ -782,18 +840,26 @@ export class ServitorSceneController {
     const automatonHelmMat = new THREE.MeshStandardMaterial({
       map: helmMap,
       bumpMap: helmBump,
-      bumpScale: 0.024,
+      bumpScale: 0.023,
       vertexColors: true,
-      roughness: 0.36,
-      metalness: 0.85,
+      roughness: 0.38,
+      metalness: 0.62,
+    });
+
+    const pewterArmorMat = new THREE.MeshStandardMaterial({
+      color: '#5b697d',
+      bumpMap: metalBump,
+      bumpScale: 0.022,
+      roughness: 0.38,
+      metalness: 0.68,
     });
 
     const forgedIronMat = new THREE.MeshStandardMaterial({
-      color: '#262c36',
+      color: '#333d4d',
       bumpMap: metalBump,
       bumpScale: 0.026,
-      roughness: 0.42,
-      metalness: 0.88,
+      roughness: 0.4,
+      metalness: 0.76,
     });
 
     const blackenedIronMat = new THREE.MeshStandardMaterial({
@@ -948,7 +1014,7 @@ export class ServitorSceneController {
         Math.PI * 0.34
       );
       crownPlateGeom.scale(0.87, 1.07, 1.05);
-      const crownPlate = new THREE.Mesh(crownPlateGeom, forgedIronMat);
+      const crownPlate = new THREE.Mesh(crownPlateGeom, pewterArmorMat);
       this.headTiltGroup.add(crownPlate);
 
       // Precision hexagonal brass bolts along each crown plate bevel
@@ -2002,8 +2068,9 @@ export class ServitorSceneController {
     const isLight = theme === 'light';
     const blend = isLight ? THREE.NormalBlending : THREE.AdditiveBlending;
 
-    this.ambientLight.intensity = isLight ? 1.02 : 0.62;
-    this.coldFillLight.intensity = isLight ? 1.42 : 0.95;
+    this.scene.environmentIntensity = isLight ? 0.68 : 0.52;
+    this.ambientLight.intensity = isLight ? 0.98 : 0.68;
+    this.coldFillLight.intensity = isLight ? 1.38 : 1.02;
 
     this.orbitRing1Mat.blending = blend;
     this.orbitRing1Mat.opacity = isLight ? 0.38 : 0.34;
@@ -2784,6 +2851,7 @@ export class ServitorSceneController {
     geometries.forEach((g) => g.dispose());
     materials.forEach((m) => m.dispose());
     this.disposableTextures.forEach((t) => t.dispose());
+    this.envRenderTarget.dispose();
     this.renderer.dispose();
   }
 }

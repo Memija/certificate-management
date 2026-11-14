@@ -21,7 +21,7 @@ export const REGISTERED_APPS: RegisteredReactApp[] = [
     titleKey: 'app.title',
     subtitle: 'PKI, X.509 & UEFI Secure Boot Sanctum',
     subtitleKey: 'servitor.apps.certMgmt.subtitle',
-    designation: 'CIPHER-MOD // 01-PKI',
+    designation: 'Cipher-Mod // 01-PKI',
     designationKey: 'servitor.apps.certMgmt.designation',
     description:
       'Inspect UEFI Secure Boot NVRAM databases, Windows & Java trust stores, X.509 certificate chains, CSRs, CRLs, OCSP responders, TLS endpoints, and CT logs.',

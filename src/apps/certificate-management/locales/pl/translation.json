@@ -1469,32 +1469,32 @@
   "servitor": {
     "brand": {
       "title": "Relikwiarz Szyfrów // Serwitorium",
-      "subtitle": "NISZA STAZY SERWITORA // PRZEWÓD SZYFRÓW"
+      "subtitle": "Nisza Stazy Serwitora // Przewód Szyfrów"
     },
     "status": {
-      "sanctumsOne": "{{count}} SANKTUARIUM KONSEKROWANE",
-      "sanctumsOther": "{{count}} SANKTUARIA KONSEKROWANE"
+      "sanctumsOne": "{{count}} Sanktuarium konsekrowane",
+      "sanctumsOther": "{{count}} Sanktuaria konsekrowane"
     },
     "relay": {
-      "header": "++ JEDNOSTKA SERWITORA IX // PRZEKAŹNIK TELEMETRII ++",
-      "awaitingDirective": "++ OCZEKIWANIE NA DYREKTYWĘ // WYBIERZ ŚCIEŻKĘ APLIKACJI ++",
-      "opticLock": "++ NAMIERZENIE OPTYCZNE: {{title}} [{{route}}] ++",
-      "subRoutineReady": "++ PODPROGRAM GOTOWY: {{label}} ++",
-      "engagingTransit": "++ ROZPOCZYNANIE TRANZYTU: {{title}} ++"
+      "header": "++ Jednostka Serwitora IX // Przekaźnik telemetrii ++",
+      "awaitingDirective": "++ Oczekiwanie na dyrektywę // Wybierz ścieżkę aplikacji ++",
+      "opticLock": "++ Namierzenie optyczne: {{title}} [{{route}}] ++",
+      "subRoutineReady": "++ Podprogram gotowy: {{label}} ++",
+      "engagingTransit": "++ Rozpoczynanie tranzytu: {{title}} ++"
     },
     "menu": {
       "ariaLabel": "Menu aplikacji",
-      "eyebrow": "++ RELIKWIARZ SZYFRÓW // KATALOG SANKTUARIÓW ++",
+      "eyebrow": "++ Relikwiarz Szyfrów // Katalog sanktuariów ++",
       "heading": "Sanktuaria Ścieżek Szyfrowych",
       "subtitle": "Wywołaj konsekrowaną aplikację React poniżej. Szyfrowy Serwitor IX nakieruje wieżyczkę optyczną na wybraną ścieżkę, przejdzie do sanktuarium i obejmie wartę.",
-      "buildVersion": "WERSJA v{{version}}",
+      "buildVersion": "Wersja v{{version}}",
       "enterSanctum": "Wejdź do Sanktuarium",
       "pluginBanner": "Zarejestruj dodatkowe aplikacje React na własnych ścieżkach za pomocą rejestru aplikacji."
     },
     "apps": {
       "certMgmt": {
         "subtitle": "Sanktuarium PKI, X.509 i UEFI Secure Boot",
-        "designation": "MOD-SZYFRU // 01-PKI",
+        "designation": "Mod-Szyfru // 01-PKI",
         "description": "Analizuj bazy danych NVRAM UEFI Secure Boot, magazyny zaufania Windows i Java, łańcuchy certyfikatów X.509, żądania CSR, listy CRL, serwery OCSP, punkty końcowe TLS oraz logi CT."
       }
     },
@@ -1503,7 +1503,7 @@
       "dockPillLabel": "Serwitor IX",
       "dockPillTooltip": "Serwitor IX — Otwórz matrycę ścieżek sanktuarium",
       "quickNavAria": "Szybka nawigacja Serwitora",
-      "unitEyebrow": "JEDNOSTKA SERWITORA IX",
+      "unitEyebrow": "Jednostka Serwitora IX",
       "routeMatrixTitle": "Matryca Ścieżek Sanktuarium",
       "closeMenuAria": "Zamknij menu",
       "returnToServitorium": "Powrót do Serwitorium",
@@ -1517,20 +1517,20 @@
       "cloakWhileWorkingBtn": "Ukryj Serwitora Podczas Pracy"
     },
     "scan": {
-      "eyebrow": "OPTYCZNY SKAN TELEMETRII",
-      "defaultPanel": "PANEL SZYFRÓW PKI",
-      "perimeterSector": "TELEMETRIA SEKTORA OBWODOWEGO",
-      "viewportSanctity": "INTEGRALNOŚĆ POLA WIDZENIA SANKTUARIUM",
-      "status1": "PODPIS ZWERYFIKOWANY // 0x509",
-      "status2": "KOTWICA ZAUFANIA ZWERYFIKOWANA // OK",
-      "status3": "INTEGRALNOŚĆ SZYFRU NOMINALNA",
-      "status4": "SUMA KONTROLNA ŁAŃCUCHA POPRAWNA"
+      "eyebrow": "Optyczny skan telemetrii",
+      "defaultPanel": "Panel szyfrów PKI",
+      "perimeterSector": "Telemetria sektora obwodowego",
+      "viewportSanctity": "Integralność pola widzenia sanktuarium",
+      "status1": "Podpis zweryfikowany // 0x509",
+      "status2": "Kotwica zaufania zweryfikowana // OK",
+      "status3": "Integralność szyfru nominalna",
+      "status4": "Suma kontrolna łańcucha poprawna"
     },
     "loading": {
-      "initializing": "++ INICJALIZACJA: {{title}} ++"
+      "initializing": "++ Inicjalizacja: {{title}} ++"
     },
     "error": {
-      "header": "++ WYKRYTO BŁĄD WYKONANIA SANKTUARIUM ++",
+      "header": "++ Wykryto błąd wykonania sanktuarium ++",
       "defaultMsg": "Wystąpił nieoczekiwany błąd renderowania.",
       "reinitialize": "Zainicjalizuj ponownie"
     }

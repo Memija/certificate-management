@@ -1465,32 +1465,32 @@
   "servitor": {
     "brand": {
       "title": "Šifrarski relikvijar // Servitorijum",
-      "subtitle": "STAZIS-NIŠA SERVITORA // ŠIFRARSKI VOD"
+      "subtitle": "Stazis-niša Servitora // Šifrarski vod"
     },
     "status": {
-      "sanctumsOne": "{{count}} SVETILIŠTE POSVEĆENO",
-      "sanctumsOther": "{{count}} SVETILIŠTA POSVEĆENA"
+      "sanctumsOne": "{{count}} svetilište posvećeno",
+      "sanctumsOther": "{{count}} svetilišta posvećena"
     },
     "relay": {
-      "header": "++ JEDINICA SERVITORA IX // TELEMETRIJSKI RELEJ ++",
-      "awaitingDirective": "++ ČEKANJE DIREKTIVE // ODABERITE RUTU APLIKACIJE ++",
-      "opticLock": "++ OPTIČKO ZAKLJUČAVANJE: {{title}} [{{route}}] ++",
-      "subRoutineReady": "++ POTPROGRAM SPREMAN: {{label}} ++",
-      "engagingTransit": "++ POKRETANJE PRIJELAZA: {{title}} ++"
+      "header": "++ Jedinica Servitora IX // Telemetrijski relej ++",
+      "awaitingDirective": "++ Čekanje direktive // Odaberite rutu aplikacije ++",
+      "opticLock": "++ Optičko zaključavanje: {{title}} [{{route}}] ++",
+      "subRoutineReady": "++ Potprogram spreman: {{label}} ++",
+      "engagingTransit": "++ Pokretanje prijelaza: {{title}} ++"
     },
     "menu": {
       "ariaLabel": "Meni aplikacija",
-      "eyebrow": "++ ŠIFRARSKI RELIKVIJAR // IMENIK SVETILIŠTA ++",
+      "eyebrow": "++ Šifrarski relikvijar // Imenik svetilišta ++",
       "heading": "Šifrarska svetilišta ruta",
       "subtitle": "Pokrenite posvećenu React aplikaciju ispod. Šifrarski Servitor IX usmjerit će svoju optičku kupolu na rutu, preći u svetilište i održavati stražu.",
-      "buildVersion": "VERZIJA v{{version}}",
+      "buildVersion": "Verzija v{{version}}",
       "enterSanctum": "Uđi u svetilište",
       "pluginBanner": "Registrujte dodatne React aplikacije na prilagođenim rutama putem registra aplikacija."
     },
     "apps": {
       "certMgmt": {
         "subtitle": "Svetilište za PKI, X.509 i UEFI Secure Boot",
-        "designation": "ŠIFRA-MOD // 01-PKI",
+        "designation": "Šifra-Mod // 01-PKI",
         "description": "Pregledajte UEFI Secure Boot NVRAM baze podataka, Windows i Java skladišta povjerenja, X.509 lance certifikata, CSR-ove, CRL-ove, OCSP odgovarače, TLS krajnje tačke i CT logove."
       }
     },
@@ -1499,7 +1499,7 @@
       "dockPillLabel": "Servitor IX",
       "dockPillTooltip": "Servitor IX — Otvori matricu ruta svetilišta",
       "quickNavAria": "Brza navigacija Servitora",
-      "unitEyebrow": "JEDINICA SERVITORA IX",
+      "unitEyebrow": "Jedinica Servitora IX",
       "routeMatrixTitle": "Matrica ruta svetilišta",
       "closeMenuAria": "Zatvori meni",
       "returnToServitorium": "Povratak u Servitorijum",
@@ -1513,20 +1513,20 @@
       "cloakWhileWorkingBtn": "Sakrij Servitora tokom rada"
     },
     "scan": {
-      "eyebrow": "OPTIČKO TELEMETRIJSKO SKENIRANJE",
-      "defaultPanel": "PKI ŠIFRARSKI PANEL",
-      "perimeterSector": "TELEMETRIJA PERIMETARSKOG SEKTORA",
-      "viewportSanctity": "INTEGRITET VIDNOG POLJA SVETILIŠTA",
-      "status1": "POTPIS POTVRĐEN // 0x509",
-      "status2": "SIDRO POVJERENJA POTVRĐENO // OK",
-      "status3": "INTEGRITET ŠIFRE NOMINALAN",
-      "status4": "KONTROLNI ZBIR LANCA VAŽEĆI"
+      "eyebrow": "Optičko telemetrijsko skeniranje",
+      "defaultPanel": "PKI šifrarski panel",
+      "perimeterSector": "Telemetrija perimetarskog sektora",
+      "viewportSanctity": "Integritet vidnog polja svetilišta",
+      "status1": "Potpis potvrđen // 0x509",
+      "status2": "Sidro povjerenja potvrđeno // OK",
+      "status3": "Integritet šifre nominalan",
+      "status4": "Kontrolni zbir lanca važeći"
     },
     "loading": {
-      "initializing": "++ INICIJALIZACIJA: {{title}} ++"
+      "initializing": "++ Inicijalizacija: {{title}} ++"
     },
     "error": {
-      "header": "++ OTKRIVEN KVAR U RADU SVETILIŠTA ++",
+      "header": "++ Otkriven kvar u radu svetilišta ++",
       "defaultMsg": "Došlo je do neočekivane greške pri iscrtavanju.",
       "reinitialize": "Ponovo pokreni svetilište"
     }
