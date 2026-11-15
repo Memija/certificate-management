@@ -1,11 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import './apps/certificate-management/i18n';
-import RootShell from './shell/RootShell';
+import './i18n';
+import App from './App';
 import {
   getInitialThemePreference,
   resolveEffectiveTheme,
-} from './apps/certificate-management/utils/systemSettings';
+} from './utils/systemSettings';
 
 // Apply stored or system-wide theme immediately to prevent flash
 const initialTheme = getInitialThemePreference();
@@ -13,6 +13,6 @@ document.documentElement.setAttribute('data-theme', resolveEffectiveTheme(initia
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RootShell />
+    <App />
   </StrictMode>
 );

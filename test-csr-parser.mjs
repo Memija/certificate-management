@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { parseCSRFromText } from './src/apps/certificate-management/utils/csrParser.ts';
+import { parseCSRFromText } from './src/utils/csrParser.ts';
 import forge from 'node-forge';
 
 const testCertsDir = path.resolve('test-certs');

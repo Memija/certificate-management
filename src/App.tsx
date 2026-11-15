@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
+import './i18n';
 import { parseEfiSignatureLists, parseRawX509, type EfiSignatureList, type ParsedCertificate } from './utils/efiParser';
-import { Shield, ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, FolderOpen, Sun, Moon, FileKey, Monitor, ShieldAlert, Link as LinkIcon, Key, Zap, FileArchive, Globe, Activity, LayoutDashboard, Menu, X, Search, BookOpen, Download, Copy, Check, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Shield, ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, FolderOpen, Sun, Moon, FileKey, Monitor, ShieldAlert, Link as LinkIcon, Key, Zap, FileArchive, Globe, Activity, LayoutDashboard, Menu, X, Search, BookOpen, Download, Copy, Check, Eye, EyeOff } from 'lucide-react';
 import { TrustStoreInspector } from './TrustStoreInspector';
 import { CsrInspector } from './CsrInspector';
 import { WinCertStoreInspector } from './WinCertStoreInspector';
@@ -82,13 +83,7 @@ const CATEGORIES = [
   }
 ];
 
-export interface CertificateAppProps {
-  externalMode?: AppMode | null;
-  onExternalModeSync?: (mode: AppMode) => void;
-  onBackToRoot?: () => void;
-}
-
-function App({ externalMode, onExternalModeSync, onBackToRoot }: CertificateAppProps = {}) {
+function App() {
   const { t, i18n } = useTranslation();
   const [mode, setMode] = useState<AppMode>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -98,11 +93,17 @@ function App({ externalMode, onExternalModeSync, onBackToRoot }: CertificateAppP
   });
 
   useEffect(() => {
-    if (externalMode) {
-      setMode((prev) => (prev === externalMode ? prev : externalMode));
-      localStorage.setItem('app-mode', externalMode);
-    }
-  }, [externalMode]);
+    const syncModeFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const queryMode = params.get('mode') as AppMode | null;
+      if (queryMode) {
+        setMode((prev) => (prev === queryMode ? prev : queryMode));
+        localStorage.setItem('app-mode', queryMode);
+      }
+    };
+    window.addEventListener('popstate', syncModeFromUrl);
+    return () => window.removeEventListener('popstate', syncModeFromUrl);
+  }, []);
 
   const [theme, setTheme] = useState<Theme>(() => getInitialThemePreference());
 
@@ -165,7 +166,9 @@ function App({ externalMode, onExternalModeSync, onBackToRoot }: CertificateAppP
   const switchMode = (m: AppMode) => {
     setMode(m);
     localStorage.setItem('app-mode', m);
-    onExternalModeSync?.(m);
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set('mode', m);
+    window.history.replaceState(window.history.state, '', nextUrl);
     setSidebarOpen(false); // Close mobile sidebar on navigation
     if (mainContentAreaRef.current) {
       mainContentAreaRef.current.scrollTop = 0;
@@ -447,7 +450,7 @@ function App({ externalMode, onExternalModeSync, onBackToRoot }: CertificateAppP
   return (
     <ToastProvider>
       <div className="app-layout">
-        <AppSidebar mode={mode} onModeChange={switchMode} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onBackToRoot={onBackToRoot} />
+        <AppSidebar mode={mode} onModeChange={switchMode} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <div
           className="app-main-wrapper is-floated"
@@ -881,7 +884,7 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
 }
 
 // ─── Sidebar Navigation ───────────────────────────────────────────────────────
-function AppSidebar({ mode, onModeChange, isOpen, onClose, onBackToRoot }: { mode: AppMode, onModeChange: (m: AppMode) => void, isOpen: boolean, onClose: () => void, onBackToRoot?: () => void }) {
+function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, onModeChange: (m: AppMode) => void, isOpen: boolean, onClose: () => void }) {
   const { t } = useTranslation();
   const navRef = useRef<HTMLElement>(null);
 
@@ -906,23 +909,6 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose, onBackToRoot }: { mod
             <X size={20} />
           </button>
         </div>
-
-        {onBackToRoot && (
-          <div className="sidebar-servitorium-wrap">
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onBackToRoot();
-              }}
-              className="sidebar-nav-btn sidebar-servitorium-btn"
-              title={t('servitor.controls.returnToServitorium')}
-            >
-              <ArrowLeft size={17} />
-              <span>{t('servitor.controls.servitoriumShort')}</span>
-            </button>
-          </div>
-        )}
 
         <nav className="app-sidebar-nav" ref={navRef}>
           {CATEGORIES.map((category, idx) => (

@@ -1,4 +1,4 @@
-import { validateCsr, validateSanItem, validatePrivateKeyPem, isValidIpv4, isValidIpv6 } from './src/apps/certificate-management/utils/csrValidation.ts';
+import { validateCsr, validateSanItem, validatePrivateKeyPem, isValidIpv4, isValidIpv6 } from './src/utils/csrValidation.ts';
 import forge from 'node-forge';
 
 console.log('────────────────────────────────────────────────────────');
