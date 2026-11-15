@@ -26,7 +26,7 @@ export const REGISTERED_APPS: RegisteredReactApp[] = [
     description:
       'Inspect UEFI Secure Boot NVRAM databases, Windows & Java trust stores, X.509 certificate chains, CSRs, CRLs, OCSP responders, TLS endpoints, and CT logs.',
     descriptionKey: 'servitor.apps.certMgmt.description',
-    version: '1.4.0',
+    version: '1.0.0',
     accentColor: '#10b981',
     icon: Shield,
     subModules: [

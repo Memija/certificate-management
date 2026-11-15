@@ -38,7 +38,7 @@ import './index.css';
 export type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
 export type Theme = 'dark' | 'light' | 'system';
 
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.0.0';
 
 const CATEGORIES = [
   {
