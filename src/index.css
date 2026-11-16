@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-
 /* ════════════════════════════════════════════════════════════
    DESIGN TOKENS: Dark Theme (Default)
    Sleek Obsidian & Cyber Emerald PKI Aesthetic
@@ -474,6 +472,18 @@ a:hover {
 
 [data-theme="light"] .glass-card:hover {
   box-shadow: 0 10px 28px -6px rgba(15, 23, 42, 0.08), var(--glass-inner-light);
+}
+
+/* Skip layout, paint, and GPU backdrop-filter work for off-screen certificate list cards */
+.signature-item,
+.wincert-card-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 76px;
+}
+
+.ct-entry-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
 }
 
 /* ════════════════════════════════════════════════════════════

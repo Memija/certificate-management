@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useDeferredValue, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import {
@@ -10,8 +10,8 @@ import {
 import { useToast } from './ToastContext';
 import { splitPurposes, translatePurpose, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
-import { matchesSearch } from './utils/textSearch';
-import { fetchLocalApiJson, getWebFallbackCertStore, WebApiUnavailableError } from './utils/webFallbacks';
+import { matchesSearch, prepareSearchQuery, matchesPreparedSearch } from './utils/textSearch';
+import { fetchLocalApiJson, WebApiUnavailableError } from './utils/apiClient';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ function CopyButton({ text }: { text: string }) {
 
 // ─── Certificate detail panel ─────────────────────────────────────────────────
 
-function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEntry; search?: string; activeStore?: StoreName }) {
+const CertEntryCard = memo(function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEntry; search?: string; activeStore?: StoreName }) {
   const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [expanded, setExpanded] = useState(false);
@@ -143,7 +143,7 @@ function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEn
 
   return (
     <div
-      className="glass-card"
+      className="glass-card wincert-card-item"
       style={{
         marginBottom: '0.75rem',
         borderLeft: `3px solid ${isExpired ? 'var(--danger-color)' : expiringSoon ? 'var(--warning-color)' : 'var(--glass-border)'}`,
@@ -369,17 +369,23 @@ function CertEntryCard({ entry, search = '', activeStore }: { entry: CertStoreEn
       )}
     </div>
   );
-}
+});
 
 // ─── Summary stats bar ────────────────────────────────────────────────────────
 
 type TimelineFilterType = 'all' | 'valid' | '30days' | 'expired';
 
-function StatsBar({ certs, filter, setFilter }: { certs: CertStoreEntry[], filter: TimelineFilterType, setFilter: (f: TimelineFilterType) => void }) {
+const StatsBar = memo(function StatsBar({ certs, filter, setFilter }: { certs: CertStoreEntry[], filter: TimelineFilterType, setFilter: (f: TimelineFilterType) => void }) {
   const { t } = useTranslation();
-  const expired = certs.filter(c => c.isExpired).length;
-  const expiringSoon = certs.filter(c => !c.isExpired && c.isExpiringSoon).length;
-  const valid = certs.length - expired;
+  const { expired, expiringSoon, valid } = useMemo(() => {
+    let exp = 0;
+    let soon = 0;
+    for (const c of certs) {
+      if (c.isExpired) exp++;
+      else if (c.isExpiringSoon) soon++;
+    }
+    return { expired: exp, expiringSoon: soon, valid: certs.length - exp };
+  }, [certs]);
 
   const isFilterDisabled = certs.length <= 1;
 
@@ -418,7 +424,7 @@ function StatsBar({ certs, filter, setFilter }: { certs: CertStoreEntry[], filte
       })}
     </div>
   );
-}
+});
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -463,18 +469,19 @@ export function WinCertStoreInspector() {
     };
   }, [isSortOpen]);
 
-  const fetchStore = useCallback(async (store: StoreName, loc: StoreLocation, elevate = false) => {
+  const fetchStore = useCallback(async (store: StoreName, loc: StoreLocation, elevate = false, refresh = false) => {
     setError('');
     setNeedsElevation(false);
     if (elevate) setElevating(true);
     else setLoading(true);
 
     try {
-      const url = `/api/certstore?store=${store}&location=${loc}${elevate ? '&elevate=true' : ''}`;
+      const url = `/api/certstore?store=${store}&location=${loc}${elevate ? '&elevate=true' : ''}${refresh ? '&refresh=true' : ''}`;
       const json = await fetchLocalApiJson<{ data: CertStoreEntry[] }>(url);
       setCerts(json.data || []);
     } catch (err: any) {
       if (err instanceof WebApiUnavailableError || err?.isWebFallback) {
+        const { getWebFallbackCertStore } = await import('./utils/webFallbacks');
         setCerts(getWebFallbackCertStore(store, loc));
       } else {
         const errorMsg = err.message || '';
@@ -499,26 +506,43 @@ export function WinCertStoreInspector() {
     fetchStore(activeStore, location);
   }, [activeStore, location, fetchStore]);
 
-  const filtered = certs.map((c, idx) => ({ cert: c, origIdx: idx })).filter(({ cert: c }) => {
-    if (timelineFilter === 'expired' && !c.isExpired) return false;
-    if (timelineFilter === 'valid' && c.isExpired) return false;
-    if (timelineFilter === '30days' && (!c.isExpiringSoon || c.isExpired)) return false;
-    if (!search) return true;
-    return matchesSearch(
-      [c.subject, c.issuer, c.thumbprint, c.friendlyName],
-      search
-    );
-  }).sort((a, b) => {
-    if (sortBy === 'expiry') {
-      const diff = new Date(a.cert.notAfter).getTime() - new Date(b.cert.notAfter).getTime();
-      return sortAsc ? diff : -diff;
-    }
-    if (sortBy === 'name') {
-      const diff = a.cert.subject.localeCompare(b.cert.subject);
-      return sortAsc ? diff : -diff;
-    }
-    return sortAsc ? (a.origIdx - b.origIdx) : (b.origIdx - a.origIdx);
-  }).map(({ cert }) => cert);
+  const deferredSearch = useDeferredValue(search);
+
+  const indexedCerts = useMemo(
+    () =>
+      certs.map((c, idx) => ({
+        cert: c,
+        origIdx: idx,
+        notAfterMs: new Date(c.notAfter).getTime(),
+        searchTarget: [c.subject, c.issuer, c.thumbprint, c.friendlyName].filter(Boolean).join(' '),
+      })),
+    [certs]
+  );
+
+  const filtered = useMemo(() => {
+    const preparedQuery = prepareSearchQuery(deferredSearch);
+    const matching = indexedCerts.filter(({ cert: c, searchTarget }) => {
+      if (timelineFilter === 'expired' && !c.isExpired) return false;
+      if (timelineFilter === 'valid' && c.isExpired) return false;
+      if (timelineFilter === '30days' && (!c.isExpiringSoon || c.isExpired)) return false;
+      if (preparedQuery.empty) return true;
+      return matchesPreparedSearch(searchTarget, preparedQuery);
+    });
+
+    matching.sort((a, b) => {
+      if (sortBy === 'expiry') {
+        const diff = a.notAfterMs - b.notAfterMs;
+        return sortAsc ? diff : -diff;
+      }
+      if (sortBy === 'name') {
+        const diff = a.cert.subject.localeCompare(b.cert.subject);
+        return sortAsc ? diff : -diff;
+      }
+      return sortAsc ? a.origIdx - b.origIdx : b.origIdx - a.origIdx;
+    });
+
+    return matching.map(({ cert }) => cert);
+  }, [indexedCerts, deferredSearch, timelineFilter, sortBy, sortAsc]);
 
   const storeInfo = STORES.find(s => s.name === activeStore)!;
 
@@ -586,7 +610,7 @@ export function WinCertStoreInspector() {
           <div className="premium-header-actions">
             <button
               className="btn btn-secondary btn-sm"
-              onClick={() => fetchStore(activeStore, location)}
+              onClick={() => fetchStore(activeStore, location, false, true)}
               title={t('app.winCertStore.refresh', 'Reload')}
               style={{ gap: '0.45rem' }}
             >

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useDeferredValue } from 'react';
 import { 
   Search, 
   Globe, 
@@ -13,13 +13,16 @@ import {
   XCircle, 
   AlertTriangle,
   FileText,
-  Home
+  Home,
+  ChevronDown
 } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
 import { LearningTerm } from './LearningTerm';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
 import { CT_LOG_PRESETS, type CtEntry, type CtLogPreset } from './utils/ctLogSamples';
-import { fetchLocalApiJson, searchCtLogsClientSide, WebApiUnavailableError } from './utils/webFallbacks';
+import { fetchLocalApiJson, WebApiUnavailableError } from './utils/apiClient';
+
+const CT_PAGE_SIZE = 60;
 
 export function CtLogSearch() {
   const { t, i18n } = useTranslation();
@@ -37,6 +40,8 @@ export function CtLogSearch() {
     rateLimited: boolean;
   } | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(CT_PAGE_SIZE);
+  const deferredFilterQuery = useDeferredValue(filterQuery);
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -54,6 +59,7 @@ export function CtLogSearch() {
     setLoading(true);
     setError('');
     setSearchedDomain(trimmed);
+    setVisibleCount(CT_PAGE_SIZE);
 
     try {
       let result: { data: CtEntry[]; provider?: 'crt.sh' | 'certspotter' | 'sample'; rateLimited?: boolean };
@@ -61,38 +67,45 @@ export function CtLogSearch() {
         result = await fetchLocalApiJson(`/api/ctsearch?domain=${encodeURIComponent(trimmed)}`);
       } catch (apiErr: any) {
         if (apiErr instanceof WebApiUnavailableError || apiErr?.isWebFallback) {
+          const { searchCtLogsClientSide } = await import('./utils/webFallbacks');
           result = await searchCtLogsClientSide(trimmed, preset);
         } else {
           throw apiErr;
         }
       }
 
-      // Deduplicate and merge live results with historical audit log records if available
+      // O(N) deduplication and merge live results with historical audit log records if available
       const liveItems: CtEntry[] = result.data || [];
-      const combined = [...liveItems];
+      const seenSerials = new Set<string>();
+      const seenIds = new Set<string>();
+      const uniqueWithTs: { entry: CtEntry; notBeforeMs: number }[] = [];
+
+      const pushIfUnique = (item: CtEntry) => {
+        const serialKey = (item.serial_number || '').toLowerCase();
+        const idKey = String(item.id);
+        if ((serialKey && seenSerials.has(serialKey)) || seenIds.has(idKey)) {
+          return;
+        }
+        if (serialKey) seenSerials.add(serialKey);
+        seenIds.add(idKey);
+        uniqueWithTs.push({
+          entry: item,
+          notBeforeMs: new Date(item.not_before).getTime() || 0,
+        });
+      };
+
+      for (const item of liveItems) {
+        pushIfUnique(item);
+      }
 
       if (preset && preset.sampleData) {
         for (const sampleItem of preset.sampleData) {
-          const alreadyPresent = combined.some(
-            c => c.serial_number.toLowerCase() === sampleItem.serial_number.toLowerCase() ||
-                 String(c.id) === String(sampleItem.id)
-          );
-          if (!alreadyPresent) {
-            combined.push(sampleItem);
-          }
+          pushIfUnique(sampleItem);
         }
       }
 
-      const uniqueResults = combined.reduce((acc: CtEntry[], current: CtEntry) => {
-        if (!acc.some(item => item.serial_number.toLowerCase() === current.serial_number.toLowerCase())) {
-          acc.push(current);
-        }
-        return acc;
-      }, []);
-
-      const sorted = uniqueResults.sort(
-        (a: CtEntry, b: CtEntry) => new Date(b.not_before).getTime() - new Date(a.not_before).getTime()
-      );
+      uniqueWithTs.sort((a, b) => b.notBeforeMs - a.notBeforeMs);
+      const sorted = uniqueWithTs.map(x => x.entry);
 
       setResults(sorted);
       setIsSampleData(result.provider === 'sample');
@@ -169,16 +182,17 @@ export function CtLogSearch() {
   // Filtered results based on validity and search query
   const filteredResults = useMemo(() => {
     if (!results) return [];
+    const now = Date.now();
+    const q = deferredFilterQuery.trim().toLowerCase();
 
     return results.filter(entry => {
       // Status filter
-      const expired = isExpired(entry.not_after);
+      const expired = new Date(entry.not_after).getTime() < now;
       if (filterStatus === 'valid' && expired) return false;
       if (filterStatus === 'expired' && !expired) return false;
 
       // Query filter
-      if (filterQuery.trim()) {
-        const q = filterQuery.toLowerCase();
+      if (q) {
         const matchesCn = entry.common_name?.toLowerCase().includes(q);
         const matchesSan = entry.name_value?.toLowerCase().includes(q);
         const matchesIssuer = entry.issuer_name?.toLowerCase().includes(q);
@@ -190,15 +204,21 @@ export function CtLogSearch() {
 
       return true;
     });
-  }, [results, filterStatus, filterQuery]);
+  }, [results, filterStatus, deferredFilterQuery]);
+
+  const visibleResults = useMemo(
+    () => filteredResults.slice(0, visibleCount),
+    [filteredResults, visibleCount]
+  );
 
   // Counts for tabs
   const counts = useMemo(() => {
     if (!results) return { all: 0, valid: 0, expired: 0 };
+    const now = Date.now();
     let valid = 0;
     let expired = 0;
     for (const r of results) {
-      if (isExpired(r.not_after)) {
+      if (new Date(r.not_after).getTime() < now) {
         expired++;
       } else {
         valid++;
@@ -438,7 +458,7 @@ export function CtLogSearch() {
                   <button
                     type="button"
                     className={`segmented-tab-btn ${filterStatus === 'all' ? 'active' : ''}`}
-                    onClick={() => setFilterStatus('all')}
+                    onClick={() => { setFilterStatus('all'); setVisibleCount(CT_PAGE_SIZE); }}
                   >
                     <span>{t('app.ctLog.filterAll', 'All')}</span>
                     <span className="tab-count-pill">{counts.all}</span>
@@ -446,7 +466,7 @@ export function CtLogSearch() {
                   <button
                     type="button"
                     className={`segmented-tab-btn ${filterStatus === 'valid' ? 'active tab-accent-valid' : ''}`}
-                    onClick={() => setFilterStatus('valid')}
+                    onClick={() => { setFilterStatus('valid'); setVisibleCount(CT_PAGE_SIZE); }}
                   >
                     <span>{t('app.ctLog.filterValid', 'Active')}</span>
                     <span className="tab-count-pill">{counts.valid}</span>
@@ -454,7 +474,7 @@ export function CtLogSearch() {
                   <button
                     type="button"
                     className={`segmented-tab-btn ${filterStatus === 'expired' ? 'active tab-accent-expired' : ''}`}
-                    onClick={() => setFilterStatus('expired')}
+                    onClick={() => { setFilterStatus('expired'); setVisibleCount(CT_PAGE_SIZE); }}
                   >
                     <span>{t('app.ctLog.filterExpired', 'Expired')}</span>
                     <span className="tab-count-pill">{counts.expired}</span>
@@ -466,7 +486,7 @@ export function CtLogSearch() {
                   <input
                     type="text"
                     value={filterQuery}
-                    onChange={e => setFilterQuery(e.target.value)}
+                    onChange={e => { setFilterQuery(e.target.value); setVisibleCount(CT_PAGE_SIZE); }}
                     placeholder={t('app.ctLog.filterPlaceholder', 'Filter results...')}
                     className="form-input form-input-sm"
                     style={{ paddingLeft: '2rem', height: '32px', fontSize: '0.78rem' }}
@@ -486,8 +506,9 @@ export function CtLogSearch() {
                 </p>
               </div>
             ) : (
+              <>
               <div className="responsive-grid-2" style={{ gap: '1.15rem' }}>
-                {filteredResults.map((entry) => {
+                {visibleResults.map((entry) => {
                   const expired = isExpired(entry.not_after);
                   const isCnCopied = copiedKey === `cn-${entry.id}`;
                   const isSerialCopied = copiedKey === `serial-${entry.id}`;
@@ -495,7 +516,7 @@ export function CtLogSearch() {
                   return (
                     <div 
                       key={entry.id} 
-                      className="glass-card edu-card-hover" 
+                      className="glass-card edu-card-hover ct-entry-card" 
                       style={{ 
                         display: 'flex', 
                         flexDirection: 'column', 
@@ -622,6 +643,22 @@ export function CtLogSearch() {
                   );
                 })}
               </div>
+              {filteredResults.length > visibleCount && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setVisibleCount(c => c + CT_PAGE_SIZE)}
+                    style={{ gap: '0.5rem' }}
+                  >
+                    <ChevronDown size={16} />
+                    <span>
+                      {t('common.loadMore', 'Show More')} ({visibleResults.length} / {filteredResults.length})
+                    </span>
+                  </button>
+                </div>
+              )}
+              </>
             )}
           </div>
         )}

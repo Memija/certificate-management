@@ -5,6 +5,7 @@ import * as forge from 'node-forge';
 import { useToast } from './ToastContext';
 import { validateCsr, PLACEHOLDER_CN_LIST, isOnlyPlaceholderSubject, isPlaceholderValue } from './utils/csrValidation';
 import { isValidCountryCode, getCountryName } from './utils/countryCodes';
+import { generateRsaKeyPairAsync } from './utils/rsaKeyGenerator';
 
 export function KeyGenerator() {
   const { t, i18n } = useTranslation();
@@ -59,11 +60,10 @@ export function KeyGenerator() {
     }
 
     setGenerating(true);
-    
-    // Use setTimeout so the UI can update before blocking key generation
-    setTimeout(() => {
+
+    void (async () => {
       try {
-        const keys = forge.pki.rsa.generateKeyPair(keySize);
+        const keys = await generateRsaKeyPairAsync(keySize);
         const privateKeyPem = forge.pki.privateKeyToPem(keys.privateKey);
         
         const trimmedCn = cn.trim();
@@ -126,7 +126,7 @@ export function KeyGenerator() {
       } finally {
         setGenerating(false);
       }
-    }, 100);
+    })();
   };
 
   const copyToClipboard = (text: string, label: string) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useDeferredValue, useMemo, lazy, Suspense } from 'react';
 import { 
   BookOpen, 
   Search, 
@@ -13,8 +13,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import type { TermId } from './LearningTerm';
 import { EDUCATION_TOPICS } from './educationTopicsData';
-import { EducationTopicModal } from './EducationTopicModal';
 import { matchesSearch } from './utils/textSearch';
+
+const EducationTopicModal = lazy(() => import('./EducationTopicModal').then(m => ({ default: m.EducationTopicModal })));
 
 interface CategoryDef {
   id: string;
@@ -91,29 +92,33 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
   const [selectedTopicId, setSelectedTopicId] = useState<TermId | null>(null);
   const { t } = useTranslation();
 
-  const filterTerms = (keys: TermId[]) => {
-    if (!search.trim()) return keys;
-    return keys.filter(key => {
-      const topicTitle = t(`app.educationCenter.topicDetails.${key}.title`, EDUCATION_TOPICS[key]?.title || '');
-      const defaultTitle = EDUCATION_TOPICS[key]?.title || '';
-      
-      const text = t(`app.learningTerms.${key}`, '');
-      let altTitle = '';
-      if (key === 'x509') {
-        altTitle = 'X.509';
-      } else {
-        const firstPeriodIdx = text.indexOf('.');
-        if (firstPeriodIdx > 0 && firstPeriodIdx < 60) {
-          altTitle = text.substring(0, firstPeriodIdx);
-        }
-      }
+  const deferredSearch = useDeferredValue(search);
 
-      return matchesSearch(
-        [key, topicTitle, defaultTitle, altTitle],
-        search
-      );
-    });
-  };
+  const filterTerms = useMemo(() => {
+    return (keys: TermId[]) => {
+      if (!deferredSearch.trim()) return keys;
+      return keys.filter(key => {
+        const topicTitle = t(`app.educationCenter.topicDetails.${key}.title`, EDUCATION_TOPICS[key]?.title || '');
+        const defaultTitle = EDUCATION_TOPICS[key]?.title || '';
+        
+        const text = t(`app.learningTerms.${key}`, '');
+        let altTitle = '';
+        if (key === 'x509') {
+          altTitle = 'X.509';
+        } else {
+          const firstPeriodIdx = text.indexOf('.');
+          if (firstPeriodIdx > 0 && firstPeriodIdx < 60) {
+            altTitle = text.substring(0, firstPeriodIdx);
+          }
+        }
+
+        return matchesSearch(
+          [key, topicTitle, defaultTitle, altTitle],
+          deferredSearch
+        );
+      });
+    };
+  }, [deferredSearch, t]);
 
   const visibleCategories = CATEGORIES.filter(c => selectedCat === 'all' || c.id === selectedCat);
 
@@ -300,11 +305,15 @@ export function EducationCenter({ onNavigate }: { onNavigate?: (mode: any) => vo
         </div>
 
         {/* Detailed Topic Modal */}
-        <EducationTopicModal
-          topicId={selectedTopicId}
-          onClose={() => setSelectedTopicId(null)}
-          onNavigate={onNavigate}
-        />
+        {selectedTopicId && (
+          <Suspense fallback={null}>
+            <EducationTopicModal
+              topicId={selectedTopicId}
+              onClose={() => setSelectedTopicId(null)}
+              onNavigate={onNavigate}
+            />
+          </Suspense>
+        )}
 
       </div>
     </div>

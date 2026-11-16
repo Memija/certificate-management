@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
   Upload, FileKey, AlertTriangle, CheckCircle, XCircle, ShieldCheck, Lock,
   ChevronDown, ChevronUp, Copy, Download, RefreshCw, X, Eye, EyeOff, Sparkles,
@@ -9,8 +9,9 @@ import { parseCSRFile, parseCSRFromText, SAMPLE_CSR_PEM } from './utils/csrParse
 import { LearningTerm } from './LearningTerm';
 import type { ParsedCSR } from './utils/csrParser';
 import { formatPurposesList, formatExtensionValue } from './utils/purposeFormatter';
-import { CsrEditorModal } from './CsrEditorModal';
 import { useToast } from './ToastContext';
+
+const CsrEditorModal = lazy(() => import('./CsrEditorModal').then(m => ({ default: m.CsrEditorModal })));
 
 // ─── Small reusable pieces ────────────────────────────────────────────────────
 
@@ -794,28 +795,30 @@ export function CsrInspector({ onNavigate }: { onNavigate?: (mode: any) => void 
 
       {/* CSR Editor Modal */}
       {editingCsr && (
-        <CsrEditorModal
-          isOpen={!!editingCsr}
-          csr={editingCsr.csr}
-          initialName={editingCsr.name}
-          onClose={() => setEditingCsr(null)}
-          onSave={(newCsr, fileName, generatedPrivateKeyPem) => {
-            const newId = `csr-edited-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-            const newEntry: CSREntry = {
-              id: newId,
-              name: fileName,
-              result: {
-                ok: true,
-                csr: newCsr,
-                privateKeyPem: generatedPrivateKeyPem,
-              },
-              loading: false,
-            };
-            setEntries(prev => [...prev, newEntry]);
-            setActiveEntryId(newId);
-            showToast(t('app.csr.editor.saveSuccess', 'CSR successfully re-signed and loaded!'), 'success');
-          }}
-        />
+        <Suspense fallback={null}>
+          <CsrEditorModal
+            isOpen={!!editingCsr}
+            csr={editingCsr.csr}
+            initialName={editingCsr.name}
+            onClose={() => setEditingCsr(null)}
+            onSave={(newCsr, fileName, generatedPrivateKeyPem) => {
+              const newId = `csr-edited-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+              const newEntry: CSREntry = {
+                id: newId,
+                name: fileName,
+                result: {
+                  ok: true,
+                  csr: newCsr,
+                  privateKeyPem: generatedPrivateKeyPem,
+                },
+                loading: false,
+              };
+              setEntries(prev => [...prev, newEntry]);
+              setActiveEntryId(newId);
+              showToast(t('app.csr.editor.saveSuccess', 'CSR successfully re-signed and loaded!'), 'success');
+            }}
+          />
+        </Suspense>
       )}
     </div>
   );

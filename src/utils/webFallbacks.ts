@@ -2,6 +2,9 @@ import forge from 'node-forge';
 import { CT_LOG_PRESETS, type CtEntry, type CtLogPreset } from './ctLogSamples';
 import { OCSP_SAMPLE_PRESETS } from './ocspSamples';
 import type { StoreLocation, StoreName } from '../WinCertStoreInspector';
+import { WebApiUnavailableError, fetchLocalApiJson } from './apiClient';
+
+export { WebApiUnavailableError, fetchLocalApiJson };
 
 // Pre-generated 2048-bit RSA keypair PEMs for instant, deterministic in-browser X.509 certificate synthesis
 const FALLBACK_PRIVATE_KEY_PEM = `-----BEGIN RSA PRIVATE KEY-----
@@ -35,62 +38,6 @@ function getFallbackKeyPair(): forge.pki.rsa.KeyPair {
   }
 }
 
-export class WebApiUnavailableError extends Error {
-  isWebFallback = true;
-  constructor(message = 'Local backend API is unavailable in static web mode') {
-    super(message);
-    this.name = 'WebApiUnavailableError';
-  }
-}
-
-/**
- * Fetches JSON from a local `/api/*` endpoint and throws `WebApiUnavailableError`
- * when running as a static web page (404, 405, HTML SPA fallback, or network failure).
- */
-export async function fetchLocalApiJson<T = any>(url: string, init?: RequestInit): Promise<T> {
-  let res: Response;
-  try {
-    res = await fetch(url, init);
-  } catch {
-    throw new WebApiUnavailableError();
-  }
-
-  const contentType = (res.headers.get('content-type') || '').toLowerCase();
-  const rawText = await res.text();
-  const trimmed = rawText.trim();
-
-  // Static web hosts return HTML (index.html or 404 page) or empty body when /api/* is missing
-  if (
-    !trimmed ||
-    trimmed.startsWith('<!') ||
-    trimmed.startsWith('<html') ||
-    contentType.includes('text/html')
-  ) {
-    throw new WebApiUnavailableError();
-  }
-
-  let parsed: any;
-  try {
-    parsed = JSON.parse(trimmed);
-  } catch {
-    throw new WebApiUnavailableError();
-  }
-
-  if (!res.ok) {
-    const errMsg = parsed?.error || `HTTP ${res.status}`;
-    // If running on a non-Windows server where powershell.exe or certutil is missing, fall back to web mode
-    if (
-      res.status === 404 ||
-      res.status === 405 ||
-      /powershell\.exe.*not found|certutil.*not found|ENOENT/i.test(errMsg)
-    ) {
-      throw new WebApiUnavailableError(errMsg);
-    }
-    throw new Error(errMsg);
-  }
-
-  return parsed as T;
-}
 
 interface SynthCertSpec {
   serialHex: string;

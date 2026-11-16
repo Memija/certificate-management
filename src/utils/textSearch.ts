@@ -43,19 +43,62 @@ const LATIN_TO_CYRILLIC: Record<string, string> = {
   'ć': 'ћ', 'u': 'у', 'f': 'ф', 'h': 'х', 'c': 'ц',
   'č': 'ч', 'š': 'ш',
   'A': 'А', 'B': 'Б', 'V': 'В', 'G': 'Г', 'D': 'Д',
-  'Đ': 'Ђ', 'E': 'Е', 'Ž': 'Ž', 'Z': 'З', 'I': 'И',
+  'Đ': 'Ђ', 'E': 'Е', 'Ž': 'Ж', 'Z': 'З', 'I': 'И',
   'J': 'Ј', 'K': 'К', 'L': 'Л', 'M': 'М', 'N': 'Н',
   'O': 'О', 'P': 'П', 'R': 'Р', 'S': 'С', 'T': 'Т',
   'Ć': 'Ћ', 'U': 'У', 'F': 'Ф', 'H': 'Х', 'C': 'Ц',
   'Č': 'Ч', 'Š': 'Ш',
 };
 
+const NON_ASCII_RE = /[\u0080-\uFFFF]/;
+
+interface NormalizedEntry {
+  rawLower: string;
+  norm: string;
+  ultra: string;
+}
+
+const normCache = new Map<string, NormalizedEntry>();
+const MAX_NORM_CACHE = 4096;
+
+function getNormalizedEntry(text: string): NormalizedEntry {
+  const cached = normCache.get(text);
+  if (cached) return cached;
+
+  const rawLower = text.toLowerCase();
+  let norm: string;
+  let ultra: string;
+
+  // Fast path for pure ASCII strings (most X.509 DNs, serials, thumbprints)
+  if (!NON_ASCII_RE.test(rawLower)) {
+    norm = rawLower.trim();
+    ultra = norm.includes('dj') ? norm.replace(/dj/g, 'd') : norm;
+  } else {
+    const latin = cyrillicToLatin(text);
+    norm = stripDiacritics(latin.toLowerCase()).trim();
+    ultra = norm.includes('dj') ? norm.replace(/dj/g, 'd') : norm;
+  }
+
+  const entry: NormalizedEntry = { rawLower, norm, ultra };
+  if (normCache.size >= MAX_NORM_CACHE) {
+    normCache.clear();
+  }
+  normCache.set(text, entry);
+  return entry;
+}
+
 /**
  * Transliterates Cyrillic text to Latin.
  */
 export function cyrillicToLatin(text: string): string {
   if (!text) return '';
-  return text.split('').map(ch => CYRILLIC_TO_LATIN[ch] || ch).join('');
+  if (!NON_ASCII_RE.test(text)) return text;
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    out += CYRILLIC_TO_LATIN[ch] ?? ch;
+  }
+  return out;
 }
 
 /**
@@ -65,9 +108,16 @@ export function latinToCyrillic(text: string): string {
   if (!text) return '';
   let res = text;
   for (const [from, to] of LATIN_DIGRAPHS) {
-    res = res.split(from).join(to);
+    if (res.includes(from)) {
+      res = res.split(from).join(to);
+    }
   }
-  return res.split('').map(ch => LATIN_TO_CYRILLIC[ch] || ch).join('');
+  let out = '';
+  for (let i = 0; i < res.length; i++) {
+    const ch = res[i];
+    out += LATIN_TO_CYRILLIC[ch] ?? ch;
+  }
+  return out;
 }
 
 /**
@@ -76,6 +126,7 @@ export function latinToCyrillic(text: string): string {
  */
 export function stripDiacritics(text: string): string {
   if (!text) return '';
+  if (!NON_ASCII_RE.test(text) && !/d[zZ]/i.test(text)) return text;
   return text
     .replace(/đ/g, 'dj')
     .replace(/Đ/g, 'Dj')
@@ -94,30 +145,15 @@ export function stripDiacritics(text: string): string {
  */
 export function normalizeForSearch(text: string): string {
   if (!text) return '';
-  const latin = cyrillicToLatin(text);
-  const stripped = stripDiacritics(latin.toLowerCase());
-  return stripped.trim();
+  return getNormalizedEntry(text).norm;
 }
 
-/**
- * Secondary normalization that also maps 'dj' -> 'd' to handle varied South Slavic keyboard habits.
- */
-function normalizeUltra(text: string): string {
-  return normalizeForSearch(text).replace(/dj/g, 'd');
-}
-
-/**
- * Checks whether a single token matches inside the target text, allowing for
- * common Slavic inflection variations (case endings like -a, -u, -e, -i, -om, etc.).
- */
 function tokenMatches(targetText: string, token: string): boolean {
   if (targetText.includes(token)) return true;
   if (token.length >= 4) {
-    // Strip trailing vowel (e.g. 'razmena' -> 'razmen' matches 'razmenu')
     if (/[aeiou]$/.test(token) && targetText.includes(token.slice(0, -1))) {
       return true;
     }
-    // Strip common inflection suffixes
     const strippedSuffix = token.replace(/(ma|ima|ama|om|em|og|eg|im|ih|ov|ev)$/, '');
     if (strippedSuffix.length >= 3 && targetText.includes(strippedSuffix)) {
       return true;
@@ -126,64 +162,120 @@ function tokenMatches(targetText: string, token: string): boolean {
   return false;
 }
 
+export interface PreparedSearchQuery {
+  empty: boolean;
+  rawQueryLower: string;
+  normQuery: string;
+  queryTokens: string[];
+  ultraQuery: string;
+  ultraTokens: string[];
+  cyrillicQuery: string;
+  cyrillicTokens: string[];
+}
+
+let lastQueryRaw = '';
+let lastPreparedQuery: PreparedSearchQuery | null = null;
+
+/**
+ * Pre-computes all transliterated/normalized forms of a search query once so
+ * filtering hundreds of items avoids re-normalizing the query on every item.
+ */
+export function prepareSearchQuery(searchQuery: string): PreparedSearchQuery {
+  if (!searchQuery || !searchQuery.trim()) {
+    return {
+      empty: true,
+      rawQueryLower: '',
+      normQuery: '',
+      queryTokens: [],
+      ultraQuery: '',
+      ultraTokens: [],
+      cyrillicQuery: '',
+      cyrillicTokens: [],
+    };
+  }
+
+  if (searchQuery === lastQueryRaw && lastPreparedQuery) {
+    return lastPreparedQuery;
+  }
+
+  const rawQueryLower = searchQuery.toLowerCase().trim();
+  const qEntry = getNormalizedEntry(searchQuery);
+  const normQuery = qEntry.norm;
+  const queryTokens = normQuery.split(/\s+/).filter(Boolean);
+  const ultraQuery = qEntry.ultra;
+  const ultraTokens = ultraQuery.split(/\s+/).filter(Boolean);
+  const cyrillicQuery = latinToCyrillic(searchQuery).toLowerCase().trim();
+  const cyrillicTokens = cyrillicQuery.split(/\s+/).filter(Boolean);
+
+  const prepared: PreparedSearchQuery = {
+    empty: false,
+    rawQueryLower,
+    normQuery,
+    queryTokens,
+    ultraQuery,
+    ultraTokens,
+    cyrillicQuery,
+    cyrillicTokens,
+  };
+
+  lastQueryRaw = searchQuery;
+  lastPreparedQuery = prepared;
+  return prepared;
+}
+
+export function matchesPreparedSearch(
+  combinedTarget: string,
+  q: PreparedSearchQuery
+): boolean {
+  if (q.empty) return true;
+  if (!combinedTarget) return false;
+
+  const tEntry = getNormalizedEntry(combinedTarget);
+  if (!tEntry.norm) return false;
+
+  // 1. Direct standard substring match
+  if (tEntry.rawLower.includes(q.rawQueryLower)) return true;
+
+  // 2. Normalized Cyrillic->Latin + diacritic-stripped comparison
+  if (tokenMatches(tEntry.norm, q.normQuery)) return true;
+
+  // 3. Multi-word search in normalized form
+  if (q.queryTokens.length > 0 && q.queryTokens.every(tok => tokenMatches(tEntry.norm, tok))) {
+    return true;
+  }
+
+  // 4. Ultra-normalized comparison ('dj' <-> 'd')
+  if (q.ultraQuery !== q.normQuery || tEntry.ultra !== tEntry.norm) {
+    if (tokenMatches(tEntry.ultra, q.ultraQuery)) return true;
+    if (q.ultraTokens.length > 0 && q.ultraTokens.every(tok => tokenMatches(tEntry.ultra, tok))) {
+      return true;
+    }
+  }
+
+  // 5. Latin -> Cyrillic transliteration of query (only needed if target has non-ASCII chars)
+  if (NON_ASCII_RE.test(tEntry.rawLower)) {
+    if (tokenMatches(tEntry.rawLower, q.cyrillicQuery)) return true;
+    if (q.cyrillicTokens.length > 0 && q.cyrillicTokens.every(tok => tokenMatches(tEntry.rawLower, tok))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /**
  * Checks whether target text(s) match a search query.
- *
- * Handles:
- * - Direct substring matches (case-insensitive)
- * - Cyrillic content matched by Latin query (e.g. searching "baza" matches "База")
- * - Latin content matched by Cyrillic query (e.g. searching "база" matches "baza")
- * - Accent/diacritic insensitivity (e.g. "kljuc" matches "ključ" and "кључ")
- * - Multi-word / token search (all query words must match somewhere in targets)
- * - Inflection-tolerant matching for Slavic grammar
  */
 export function matchesSearch(
   targets: string | null | undefined | (string | null | undefined)[],
   searchQuery: string
 ): boolean {
-  if (!searchQuery || !searchQuery.trim()) return true;
+  const prepared = prepareSearchQuery(searchQuery);
+  if (prepared.empty) return true;
 
-  const targetList = Array.isArray(targets) ? targets : [targets];
-  const combinedTarget = targetList.filter(Boolean).join(' ');
-  if (!combinedTarget.trim()) return false;
+  const combinedTarget = Array.isArray(targets)
+    ? targets.filter(Boolean).join(' ')
+    : (targets || '');
 
-  const rawTargetLower = combinedTarget.toLowerCase();
-  const rawQueryLower = searchQuery.toLowerCase().trim();
-
-  // 1. Direct standard substring match
-  if (rawTargetLower.includes(rawQueryLower)) return true;
-
-  // 2. Normalized Cyrillic->Latin + diacritic-stripped comparison
-  const normTarget = normalizeForSearch(combinedTarget);
-  const normQuery = normalizeForSearch(searchQuery);
-
-  if (tokenMatches(normTarget, normQuery)) return true;
-
-  // 3. Multi-word search in normalized form
-  const queryTokens = normQuery.split(/\s+/).filter(Boolean);
-  if (queryTokens.every(tok => tokenMatches(normTarget, tok))) {
-    return true;
-  }
-
-  // 4. Ultra-normalized comparison ('dj' <-> 'd')
-  const ultraTarget = normalizeUltra(combinedTarget);
-  const ultraQuery = normalizeUltra(searchQuery);
-
-  if (tokenMatches(ultraTarget, ultraQuery)) return true;
-
-  const ultraTokens = ultraQuery.split(/\s+/).filter(Boolean);
-  if (ultraTokens.every(tok => tokenMatches(ultraTarget, tok))) {
-    return true;
-  }
-
-  // 5. Latin -> Cyrillic transliteration of query
-  const cyrillicQuery = latinToCyrillic(searchQuery).toLowerCase().trim();
-  if (tokenMatches(rawTargetLower, cyrillicQuery)) return true;
-
-  const cyrillicTokens = cyrillicQuery.split(/\s+/).filter(Boolean);
-  if (cyrillicTokens.every(tok => tokenMatches(rawTargetLower, tok))) {
-    return true;
-  }
-
-  return false;
+  return matchesPreparedSearch(combinedTarget, prepared);
 }

@@ -44,92 +44,126 @@ export interface ParsedTrustStore {
   warnings: string[];
 }
 
-// ─── Core X.509 parser (shared logic, duplicated to avoid cross-file deps) ──
+// ─── Core X.509 parser (single-pass ASN.1 extraction) ──────────────────────
+function extractParsedCertificate(cert: any, derStr: string): ParsedCertificate {
+  const issuerStr = cert.issuer.attributes.map((a: any) => `${a.shortName || a.name}=${a.value}`).join(', ');
+  const subjectStr = cert.subject.attributes.map((a: any) => `${a.shortName || a.name}=${a.value}`).join(', ');
+
+  const isSelfSigned = issuerStr === subjectStr;
+  const basicConstraints = cert.getExtension('basicConstraints') as any;
+  const isCA = basicConstraints ? basicConstraints.cA : isSelfSigned;
+  const isRoot = isCA && isSelfSigned;
+  const isIntermediate = isCA && !isRoot;
+  const isLeaf = !isCA;
+  const isExpired = new Date() > cert.validity.notAfter;
+
+  const mdSha1 = forge.md.sha1.create();
+  mdSha1.update(derStr);
+  const fingerprintSha1 = mdSha1.digest().toHex().match(/.{1,2}/g)?.join(':').toUpperCase() || '';
+
+  const mdSha256 = forge.md.sha256.create();
+  mdSha256.update(derStr);
+  const fingerprintSha256 = mdSha256.digest().toHex().match(/.{1,2}/g)?.join(':').toUpperCase() || '';
+
+  const signatureOid = cert.signatureOid || 'Unknown';
+  const signatureAlgorithm = (forge.pki.oids as any)[signatureOid] || signatureOid;
+
+  let publicKeyAlgorithm = 'Unknown';
+  let publicKeySize: number | null = null;
+  if (cert.publicKey && (cert.publicKey as any).n) {
+    publicKeyAlgorithm = 'RSA';
+    publicKeySize = (cert.publicKey as any).n.bitLength();
+  } else if (cert.publicKey) {
+    publicKeyAlgorithm = 'EC / Other';
+  }
+
+  const parsedExtensions = (cert.extensions || []).map((ext: any) => {
+    let valueStr = '';
+    if (typeof ext.value === 'string') {
+      valueStr = forge.util.bytesToHex(ext.value).match(/.{1,2}/g)?.join(' ').toUpperCase() || '';
+    }
+    return {
+      name: ext.name || (forge.pki.oids as any)[ext.id] || 'Unknown',
+      oid: ext.id,
+      critical: ext.critical || false,
+      value: valueStr,
+    };
+  });
+
+  const purposes: string[] = [];
+  const keyUsage = cert.getExtension('keyUsage') as any;
+  if (keyUsage?.digitalSignature) purposes.push('Digital Signature');
+  if (keyUsage?.keyCertSign) purposes.push('Certificate Sign');
+  if (keyUsage?.cRLSign) purposes.push('CRL Sign');
+  const eku = cert.getExtension('extKeyUsage') as any;
+  if (eku?.codeSigning) purposes.push('Code Signing');
+  if (eku?.serverAuth) purposes.push('Server Authentication');
+  if (eku?.clientAuth) purposes.push('Client Authentication');
+  if (eku?.emailProtection) purposes.push('Email Protection');
+  if (eku?.timeStamping) purposes.push('Time Stamping');
+  if (purposes.length === 0) purposes.push('General Purpose / Not Specified');
+
+  const b64 = forge.util.encode64(derStr);
+  const pemLines: string[] = [];
+  for (let i = 0; i < b64.length; i += 64) {
+    pemLines.push(b64.slice(i, i + 64));
+  }
+  const pem = `-----BEGIN CERTIFICATE-----\r\n${pemLines.join('\r\n')}\r\n-----END CERTIFICATE-----\r\n`;
+
+  return {
+    issuer: issuerStr,
+    subject: subjectStr,
+    validFrom: cert.validity.notBefore.toISOString(),
+    validTo: cert.validity.notAfter.toISOString(),
+    serialNumber: cert.serialNumber,
+    signatureType: 'X.509',
+    pem,
+    isRoot,
+    isIntermediate,
+    isLeaf,
+    isExpired,
+    purposes,
+    version: cert.version,
+    signatureOid,
+    signatureAlgorithm,
+    publicKeyAlgorithm,
+    publicKeySize,
+    fingerprintSha1,
+    fingerprintSha256,
+    extensions: parsedExtensions,
+  };
+}
+
 export function parseX509FromDer(derBuffer: ArrayBuffer): ParsedCertificate | null {
   try {
     const derStr = forge.util.createBuffer(new Uint8Array(derBuffer)).getBytes();
     const asn1 = forge.asn1.fromDer(derStr);
     const cert = forge.pki.certificateFromAsn1(asn1);
+    return extractParsedCertificate(cert, derStr);
+  } catch {
+    return null;
+  }
+}
 
-    const issuerStr = cert.issuer.attributes.map(a => `${a.shortName || a.name}=${a.value}`).join(', ');
-    const subjectStr = cert.subject.attributes.map(a => `${a.shortName || a.name}=${a.value}`).join(', ');
+function parseX509FromPemBlock(pemBlock: string): ParsedCertificate | null {
+  try {
+    const b64 = pemBlock
+      .replace(/-----BEGIN [^-]+-----/g, '')
+      .replace(/-----END [^-]+-----/g, '')
+      .replace(/\s+/g, '');
+    const derStr = forge.util.decode64(b64);
+    const asn1 = forge.asn1.fromDer(derStr);
+    const cert = forge.pki.certificateFromAsn1(asn1);
+    return extractParsedCertificate(cert, derStr);
+  } catch {
+    return null;
+  }
+}
 
-    const isSelfSigned = issuerStr === subjectStr;
-    const basicConstraints = cert.getExtension('basicConstraints') as any;
-    const isCA = basicConstraints ? basicConstraints.cA : isSelfSigned;
-    const isRoot = isCA && isSelfSigned;
-    const isIntermediate = isCA && !isRoot;
-    const isLeaf = !isCA;
-    const isExpired = new Date() > cert.validity.notAfter;
-
-    const mdSha1 = forge.md.sha1.create();
-    mdSha1.update(derStr);
-    const fingerprintSha1 = mdSha1.digest().toHex().match(/.{1,2}/g)?.join(':').toUpperCase() || '';
-
-    const mdSha256 = forge.md.sha256.create();
-    mdSha256.update(derStr);
-    const fingerprintSha256 = mdSha256.digest().toHex().match(/.{1,2}/g)?.join(':').toUpperCase() || '';
-
-    const signatureOid = cert.signatureOid || 'Unknown';
-    const signatureAlgorithm = (forge.pki.oids as any)[signatureOid] || signatureOid;
-
-    let publicKeyAlgorithm = 'Unknown';
-    let publicKeySize: number | null = null;
-    if (cert.publicKey && (cert.publicKey as any).n) {
-      publicKeyAlgorithm = 'RSA';
-      publicKeySize = (cert.publicKey as any).n.bitLength();
-    } else if (cert.publicKey) {
-      publicKeyAlgorithm = 'EC / Other';
-    }
-
-    const parsedExtensions = (cert.extensions || []).map(ext => {
-      let valueStr = '';
-      if (typeof ext.value === 'string') {
-        valueStr = forge.util.bytesToHex(ext.value).match(/.{1,2}/g)?.join(' ').toUpperCase() || '';
-      }
-      return {
-        name: ext.name || (forge.pki.oids as any)[ext.id] || 'Unknown',
-        oid: ext.id,
-        critical: ext.critical || false,
-        value: valueStr,
-      };
-    });
-
-    const purposes: string[] = [];
-    const keyUsage = cert.getExtension('keyUsage') as any;
-    if (keyUsage?.digitalSignature) purposes.push('Digital Signature');
-    if (keyUsage?.keyCertSign) purposes.push('Certificate Sign');
-    if (keyUsage?.cRLSign) purposes.push('CRL Sign');
-    const eku = cert.getExtension('extKeyUsage') as any;
-    if (eku?.codeSigning) purposes.push('Code Signing');
-    if (eku?.serverAuth) purposes.push('Server Authentication');
-    if (eku?.clientAuth) purposes.push('Client Authentication');
-    if (eku?.emailProtection) purposes.push('Email Protection');
-    if (eku?.timeStamping) purposes.push('Time Stamping');
-    if (purposes.length === 0) purposes.push('General Purpose / Not Specified');
-
-    return {
-      issuer: issuerStr,
-      subject: subjectStr,
-      validFrom: cert.validity.notBefore.toISOString(),
-      validTo: cert.validity.notAfter.toISOString(),
-      serialNumber: cert.serialNumber,
-      signatureType: 'X.509',
-      pem: forge.pki.certificateToPem(cert),
-      isRoot,
-      isIntermediate,
-      isLeaf,
-      isExpired,
-      purposes,
-      version: cert.version,
-      signatureOid,
-      signatureAlgorithm,
-      publicKeyAlgorithm,
-      publicKeySize,
-      fingerprintSha1,
-      fingerprintSha256,
-      extensions: parsedExtensions,
-    };
+function parseX509FromForgeCert(forgeCert: any): ParsedCertificate | null {
+  try {
+    const derStr = forge.asn1.toDer(forge.pki.certificateToAsn1(forgeCert)).getBytes();
+    return extractParsedCertificate(forgeCert, derStr);
   } catch {
     return null;
   }
@@ -196,17 +230,9 @@ export function parsePemToCerts(pem: string): ParsedCertificate[] {
   const regex = /-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(pem)) !== null) {
-    try {
-      const cert = forge.pki.certificateFromPem(match[0]);
-      const derStr = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
-      const derBuffer = new Uint8Array(derStr.length);
-      for (let i = 0; i < derStr.length; i++) derBuffer[i] = derStr.charCodeAt(i);
-      const parsed = parseX509FromDer(derBuffer.buffer);
-      if (parsed) {
-        certs.push(parsed);
-      }
-    } catch {
-      // ignore individual malformed block
+    const parsed = parseX509FromPemBlock(match[0]);
+    if (parsed) {
+      certs.push(parsed);
     }
   }
   return certs;
@@ -219,20 +245,13 @@ function parsePemBundle(pem: string): { entries: TrustStoreEntry[]; warnings: st
   let match: RegExpExecArray | null;
   let idx = 1;
   while ((match = regex.exec(pem)) !== null) {
-    try {
-      const cert = forge.pki.certificateFromPem(match[0]);
-      const derStr = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
-      const derBuffer = new Uint8Array(derStr.length);
-      for (let i = 0; i < derStr.length; i++) derBuffer[i] = derStr.charCodeAt(i);
-      const parsed = parseX509FromDer(derBuffer.buffer);
-      if (parsed) {
-        entries.push({ alias: subjectCN(parsed) || `Certificate ${idx}`, certificate: parsed });
-        idx++;
-      }
-    } catch {
+    const parsed = parseX509FromPemBlock(match[0]);
+    if (parsed) {
+      entries.push({ alias: subjectCN(parsed) || `Certificate ${idx}`, certificate: parsed });
+    } else {
       warnings.push(`Could not parse certificate block #${idx}.`);
-      idx++;
     }
+    idx++;
   }
   return { entries, warnings };
 }
@@ -253,13 +272,10 @@ function parsePkcs7(bytes: Uint8Array, isPem: boolean): { entries: TrustStoreEnt
     }
     const certs: any[] = msg.certificates || [];
     certs.forEach((forgeCert: any, i: number) => {
-      try {
-        const derStr2 = forge.asn1.toDer(forge.pki.certificateToAsn1(forgeCert)).getBytes();
-        const buf = new Uint8Array(derStr2.length);
-        for (let j = 0; j < derStr2.length; j++) buf[j] = derStr2.charCodeAt(j);
-        const parsed = parseX509FromDer(buf.buffer);
-        if (parsed) entries.push({ alias: subjectCN(parsed) || `Certificate ${i + 1}`, certificate: parsed });
-      } catch {
+      const parsed = parseX509FromForgeCert(forgeCert);
+      if (parsed) {
+        entries.push({ alias: subjectCN(parsed) || `Certificate ${i + 1}`, certificate: parsed });
+      } else {
         warnings.push(`Could not parse certificate #${i + 1} from PKCS#7.`);
       }
     });
@@ -379,10 +395,7 @@ function parsePkcs12(bytes: Uint8Array, password: string): { entries: TrustStore
       if (item.derBuffer) {
         parsed = parseX509FromDer(item.derBuffer);
       } else if (item.cert) {
-        const derStr2 = forge.asn1.toDer(forge.pki.certificateToAsn1(item.cert)).getBytes();
-        const buf = new Uint8Array(derStr2.length);
-        for (let j = 0; j < derStr2.length; j++) buf[j] = derStr2.charCodeAt(j);
-        parsed = parseX509FromDer(buf.buffer);
+        parsed = parseX509FromForgeCert(item.cert);
       }
       if (parsed) {
         entries.push({

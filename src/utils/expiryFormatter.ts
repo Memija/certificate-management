@@ -12,6 +12,36 @@ export interface ExpiryBreakdown {
   isExpired: boolean;
 }
 
+const pluralRulesCache = new Map<string, Intl.PluralRules>();
+const dateTimeFormatCache = new Map<string, Intl.DateTimeFormat>();
+
+function getPluralRules(lang: string): Intl.PluralRules | null {
+  const key = lang || 'en';
+  const cached = pluralRulesCache.get(key);
+  if (cached) return cached;
+  try {
+    const pr = new Intl.PluralRules(key);
+    pluralRulesCache.set(key, pr);
+    return pr;
+  } catch {
+    return null;
+  }
+}
+
+function formatDateCached(d: Date, lang: string): string {
+  const key = lang || 'en';
+  let dtf = dateTimeFormatCache.get(key);
+  if (!dtf) {
+    try {
+      dtf = new Intl.DateTimeFormat(key);
+      dateTimeFormatCache.set(key, dtf);
+    } catch {
+      return d.toLocaleDateString();
+    }
+  }
+  return dtf.format(d);
+}
+
 /**
  * Calculates the calendar difference in years, months, days, and total days
  * between targetDate and a reference baseDate (defaults to now).
@@ -20,14 +50,15 @@ export function getExpiryBreakdown(
   targetDate: string | Date | number,
   baseDate: Date = new Date()
 ): ExpiryBreakdown {
-  const target = new Date(targetDate);
-  if (isNaN(target.getTime())) {
+  const target = targetDate instanceof Date ? targetDate : new Date(targetDate);
+  const targetMs = target.getTime();
+  if (isNaN(targetMs)) {
     return { years: 0, months: 0, days: 0, totalDays: 0, isExpired: false };
   }
 
-  const diffMs = target.getTime() - baseDate.getTime();
+  const diffMs = targetMs - baseDate.getTime();
   const isExpired = diffMs < 0;
-  const totalDays = Math.max(0, Math.ceil(Math.abs(diffMs) / (1000 * 60 * 60 * 24)));
+  const totalDays = Math.max(0, Math.ceil(Math.abs(diffMs) / 86400000));
 
   const earlier = isExpired ? target : baseDate;
   const later = isExpired ? baseDate : target;
@@ -37,7 +68,6 @@ export function getExpiryBreakdown(
   let days = later.getDate() - earlier.getDate();
 
   if (days < 0) {
-    // Borrow days from the previous month
     const prevMonth = new Date(later.getFullYear(), later.getMonth(), 0);
     days += prevMonth.getDate();
     months--;
@@ -66,22 +96,18 @@ function getLocalizedUnit(
   t: (key: string, options?: any) => string,
   lang: string
 ): string {
-  try {
-    const pr = new Intl.PluralRules(lang || 'en');
-    const rule = pr.select(count); // 'one' | 'few' | 'many' | 'other'
+  const pr = getPluralRules(lang);
+  if (pr) {
+    const rule = pr.select(count);
     const keyWithRule = `app.expiry.${unit}_${rule}`;
     const res = t(keyWithRule, { count, defaultValue: '' });
     if (res) return res;
-  } catch {
-    // fallback if Intl.PluralRules fails
   }
 
-  // Fallback to _other or _one
   const fallbackKey = count === 1 ? `app.expiry.${unit}_one` : `app.expiry.${unit}_other`;
   const fallback = t(fallbackKey, { count, defaultValue: '' });
   if (fallback) return fallback;
 
-  // Hard fallback to English if translations are completely missing
   if (count === 1) {
     return unit === 'year' ? '1 year' : unit === 'month' ? '1 month' : '1 day';
   }
@@ -90,29 +116,19 @@ function getLocalizedUnit(
 
 export interface FormatExpiryOptions {
   baseDate?: Date;
-  includePrefixSuffix?: boolean; // e.g. "in ..." or "... ago" (defaults to true)
+  includePrefixSuffix?: boolean;
 }
 
-/**
- * Formats the expiry duration of a target date into human-readable years, months, and days.
- * Examples:
- *  - "26 years, 8 months ago"
- *  - "2 years, 11 days ago"
- *  - "in 2 months, 15 days"
- *  - "in 18 days"
- *  - "today" / "expires today"
- */
-export function formatExpiry(
-  targetDate: string | Date | number,
+function formatBreakdown(
+  breakdown: ExpiryBreakdown,
   t: (key: string, options?: any) => string,
-  lang: string = 'en',
-  options?: FormatExpiryOptions
+  lang: string,
+  includePrefixSuffix: boolean
 ): string {
-  const breakdown = getExpiryBreakdown(targetDate, options?.baseDate);
   const { years, months, days, totalDays, isExpired } = breakdown;
 
   if (totalDays === 0 && years === 0 && months === 0 && days === 0) {
-    if (options?.includePrefixSuffix === false) {
+    if (!includePrefixSuffix) {
       return t('app.expiry.today', 'today');
     }
     return isExpired
@@ -140,7 +156,7 @@ export function formatExpiry(
 
   const durationStr = parts.join(', ');
 
-  if (options?.includePrefixSuffix === false) {
+  if (!includePrefixSuffix) {
     return durationStr;
   }
 
@@ -151,8 +167,20 @@ export function formatExpiry(
 }
 
 /**
+ * Formats the expiry duration of a target date into human-readable years, months, and days.
+ */
+export function formatExpiry(
+  targetDate: string | Date | number,
+  t: (key: string, options?: any) => string,
+  lang: string = 'en',
+  options?: FormatExpiryOptions
+): string {
+  const breakdown = getExpiryBreakdown(targetDate, options?.baseDate);
+  return formatBreakdown(breakdown, t, lang, options?.includePrefixSuffix !== false);
+}
+
+/**
  * Generates an informative tooltip text for hover, displaying total days along with full breakdown and date.
- * Example: "741 days ago (2 years, 11 days) • Expired on 8/25/2024"
  */
 export function formatExpiryTooltip(
   targetDate: string | Date | number,
@@ -160,12 +188,12 @@ export function formatExpiryTooltip(
   lang: string = 'en',
   baseDate: Date = new Date()
 ): string {
-  const d = new Date(targetDate);
+  const d = targetDate instanceof Date ? targetDate : new Date(targetDate);
   if (isNaN(d.getTime())) return '';
 
-  const breakdown = getExpiryBreakdown(targetDate, baseDate);
-  const formattedRelative = formatExpiry(targetDate, t, lang, { baseDate });
-  const dateFormatted = d.toLocaleDateString(lang);
+  const breakdown = getExpiryBreakdown(d, baseDate);
+  const formattedRelative = formatBreakdown(breakdown, t, lang, true);
+  const dateFormatted = formatDateCached(d, lang);
 
   const daysLabel = breakdown.isExpired
     ? t('app.expiry.tooltipDaysAgo', { days: breakdown.totalDays, defaultValue: `${breakdown.totalDays} days ago` })

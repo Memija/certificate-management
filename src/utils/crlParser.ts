@@ -261,11 +261,13 @@ export function parseDerCrl(derBytes: string): ParsedCRL {
     }
   }
 
-  const pem = '-----BEGIN X509 CRL-----\r\n' +
-    (forge.util.encode64(derBytes).match(/.{1,64}/g)?.join('\r\n') || '') +
-    '\r\n-----END X509 CRL-----\r\n';
-  const fingerprintSha256 = getSha256Fingerprint(derBytes);
   const derBase64 = forge.util.encode64(derBytes);
+  const pemLines: string[] = [];
+  for (let i = 0; i < derBase64.length; i += 64) {
+    pemLines.push(derBase64.slice(i, i + 64));
+  }
+  const pem = `-----BEGIN X509 CRL-----\r\n${pemLines.join('\r\n')}\r\n-----END X509 CRL-----\r\n`;
+  const fingerprintSha256 = getSha256Fingerprint(derBytes);
 
   return {
     version,
@@ -320,15 +322,38 @@ export function isCrlPem(text: string): boolean {
   return /-----BEGIN [^-]*CRL[^-]*-----/i.test(text);
 }
 
+function uint8ToBinaryString(bytes: Uint8Array, startOffset = 0): string {
+  const CHUNK = 0x8000;
+  const parts: string[] = [];
+  for (let i = startOffset; i < bytes.length; i += CHUNK) {
+    parts.push(String.fromCharCode(...bytes.subarray(i, Math.min(i + CHUNK, bytes.length))));
+  }
+  return parts.join('');
+}
+
 export function isDerCrl(bytes: Uint8Array): boolean {
-  if (bytes.length < 4 || bytes[0] !== 0x30) return false;
+  if (bytes.length < 16 || bytes[0] !== 0x30) return false;
   try {
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
+    const binary = uint8ToBinaryString(bytes);
+    const asn1 = forge.asn1.fromDer(binary);
+    if (asn1.type !== forge.asn1.Type.SEQUENCE || !Array.isArray(asn1.value) || asn1.value.length !== 3) {
+      return false;
     }
-    parseDerCrl(binary);
-    return true;
+    const tbs = asn1.value[0];
+    if (tbs.type !== forge.asn1.Type.SEQUENCE || !Array.isArray(tbs.value) || tbs.value.length < 3) {
+      return false;
+    }
+    let idx = tbs.value[0]?.type === forge.asn1.Type.INTEGER ? 1 : 0;
+    // Skip signature AlgorithmIdentifier and Issuer SEQUENCE
+    if (tbs.value[idx]?.type !== forge.asn1.Type.SEQUENCE || tbs.value[idx + 1]?.type !== forge.asn1.Type.SEQUENCE) {
+      return false;
+    }
+    const thisUpdateNode = tbs.value[idx + 2];
+    // In X.509 Certificate, tbs[idx+2] is Validity (SEQUENCE); in CRL, tbs[idx+2] is Time (UTCTIME or GENERALIZEDTIME)!
+    return Boolean(
+      thisUpdateNode &&
+      (thisUpdateNode.type === forge.asn1.Type.UTCTIME || thisUpdateNode.type === forge.asn1.Type.GENERALIZEDTIME)
+    );
   } catch {
     return false;
   }
@@ -370,10 +395,7 @@ export async function parseCrlFile(file: File): Promise<ParsedCRL> {
     throw new Error('ERR_INVALID_FORMAT');
   }
 
-  let binary = '';
-  for (let i = startIdx; i < uint8.length; i++) {
-    binary += String.fromCharCode(uint8[i]);
-  }
+  const binary = uint8ToBinaryString(uint8, startIdx);
   return parseDerCrl(binary);
 }
 

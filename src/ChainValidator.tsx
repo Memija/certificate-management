@@ -22,19 +22,34 @@ interface CertNode {
   signatureVerified: boolean | null; // null if no parent in pool to verify against
 }
 
-function verifySignature(childPem: string, parentPem: string): boolean {
+function parseForgeCertSafe(pem: string): forge.pki.Certificate | null {
+  if (!pem) return null;
   try {
-    const childCert = forge.pki.certificateFromPem(childPem);
-    const parentCert = forge.pki.certificateFromPem(parentPem);
+    return forge.pki.certificateFromPem(pem);
+  } catch {
+    return null;
+  }
+}
+
+function verifyParsedCerts(
+  childCert: forge.pki.Certificate | null,
+  parentCert: forge.pki.Certificate | null
+): boolean {
+  if (!childCert || !parentCert) return false;
+  try {
     return parentCert.verify(childCert) || childCert.verify(parentCert as any);
   } catch {
     return false;
   }
 }
 
-function verifySelfSignature(pem: string): boolean {
+function verifySignature(childPem: string, parentPem: string): boolean {
+  return verifyParsedCerts(parseForgeCertSafe(childPem), parseForgeCertSafe(parentPem));
+}
+
+function verifySelfCert(cert: forge.pki.Certificate | null): boolean {
+  if (!cert) return false;
   try {
-    const cert = forge.pki.certificateFromPem(pem);
     return cert.verify(cert as any);
   } catch {
     return false;
@@ -42,42 +57,83 @@ function verifySelfSignature(pem: string): boolean {
 }
 
 function buildChains(certs: ParsedCertificate[]): { rootNodes: CertNode[]; orphanNodes: CertNode[]; allNodes: CertNode[] } {
+  const parsedForgeCerts = certs.map(c => parseForgeCertSafe(c.pem));
+
   const allNodes: CertNode[] = certs.map((c, index) => ({
     id: `node-${index}-${c.fingerprintSha256 || 'cert'}`,
     cert: c,
-    isSelfSigned: c.isRoot || (c.subject === c.issuer && verifySelfSignature(c.pem)),
+    isSelfSigned: c.isRoot || (c.subject === c.issuer && verifySelfCert(parsedForgeCerts[index])),
     parent: null,
     children: [],
     signatureVerified: null,
   }));
 
+  // Index candidate issuers by full subject DN and CN for O(1) lookup
+  const bySubject = new Map<string, number[]>();
+  const byCn = new Map<string, number[]>();
+  for (let i = 0; i < allNodes.length; i++) {
+    const subj = allNodes[i].cert.subject;
+    const cn = getSubjectCN(subj);
+    const subjList = bySubject.get(subj);
+    if (subjList) subjList.push(i);
+    else bySubject.set(subj, [i]);
+
+    const cnList = byCn.get(cn);
+    if (cnList) cnList.push(i);
+    else byCn.set(cn, [i]);
+  }
+
   // Link parents and children
-  for (const node of allNodes) {
+  for (let i = 0; i < allNodes.length; i++) {
+    const node = allNodes[i];
     if (node.isSelfSigned) {
       node.signatureVerified = true;
       continue;
     }
 
-    // 1. Try cryptographic verification against any node in pool
-    for (const potentialParent of allNodes) {
-      if (potentialParent !== node && verifySignature(node.cert.pem, potentialParent.cert.pem)) {
-        node.parent = potentialParent;
-        potentialParent.children.push(node);
-        node.signatureVerified = true;
+    const childForge = parsedForgeCerts[i];
+    const issuerCn = getSubjectCN(node.cert.issuer);
+    const prioritizedIndices = new Set<number>([
+      ...(bySubject.get(node.cert.issuer) || []),
+      ...(byCn.get(issuerCn) || []),
+    ]);
+
+    let verifiedParentIdx = -1;
+
+    // 1a. Fast O(1) check against subject/CN-matched candidate issuers
+    for (const pIdx of prioritizedIndices) {
+      if (pIdx !== i && verifyParsedCerts(childForge, parsedForgeCerts[pIdx])) {
+        verifiedParentIdx = pIdx;
         break;
       }
     }
 
+    // 1b. Fallback scan across remaining nodes only if no prioritized issuer verified
+    if (verifiedParentIdx === -1 && childForge) {
+      for (let pIdx = 0; pIdx < allNodes.length; pIdx++) {
+        if (pIdx !== i && !prioritizedIndices.has(pIdx) && verifyParsedCerts(childForge, parsedForgeCerts[pIdx])) {
+          verifiedParentIdx = pIdx;
+          break;
+        }
+      }
+    }
+
+    if (verifiedParentIdx !== -1) {
+      const potentialParent = allNodes[verifiedParentIdx];
+      node.parent = potentialParent;
+      potentialParent.children.push(node);
+      node.signatureVerified = true;
+      continue;
+    }
+
     // 2. If signature couldn't verify, fallback to DN / CN match
-    if (!node.parent) {
-      const dnMatch = allNodes.find(p => p !== node && (
-        p.cert.subject === node.cert.issuer ||
-        getSubjectCN(p.cert.subject) === getSubjectCN(node.cert.issuer)
-      ));
-      if (dnMatch) {
+    for (const pIdx of prioritizedIndices) {
+      if (pIdx !== i) {
+        const dnMatch = allNodes[pIdx];
         node.parent = dnMatch;
         dnMatch.children.push(node);
         node.signatureVerified = false;
+        break;
       }
     }
   }
@@ -1047,10 +1103,15 @@ export function ChainValidator() {
     : null;
 
   const allChainComplete = certs.length > 0 && orphanNodes.length === 0 && rootNodes.length > 0;
-  const hasSignMismatch = certs.some(c => {
-    const iss = certs.find(p => p.subject === c.issuer && p !== c);
-    return iss && !verifySignature(c.pem, iss.pem);
-  });
+  const hasSignMismatch = useMemo(
+    () =>
+      allNodes.some(n => n.signatureVerified === false) ||
+      certs.some(c => {
+        const iss = certs.find(p => p.subject === c.issuer && p !== c);
+        return Boolean(iss && !verifySignature(c.pem, iss.pem));
+      }),
+    [allNodes, certs]
+  );
 
   return (
     <div

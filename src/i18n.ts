@@ -4,40 +4,76 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { getInitialLanguage, normalizeLanguageTag, SUPPORTED_LANGUAGES } from './utils/systemSettings';
 
 import en from './locales/en/translation.json';
-import de from './locales/de/translation.json';
-import bs from './locales/bs/translation.json';
-import srCyrl from './locales/sr-Cyrl/translation.json';
-import id from './locales/id/translation.json';
-import pl from './locales/pl/translation.json';
 
-const resources = {
-  en: { translation: en },
-  de: { translation: de },
-  bs: { translation: bs },
-  'sr-Cyrl': { translation: srCyrl },
-  id: { translation: id },
-  pl: { translation: pl }
+const LOCALE_LOADERS: Record<string, () => Promise<any>> = {
+  de: () => import('./locales/de/translation.json'),
+  bs: () => import('./locales/bs/translation.json'),
+  'sr-Cyrl': () => import('./locales/sr-Cyrl/translation.json'),
+  id: () => import('./locales/id/translation.json'),
+  pl: () => import('./locales/pl/translation.json'),
 };
 
-const initialLanguage = getInitialLanguage();
+const pendingLoads = new Map<string, Promise<void>>();
+
+export async function ensureLanguageLoaded(lng: string): Promise<void> {
+  const normalized = normalizeLanguageTag(lng) || 'en';
+  if (normalized === 'en' || i18n.hasResourceBundle(normalized, 'translation')) {
+    return;
+  }
+
+  const loader = LOCALE_LOADERS[normalized];
+  if (!loader) return;
+
+  const existing = pendingLoads.get(normalized);
+  if (existing) return existing;
+
+  const loadPromise = loader()
+    .then((mod) => {
+      const bundle = mod?.default || mod;
+      if (bundle) {
+        i18n.addResourceBundle(normalized, 'translation', bundle, true, true);
+      }
+    })
+    .finally(() => {
+      pendingLoads.delete(normalized);
+    });
+
+  pendingLoads.set(normalized, loadPromise);
+  return loadPromise;
+}
+
+export const initialLanguage = getInitialLanguage();
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources,
+    resources: {
+      en: { translation: en },
+    },
     lng: initialLanguage,
     fallbackLng: 'en',
     supportedLngs: [...SUPPORTED_LANGUAGES],
+    partialBundledLanguages: true,
     interpolation: {
-      escapeValue: false
+      escapeValue: false,
     },
     detection: {
       order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
-      convertDetectedLanguage: (lng: string) => normalizeLanguageTag(lng) || 'en'
-    }
+      convertDetectedLanguage: (lng: string) => normalizeLanguageTag(lng) || 'en',
+    },
   });
+
+const origChangeLanguage = i18n.changeLanguage.bind(i18n);
+i18n.changeLanguage = (async (lng?: string, callback?: any) => {
+  if (lng) {
+    const normalized = normalizeLanguageTag(lng) || 'en';
+    await ensureLanguageLoaded(normalized);
+    return origChangeLanguage(normalized, callback);
+  }
+  return origChangeLanguage(lng, callback);
+}) as typeof i18n.changeLanguage;
 
 const syncDocumentLocale = (lng: string) => {
   if (typeof document !== 'undefined') {
@@ -50,28 +86,31 @@ const syncDocumentLocale = (lng: string) => {
   }
 };
 
-syncDocumentLocale(i18n.language || initialLanguage);
+export const initialI18nReady: Promise<void> =
+  initialLanguage !== 'en'
+    ? ensureLanguageLoaded(initialLanguage).then(async () => {
+        await origChangeLanguage(initialLanguage);
+        syncDocumentLocale(initialLanguage);
+      })
+    : Promise.resolve().then(() => {
+        syncDocumentLocale('en');
+      });
+
+if (initialLanguage === 'en') {
+  syncDocumentLocale('en');
+}
+
 i18n.on('languageChanged', (lng) => {
   syncDocumentLocale(lng);
 });
 
 if (import.meta.hot) {
-  import.meta.hot.accept([
-    './locales/en/translation.json',
-    './locales/de/translation.json',
-    './locales/bs/translation.json',
-    './locales/sr-Cyrl/translation.json',
-    './locales/id/translation.json',
-    './locales/pl/translation.json'
-  ], (modules) => {
-    const [newEn, newDe, newBs, newSrCyrl, newId, newPl] = modules;
-    if (newEn) i18n.addResourceBundle('en', 'translation', (newEn as any).default || newEn, true, true);
-    if (newDe) i18n.addResourceBundle('de', 'translation', (newDe as any).default || newDe, true, true);
-    if (newBs) i18n.addResourceBundle('bs', 'translation', (newBs as any).default || newBs, true, true);
-    if (newSrCyrl) i18n.addResourceBundle('sr-Cyrl', 'translation', (newSrCyrl as any).default || newSrCyrl, true, true);
-    if (newId) i18n.addResourceBundle('id', 'translation', (newId as any).default || newId, true, true);
-    if (newPl) i18n.addResourceBundle('pl', 'translation', (newPl as any).default || newPl, true, true);
-    i18n.emit('loaded');
+  import.meta.hot.accept(['./locales/en/translation.json'], (modules) => {
+    const [newEn] = modules;
+    if (newEn) {
+      i18n.addResourceBundle('en', 'translation', (newEn as any).default || newEn, true, true);
+      i18n.emit('loaded');
+    }
   });
 }
 

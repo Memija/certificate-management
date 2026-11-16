@@ -3,9 +3,32 @@ import { parsePemToCerts, type ParsedCertificate } from './trustStoreParser';
 
 export type ChainPreset = '3-tier-web' | '4-tier-enterprise' | 'multi-leaf-branch' | 'broken-intermediate';
 
+const cachedKeyPool: forge.pki.rsa.KeyPair[] = [];
+function getPooledKeyPair(index: number): forge.pki.rsa.KeyPair {
+  while (cachedKeyPool.length <= index) {
+    cachedKeyPool.push(forge.pki.rsa.generateKeyPair(1024));
+  }
+  return cachedKeyPool[index];
+}
+
+const chainCache = new Map<string, ParsedCertificate[]>();
+
 export function createCryptographicChain(preset: ChainPreset): ParsedCertificate[] {
-  // Generate 1024-bit keys for instant in-browser generation speed
-  const rootKeys = forge.pki.rsa.generateKeyPair(1024);
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const cacheKey = `${preset}:${dayKey}`;
+  const cached = chainCache.get(cacheKey);
+  if (cached) {
+    return cached.map(c => ({ ...c, purposes: [...c.purposes], extensions: [...c.extensions] }));
+  }
+
+  const built = buildChainUncached(preset);
+  chainCache.set(cacheKey, built);
+  return built.map(c => ({ ...c, purposes: [...c.purposes], extensions: [...c.extensions] }));
+}
+
+function buildChainUncached(preset: ChainPreset): ParsedCertificate[] {
+  // Reuse pooled 1024-bit keys for instant in-browser generation speed
+  const rootKeys = getPooledKeyPair(0);
   const now = new Date();
   const rootNotBefore = new Date(now.getTime() - 365 * 24 * 3600 * 1000);
   const rootNotAfter = new Date(now.getTime() + 10 * 365 * 24 * 3600 * 1000);
@@ -35,7 +58,7 @@ export function createCryptographicChain(preset: ChainPreset): ParsedCertificate
 
   if (preset === '3-tier-web' || preset === 'broken-intermediate') {
     // 2. Intermediate Issuing CA
-    const interKeys = forge.pki.rsa.generateKeyPair(1024);
+    const interKeys = getPooledKeyPair(1);
     const interCert = forge.pki.createCertificate();
     interCert.publicKey = interKeys.publicKey;
     interCert.serialNumber = '02' + forge.util.bytesToHex(forge.random.getBytesSync(8));
@@ -59,7 +82,7 @@ export function createCryptographicChain(preset: ChainPreset): ParsedCertificate
     const interPem = forge.pki.certificateToPem(interCert);
 
     // 3. Leaf Certificate
-    const leafKeys = forge.pki.rsa.generateKeyPair(1024);
+    const leafKeys = getPooledKeyPair(2);
     const leafCert = forge.pki.createCertificate();
     leafCert.publicKey = leafKeys.publicKey;
     leafCert.serialNumber = '03' + forge.util.bytesToHex(forge.random.getBytesSync(8));
@@ -93,7 +116,7 @@ export function createCryptographicChain(preset: ChainPreset): ParsedCertificate
 
   if (preset === '4-tier-enterprise') {
     // Tier 2: Policy CA
-    const policyKeys = forge.pki.rsa.generateKeyPair(1024);
+    const policyKeys = getPooledKeyPair(1);
     const policyCert = forge.pki.createCertificate();
     policyCert.publicKey = policyKeys.publicKey;
     policyCert.serialNumber = '02' + forge.util.bytesToHex(forge.random.getBytesSync(8));
@@ -116,7 +139,7 @@ export function createCryptographicChain(preset: ChainPreset): ParsedCertificate
     const policyPem = forge.pki.certificateToPem(policyCert);
 
     // Tier 3: Regional Issuing CA
-    const issueKeys = forge.pki.rsa.generateKeyPair(1024);
+    const issueKeys = getPooledKeyPair(2);
     const issueCert = forge.pki.createCertificate();
     issueCert.publicKey = issueKeys.publicKey;
     issueCert.serialNumber = '03' + forge.util.bytesToHex(forge.random.getBytesSync(8));
@@ -139,7 +162,7 @@ export function createCryptographicChain(preset: ChainPreset): ParsedCertificate
     const issuePem = forge.pki.certificateToPem(issueCert);
 
     // Tier 4: Server Leaf
-    const serverKeys = forge.pki.rsa.generateKeyPair(1024);
+    const serverKeys = getPooledKeyPair(3);
     const serverCert = forge.pki.createCertificate();
     serverCert.publicKey = serverKeys.publicKey;
     serverCert.serialNumber = '04' + forge.util.bytesToHex(forge.random.getBytesSync(8));
@@ -166,7 +189,7 @@ export function createCryptographicChain(preset: ChainPreset): ParsedCertificate
   }
 
   // Multi-leaf branch
-  const interKeys = forge.pki.rsa.generateKeyPair(1024);
+  const interKeys = getPooledKeyPair(1);
   const interCert = forge.pki.createCertificate();
   interCert.publicKey = interKeys.publicKey;
   interCert.serialNumber = '02' + forge.util.bytesToHex(forge.random.getBytesSync(8));
@@ -189,7 +212,7 @@ export function createCryptographicChain(preset: ChainPreset): ParsedCertificate
   const interPem = forge.pki.certificateToPem(interCert);
 
   // Leaf 1: Web App
-  const leaf1Keys = forge.pki.rsa.generateKeyPair(1024);
+  const leaf1Keys = getPooledKeyPair(2);
   const leaf1Cert = forge.pki.createCertificate();
   leaf1Cert.publicKey = leaf1Keys.publicKey;
   leaf1Cert.serialNumber = '03' + forge.util.bytesToHex(forge.random.getBytesSync(8));
@@ -213,7 +236,7 @@ export function createCryptographicChain(preset: ChainPreset): ParsedCertificate
   const leaf1Pem = forge.pki.certificateToPem(leaf1Cert);
 
   // Leaf 2: API Gateway
-  const leaf2Keys = forge.pki.rsa.generateKeyPair(1024);
+  const leaf2Keys = getPooledKeyPair(3);
   const leaf2Cert = forge.pki.createCertificate();
   leaf2Cert.publicKey = leaf2Keys.publicKey;
   leaf2Cert.serialNumber = '04' + forge.util.bytesToHex(forge.random.getBytesSync(8));

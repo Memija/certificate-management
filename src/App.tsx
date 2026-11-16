@@ -1,26 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense, memo } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import './i18n';
-import { parseEfiSignatureLists, parseRawX509, type EfiSignatureList, type ParsedCertificate } from './utils/efiParser';
+import type { EfiSignatureList, ParsedCertificate } from './utils/efiParser';
 import { Shield, ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, FolderOpen, Sun, Moon, FileKey, Monitor, ShieldAlert, Link as LinkIcon, Key, Zap, FileArchive, Globe, Activity, LayoutDashboard, Menu, X, Search, BookOpen, Download, Copy, Check, Eye, EyeOff } from 'lucide-react';
-import { TrustStoreInspector } from './TrustStoreInspector';
-import { CsrInspector } from './CsrInspector';
-import { WinCertStoreInspector } from './WinCertStoreInspector';
-import { CrlInspector } from './CrlInspector';
-import { ChainValidator } from './ChainValidator';
-import { KeyPairMatcher } from './KeyPairMatcher';
-import { KeyGenerator } from './KeyGenerator';
-import { FormatConverter } from './FormatConverter';
-import { TlsScanner } from './TlsScanner';
-import { OcspChecker } from './OcspChecker';
-import { ExpiryDashboard } from './ExpiryDashboard';
-import { CtLogSearch } from './CtLogSearch';
-import { EducationCenter } from './EducationCenter';
 import { LearningTerm } from './LearningTerm';
 import { ToastProvider, useToast } from './ToastContext';
 import { splitPurposes, translatePurpose, formatExtensionValue } from './utils/purposeFormatter';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
-import { fetchLocalApiJson, getWebFallbackSecureBootVars, WebApiUnavailableError } from './utils/webFallbacks';
+import { fetchLocalApiJson, WebApiUnavailableError } from './utils/apiClient';
 import {
   getInitialThemePreference,
   resolveEffectiveTheme,
@@ -38,6 +25,54 @@ import './index.css';
 
 export type AppMode = 'secure-boot' | 'trust-store' | 'csr-inspector' | 'win-cert-store' | 'crl-inspector' | 'chain-validator' | 'key-matcher' | 'key-generator' | 'format-converter' | 'tls-scanner' | 'ocsp-checker' | 'expiry-dashboard' | 'ct-log-search' | 'education-center';
 export type Theme = 'dark' | 'light' | 'system';
+
+const loadTrustStoreInspector = () => import('./TrustStoreInspector');
+const loadCsrInspector = () => import('./CsrInspector');
+const loadWinCertStoreInspector = () => import('./WinCertStoreInspector');
+const loadCrlInspector = () => import('./CrlInspector');
+const loadChainValidator = () => import('./ChainValidator');
+const loadKeyPairMatcher = () => import('./KeyPairMatcher');
+const loadKeyGenerator = () => import('./KeyGenerator');
+const loadFormatConverter = () => import('./FormatConverter');
+const loadTlsScanner = () => import('./TlsScanner');
+const loadOcspChecker = () => import('./OcspChecker');
+const loadExpiryDashboard = () => import('./ExpiryDashboard');
+const loadCtLogSearch = () => import('./CtLogSearch');
+const loadEducationCenter = () => import('./EducationCenter');
+
+const TrustStoreInspector = lazy(() => loadTrustStoreInspector().then(m => ({ default: m.TrustStoreInspector })));
+const CsrInspector = lazy(() => loadCsrInspector().then(m => ({ default: m.CsrInspector })));
+const WinCertStoreInspector = lazy(() => loadWinCertStoreInspector().then(m => ({ default: m.WinCertStoreInspector })));
+const CrlInspector = lazy(() => loadCrlInspector().then(m => ({ default: m.CrlInspector })));
+const ChainValidator = lazy(() => loadChainValidator().then(m => ({ default: m.ChainValidator })));
+const KeyPairMatcher = lazy(() => loadKeyPairMatcher().then(m => ({ default: m.KeyPairMatcher })));
+const KeyGenerator = lazy(() => loadKeyGenerator().then(m => ({ default: m.KeyGenerator })));
+const FormatConverter = lazy(() => loadFormatConverter().then(m => ({ default: m.FormatConverter })));
+const TlsScanner = lazy(() => loadTlsScanner().then(m => ({ default: m.TlsScanner })));
+const OcspChecker = lazy(() => loadOcspChecker().then(m => ({ default: m.OcspChecker })));
+const ExpiryDashboard = lazy(() => loadExpiryDashboard().then(m => ({ default: m.ExpiryDashboard })));
+const CtLogSearch = lazy(() => loadCtLogSearch().then(m => ({ default: m.CtLogSearch })));
+const EducationCenter = lazy(() => loadEducationCenter().then(m => ({ default: m.EducationCenter })));
+
+const MODE_PRELOADERS: Partial<Record<AppMode, () => Promise<unknown>>> = {
+  'trust-store': loadTrustStoreInspector,
+  'csr-inspector': loadCsrInspector,
+  'win-cert-store': loadWinCertStoreInspector,
+  'crl-inspector': loadCrlInspector,
+  'chain-validator': loadChainValidator,
+  'key-matcher': loadKeyPairMatcher,
+  'key-generator': loadKeyGenerator,
+  'format-converter': loadFormatConverter,
+  'tls-scanner': loadTlsScanner,
+  'ocsp-checker': loadOcspChecker,
+  'expiry-dashboard': loadExpiryDashboard,
+  'ct-log-search': loadCtLogSearch,
+  'education-center': loadEducationCenter,
+};
+
+function preloadMode(m: AppMode) {
+  MODE_PRELOADERS[m]?.();
+}
 
 const APP_VERSION = '1.0.0';
 
@@ -82,6 +117,12 @@ const CATEGORIES = [
     ]
   }
 ];
+
+interface ParsedVarEntry {
+  signatureLists: EfiSignatureList[];
+  rawCert: ParsedCertificate | null;
+  error: string;
+}
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -157,46 +198,59 @@ function App() {
     return () => window.removeEventListener(THEME_CHANGED_EVENT, onExternalThemeChange);
   }, []);
 
-  const toggleTheme = () => {
-    const next: Theme = theme === 'dark' ? 'light' : theme === 'light' ? 'system' : 'dark';
-    setTheme(next);
-    setUserThemePreference(next);
-  };
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next: Theme = prev === 'dark' ? 'light' : prev === 'light' ? 'system' : 'dark';
+      setUserThemePreference(next);
+      return next;
+    });
+  }, []);
 
-  const switchMode = (m: AppMode) => {
+  const switchMode = useCallback((m: AppMode) => {
     setMode(m);
     localStorage.setItem('app-mode', m);
     const nextUrl = new URL(window.location.href);
     nextUrl.searchParams.set('mode', m);
     window.history.replaceState(window.history.state, '', nextUrl);
-    setSidebarOpen(false); // Close mobile sidebar on navigation
+    setSidebarOpen(false);
     if (mainContentAreaRef.current) {
       mainContentAreaRef.current.scrollTop = 0;
     }
-  };
+  }, []);
 
   const [activeVar, setActiveVar] = useState<string>('db');
   const [variablesCache, setVariablesCache] = useState<Record<string, string>>({});
+  const parsedVarsCacheRef = useRef<Record<string, ParsedVarEntry>>({});
+  const hasLoadedSecureBootRef = useRef(false);
 
   const [signatureLists, setSignatureLists] = useState<EfiSignatureList[]>([]);
   const [rawCert, setRawCert] = useState<ParsedCertificate | null>(null);
 
   const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(mode === 'secure-boot');
   const [needsElevation, setNeedsElevation] = useState<boolean>(false);
   const [elevating, setElevating] = useState<boolean>(false);
 
-  const parseAndSet = (varName: string, base64Data: string | undefined) => {
+  const parseAndSet = useCallback(async (varName: string, base64Data: string | undefined) => {
     setActiveVar(varName);
-    setSignatureLists([]);
-    setRawCert(null);
-    setError('');
 
     if (!base64Data) {
-      return; // Empty
+      setSignatureLists([]);
+      setRawCert(null);
+      setError('');
+      return;
+    }
+
+    const cachedParsed = parsedVarsCacheRef.current[varName];
+    if (cachedParsed) {
+      setSignatureLists(cachedParsed.signatureLists);
+      setRawCert(cachedParsed.rawCert);
+      setError(cachedParsed.error);
+      return;
     }
 
     try {
+      const { parseEfiSignatureLists, parseRawX509 } = await import('./utils/efiParser');
       const binaryString = atob(base64Data);
       const len = binaryString.length;
       const bytes = new Uint8Array(len);
@@ -207,23 +261,36 @@ function App() {
 
       const lists = parseEfiSignatureLists(buffer);
       if (lists.length > 0) {
+        parsedVarsCacheRef.current[varName] = { signatureLists: lists, rawCert: null, error: '' };
         setSignatureLists(lists);
+        setRawCert(null);
+        setError('');
         return;
       }
 
       const raw = parseRawX509(buffer);
       if (raw) {
+        parsedVarsCacheRef.current[varName] = { signatureLists: [], rawCert: raw, error: '' };
+        setSignatureLists([]);
         setRawCert(raw);
+        setError('');
         return;
       }
 
-      setError(`Could not parse ${varName} as an EFI Signature List or X.509 certificate.`);
+      const msg = `Could not parse ${varName} as an EFI Signature List or X.509 certificate.`;
+      parsedVarsCacheRef.current[varName] = { signatureLists: [], rawCert: null, error: msg };
+      setSignatureLists([]);
+      setRawCert(null);
+      setError(msg);
     } catch (err: any) {
-      setError(`Error parsing ${varName}: ${err.message}`);
+      const msg = `Error parsing ${varName}: ${err.message}`;
+      setSignatureLists([]);
+      setRawCert(null);
+      setError(msg);
     }
-  };
+  }, []);
 
-  const loadAllVariables = async (elevate: boolean) => {
+  const loadAllVariables = useCallback(async (elevate: boolean, refresh = false) => {
     setError('');
     if (elevate) {
       setElevating(true);
@@ -231,22 +298,32 @@ function App() {
       setLoading(true);
     }
 
-    try {
-      const json = await fetchLocalApiJson<{ data: Record<string, string> }>(
-        `/api/secureboot?var=all${elevate ? '&elevate=true' : ''}`
-      );
+    if (refresh || elevate) {
+      parsedVarsCacheRef.current = {};
+    }
 
+    // Preload efiParser chunk concurrently while API is in flight
+    const efiParserPreload = import('./utils/efiParser');
+
+    try {
+      const url = `/api/secureboot?var=all${elevate ? '&elevate=true' : ''}${refresh ? '&refresh=true' : ''}`;
+      const json = await fetchLocalApiJson<{ data: Record<string, string> }>(url);
+      await efiParserPreload;
+
+      parsedVarsCacheRef.current = {};
       setVariablesCache(json.data);
       setNeedsElevation(false);
 
-      // Parse the active variable ('db' initially)
-      parseAndSet('db', json.data['db']);
+      await parseAndSet('db', json.data['db']);
     } catch (err: any) {
       if (err instanceof WebApiUnavailableError || err?.isWebFallback) {
+        const { getWebFallbackSecureBootVars } = await import('./utils/webFallbacks');
+        await efiParserPreload;
         const fallbackVars = getWebFallbackSecureBootVars();
+        parsedVarsCacheRef.current = {};
         setVariablesCache(fallbackVars);
         setNeedsElevation(false);
-        parseAndSet('db', fallbackVars['db']);
+        await parseAndSet('db', fallbackVars['db']);
       } else if (!elevate) {
         setNeedsElevation(true);
       } else {
@@ -261,17 +338,20 @@ function App() {
       setLoading(false);
       setElevating(false);
     }
-  };
+  }, [parseAndSet, t]);
 
   useEffect(() => {
-    loadAllVariables(false);
-  }, []);
+    if (mode === 'secure-boot' && !hasLoadedSecureBootRef.current) {
+      hasLoadedSecureBootRef.current = true;
+      loadAllVariables(false);
+    }
+  }, [mode, loadAllVariables]);
 
   const handleTabClick = (varName: string) => {
     parseAndSet(varName, variablesCache[varName]);
   };
 
-  const renderContent = () => {
+  const renderModeView = () => {
     switch (mode) {
       case 'trust-store': return <TrustStoreInspector onNavigate={switchMode} />;
       case 'csr-inspector': return <CsrInspector onNavigate={switchMode} />;
@@ -364,7 +444,7 @@ function App() {
                 <div className="premium-header-actions">
                   <button
                     className="btn btn-secondary btn-sm"
-                    onClick={() => loadAllVariables(false)}
+                    onClick={() => loadAllVariables(false, true)}
                     disabled={loading}
                     style={{ gap: '0.45rem' }}
                   >
@@ -475,7 +555,15 @@ function App() {
           </div>
 
           <div className="main-content-area" ref={mainContentAreaRef}>
-            {renderContent()}
+            <Suspense
+              fallback={
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', padding: '4rem 2rem' }}>
+                  <RefreshCw size={40} style={{ animation: 'spin 1s linear infinite', marginBottom: '0.75rem', color: 'var(--text-accent)' }} />
+                </div>
+              }
+            >
+              {renderModeView()}
+            </Suspense>
           </div>
           <Footer />
         </div>
@@ -484,7 +572,7 @@ function App() {
   );
 }
 
-function SignatureItem({ signature }: { signature: any }) {
+const SignatureItem = memo(function SignatureItem({ signature }: { signature: any }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const cert = signature.certificate;
@@ -521,11 +609,7 @@ function SignatureItem({ signature }: { signature: any }) {
             <div className="details-value mono">{signature.signatureOwner}</div>
           </div>
 
-          {cert && (
-            <>
-              <CertificateDetails cert={cert} />
-            </>
-          )}
+          {cert && <CertificateDetails cert={cert} />}
 
           {!cert && signature.hashData && (
             <div style={{ marginTop: '1rem' }}>
@@ -539,9 +623,9 @@ function SignatureItem({ signature }: { signature: any }) {
       )}
     </div>
   );
-}
+});
 
-function BootHealthWarnings({ lists }: { lists: EfiSignatureList[] }) {
+const BootHealthWarnings = memo(function BootHealthWarnings({ lists }: { lists: EfiSignatureList[] }) {
   const { t, i18n } = useTranslation();
   const warnings: string[] = [];
   const criticals: string[] = [];
@@ -612,14 +696,12 @@ function BootHealthWarnings({ lists }: { lists: EfiSignatureList[] }) {
     criticals.push(t('app.secureBoot.critNoValidDb'));
   }
 
-  // Windows PCA Check
   if (expiredMsWindows && !hasMsWindowsCert) {
     criticals.push(t('app.secureBoot.critExpiredWindowsPca'));
   } else if (!hasMsWindowsCert && !criticals.length) {
     warnings.push(t('app.secureBoot.warnMissingWindowsPca'));
   }
 
-  // UEFI CA Check
   if (expiredMsUefi && !hasMsUefiCert) {
     criticals.push(t('app.secureBoot.critExpiredUefiCa'));
   }
@@ -702,9 +784,9 @@ function BootHealthWarnings({ lists }: { lists: EfiSignatureList[] }) {
       ))}
     </div>
   );
-}
+});
 
-function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
+const CertificateDetails = memo(function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
   const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -881,10 +963,10 @@ function CertificateDetails({ cert }: { cert: ParsedCertificate }) {
       )}
     </>
   );
-}
+});
 
 // ─── Sidebar Navigation ───────────────────────────────────────────────────────
-function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, onModeChange: (m: AppMode) => void, isOpen: boolean, onClose: () => void }) {
+const AppSidebar = memo(function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, onModeChange: (m: AppMode) => void, isOpen: boolean, onClose: () => void }) {
   const { t } = useTranslation();
   const navRef = useRef<HTMLElement>(null);
 
@@ -917,17 +999,20 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, on
               <ul className="sidebar-nav-list">
                 {category.items.map(item => {
                   const Icon = item.icon;
+                  const itemMode = item.id as AppMode;
                   return (
                     <li key={item.id}>
                       <button
                         className={`sidebar-nav-btn ${mode === item.id ? 'active' : ''}`}
-                        onClick={() => onModeChange(item.id as AppMode)}
+                        onMouseEnter={() => preloadMode(itemMode)}
+                        onFocus={() => preloadMode(itemMode)}
+                        onClick={() => onModeChange(itemMode)}
                       >
                         <Icon size={17} />
                         <span>{t(`app.nav.${item.id}`)}</span>
                       </button>
                     </li>
-                  )
+                  );
                 })}
               </ul>
             </div>
@@ -936,7 +1021,7 @@ function AppSidebar({ mode, onModeChange, isOpen, onClose }: { mode: AppMode, on
       </aside>
     </>
   );
-}
+});
 
 // ─── Language config ──────────────────────────────────────────────────────────
 const LANGUAGES = [
@@ -1005,7 +1090,7 @@ function LanguagePicker({ closeSignal }: { closeSignal?: number }) {
 }
 
 // ─── Static Short Right-Side Frosted-Glass Controls Capsule ──────────────────
-function HeaderControlsCapsule({
+const HeaderControlsCapsule = memo(function HeaderControlsCapsule({
   mode,
   theme,
   onToggleTheme,
@@ -1046,10 +1131,10 @@ function HeaderControlsCapsule({
       </div>
     </div>
   );
-}
+});
 
 // ─── Footer ──────────────────────────────────────────────────────────────────
-function Footer() {
+const Footer = memo(function Footer() {
   return (
     <footer className="app-footer">
       <div className="app-footer-inner">
@@ -1059,7 +1144,6 @@ function Footer() {
       </div>
     </footer>
   );
-}
+});
 
 export default App;
-

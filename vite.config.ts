@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { exec, execFileSync } from 'child_process'
+import { exec, execFile } from 'child_process'
 import { promisify } from 'util'
 import * as os from 'os'
 import * as path from 'path'
@@ -8,8 +8,63 @@ import * as fs from 'fs/promises'
 import * as crypto from 'crypto'
 
 const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
+
+function createAsyncCache<T>(ttlMs: number) {
+  const store = new Map<string, { value: T; expiresAt: number }>()
+  const inflight = new Map<string, Promise<T>>()
+
+  return {
+    getOrLoad(key: string, bypassCache: boolean, loader: () => Promise<T>): Promise<T> {
+      const now = Date.now()
+      if (!bypassCache) {
+        const hit = store.get(key)
+        if (hit && hit.expiresAt > now) {
+          return Promise.resolve(hit.value)
+        }
+        const pending = inflight.get(key)
+        if (pending) {
+          return pending
+        }
+      }
+
+      const p = loader()
+        .then((val) => {
+          store.set(key, { value: val, expiresAt: Date.now() + ttlMs })
+          return val
+        })
+        .finally(() => {
+          inflight.delete(key)
+        })
+
+      inflight.set(key, p)
+      return p
+    },
+    set(key: string, value: T) {
+      store.set(key, { value, expiresAt: Date.now() + ttlMs })
+    },
+  }
+}
+
+async function runPowerShellEncoded(script: string, timeout = 30000): Promise<string> {
+  const fullScript = `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n${script}`
+  const encoded = Buffer.from(fullScript, 'utf16le').toString('base64')
+  const { stdout } = await execFileAsync(
+    'powershell.exe',
+    ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded],
+    {
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
+      timeout,
+      windowsHide: true,
+    }
+  )
+  return stdout.replace(/^\uFEFF/, '').trim()
+}
 
 function secureBootApiPlugin() {
+  const cache = createAsyncCache<any>(30_000)
+
   return {
     name: 'secure-boot-api',
     configureServer(server: any) {
@@ -17,7 +72,8 @@ function secureBootApiPlugin() {
         const url = new URL(req.url || '', `http://${req.headers.host}`);
         const varName = url.searchParams.get('var');
         const elevate = url.searchParams.get('elevate') === 'true';
-        
+        const refresh = url.searchParams.get('refresh') === 'true';
+
         if (!varName) {
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
@@ -25,21 +81,25 @@ function secureBootApiPlugin() {
           return;
         }
 
+        const VALID_VARS = ['all', 'PK', 'KEK', 'db', 'dbx'];
+        if (!VALID_VARS.includes(varName)) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Invalid "var" query parameter' }));
+          return;
+        }
+
         try {
-          let resultData: any;
+          const cacheKey = `sb:${varName}`;
+          const resultData = await cache.getOrLoad(cacheKey, elevate || refresh, async () => {
+            if (varName === 'all') {
+              if (elevate) {
+                const tmpdir = os.tmpdir();
+                const runId = crypto.randomUUID();
+                const outPath = path.join(tmpdir, `secureboot_all_out_${runId}.json`);
+                const scriptPath = path.join(tmpdir, `secureboot_all_get_${runId}.ps1`);
 
-          if (varName === 'all') {
-            const varsToFetch = ['PK', 'KEK', 'db', 'dbx'];
-            
-            if (elevate) {
-              const tmpdir = os.tmpdir();
-              const outPath = path.join(tmpdir, `secureboot_all_out.json`);
-              const scriptPath = path.join(tmpdir, `secureboot_all_get.ps1`);
-              
-              try { await fs.unlink(outPath); } catch (e) {}
-              try { await fs.unlink(scriptPath); } catch (e) {}
-
-              const psScript = `
+                const psScript = `
 $ErrorActionPreference = 'Stop'
 $results = @{}
 $vars = @('PK', 'KEK', 'db', 'dbx')
@@ -50,52 +110,53 @@ try {
             $results[$v] = [Convert]::ToBase64String($bytes)
         }
     }
-    $results | ConvertTo-Json | Out-File -FilePath '${outPath}' -Encoding utf8
+    $results | ConvertTo-Json -Compress | Out-File -FilePath '${outPath}' -Encoding utf8
 } catch {
     $_.Exception.Message | Out-File -FilePath '${outPath}' -Encoding utf8
 }
 `;
-              await fs.writeFile(scriptPath, psScript, 'utf8');
-
-              const command = `powershell.exe -NoProfile -WindowStyle Hidden -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \\"${scriptPath}\\"' -Verb RunAs -Wait"`;
-              await execAsync(command);
-
-              const output = await fs.readFile(outPath, 'utf8');
-              const cleanOutput = output.replace(/^\uFEFF/, '').trim();
-              try {
-                  resultData = JSON.parse(cleanOutput);
-              } catch {
-                  throw new Error(`Elevated process error: ${cleanOutput}`);
+                await fs.writeFile(scriptPath, psScript, 'utf8');
+                try {
+                  const command = `powershell.exe -NoProfile -WindowStyle Hidden -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \\"${scriptPath}\\"' -Verb RunAs -Wait"`;
+                  await execAsync(command);
+                  const output = await fs.readFile(outPath, 'utf8');
+                  const cleanOutput = output.replace(/^\uFEFF/, '').trim();
+                  try {
+                    return JSON.parse(cleanOutput);
+                  } catch {
+                    throw new Error(`Elevated process error: ${cleanOutput}`);
+                  }
+                } finally {
+                  try { await fs.unlink(outPath); } catch {}
+                  try { await fs.unlink(scriptPath); } catch {}
+                }
+              } else {
+                // Batched single PowerShell call for all 4 variables
+                const psScript = `
+$results = @{}
+foreach ($v in @('PK', 'KEK', 'db', 'dbx')) {
+    try {
+        $b = (Get-SecureBootUEFI -Name $v -ErrorAction Stop).Bytes
+        if ($b) { $results[$v] = [Convert]::ToBase64String($b) }
+    } catch {}
+}
+$results | ConvertTo-Json -Compress
+exit 0
+`;
+                const stdout = await runPowerShellEncoded(psScript);
+                const parsed = stdout ? JSON.parse(stdout) : {};
+                if (!parsed || Object.keys(parsed).length === 0) {
+                  throw new Error('Access was denied');
+                }
+                return parsed;
               }
-
-              try { await fs.unlink(outPath); } catch (e) {}
-              try { await fs.unlink(scriptPath); } catch (e) {}
             } else {
-              // Normal unelevated attempt
-              resultData = {};
-              for (const v of varsToFetch) {
-                 const command = `powershell.exe -NoProfile -Command "try { $b=(Get-SecureBootUEFI -Name ${v}).Bytes; if ($b) { [Convert]::ToBase64String($b) } } catch {}"`;
-                 const { stdout } = await execAsync(command);
-                 const base64Str = stdout.trim();
-                 if (base64Str) {
-                     resultData[v] = base64Str;
-                 }
-              }
-              // If we failed to get anything and we know at least db should exist, we throw
-              if (Object.keys(resultData).length === 0) {
-                 throw new Error("Access was denied");
-              }
-            }
-          } else {
-             // Handle single variable fetch (legacy support)
-             let base64Str = '';
-             if (elevate) {
+              let base64Str = '';
+              if (elevate) {
                 const tmpdir = os.tmpdir();
-                const outPath = path.join(tmpdir, `secureboot_${varName}_out.txt`);
-                const scriptPath = path.join(tmpdir, `secureboot_${varName}_get.ps1`);
-                
-                try { await fs.unlink(outPath); } catch (e) {}
-                try { await fs.unlink(scriptPath); } catch (e) {}
+                const runId = crypto.randomUUID();
+                const outPath = path.join(tmpdir, `secureboot_${varName}_out_${runId}.txt`);
+                const scriptPath = path.join(tmpdir, `secureboot_${varName}_get_${runId}.ps1`);
 
                 const psScript = `
 $ErrorActionPreference = 'Stop'
@@ -107,31 +168,33 @@ try {
 }
 `;
                 await fs.writeFile(scriptPath, psScript, 'utf8');
-
-                const command = `powershell.exe -NoProfile -WindowStyle Hidden -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \\"${scriptPath}\\"' -Verb RunAs -Wait"`;
-                await execAsync(command);
-
-                const output = await fs.readFile(outPath, 'utf8');
-                base64Str = output.trim();
-
-                try { await fs.unlink(outPath); } catch (e) {}
-                try { await fs.unlink(scriptPath); } catch (e) {}
+                try {
+                  const command = `powershell.exe -NoProfile -WindowStyle Hidden -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \\"${scriptPath}\\"' -Verb RunAs -Wait"`;
+                  await execAsync(command);
+                  const output = await fs.readFile(outPath, 'utf8');
+                  base64Str = output.trim();
+                } finally {
+                  try { await fs.unlink(outPath); } catch {}
+                  try { await fs.unlink(scriptPath); } catch {}
+                }
 
                 if (base64Str.includes(' ')) {
-                    throw new Error(`Elevated process error: ${base64Str}`);
+                  throw new Error(`Elevated process error: ${base64Str}`);
                 }
-             } else {
-                const command = `powershell.exe -NoProfile -Command "[Convert]::ToBase64String((Get-SecureBootUEFI -Name ${varName}).Bytes)"`;
-                const { stdout } = await execAsync(command);
-                base64Str = stdout.trim();
-             }
-             if (!base64Str) {
-               res.statusCode = 404;
-               res.setHeader('Content-Type', 'application/json');
-               res.end(JSON.stringify({ error: `Variable ${varName} not found or empty.` }));
-               return;
-             }
-             resultData = base64Str;
+              } else {
+                base64Str = await runPowerShellEncoded(
+                  `try { $b = (Get-SecureBootUEFI -Name '${varName}' -ErrorAction Stop).Bytes; if ($b) { [Convert]::ToBase64String($b) } } catch { throw }`
+                );
+              }
+              return base64Str;
+            }
+          });
+
+          if (!resultData || (typeof resultData === 'string' && !resultData.trim())) {
+            res.statusCode = 404;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: `Variable ${varName} not found or empty.` }));
+            return;
           }
 
           res.setHeader('Content-Type', 'application/json');
@@ -140,8 +203,8 @@ try {
           console.error(`Failed to get Secure Boot variable ${varName}:`, error.message);
           res.statusCode = 500;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ 
-            error: `Failed to access variable. ${error.message}` 
+          res.end(JSON.stringify({
+            error: `Failed to access variable. ${error.message}`
           }));
         }
       });
@@ -154,14 +217,200 @@ try {
 
 // ─── Windows Certificate Store API ───────────────────────────────────────────
 function certStoreApiPlugin() {
+  const cache = createAsyncCache<any>(30_000)
+
+  const buildSingleStorePsBody = (storeLocation: string, storeName: string) => `
+$ErrorActionPreference = 'Stop'
+$results = [System.Collections.Generic.List[object]]::new()
+$now = Get-Date
+$thirtyDays = $now.AddDays(30)
+$storePath = "Cert:\\\\${storeLocation}\\\\${storeName}"
+$certs = Get-ChildItem -Path $storePath -ErrorAction Stop
+foreach ($cert in $certs) {
+    try {
+        $certBytes = $cert.RawData
+        if (-not $certBytes) {
+            $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+        }
+        $b64 = [Convert]::ToBase64String($certBytes)
+
+        $purposes = [System.Collections.Generic.List[string]]::new()
+        $exts = [System.Collections.Generic.List[object]]::new()
+        $isSelfSigned = ($cert.Subject -eq $cert.Issuer)
+        $hasBc = $false
+        $isCA = $false
+
+        foreach ($ext in $cert.Extensions) {
+            $oidVal = $ext.Oid.Value
+            $friendly = $ext.Oid.FriendlyName
+            if ($oidVal -eq "2.5.29.15" -or $friendly -eq "Key Usage") {
+                $kuRaw = $ext.Format(0) -replace '\\s*\\([^)]*\\)', ''
+                foreach ($part in ($kuRaw -split ',')) {
+                    $trimmed = $part.Trim()
+                    if ($trimmed -and -not $purposes.Contains($trimmed)) { [void]$purposes.Add($trimmed) }
+                }
+            } elseif ($oidVal -eq "2.5.29.37" -or $friendly -eq "Enhanced Key Usage") {
+                if ($ext -is [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]) {
+                    foreach ($u in $ext.EnhancedKeyUsages) {
+                        $trimmed = if ($u.FriendlyName) { $u.FriendlyName.Trim() } else { $u.Value }
+                        if ($trimmed -and -not $purposes.Contains($trimmed)) { [void]$purposes.Add($trimmed) }
+                    }
+                }
+            } elseif ($oidVal -eq "2.5.29.19" -or $oidVal -eq "2.5.29.10" -or $friendly -eq "Basic Constraints") {
+                $hasBc = $true
+                if ($ext -is [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]) {
+                    $isCA = [bool]$ext.CertificateAuthority
+                } else {
+                    $formatted = $ext.Format($false)
+                    $isCA = ($formatted -match "CA" -or $formatted -match "IsCertificateAuthority=True")
+                }
+            }
+
+            try {
+                [void]$exts.Add([PSCustomObject]@{
+                    name     = if ($friendly) { $friendly } else { $oidVal }
+                    oid      = $oidVal
+                    critical = $ext.Critical
+                    value    = try { $ext.Format(0) } catch { "" }
+                })
+            } catch {}
+        }
+
+        if ($purposes.Count -eq 0) { [void]$purposes.Add("General Purpose") }
+        if (-not $hasBc) { $isCA = $isSelfSigned }
+
+        $pubKeyAlg = ""
+        $pubKeySize = $null
+        try {
+            $pubKeyAlg = $cert.PublicKey.Oid.FriendlyName
+            if ($cert.PublicKey.Key) {
+                $pubKeySize = $cert.PublicKey.Key.KeySize
+            }
+        } catch {}
+
+        $isExpired    = $cert.NotAfter -lt $now
+        $expiringSoon = (-not $isExpired) -and ($cert.NotAfter -lt $thirtyDays)
+        $isRoot = $isCA -and $isSelfSigned
+        $isIntermediate = $isCA -and (-not $isRoot)
+
+        [void]$results.Add([PSCustomObject]@{
+            thumbprint         = $cert.Thumbprint
+            subject            = $cert.Subject
+            issuer             = $cert.Issuer
+            notBefore          = $cert.NotBefore.ToString("o")
+            notAfter           = $cert.NotAfter.ToString("o")
+            serialNumber       = $cert.SerialNumber
+            signatureAlgorithm = $cert.SignatureAlgorithm.FriendlyName
+            publicKeyAlgorithm = $pubKeyAlg
+            publicKeySize      = $pubKeySize
+            friendlyName       = $cert.FriendlyName
+            purposes           = $purposes.ToArray()
+            isRoot             = $isRoot
+            isIntermediate     = $isIntermediate
+            isExpired          = $isExpired
+            isExpiringSoon     = $expiringSoon
+            certB64            = $b64
+            extensions         = $exts.ToArray()
+        })
+    } catch {}
+}
+`
+
+  const mapEnrichedCerts = (parsed: any) => {
+    const certsArray: any[] = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []);
+    return certsArray.map((entry: any) => {
+      const b64 = entry.certB64 || '';
+      const pem = b64
+        ? `-----BEGIN CERTIFICATE-----\n${b64.match(/.{1,64}/g)?.join('\n') || b64}\n-----END CERTIFICATE-----\n`
+        : '';
+
+      return {
+        thumbprint:         entry.thumbprint || '',
+        subject:            entry.subject || '',
+        issuer:             entry.issuer || '',
+        notBefore:          entry.notBefore || '',
+        notAfter:           entry.notAfter || '',
+        serialNumber:       entry.serialNumber || '',
+        signatureAlgorithm: entry.signatureAlgorithm || '',
+        publicKeyAlgorithm: entry.publicKeyAlgorithm || '',
+        publicKeySize:      entry.publicKeySize ?? null,
+        friendlyName:       entry.friendlyName || '',
+        purposes:           entry.purposes || [],
+        isRoot:             Boolean(entry.isRoot),
+        isIntermediate:     Boolean(entry.isIntermediate),
+        isExpired:          entry.isExpired || false,
+        isExpiringSoon:     entry.isExpiringSoon || false,
+        pem,
+        certB64:            b64,
+        extensions:         entry.extensions || [],
+      };
+    });
+  }
+
   return {
     name: 'cert-store-api',
     configureServer(server: any) {
       server.middlewares.use('/api/certstore', async (req: any, res: any) => {
         const url = new URL(req.url || '', `http://${req.headers.host}`);
-        const storeName   = url.searchParams.get('store')    || 'Root';
+        const batchMode     = url.searchParams.get('batch');
+        const refresh       = url.searchParams.get('refresh') === 'true';
+
+        // Fast single-process scan across all 6 stores for ExpiryDashboard
+        if (batchMode === 'expiry') {
+          try {
+            const data = await cache.getOrLoad('certstore:batch:expiry', refresh, async () => {
+              const batchScript = `
+$now = Get-Date
+$thirtyDays = $now.AddDays(30)
+$results = [System.Collections.Generic.List[object]]::new()
+foreach ($loc in @('CurrentUser', 'LocalMachine')) {
+    foreach ($st in @('My', 'Root', 'CA')) {
+        try {
+            $certs = Get-ChildItem -Path "Cert:\\\\$loc\\\\$st" -ErrorAction Stop
+            foreach ($cert in $certs) {
+                $isExpired = $cert.NotAfter -lt $now
+                $expiringSoon = (-not $isExpired) -and ($cert.NotAfter -lt $thirtyDays)
+                if ($isExpired -or $expiringSoon) {
+                    [void]$results.Add([PSCustomObject]@{
+                        thumbprint     = $cert.Thumbprint
+                        subject        = $cert.Subject
+                        issuer         = $cert.Issuer
+                        notBefore      = $cert.NotBefore.ToString("o")
+                        notAfter       = $cert.NotAfter.ToString("o")
+                        isExpired      = $isExpired
+                        isExpiringSoon = $expiringSoon
+                        storeName      = $st
+                        location       = $loc
+                    })
+                }
+            }
+        } catch {}
+    }
+}
+ConvertTo-Json -InputObject @($results.ToArray()) -Depth 3 -Compress
+exit 0
+`;
+              const clean = await runPowerShellEncoded(batchScript);
+              if (!clean) return [];
+              const parsed = JSON.parse(clean);
+              return Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []);
+            });
+
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ data }));
+          } catch (error: any) {
+            const msg: string = error.message || String(error);
+            console.error('[certstore:batch]', msg);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: msg }));
+          }
+          return;
+        }
+
+        const storeName     = url.searchParams.get('store')    || 'Root';
         const storeLocation = url.searchParams.get('location') || 'CurrentUser';
-        const elevate     = url.searchParams.get('elevate')  === 'true';
+        const elevate       = url.searchParams.get('elevate')  === 'true';
 
         // Allowlist to prevent injection
         const VALID_STORES    = ['Root', 'CA', 'My', 'TrustedPublisher', 'Disallowed'];
@@ -173,184 +422,67 @@ function certStoreApiPlugin() {
           return;
         }
 
-        const tmpdir    = os.tmpdir();
-        const runId     = crypto.randomUUID();
-        const outPath   = path.join(tmpdir, `certstore_out_${runId}.json`);
-        const scriptPath = path.join(tmpdir, `certstore_get_${runId}.ps1`);
-
-        // PowerShell script — enumerates the store, exports each cert to temp DER,
-        // builds a JSON array, then cleans up the temp cert files.
-        const psScript = `
-$ErrorActionPreference = 'Stop'
-$results = @()
-try {
-    $storePath = "Cert:\\\\${storeLocation}\\\\${storeName}"
-    $certs = Get-ChildItem -Path $storePath -ErrorAction Stop
-    foreach ($cert in $certs) {
         try {
-            $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
-            $b64 = [Convert]::ToBase64String($certBytes)
+          const cacheKey = `certstore:${storeLocation}:${storeName}`;
+          const enriched = await cache.getOrLoad(cacheKey, elevate || refresh, async () => {
+            const coreBody = buildSingleStorePsBody(storeLocation, storeName);
+            let clean = '';
 
-            # Extract EKU/Key Usage from extensions
-            $purposes = @()
-            $ku = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -eq "Key Usage" }
-            if ($ku) {
-                $kuRaw = $ku.Format(0) -replace '\\s*\\([^)]*\\)', ''
-                foreach ($part in ($kuRaw -split ',')) {
-                    $trimmed = $part.Trim()
-                    if ($trimmed -and -not ($purposes -contains $trimmed)) { $purposes += $trimmed }
-                }
-            }
-            $eku = $cert.Extensions | Where-Object { $_.Oid.FriendlyName -eq "Enhanced Key Usage" }
-            if ($eku) {
-                foreach ($u in $eku.EnhancedKeyUsages) {
-                    $trimmed = $u.FriendlyName.Trim()
-                    if ($trimmed -and -not ($purposes -contains $trimmed)) { $purposes += $trimmed }
-                }
-            }
-            if ($purposes.Count -eq 0) { $purposes += "General Purpose" }
-
-            # Collect all extensions
-            $exts = @()
-            foreach ($ext in $cert.Extensions) {
-                try {
-                    $exts += [PSCustomObject]@{
-                        name     = if ($ext.Oid.FriendlyName) { $ext.Oid.FriendlyName } else { $ext.Oid.Value }
-                        oid      = $ext.Oid.Value
-                        critical = $ext.Critical
-                        value    = try { $ext.Format(0) } catch { "" }
-                    }
-                } catch {}
-            }
-
-            $pubKeyAlg = ""
-            $pubKeySize = $null
-            try {
-                $pubKeyAlg = $cert.PublicKey.Oid.FriendlyName
-                if ($cert.PublicKey.Key) {
-                    $pubKeySize = $cert.PublicKey.Key.KeySize
-                }
-            } catch {}
-
-            $now = Get-Date
-            $thirtyDays = $now.AddDays(30)
-            $isExpired     = $cert.NotAfter -lt $now
-            $expiringSoon  = (-not $isExpired) -and ($cert.NotAfter -lt $thirtyDays)
-
-            $isSelfSigned = ($cert.Subject -eq $cert.Issuer)
-            $bc = $cert.Extensions | Where-Object { $_.Oid.Value -eq "2.5.29.19" -or $_.Oid.Value -eq "2.5.29.10" -or $_.Oid.FriendlyName -eq "Basic Constraints" }
-            $isCA = $false
-            if ($bc -is [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]) {
-                $isCA = [bool]$bc.CertificateAuthority
-            } elseif ($bc) {
-                $formatted = $bc.Format($false)
-                $isCA = ($formatted -match "CA" -or $formatted -match "IsCertificateAuthority=True")
-            } else {
-                $isCA = $isSelfSigned
-            }
-            $isRoot = $isCA -and $isSelfSigned
-            $isIntermediate = $isCA -and (-not $isRoot)
-
-            $results += [PSCustomObject]@{
-                thumbprint        = $cert.Thumbprint
-                subject           = $cert.Subject
-                issuer            = $cert.Issuer
-                notBefore         = $cert.NotBefore.ToString("o")
-                notAfter          = $cert.NotAfter.ToString("o")
-                serialNumber      = $cert.SerialNumber
-                signatureAlgorithm = $cert.SignatureAlgorithm.FriendlyName
-                publicKeyAlgorithm = $pubKeyAlg
-                publicKeySize      = $pubKeySize
-                friendlyName      = $cert.FriendlyName
-                purposes          = $purposes
-                isRoot            = $isRoot
-                isIntermediate    = $isIntermediate
-                isExpired         = $isExpired
-                isExpiringSoon    = $expiringSoon
-                certB64           = $b64
-                extensions        = $exts
-            }
-        } catch {
-            # Skip certs that fail individual export
-        }
-    }
-    ConvertTo-Json -InputObject @($results) -Depth 5 | Out-File -FilePath '${outPath}' -Encoding utf8
+            if (elevate) {
+              const tmpdir     = os.tmpdir();
+              const runId      = crypto.randomUUID();
+              const outPath    = path.join(tmpdir, `certstore_out_${runId}.json`);
+              const scriptPath = path.join(tmpdir, `certstore_get_${runId}.ps1`);
+              const psScript = `
+try {
+${coreBody}
+    ConvertTo-Json -InputObject @($results.ToArray()) -Depth 5 -Compress | Out-File -FilePath '${outPath}' -Encoding utf8
 } catch {
-    [PSCustomObject]@{ error = $_.Exception.Message } | ConvertTo-Json | Out-File -FilePath '${outPath}' -Encoding utf8
+    [PSCustomObject]@{ error = $_.Exception.Message } | ConvertTo-Json -Compress | Out-File -FilePath '${outPath}' -Encoding utf8
 }
 `;
+              await fs.writeFile(scriptPath, psScript, 'utf8');
+              try {
+                const command = `powershell.exe -NoProfile -WindowStyle Hidden -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \\"${scriptPath}\\"' -Verb RunAs -Wait"`;
+                await execAsync(command, { timeout: 30000 });
+                const raw = await fs.readFile(outPath, 'utf8');
+                clean = raw.replace(/^\uFEFF/, '').trim();
+              } finally {
+                try { await fs.unlink(outPath); } catch {}
+                try { await fs.unlink(scriptPath); } catch {}
+              }
+            } else {
+              const psScript = `
+try {
+${coreBody}
+    ConvertTo-Json -InputObject @($results.ToArray()) -Depth 5 -Compress
+} catch {
+    [PSCustomObject]@{ error = $_.Exception.Message } | ConvertTo-Json -Compress
+}
+exit 0
+`;
+              clean = await runPowerShellEncoded(psScript);
+            }
 
-        try {
-          try { await fs.unlink(outPath); } catch {}
-          await fs.writeFile(scriptPath, psScript, 'utf8');
+            if (!clean) return [];
 
-          let command: string;
-          if (elevate) {
-            command = `powershell.exe -NoProfile -WindowStyle Hidden -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \\"${scriptPath}\\"' -Verb RunAs -Wait"`;
-          } else {
-            command = `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
-          }
+            let parsed: any;
+            try {
+              parsed = JSON.parse(clean);
+            } catch {
+              throw new Error(`Could not parse PowerShell output: ${clean.substring(0, 200)}`);
+            }
 
-          await execAsync(command, { timeout: 30000 });
+            if (parsed && !Array.isArray(parsed) && parsed.error) {
+              throw new Error(String(parsed.error));
+            }
 
-          const raw = await fs.readFile(outPath, 'utf8');
-          const clean = raw.replace(/^\uFEFF/, '').trim();
-
-          try { await fs.unlink(outPath); } catch {}
-          try { await fs.unlink(scriptPath); } catch {}
-
-          let parsed: any;
-          try { parsed = JSON.parse(clean); } catch {
-            throw new Error(`Could not parse PowerShell output: ${clean.substring(0, 200)}`);
-          }
-
-          // PowerShell may return an error object instead of array
-          if (parsed && !Array.isArray(parsed) && parsed.error) {
-            const msg: string = parsed.error;
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: msg }));
-            return;
-          }
-
-          // PowerShell returns a single object (not array) when there's only 1 cert
-          const certsArray: any[] = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []);
-
-          // Map certificates with native Windows .NET classification and standard RFC 7468 PEM
-          const enriched = certsArray.map((entry: any) => {
-            const b64 = entry.certB64 || '';
-            const pem = b64
-              ? `-----BEGIN CERTIFICATE-----\n${b64.match(/.{1,64}/g)?.join('\n') || b64}\n-----END CERTIFICATE-----\n`
-              : '';
-
-            return {
-              thumbprint:         entry.thumbprint || '',
-              subject:            entry.subject || '',
-              issuer:             entry.issuer || '',
-              notBefore:          entry.notBefore || '',
-              notAfter:           entry.notAfter || '',
-              serialNumber:       entry.serialNumber || '',
-              signatureAlgorithm: entry.signatureAlgorithm || '',
-              publicKeyAlgorithm: entry.publicKeyAlgorithm || '',
-              publicKeySize:      entry.publicKeySize ?? null,
-              friendlyName:       entry.friendlyName || '',
-              purposes:           entry.purposes || [],
-              isRoot:             Boolean(entry.isRoot),
-              isIntermediate:     Boolean(entry.isIntermediate),
-              isExpired:          entry.isExpired || false,
-              isExpiringSoon:     entry.isExpiringSoon || false,
-              pem,
-              certB64:            b64,
-              extensions:         entry.extensions || [],
-            };
+            return mapEnrichedCerts(parsed);
           });
 
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ data: enriched }));
         } catch (error: any) {
-          try { await fs.unlink(outPath); } catch {}
-          try { await fs.unlink(scriptPath); } catch {}
-
           const msg: string = error.message || String(error);
           console.error('[certstore]', msg);
 
@@ -368,6 +500,8 @@ try {
 
 // ─── TLS Scanner API ──────────────────────────────────────────────────────────
 function tlsScannerApiPlugin() {
+  const cache = createAsyncCache<any>(15_000)
+
   return {
     name: 'tls-scanner-api',
     configureServer(server: any) {
@@ -382,6 +516,7 @@ function tlsScannerApiPlugin() {
         const url = new URL(req.url || '', `http://${req.headers.host}`);
         const rawHost = url.searchParams.get('host') || '';
         const rawPort = url.searchParams.get('port') || '443';
+        const refresh = url.searchParams.get('refresh') === 'true';
 
         if (!rawHost.trim()) {
           sendJson(400, { error: 'Missing "host" query parameter' });
@@ -433,36 +568,38 @@ function tlsScannerApiPlugin() {
         }
 
         try {
-          const tls = await import('tls');
-          const crypto = await import('crypto');
-          const net = await import('net');
-          const forgeModule = await import('node-forge');
-          const forge = forgeModule.default || forgeModule;
+          const resultPayload = await cache.getOrLoad(`tls:${host}:${port}`, refresh, async () => {
+            const tls = await import('tls');
+            const crypto = await import('crypto');
+            const net = await import('net');
+            const forgeModule = await import('node-forge');
+            const forge = forgeModule.default || forgeModule;
 
-          const isIp = net.isIP(host) !== 0;
+            const isIp = net.isIP(host) !== 0;
 
-          const options: any = {
-            host,
-            port,
-            rejectUnauthorized: false,
-          };
-          if (!isIp) {
-            options.servername = host;
-          }
+            const options: any = {
+              host,
+              port,
+              rejectUnauthorized: false,
+            };
+            if (!isIp) {
+              options.servername = host;
+            }
 
-          let finished = false;
+            return await new Promise<any>((resolve, reject) => {
+              let finished = false;
 
-          const socket = tls.connect(options, () => {
-            if (finished) return;
-            finished = true;
+              const socket = tls.connect(options, () => {
+                if (finished) return;
+                finished = true;
 
-            try {
-              const peerCert = socket.getPeerCertificate(true);
-              if (!peerCert || !peerCert.raw) {
-                socket.destroy();
-                sendJson(500, { error: 'Remote server did not present a certificate' });
-                return;
-              }
+                try {
+                  const peerCert = socket.getPeerCertificate(true);
+                  if (!peerCert || !peerCert.raw) {
+                    socket.destroy();
+                    reject(new Error('Remote server did not present a certificate'));
+                    return;
+                  }
 
               const parseExtensionNode = (e: any) => {
                 let ext: any;
@@ -791,20 +928,18 @@ function tlsScannerApiPlugin() {
 
               socket.end();
 
-              sendJson(200, {
-                data: {
-                  chain,
-                  protocol,
-                  cipher,
-                  authorized,
-                  authorizationError,
-                  host,
-                  port,
-                },
+              resolve({
+                chain,
+                protocol,
+                cipher,
+                authorized,
+                authorizationError,
+                host,
+                port,
               });
             } catch (e: any) {
               socket.destroy();
-              sendJson(500, { error: `Failed to process certificate: ${e.message}` });
+              reject(new Error(`Failed to process certificate: ${e.message}`));
             }
           });
 
@@ -812,18 +947,23 @@ function tlsScannerApiPlugin() {
             if (finished) return;
             finished = true;
             socket.destroy();
-            sendJson(500, { error: `Connection failed: ${err.message}` });
+            reject(new Error(`Connection failed: ${err.message}`));
           });
 
           socket.setTimeout(10000, () => {
             if (finished) return;
             finished = true;
             socket.destroy();
-            sendJson(504, { error: `Connection to ${host}:${port} timed out after 10s` });
+            const timeoutErr: any = new Error(`Connection to ${host}:${port} timed out after 10s`);
+            timeoutErr.statusCode = 504;
+            reject(timeoutErr);
+          });
+            });
           });
 
+          sendJson(200, { data: resultPayload });
         } catch (error: any) {
-          sendJson(500, { error: `Failed to scan TLS. ${error.message}` });
+          sendJson(error.statusCode || 500, { error: error.message || `Failed to scan TLS.` });
         }
       });
     },
@@ -835,6 +975,8 @@ function tlsScannerApiPlugin() {
 
 // ─── OCSP API ─────────────────────────────────────────────────────────────────
 function ocspApiPlugin() {
+  const cache = createAsyncCache<any>(30_000)
+
   return {
     name: 'ocsp-api',
     configureServer(server: any) {
@@ -845,6 +987,9 @@ function ocspApiPlugin() {
           res.end(JSON.stringify({ error: 'Method Not Allowed' }));
           return;
         }
+
+        const url = new URL(req.url || '', `http://${req.headers.host}`);
+        const refresh = url.searchParams.get('refresh') === 'true';
         
         let body = '';
         req.on('data', (chunk: Buffer) => {
@@ -887,54 +1032,60 @@ function ocspApiPlugin() {
                  return;
               }
 
-              const tmpdir = os.tmpdir();
-              const certPath = path.join(tmpdir, `ocsp_check_${Date.now()}.cer`);
-              
-              await fs.writeFile(certPath, certBuf);
-              
-              const command = `certutil -verify -urlfetch "${certPath}"`;
-              let output = '';
-              try {
-                 const { stdout } = await execAsync(command, { timeout: 30000 });
-                 output = stdout;
-              } catch (e: any) {
-                 output = e.stdout || e.message;
-              }
-              
-              try { await fs.unlink(certPath); } catch {}
-              
-              const isRevoked = 
-                output.includes('CERT_TRUST_IS_REVOKED') || 
-                output.includes('Certificate is REVOKED') || 
-                output.includes('The certificate is revoked') ||
-                /CRYPT_E_REVOKED/i.test(output);
+              const certHash = crypto.createHash('sha256').update(certBuf).digest('hex');
+              const resultData = await cache.getOrLoad(`ocsp:${certHash}`, refresh || Boolean(data.refresh), async () => {
+                const tmpdir = os.tmpdir();
+                const certPath = path.join(tmpdir, `ocsp_check_${crypto.randomUUID()}.cer`);
+                
+                await fs.writeFile(certPath, certBuf);
+                
+                let output = '';
+                try {
+                   const { stdout } = await execFileAsync('certutil', ['-verify', '-urlfetch', certPath], {
+                     timeout: 30000,
+                     windowsHide: true,
+                     maxBuffer: 8 * 1024 * 1024,
+                   });
+                   output = stdout;
+                } catch (e: any) {
+                   output = e.stdout || e.message;
+                } finally {
+                   try { await fs.unlink(certPath); } catch {}
+                }
+                
+                const isRevoked = 
+                  output.includes('CERT_TRUST_IS_REVOKED') || 
+                  output.includes('Certificate is REVOKED') || 
+                  output.includes('The certificate is revoked') ||
+                  /CRYPT_E_REVOKED/i.test(output);
 
-              const leafVerifiedOcsp = /Certificate OCSP\s*-+\s*Verified "OCSP"/i.test(output) || /Verified "OCSP"/i.test(output);
-              const leafVerifiedCrl = /Certificate CDP\s*-+\s*Verified "Base CRL/i.test(output) || /Verified "Base CRL/i.test(output);
-              const leafErrorStatusZero = /CertContext\[0\]\[0\]:[^\n]*dwErrorStatus=0/i.test(output);
+                const leafVerifiedOcsp = /Certificate OCSP\s*-+\s*Verified "OCSP"/i.test(output) || /Verified "OCSP"/i.test(output);
+                const leafVerifiedCrl = /Certificate CDP\s*-+\s*Verified "Base CRL/i.test(output) || /Verified "Base CRL/i.test(output);
+                const leafErrorStatusZero = /CertContext\[0\]\[0\]:[^\n]*dwErrorStatus=0/i.test(output);
 
-              const isOk = !isRevoked && (
-                output.includes('Leaf certificate revocation check passed') ||
-                output.includes('certificate revocation check passed') ||
-                ((leafVerifiedOcsp || leafVerifiedCrl) && leafErrorStatusZero)
-              );
+                const isOk = !isRevoked && (
+                  output.includes('Leaf certificate revocation check passed') ||
+                  output.includes('certificate revocation check passed') ||
+                  ((leafVerifiedOcsp || leafVerifiedCrl) && leafErrorStatusZero)
+                );
 
-              const status = isRevoked ? 'revoked' : (isOk ? 'good' : 'unknown');
+                const status = isRevoked ? 'revoked' : (isOk ? 'good' : 'unknown');
 
-              const ocspMatch = output.match(/Certificate OCSP\s*-+\s*([^\n]+)(?:\n\s*\[\d+\.\d+\]\s*([^\n\r]+))?/i);
-              const cdpMatch = output.match(/Certificate CDP\s*-+\s*([^\n]+)(?:\n\s*\[\d+\.\d+\]\s*([^\n\r]+))?/i);
+                const ocspMatch = output.match(/Certificate OCSP\s*-+\s*([^\n]+)(?:\n\s*\[\d+\.\d+\]\s*([^\n\r]+))?/i);
+                const cdpMatch = output.match(/Certificate CDP\s*-+\s*([^\n]+)(?:\n\s*\[\d+\.\d+\]\s*([^\n\r]+))?/i);
+
+                return {
+                  status,
+                  output,
+                  ocspVerified: leafVerifiedOcsp,
+                  crlVerified: leafVerifiedCrl,
+                  ocspUrl: ocspMatch && ocspMatch[2] ? ocspMatch[2].trim() : null,
+                  crlUrl: cdpMatch && cdpMatch[2] ? cdpMatch[2].trim() : null,
+                };
+              });
 
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ 
-                 data: {
-                    status,
-                    output,
-                    ocspVerified: leafVerifiedOcsp,
-                    crlVerified: leafVerifiedCrl,
-                    ocspUrl: ocspMatch && ocspMatch[2] ? ocspMatch[2].trim() : null,
-                    crlUrl: cdpMatch && cdpMatch[2] ? cdpMatch[2].trim() : null
-                 }
-              }));
+              res.end(JSON.stringify({ data: resultData }));
            } catch (e: any) {
               res.statusCode = 500;
               res.setHeader('Content-Type', 'application/json');
@@ -951,12 +1102,15 @@ function ocspApiPlugin() {
 
 // ─── CT SEARCH API ──────────────────────────────────────────────────────────────
 function ctSearchApiPlugin() {
+  const cache = createAsyncCache<any>(120_000)
+
   return {
     name: 'ct-search-api',
     configureServer(server: any) {
       server.middlewares.use('/api/ctsearch', async (req: any, res: any) => {
         const url = new URL(req.url || '', `http://${req.headers.host}`);
         const domain = url.searchParams.get('domain');
+        const refresh = url.searchParams.get('refresh') === 'true';
         
         if (!domain) {
           res.statusCode = 400;
@@ -964,83 +1118,89 @@ function ctSearchApiPlugin() {
           res.end(JSON.stringify({ error: 'Missing "domain" query parameter' }));
           return;
         }
+
+        const normDomain = domain.trim().toLowerCase();
         
         try {
-          // Primary attempt: crt.sh
-          try {
-            const fetchUrl = `https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`;
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 6000);
-            const response = await fetch(fetchUrl, {
-              signal: controller.signal,
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'application/json'
+          const payload = await cache.getOrLoad(`ct:${normDomain}`, refresh, async () => {
+            // Primary attempt: crt.sh
+            try {
+              const fetchUrl = `https://crt.sh/?q=${encodeURIComponent(normDomain)}&output=json`;
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 6000);
+              const response = await fetch(fetchUrl, {
+                signal: controller.signal,
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                  'Accept': 'application/json'
+                }
+              });
+              clearTimeout(timeoutId);
+              
+              if (response.ok) {
+                const data = await response.json();
+                if (Array.isArray(data) && data.length > 0) {
+                  return { data, provider: 'crt.sh', rateLimited: false };
+                }
               }
-            });
-            clearTimeout(timeoutId);
-            
-            if (response.ok) {
-              const data = await response.json();
-              if (Array.isArray(data) && data.length > 0) {
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ data, provider: 'crt.sh', rateLimited: false }));
-                return;
-              }
+            } catch (crtErr: any) {
+              console.warn(`crt.sh unavailable for ${normDomain} (${crtErr.message}), trying CertSpotter fallback...`);
             }
-          } catch (crtErr: any) {
-            console.warn(`crt.sh unavailable for ${domain} (${crtErr.message}), trying CertSpotter fallback...`);
-          }
 
-          // Fallback provider: CertSpotter API
-          try {
-            const csUrl = `https://api.certspotter.com/v1/issuances?domain=${encodeURIComponent(domain)}&include_subdomains=true&expand=dns_names&expand=issuer`;
-            const csController = new AbortController();
-            const csTimeoutId = setTimeout(() => csController.abort(), 8000);
-            const csResponse = await fetch(csUrl, {
-              signal: csController.signal,
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'application/json'
-              }
-            });
-            clearTimeout(csTimeoutId);
+            // Fallback provider: CertSpotter API
+            try {
+              const csUrl = `https://api.certspotter.com/v1/issuances?domain=${encodeURIComponent(normDomain)}&include_subdomains=true&expand=dns_names&expand=issuer`;
+              const csController = new AbortController();
+              const csTimeoutId = setTimeout(() => csController.abort(), 8000);
+              const csResponse = await fetch(csUrl, {
+                signal: csController.signal,
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                  'Accept': 'application/json'
+                }
+              });
+              clearTimeout(csTimeoutId);
 
-            if (csResponse.ok) {
-              const csData = await csResponse.json();
-              if (Array.isArray(csData) && csData.length > 0) {
-                const data = csData.map((item: any, idx: number) => ({
-                  id: parseInt(item.id, 10) || (Date.now() - idx * 1000),
-                  issuer_ca_id: 16418,
-                  issuer_name: item.issuer?.name || item.issuer?.friendly_name || "Public Certificate Authority",
-                  common_name: item.dns_names?.[0] || domain,
-                  name_value: (item.dns_names || [domain]).join('\n'),
-                  entry_timestamp: item.not_before,
-                  not_before: item.not_before,
-                  not_after: item.not_after,
-                  serial_number: item.cert_sha256 || item.tbs_sha256 || String(item.id)
-                }));
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ 
-                  data, 
-                  provider: 'certspotter', 
-                  rateLimited: true,
-                  primaryError: 'crt.sh rate-limited (429/502)' 
-                }));
-                return;
+              if (csResponse.ok) {
+                const csData = await csResponse.json();
+                if (Array.isArray(csData) && csData.length > 0) {
+                  const data = csData.map((item: any, idx: number) => ({
+                    id: parseInt(item.id, 10) || (Date.now() - idx * 1000),
+                    issuer_ca_id: 16418,
+                    issuer_name: item.issuer?.name || item.issuer?.friendly_name || "Public Certificate Authority",
+                    common_name: item.dns_names?.[0] || normDomain,
+                    name_value: (item.dns_names || [normDomain]).join('\n'),
+                    entry_timestamp: item.not_before,
+                    not_before: item.not_before,
+                    not_after: item.not_after,
+                    serial_number: item.cert_sha256 || item.tbs_sha256 || String(item.id)
+                  }));
+                  return {
+                    data,
+                    provider: 'certspotter',
+                    rateLimited: true,
+                    primaryError: 'crt.sh rate-limited (429/502)'
+                  };
+                }
               }
+            } catch (csErr: any) {
+              console.warn(`CertSpotter fallback failed for ${normDomain}:`, csErr.message);
             }
-          } catch (csErr: any) {
-            console.warn(`CertSpotter fallback failed for ${domain}:`, csErr.message);
-          }
 
-          // If both external providers failed or returned empty
-          res.statusCode = 502;
+            const unavailableErr: any = new Error('CT log providers (crt.sh & CertSpotter) are temporarily unavailable.');
+            unavailableErr.statusCode = 502;
+            throw unavailableErr;
+          });
+
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: 'CT log providers (crt.sh & CertSpotter) are temporarily unavailable.' }));
+          res.end(JSON.stringify(payload));
         } catch (error: any) {
-          console.error(`CT Search failed:`, error.message);
-          res.statusCode = 500;
+          if (error.statusCode === 502) {
+            res.statusCode = 502;
+          } else {
+            console.error(`CT Search failed:`, error.message);
+            res.statusCode = 500;
+          }
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: error.message }));
         }
@@ -1054,17 +1214,16 @@ function ctSearchApiPlugin() {
 
 // ─── SYSTEM SETTINGS API (OS Language & Color Scheme) ─────────────────────────
 function systemSettingsApiPlugin() {
-  let cachedSettings: any = null;
-  let cachedAt = 0;
+  const cache = createAsyncCache<any>(15_000)
 
-  const queryRegValue = (keyPath: string, valueName: string): string => {
+  const queryRegValueAsync = async (keyPath: string, valueName: string): Promise<string> => {
     try {
-      return execFileSync('reg', ['query', keyPath, '/v', valueName], {
+      const { stdout } = await execFileAsync('reg', ['query', keyPath, '/v', valueName], {
         encoding: 'utf8',
         windowsHide: true,
         timeout: 1500,
-        stdio: ['ignore', 'pipe', 'ignore'],
       });
+      return stdout;
     } catch {
       return '';
     }
@@ -1119,90 +1278,80 @@ function systemSettingsApiPlugin() {
     }
   };
 
-  const readSystemSettings = () => {
-    const now = Date.now();
-    if (cachedSettings && now - cachedAt < 1000) {
-      return cachedSettings;
-    }
+  const readSystemSettings = (bypassCache = false) =>
+    cache.getOrLoad('system-settings', bypassCache, async () => {
+      let userLanguages: string[] = [];
+      let uiLanguages: string[] = [];
+      let locale = '';
+      let region = '';
+      let colorScheme: 'light' | 'dark' | null = null;
 
-    let userLanguages: string[] = [];
-    let uiLanguages: string[] = [];
-    let locale = '';
-    let region = '';
-    let colorScheme: 'light' | 'dark' | null = null;
+      if (process.platform === 'win32') {
+        const [rawUserLangs, rawUiLangs, rawLocale, rawRegion, rawAppsLight, rawSysLight] =
+          await Promise.all([
+            queryRegValueAsync('HKCU\\Control Panel\\International\\User Profile', 'Languages'),
+            queryRegValueAsync('HKCU\\Control Panel\\Desktop', 'PreferredUILanguages'),
+            queryRegValueAsync('HKCU\\Control Panel\\International', 'LocaleName'),
+            queryRegValueAsync('HKCU\\Control Panel\\International\\Geo', 'Name'),
+            queryRegValueAsync('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', 'AppsUseLightTheme'),
+            queryRegValueAsync('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', 'SystemUsesLightTheme'),
+          ]);
 
-    if (process.platform === 'win32') {
-      userLanguages = parseMultiSz(
-        queryRegValue('HKCU\\Control Panel\\International\\User Profile', 'Languages')
-      );
-      uiLanguages = parseMultiSz(
-        queryRegValue('HKCU\\Control Panel\\Desktop', 'PreferredUILanguages')
-      );
-      locale = parseSz(queryRegValue('HKCU\\Control Panel\\International', 'LocaleName'));
-      region = parseSz(queryRegValue('HKCU\\Control Panel\\International\\Geo', 'Name'));
+        userLanguages = parseMultiSz(rawUserLangs);
+        uiLanguages = parseMultiSz(rawUiLangs);
+        locale = parseSz(rawLocale);
+        region = parseSz(rawRegion);
 
-      const appsLight = parseDword(
-        queryRegValue(
-          'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize',
-          'AppsUseLightTheme'
-        )
-      );
-      if (appsLight === 1) {
-        colorScheme = 'light';
-      } else if (appsLight === 0) {
-        colorScheme = 'dark';
-      } else {
-        const sysLight = parseDword(
-          queryRegValue(
-            'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize',
-            'SystemUsesLightTheme'
-          )
-        );
-        if (sysLight === 1) colorScheme = 'light';
-        else if (sysLight === 0) colorScheme = 'dark';
+        const appsLight = parseDword(rawAppsLight);
+        if (appsLight === 1) {
+          colorScheme = 'light';
+        } else if (appsLight === 0) {
+          colorScheme = 'dark';
+        } else {
+          const sysLight = parseDword(rawSysLight);
+          if (sysLight === 1) colorScheme = 'light';
+          else if (sysLight === 0) colorScheme = 'dark';
+        }
       }
-    }
 
-    if (!locale) {
-      try {
-        locale = Intl.DateTimeFormat().resolvedOptions().locale || '';
-      } catch {
-        locale = process.env.LANG || process.env.LC_ALL || 'en-US';
+      if (!locale) {
+        try {
+          locale = Intl.DateTimeFormat().resolvedOptions().locale || '';
+        } catch {
+          locale = process.env.LANG || process.env.LC_ALL || 'en-US';
+        }
       }
-    }
 
-    if (userLanguages.length === 0 && locale) {
-      userLanguages = [locale];
-    }
-
-    let preferredAppLanguage = 'en';
-    const candidates = [...userLanguages, ...uiLanguages, locale];
-    for (const c of candidates) {
-      const norm = normalizeSupportedLang(c);
-      if (norm) {
-        preferredAppLanguage = norm;
-        break;
+      if (userLanguages.length === 0 && locale) {
+        userLanguages = [locale];
       }
-    }
 
-    cachedSettings = {
-      userLanguages,
-      uiLanguages,
-      locale,
-      region,
-      preferredAppLanguage,
-      colorScheme,
-    };
-    cachedAt = now;
-    return cachedSettings;
-  };
+      let preferredAppLanguage = 'en';
+      const candidates = [...userLanguages, ...uiLanguages, locale];
+      for (const c of candidates) {
+        const norm = normalizeSupportedLang(c);
+        if (norm) {
+          preferredAppLanguage = norm;
+          break;
+        }
+      }
+
+      return {
+        userLanguages,
+        uiLanguages,
+        locale,
+        region,
+        preferredAppLanguage,
+        colorScheme,
+      };
+    });
 
   return {
     name: 'system-settings-api',
-    transformIndexHtml(html: string, ctx: any) {
+    async transformIndexHtml(html: string, ctx: any) {
       if (!ctx?.server) return html;
       try {
-        const settings = readSystemSettings();
+        const settings = await readSystemSettings();
         const scriptTag = `<script>window.__SYSTEM_SETTINGS__ = ${JSON.stringify(settings)};</script>`;
         return html.replace('</head>', `  ${scriptTag}\n  </head>`);
       } catch {
@@ -1210,9 +1359,11 @@ function systemSettingsApiPlugin() {
       }
     },
     configureServer(server: any) {
-      server.middlewares.use('/api/system-settings', (_req: any, res: any) => {
+      server.middlewares.use('/api/system-settings', async (req: any, res: any) => {
         try {
-          const settings = readSystemSettings();
+          const url = new URL(req.url || '', `http://${req.headers.host}`);
+          const refresh = url.searchParams.get('refresh') === 'true';
+          const settings = await readSystemSettings(refresh);
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ data: settings }));
         } catch (err: any) {
@@ -1231,4 +1382,35 @@ function systemSettingsApiPlugin() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), systemSettingsApiPlugin(), secureBootApiPlugin(), certStoreApiPlugin(), tlsScannerApiPlugin(), ocspApiPlugin(), ctSearchApiPlugin()],
+  build: {
+    target: 'es2022',
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor-react',
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+              priority: 30,
+            },
+            {
+              name: 'vendor-i18n',
+              test: /[\\/]node_modules[\\/](i18next|react-i18next|i18next-browser-languagedetector)[\\/]/,
+              priority: 25,
+            },
+            {
+              name: 'vendor-forge',
+              test: /[\\/]node_modules[\\/]node-forge[\\/]/,
+              priority: 20,
+            },
+            {
+              name: 'vendor-icons',
+              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+              priority: 15,
+            },
+          ],
+        },
+      },
+    },
+  },
 })

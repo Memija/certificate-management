@@ -295,27 +295,44 @@ export function resolveEffectiveTheme(
   return 'dark';
 }
 
+let inflightSettingsSync: Promise<SystemSettingsPayload | null> | null = null;
+
 /**
  * Fetches system settings from the local backend `/api/system-settings` endpoint if available,
- * updating `window.__SYSTEM_SETTINGS__`.
+ * updating `window.__SYSTEM_SETTINGS__`. Skips redundant network round-trips when settings
+ * were already injected into `index.html` by `transformIndexHtml` unless `force` is true.
  */
-export async function syncSystemSettingsFromApi(): Promise<SystemSettingsPayload | null> {
+export async function syncSystemSettingsFromApi(force = false): Promise<SystemSettingsPayload | null> {
   if (typeof window === 'undefined') return null;
-  try {
-    const res = await fetch('/api/system-settings');
-    if (!res.ok) return window.__SYSTEM_SETTINGS__ ?? null;
-    const contentType = (res.headers.get('content-type') || '').toLowerCase();
-    if (!contentType.includes('application/json')) {
-      return window.__SYSTEM_SETTINGS__ ?? null;
-    }
-    const json = await res.json();
-    if (json && json.data) {
-      window.__SYSTEM_SETTINGS__ = json.data;
-      return json.data as SystemSettingsPayload;
-    }
-  } catch {
-    // Static web fallback — ignore network/API errors
+  if (!force && window.__SYSTEM_SETTINGS__) {
+    return window.__SYSTEM_SETTINGS__;
   }
-  return window.__SYSTEM_SETTINGS__ ?? null;
+  if (!force && inflightSettingsSync) {
+    return inflightSettingsSync;
+  }
+
+  const doFetch = async (): Promise<SystemSettingsPayload | null> => {
+    try {
+      const res = await fetch('/api/system-settings');
+      if (!res.ok) return window.__SYSTEM_SETTINGS__ ?? null;
+      const contentType = (res.headers.get('content-type') || '').toLowerCase();
+      if (!contentType.includes('application/json')) {
+        return window.__SYSTEM_SETTINGS__ ?? null;
+      }
+      const json = await res.json();
+      if (json && json.data) {
+        window.__SYSTEM_SETTINGS__ = json.data;
+        return json.data as SystemSettingsPayload;
+      }
+    } catch {
+      // Static web fallback — ignore network/API errors
+    }
+    return window.__SYSTEM_SETTINGS__ ?? null;
+  };
+
+  inflightSettingsSync = doFetch().finally(() => {
+    inflightSettingsSync = null;
+  });
+  return inflightSettingsSync;
 }
 

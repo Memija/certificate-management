@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Clock, RefreshCw, Shield, AlertCircle, ChevronUp, ChevronDown, ArrowUpDown, User, Monitor, Folder, Fingerprint, Award, CheckCircle2, Copy, Server, Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastContext';
 import { formatExpiry, formatExpiryTooltip } from './utils/expiryFormatter';
-import { fetchLocalApiJson, getWebFallbackCertStore, WebApiUnavailableError } from './utils/webFallbacks';
+import { fetchLocalApiJson, WebApiUnavailableError } from './utils/apiClient';
 
 interface CertStoreEntry {
   thumbprint: string;
@@ -56,77 +56,105 @@ export function ExpiryDashboard() {
     };
   }, [isSortOpen]);
   
-  const fetchStores = async () => {
-     setLoading(true);
-     setError('');
-     
-     try {
-       const locations = ['CurrentUser', 'LocalMachine'];
-       const stores = ['My', 'Root', 'CA'];
-       let allCerts: CertStoreEntry[] = [];
-       
-       for (const loc of locations) {
-         for (const store of stores) {
-           try {
-             const json = await fetchLocalApiJson<{ data: any[] }>(`/api/certstore?store=${store}&location=${loc}`);
-             const data = json.data || [];
-             const mapped = data.map((c: any) => ({
-               ...c,
-               storeName: store,
-               location: loc
-             }));
-             allCerts = [...allCerts, ...mapped];
-           } catch (e: any) {
-             if (e instanceof WebApiUnavailableError || e?.isWebFallback) {
-               const fallbackData = getWebFallbackCertStore(store as any, loc as any);
-               const mapped = fallbackData.map((c: any) => ({
-                 ...c,
-                 storeName: store,
-                 location: loc
-               }));
-               allCerts = [...allCerts, ...mapped];
-             } else {
-               console.error(`Failed to fetch ${loc}\\${store}`);
-             }
-           }
-         }
-       }
-       
-       // Filter for expired or expiring soon
-       const expiringCerts = allCerts.filter(c => c.isExpired || c.isExpiringSoon);
-       
-       setCerts(expiringCerts);
-     } catch (e: any) {
-       setError(e.message);
-     } finally {
-       setLoading(false);
-     }
-  };
-  
-  useEffect(() => {
-    fetchStores();
+  const fetchStores = useCallback(async (refresh = false) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      try {
+        const json = await fetchLocalApiJson<{ data: CertStoreEntry[] }>(
+          `/api/certstore?batch=expiry${refresh ? '&refresh=true' : ''}`
+        );
+        setCerts(json.data || []);
+      } catch (e: any) {
+        if (e instanceof WebApiUnavailableError || e?.isWebFallback) {
+          const { getWebFallbackCertStore } = await import('./utils/webFallbacks');
+          const locations = ['CurrentUser', 'LocalMachine'] as const;
+          const stores = ['My', 'Root', 'CA'] as const;
+          const allCerts: CertStoreEntry[] = [];
+          for (const loc of locations) {
+            for (const store of stores) {
+              const fallbackData = getWebFallbackCertStore(store, loc);
+              for (const c of fallbackData) {
+                if (c.isExpired || c.isExpiringSoon) {
+                  allCerts.push({ ...c, storeName: store, location: loc });
+                }
+              }
+            }
+          }
+          setCerts(allCerts);
+        } else {
+          throw e;
+        }
+      }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const expiredCount = certs.filter(c => c.isExpired).length;
-  const expiringSoonCount = certs.filter(c => !c.isExpired && c.isExpiringSoon).length;
+  useEffect(() => {
+    fetchStores(false);
+  }, [fetchStores]);
 
-  const sortedCerts = [...certs].sort((a, b) => {
-    let diff = 0;
-    if (sortCol === 'subject') {
-      const cnA = a.subject.match(/CN=([^,]+)/)?.[1]?.trim() || a.subject.match(/O=([^,]+)/)?.[1]?.trim() || a.subject;
-      const cnB = b.subject.match(/CN=([^,]+)/)?.[1]?.trim() || b.subject.match(/O=([^,]+)/)?.[1]?.trim() || b.subject;
-      diff = cnA.localeCompare(cnB);
-    } else if (sortCol === 'store') {
-      const storeA = `${a.location}\\${a.storeName}`;
-      const storeB = `${b.location}\\${b.storeName}`;
-      diff = storeA.localeCompare(storeB);
-    } else if (sortCol === 'status') {
-      diff = (a.isExpired === b.isExpired) ? 0 : a.isExpired ? -1 : 1;
-    } else {
-      diff = new Date(a.notAfter).getTime() - new Date(b.notAfter).getTime();
-    }
-    return sortAsc ? diff : -diff;
-  });
+  const { expiredCount, expiringSoonCount, indexedCerts, isSortable } = useMemo(() => {
+    let expired = 0;
+    let soon = 0;
+    const subjects = new Set<string>();
+    const stores = new Set<string>();
+    const expiries = new Set<string>();
+    const statuses = new Set<boolean>();
+
+    const indexed = certs.map((c) => {
+      if (c.isExpired) expired++;
+      else if (c.isExpiringSoon) soon++;
+
+      const cn =
+        c.subject.match(/CN=([^,]+)/)?.[1]?.trim() ||
+        c.subject.match(/O=([^,]+)/)?.[1]?.trim() ||
+        c.subject;
+      const storeKey = `${c.location}\\${c.storeName}`;
+      const notAfterMs = new Date(c.notAfter).getTime();
+
+      subjects.add(cn);
+      stores.add(storeKey);
+      expiries.add(c.notAfter);
+      statuses.add(c.isExpired);
+
+      return { cert: c, cn, storeKey, notAfterMs };
+    });
+
+    return {
+      expiredCount: expired,
+      expiringSoonCount: soon,
+      indexedCerts: indexed,
+      isSortable: {
+        subject: subjects.size > 1,
+        store: stores.size > 1,
+        expiry: expiries.size > 1,
+        status: statuses.size > 1,
+      },
+    };
+  }, [certs]);
+
+  const sortedCerts = useMemo(() => {
+    const copy = [...indexedCerts];
+    copy.sort((a, b) => {
+      let diff = 0;
+      if (sortCol === 'subject') {
+        diff = a.cn.localeCompare(b.cn);
+      } else if (sortCol === 'store') {
+        diff = a.storeKey.localeCompare(b.storeKey);
+      } else if (sortCol === 'status') {
+        diff = a.cert.isExpired === b.cert.isExpired ? 0 : a.cert.isExpired ? -1 : 1;
+      } else {
+        diff = a.notAfterMs - b.notAfterMs;
+      }
+      return sortAsc ? diff : -diff;
+    });
+    return copy.map((item) => item.cert);
+  }, [indexedCerts, sortCol, sortAsc]);
 
   const handleSort = (col: SortColumn) => {
     if (sortCol === col) {
@@ -140,13 +168,6 @@ export function ExpiryDashboard() {
   const SortIcon = ({ col }: { col: SortColumn }) => {
     if (sortCol !== col) return <ArrowUpDown size={13} style={{ opacity: 0.4 }} />;
     return sortAsc ? <ChevronUp size={13} style={{ color: 'var(--text-accent)' }} /> : <ChevronDown size={13} style={{ color: 'var(--text-accent)' }} />;
-  };
-
-  const isSortable = {
-    subject: new Set(certs.map(c => c.subject.match(/CN=([^,]+)/)?.[1]?.trim() || c.subject.match(/O=([^,]+)/)?.[1]?.trim() || c.subject)).size > 1,
-    store: new Set(certs.map(c => `${c.location}\\${c.storeName}`)).size > 1,
-    expiry: new Set(certs.map(c => c.notAfter)).size > 1,
-    status: new Set(certs.map(c => c.isExpired)).size > 1
   };
 
   const renderHeader = (col: SortColumn, label: string, width: string) => {
@@ -193,7 +214,7 @@ export function ExpiryDashboard() {
             </div>
           </div>
           <div className="premium-header-actions">
-            <button className="btn btn-secondary btn-sm" onClick={fetchStores} disabled={loading} style={{ gap: '0.45rem' }}>
+            <button className="btn btn-secondary btn-sm" onClick={() => fetchStores(true)} disabled={loading} style={{ gap: '0.45rem' }}>
               <RefreshCw size={14} style={loading ? { animation: 'spin 1s linear infinite' } : undefined} />
               {loading ? t('app.dashboard.scanning', 'Scanning...') : t('app.winCertStore.refresh', 'Refresh Stores')}
             </button>

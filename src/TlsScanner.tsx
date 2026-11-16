@@ -34,7 +34,7 @@ import {
 import * as forge from 'node-forge';
 import { useToast } from './ToastContext';
 import { formatExtensionValue } from './utils/purposeFormatter';
-import { fetchLocalApiJson, scanTlsClientSide, WebApiUnavailableError } from './utils/webFallbacks';
+import { fetchLocalApiJson, WebApiUnavailableError } from './utils/apiClient';
 
 const DN_LABELS: Record<string, string> = {
   CN: 'Common Name',
@@ -596,6 +596,7 @@ export function TlsScanner() {
         rawData = json.data;
       } catch (apiErr: any) {
         if (apiErr instanceof WebApiUnavailableError || apiErr?.isWebFallback) {
+          const { scanTlsClientSide } = await import('./utils/webFallbacks');
           rawData = scanTlsClientSide(targetHost, targetPort);
         } else {
           throw apiErr;

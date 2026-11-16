@@ -7,6 +7,7 @@ import { parseCSRFromText } from './utils/csrParser';
 import { validateCsr, validatePrivateKeyPem } from './utils/csrValidation';
 import type { CsrFieldErrors } from './utils/csrValidation';
 import { isValidCountryCode, getCountryName } from './utils/countryCodes';
+import { generateRsaKeyPairAsync } from './utils/rsaKeyGenerator';
 
 export interface CsrEditorModalProps {
   isOpen: boolean;
@@ -230,15 +231,14 @@ export function CsrEditorModal({
     setGenerating(true);
     setError('');
 
-    // Allow UI to render loading spinner
-    setTimeout(() => {
+    void (async () => {
       try {
         let privKey: forge.pki.rsa.PrivateKey;
         let pubKey: forge.pki.rsa.PublicKey;
         let generatedPrivKeyPem: string | undefined = undefined;
 
         if (keyMode === 'generate') {
-          const keypair = forge.pki.rsa.generateKeyPair(keySize);
+          const keypair = await generateRsaKeyPairAsync(keySize);
           privKey = keypair.privateKey;
           pubKey = keypair.publicKey;
           generatedPrivKeyPem = forge.pki.privateKeyToPem(privKey);
@@ -340,7 +340,7 @@ export function CsrEditorModal({
       } finally {
         setGenerating(false);
       }
-    }, 80);
+    })();
   };
 
   if (!isOpen) return null;

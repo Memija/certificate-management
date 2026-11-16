@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import './i18n';
+import i18n, { initialLanguage, initialI18nReady } from './i18n';
 import App from './App';
 import {
   getInitialThemePreference,
@@ -11,8 +11,16 @@ import {
 const initialTheme = getInitialThemePreference();
 document.documentElement.setAttribute('data-theme', resolveEffectiveTheme(initialTheme));
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+const mount = () => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+};
+
+if (initialLanguage === 'en' || i18n.hasResourceBundle(initialLanguage, 'translation')) {
+  mount();
+} else {
+  initialI18nReady.finally(mount);
+}

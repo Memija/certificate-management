@@ -21,7 +21,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { LearningTerm } from './LearningTerm';
 import { OCSP_SAMPLE_PRESETS, type OcspSamplePreset } from './utils/ocspSamples';
-import { fetchLocalApiJson, verifyOcspClientSide, WebApiUnavailableError } from './utils/webFallbacks';
+import { fetchLocalApiJson, WebApiUnavailableError } from './utils/apiClient';
 import * as forge from 'node-forge';
 
 interface ParsedCertDetails {
@@ -520,6 +520,7 @@ export function OcspChecker({ onNavigate }: { onNavigate?: (mode: any) => void }
         setResult(json.data);
       } catch (apiErr: any) {
         if (apiErr instanceof WebApiUnavailableError || apiErr?.isWebFallback) {
+          const { verifyOcspClientSide } = await import('./utils/webFallbacks');
           setResult(verifyOcspClientSide(trimmedInput, parsedCert, activePresetId));
         } else {
           throw apiErr;

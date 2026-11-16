@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo, useDeferredValue } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import {
   Upload, AlertTriangle, CheckCircle, XCircle, ShieldCheck,
@@ -163,13 +163,23 @@ function ReasonBadge({ reason, localizedText }: { reason: string; localizedText:
 }
 
 
+const crlDateFormatCache = new Map<string, Intl.DateTimeFormat>();
+
 function formatDate(dateStr: string | null, locale?: string): string {
   if (!dateStr) return 'N/A';
-  try {
-    return new Date(dateStr).toLocaleString(locale);
-  } catch {
-    return dateStr;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const key = locale || 'default';
+  let dtf = crlDateFormatCache.get(key);
+  if (!dtf) {
+    try {
+      dtf = new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'medium' });
+      crlDateFormatCache.set(key, dtf);
+    } catch {
+      return d.toLocaleString();
+    }
   }
+  return dtf.format(d);
 }
 
 function CRLDetails({
@@ -189,6 +199,7 @@ function CRLDetails({
   const [showPem, setShowPem] = useState(false);
   const [showExts, setShowExts] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const deferredSearchTerm = useDeferredValue(searchTerm);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
 
@@ -207,35 +218,49 @@ function CRLDetails({
     link.click();
   };
 
+  const localizedReasonLookup = useMemo(() => {
+    const map: Record<string, { lower: string; norm: string }> = {};
+    for (const key of Object.keys(REASON_CONFIGS)) {
+      const text = t(`app.crl.reasons.${key}`, key).toLowerCase();
+      map[key] = { lower: text, norm: normalizeSearchText(text) };
+    }
+    return map;
+  }, [t]);
+
   const filteredRevoked = useMemo(() => {
-    if (!searchTerm.trim()) return crl.revokedCertificates;
-    const rawQ = searchTerm.trim().toLowerCase();
+    if (!deferredSearchTerm.trim()) return crl.revokedCertificates;
+    const rawQ = deferredSearchTerm.trim().toLowerCase();
     const normQ = normalizeSearchText(rawQ);
+    const trimmedQ = rawQ.replace(/^0+/, '');
 
     return crl.revokedCertificates.filter((item) => {
-      const reasonKey = getReasonKey(item.reason);
-      const localizedReason = reasonKey ? t(`app.crl.reasons.${reasonKey}`, item.reason).toLowerCase() : '';
-      const formattedDate = formatDate(item.revocationDate, i18n.language).toLowerCase();
-      const rawDate = (item.revocationDate || '').toLowerCase();
+      // 1. Fast serial number match (hex, with or without leading zeros)
       const serial = item.serialNumber.toLowerCase();
+      if (serial.includes(rawQ)) return true;
+      if (trimmedQ && serial.replace(/^0+/, '').includes(trimmedQ)) return true;
 
-      // 1. Serial Number match (hex, with or without leading zeros)
-      const trimmedSerial = serial.replace(/^0+/, '');
-      const trimmedQ = rawQ.replace(/^0+/, '');
-      if (serial.includes(rawQ) || (trimmedQ && trimmedSerial.includes(trimmedQ))) return true;
+      // 2. Fast ISO date match before formatting localized date
+      const rawDate = (item.revocationDate || '').toLowerCase();
+      if (rawDate.includes(rawQ)) return true;
 
-      // 2. Date match (both formatted localized date and ISO date)
-      if (formattedDate.includes(rawQ) || rawDate.includes(rawQ)) return true;
+      // 3. Pre-computed reason match (English + localized + cross-script)
+      const reasonKey = getReasonKey(item.reason);
+      const locEntry = localizedReasonLookup[reasonKey];
+      if (locEntry && (locEntry.lower.includes(rawQ) || (normQ && locEntry.norm.includes(normQ)))) {
+        return true;
+      }
+      if (item.reason.toLowerCase().includes(rawQ) || (normQ && normalizeSearchText(item.reason).includes(normQ))) {
+        return true;
+      }
 
-      // 3. Raw English reason match
-      if (item.reason.toLowerCase().includes(rawQ) || normalizeSearchText(item.reason).includes(normQ)) return true;
-
-      // 4. Localized reason match (direct + normalized cross-script Latin/Cyrillic + diacritics)
-      if (localizedReason.includes(rawQ) || (normQ && normalizeSearchText(localizedReason).includes(normQ))) return true;
+      // 4. Cached Intl localized date match
+      if (formatDate(item.revocationDate, i18n.language).toLowerCase().includes(rawQ)) {
+        return true;
+      }
 
       return false;
     });
-  }, [crl.revokedCertificates, searchTerm, t, i18n.language]);
+  }, [crl.revokedCertificates, deferredSearchTerm, localizedReasonLookup, i18n.language]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRevoked.length / pageSize));
   const currentSlice = useMemo(() => {
