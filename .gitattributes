@@ -1,0 +1,14 @@
+# Enforce LF line endings across all text files to match .editorconfig and .prettierrc
+* text=auto eol=lf
+
+# Binary image, font, and cryptographic container assets
+*.png binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.jks binary
+*.keystore binary
+*.pfx binary
+*.p12 binary
+*.der binary

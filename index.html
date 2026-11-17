@@ -2,16 +2,53 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" /></noscript>
-    <title>Certificate & Secure Boot Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Certificate Management" />
+    <meta name="theme-color" content="#080f14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f1f5f9" media="(prefers-color-scheme: light)" />
+    <meta
+      name="description"
+      content="Certificate Management — Modern local-first X.509 certificate, PKI, and UEFI Secure Boot inspection and management application."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Certificate Management" />
+    <meta
+      property="og:description"
+      content="Certificate Management — Modern local-first X.509 certificate, PKI, and UEFI Secure Boot inspection and management application."
+    />
+    <meta property="og:image" content="/android-chrome-512x512.png" />
+    <title>Certificate Management</title>
+    <script>
+      try {
+        const storedTheme = localStorage.getItem('app-theme')
+        const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        const resolvedTheme =
+          storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : systemTheme
+        document.documentElement.setAttribute('data-theme', resolvedTheme)
+
+        const supportedLang = /^(en|de|bs|sr-Cyrl|id|pl)$/
+        const storedLang = localStorage.getItem('i18nextLng')
+        const systemLang = (navigator.language || '').split('-')[0].toLowerCase()
+        if (storedLang && supportedLang.test(storedLang)) {
+          document.documentElement.lang = storedLang
+        } else if (systemLang === 'sr') {
+          document.documentElement.lang = 'sr-Cyrl'
+        } else if (supportedLang.test(systemLang)) {
+          document.documentElement.lang = systemLang
+        }
+      } catch {}
+    </script>
   </head>
+
   <body>
+    <noscript>Certificate Management requires JavaScript to run locally in your browser.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

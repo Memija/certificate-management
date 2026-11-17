@@ -1,0 +1,245 @@
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.searchPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.formRow {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.hostField {
+  flex: 1 1 240px;
+  margin-bottom: 0;
+}
+
+.portField {
+  flex: 0 1 120px;
+  margin-bottom: 0;
+}
+
+.submitBtn {
+  height: 42px;
+  padding: 0 1.5rem;
+}
+
+.presetsRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+.presetsLabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.presetSpecial {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.28rem 0.82rem 0.28rem 0.68rem;
+  border-radius: 9999px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-color);
+  font: 600 0.8rem var(--font-sans);
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.presetSpecial:hover,
+.presetSpecialActive {
+  transform: translateY(-1px);
+  border-color: var(--accent-color);
+}
+
+.presetSpecialActive {
+  box-shadow: 0 0 0 1.5px var(--success-border);
+}
+
+.presetSpecialIcon {
+  color: var(--success-color);
+  display: inline-flex;
+  align-items: center;
+}
+
+.presetSpecialSparkle {
+  color: var(--info-color);
+  display: inline-flex;
+  align-items: center;
+}
+
+.presetPill {
+  padding: 0.34rem 0.85rem;
+  font: 500 0.8rem var(--font-sans);
+  border-radius: 9999px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.presetPill:hover {
+  color: var(--text-primary);
+  border-color: var(--info-border);
+  transform: translateY(-1px);
+}
+
+.presetPillActive {
+  background: var(--info-bg);
+  border-color: var(--info-color);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.presetBadge {
+  font: 600 0.68rem var(--font-sans);
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  line-height: 1.25;
+}
+
+.badge_info {
+  background: var(--info-bg);
+  color: var(--info-color);
+  border-color: var(--info-border);
+}
+
+.badge_purple {
+  background: var(--cat-keymanagement-bg);
+  color: var(--purple-color);
+  border-color: var(--cat-keymanagement-border);
+}
+
+.badge_success {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border-color: var(--success-border);
+}
+
+.badge_warning {
+  background: var(--warning-bg);
+  color: var(--warning-color);
+  border-color: var(--warning-border);
+}
+
+.badge_danger {
+  background: var(--danger-bg);
+  color: var(--danger-color);
+  border-color: var(--danger-border);
+}
+
+.errorAlert {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger-color);
+  margin-bottom: 2rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.shrinkZero {
+  flex-shrink: 0;
+}
+
+.resultsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.metricInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.metricLabel {
+  font: 500 0.78rem var(--font-sans);
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.metricValLg {
+  font: 800 1.25rem/1.15 var(--font-sans);
+  color: var(--text-primary);
+}
+
+.metricValCipher {
+  font: 700 0.92rem/1.25 var(--font-sans);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.metricTrusted {
+  font: 700 0.95rem/1.25 var(--font-sans);
+  color: var(--success-color);
+  overflow-wrap: anywhere;
+}
+
+.metricUntrusted {
+  font: 700 0.92rem/1.25 var(--font-sans);
+  color: var(--danger-color);
+  overflow-wrap: anywhere;
+}
+
+.metricErrorCode {
+  font-size: 0.68rem;
+  color: var(--danger-color);
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.metricDepthRow {
+  font: 800 1.35rem/1.15 var(--font-sans);
+  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.metricDepthUnit {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.metricSub {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+.cardsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}

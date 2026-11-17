@@ -1,0 +1,9 @@
+# Trivy Ignore Configuration
+# https://trivy.dev/docs/latest/configuration/filtering/#trivyignore
+
+# Dev-only transitive advisories in @lhci/cli & @puppeteer/browsers (never shipped in production bundle)
+CVE-2026-26960 exp:2027-04-30
+
+# Synthetic PKI sample/fallback RSA keys in test-certs/, src/data/*-samples.ts, and src/utils/web-fallbacks/
+# Path-scoped real secret protection is enforced by Gitleaks (.gitleaks.toml) and scripts/check-secrets.js.
+private-key exp:2027-04-30

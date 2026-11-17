@@ -1,0 +1,320 @@
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.presetsPanel {
+  padding: 0.85rem 1.15rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.presetsHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font: 600 0.82rem var(--font-sans);
+  color: var(--text-secondary);
+  margin-right: 0.25rem;
+  flex-shrink: 0;
+}
+
+.presetsTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.iconAccent {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.iconWarning {
+  color: var(--warning-color);
+  flex-shrink: 0;
+}
+
+.presetsList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.presetPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.9rem;
+  border-radius: 9999px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font: 500 0.8rem var(--font-sans);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.presetPill:hover {
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+
+.presetPillActive {
+  background: var(--info-bg);
+  border-color: var(--info-border);
+  color: var(--info-color);
+  font-weight: 600;
+}
+
+.presetName {
+  font-size: 0.8rem;
+}
+
+.presetBadge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  line-height: 1.25;
+}
+
+.presetBadgeSuccess {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-border);
+}
+
+.presetBadgeDanger {
+  background: var(--danger-bg);
+  color: var(--danger-color);
+  border: 1px solid var(--danger-border);
+}
+
+.clearBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.36rem 0.85rem;
+  border-radius: 9999px;
+  background: var(--danger-bg);
+  border: 1px dashed var(--danger-border);
+  color: var(--danger-color);
+  font: 600 0.78rem var(--font-sans);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.clearBtn:hover {
+  border-style: solid;
+  border-color: var(--danger-color);
+}
+
+.clearMobile {
+  display: none;
+}
+
+.clearDesktop {
+  display: inline-flex;
+  margin-left: auto;
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 1.5rem;
+}
+
+.inputCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.inputHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.08rem;
+  color: var(--text-primary);
+}
+
+.pemTextarea {
+  height: 240px;
+  font-size: 0.82rem;
+}
+
+.statusMessage {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.statusSuccess {
+  color: var(--success-color);
+}
+
+.statusError {
+  color: var(--danger-color);
+}
+
+.hashBox {
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.hashTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.2rem;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.hashValue {
+  word-break: break-all;
+}
+
+.verifyRow {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.verifyBtn {
+  height: 44px;
+  padding: 0 2rem;
+}
+
+.verdictPanel {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 2.35rem 1.5rem;
+}
+
+.verdictMatched {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+}
+
+.verdictMismatched {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+
+.verdictIconWrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  margin: 0 auto 1.2rem;
+}
+
+.verdictHeading {
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+}
+
+.verdictHeadingSuccess {
+  color: var(--success-color);
+}
+
+.verdictHeadingDanger {
+  color: var(--danger-color);
+}
+
+.verdictDesc {
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem;
+  font-size: 0.92rem;
+}
+
+.comparisonCard {
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  font-size: 0.82rem;
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+.comparisonHeading {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.65rem;
+}
+
+.comparisonGrid {
+  display: grid;
+  grid-template-columns: 145px 1fr;
+  gap: 0.45rem 0.75rem;
+}
+
+.comparisonLabel {
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+
+.comparisonValue {
+  word-break: break-all;
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .presetsPanel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .presetsHeader {
+    justify-content: space-between;
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .clearMobile {
+    display: inline-flex;
+  }
+
+  .clearDesktop {
+    display: none;
+  }
+
+  .presetsList {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .presetPill {
+    justify-content: space-between;
+    width: 100%;
+    white-space: normal;
+  }
+
+  .comparisonGrid {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}

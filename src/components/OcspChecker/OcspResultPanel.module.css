@@ -1,0 +1,180 @@
+.resultPanel {
+  margin-bottom: 2rem;
+}
+
+.verdictHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--glass-border-subtle);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.verdictLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex: 1;
+  min-width: 240px;
+}
+
+.verdictIconWrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+}
+
+.verdictHeading {
+  margin: 0 0 0.3rem;
+  font: 700 1.3rem var(--font-sans);
+}
+
+.verdict_good {
+  color: var(--success-color);
+}
+
+.verdict_revoked {
+  color: var(--danger-color);
+}
+
+.verdict_unknown {
+  color: var(--warning-color);
+}
+
+.verdictDesc {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.verdictRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.presetMatchPill {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font: 600 0.8rem var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid transparent;
+}
+
+.matchSuccess {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border-color: var(--success-border);
+}
+
+.matchDanger {
+  background: var(--danger-bg);
+  color: var(--danger-color);
+  border-color: var(--danger-border);
+}
+
+.checksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.checkCard {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.checkCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.checkCardTitle {
+  margin: 0;
+  font: 600 0.88rem var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.endpointItem {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.endpointUrl {
+  word-break: break-all;
+  font: 0.78rem/1.35 var(--font-mono);
+  color: var(--text-primary);
+}
+
+.endpointMuted {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.diagnosticBox {
+  background: var(--input-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border-subtle);
+  padding: 0.75rem 1rem;
+}
+
+.diagnosticToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.diagnosticToggleBtn {
+  background: none;
+  border: none;
+  color: var(--text-accent);
+  font: 600 0.88rem var(--font-sans);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  text-align: left;
+}
+
+.diagnosticActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.diagnosticPre {
+  margin-top: 0.85rem;
+  font-size: 0.8rem;
+  max-height: 350px;
+  overflow-y: auto;
+  word-break: break-all;
+}
+
+.accentIcon {
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.warningIcon {
+  color: var(--warning-color);
+  flex-shrink: 0;
+}

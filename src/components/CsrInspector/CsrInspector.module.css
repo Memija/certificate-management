@@ -1,0 +1,261 @@
+.container {
+  max-width: 1050px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.headerPills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.headerPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.22rem 0.62rem;
+  border-radius: var(--radius-sm);
+  font: 500 0.76rem var(--font-sans);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.headerPillActive {
+  color: var(--text-primary);
+  border-color: var(--glass-border);
+}
+
+.iconSuccess {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.iconPurple {
+  color: var(--purple-color);
+  flex-shrink: 0;
+}
+
+.iconInfo {
+  color: var(--info-color);
+  flex-shrink: 0;
+}
+
+.iconWarning {
+  color: var(--warning-color);
+  flex-shrink: 0;
+}
+
+.iconAccent {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.iconAccent2 {
+  color: var(--text-accent-2);
+  flex-shrink: 0;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.dropZone {
+  padding: 3rem 1.75rem;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+  cursor: default;
+}
+
+.dropZoneDragging {
+  border-color: var(--accent-color);
+  background: var(--success-bg);
+}
+
+.dropIcon {
+  color: var(--text-accent);
+  margin-bottom: 0.85rem;
+  opacity: 0.85;
+}
+
+.dropTitle {
+  margin: 0 0 0.45rem;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.dropDesc {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.dropActions {
+  margin-top: 1.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.loadedSection {
+  margin-top: 2rem;
+}
+
+.loadedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.loadedHeading {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.loadedActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tabsBar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.25rem 0.25rem 0.65rem;
+  margin-bottom: 1.35rem;
+  scrollbar-width: thin;
+}
+
+.tabsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: 600 0.82rem var(--font-sans);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-right: 0.2rem;
+}
+
+.tabsCountPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 19px;
+  padding: 0 0.45rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.tabPill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border-subtle);
+  flex-shrink: 0;
+  position: relative;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.tabPill:hover {
+  border-color: var(--glass-border);
+}
+
+.tabPillActive {
+  background: var(--cat-keymanagement-bg);
+  border-color: var(--cat-keymanagement-border);
+}
+
+.tabPillError.tabPillActive {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+
+.tabSelectBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.42rem 0.45rem 0.42rem 0.8rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font: 500 0.82rem var(--font-sans);
+  cursor: pointer;
+}
+
+.tabPillActive .tabSelectBtn {
+  color: var(--purple-color);
+  font-weight: 600;
+}
+
+.tabPillError.tabPillActive .tabSelectBtn {
+  color: var(--danger-color);
+}
+
+.tabActiveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.tabName {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabKeyIndicator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--purple-color);
+}
+
+.tabRemoveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.5rem 0.35rem 0.25rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 0 8px 8px 0;
+}
+
+.tabRemoveBtn:hover {
+  color: var(--danger-color);
+}
+
+.loadingPanel {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.loadingText {
+  color: var(--text-secondary);
+}

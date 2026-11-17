@@ -1,0 +1,162 @@
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.sectionHeading {
+  margin: 0 0 1.25rem;
+  font-size: 1.08rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+}
+
+.iconAccent {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.iconSuccess {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.requiredStar {
+  color: var(--text-accent);
+}
+
+.formStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fieldGroup {
+  margin-bottom: 0;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0.75rem;
+}
+
+.row3 {
+  display: grid;
+  grid-template-columns: 1.1fr 1.35fr 0.65fr;
+  gap: 0.75rem;
+}
+
+.alignedLabel {
+  min-height: 2.1rem;
+  align-items: flex-end;
+  line-height: 1.25;
+}
+
+.inputInvalid {
+  border-color: var(--danger-color);
+}
+
+.inputValid {
+  border-color: var(--success-color);
+}
+
+.feedbackDanger {
+  margin-top: 0.38rem;
+  color: var(--danger-color);
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.feedbackSuccess {
+  margin-top: 0.38rem;
+  color: var(--success-color);
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.shrinkZero {
+  flex-shrink: 0;
+}
+
+.submitBtn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 1.5rem;
+  height: 44px;
+}
+
+.errorBanner {
+  margin-top: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-color);
+  font-size: 0.86rem;
+}
+
+.outputColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.outputHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.outputHeading {
+  margin: 0;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+}
+
+.outputActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.outputTextarea {
+  height: 148px;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 860px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 540px) {
+  .row2,
+  .row3 {
+    grid-template-columns: 1fr;
+  }
+
+  .alignedLabel {
+    min-height: 0;
+  }
+}

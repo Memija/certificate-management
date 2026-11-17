@@ -1,0 +1,320 @@
+.container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 100%;
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.capabilityPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.22rem 0.6rem;
+}
+
+.capabilityPillActive {
+  color: var(--text-primary);
+  border-color: var(--glass-border);
+  background: var(--card-bg);
+}
+
+.iconSuccess {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.iconWarning {
+  color: var(--warning-color);
+  flex-shrink: 0;
+}
+
+.iconPurple {
+  color: var(--purple-color);
+  flex-shrink: 0;
+}
+
+.iconInfo {
+  color: var(--info-color);
+  flex-shrink: 0;
+}
+
+.iconAccent {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.presetsBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding: 0.75rem 1.1rem;
+  margin-bottom: 1.25rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.presetsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.presetsList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.presetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.36rem 0.85rem;
+  border-radius: 9999px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.presetBtn:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  background: var(--bg-secondary);
+}
+
+.presetBadge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.1rem 0.48rem;
+  border-radius: 9999px;
+  background: var(--info-bg);
+  color: var(--info-color);
+  border: 1px solid var(--info-border);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.dropZoneWrap {
+  padding: 0;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.dropTriggerBtn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.dropIcon {
+  color: var(--accent-color);
+  margin-bottom: 0.85rem;
+  display: inline-flex;
+}
+
+.dropTitle {
+  font-family: var(--font-sans);
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.dropSubtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.1rem;
+}
+
+.dropFormats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.formatPill {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  color: var(--text-secondary);
+}
+
+.loadedSection {
+  margin-top: 2rem;
+}
+
+.loadedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.loadedTitle {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.tabsBar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.25rem 0.1rem 0.6rem;
+  margin-bottom: 1.25rem;
+  scrollbar-width: thin;
+}
+
+.tabsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-right: 0.2rem;
+}
+
+.tabCountPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 0.42rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-accent);
+}
+
+.fileTabChip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.fileTabChipActive {
+  background: var(--info-bg);
+  border-color: var(--info-border);
+}
+
+.fileTabSelectBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.42rem 0.5rem 0.42rem 0.78rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.fileTabChipActive .fileTabSelectBtn {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tabActiveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--info-color);
+  flex-shrink: 0;
+}
+
+.tabFileName {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileTabRemoveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.5rem;
+  margin-right: 0.15rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.fileTabRemoveBtn:hover {
+  color: var(--danger-color);
+  background: var(--danger-bg);
+}
+
+@media (max-width: 820px) {
+  .container {
+    padding: 1.15rem 0.85rem;
+  }
+}

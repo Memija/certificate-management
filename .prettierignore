@@ -1,0 +1,26 @@
+# Dependencies & lockfiles
+node_modules
+package-lock.json
+
+# Build & test fixtures
+dist
+dist-ssr
+test-certs
+test-samples
+
+# Coverage & audit reports
+coverage
+coverage-ts
+.firebase
+.lighthouseci
+lighthouse-reports
+zap-reports
+sarif-results
+codeql-db
+cyclonedx.sbom.json
+spdx.sbom.json
+*.sarif
+
+# Verbatim SPDX license & attribution text
+LICENSE
+NOTICE

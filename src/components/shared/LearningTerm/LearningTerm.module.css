@@ -1,0 +1,13 @@
+.term {
+  border-bottom: 1px dotted var(--text-accent);
+  cursor: help;
+  color: inherit;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.term:hover {
+  color: var(--text-accent);
+  border-bottom-color: var(--accent-hover);
+}

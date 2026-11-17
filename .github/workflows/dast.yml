@@ -1,0 +1,125 @@
+name: OWASP ZAP DAST Baseline Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: '0 5 * * 1' # Every Monday at 5:00 AM UTC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dast:
+    name: OWASP ZAP Dynamic Application Security Testing
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Production Bundle
+        run: npm run build
+
+      - name: Start Preview Server & Run OWASP ZAP Baseline Scan
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 --strictPort > preview.log 2>&1 &
+          PREVIEW_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sSf http://127.0.0.1:4173 >/dev/null 2>&1; then
+              echo "Preview server is up on http://127.0.0.1:4173"
+              break
+            fi
+            sleep 1
+          done
+          mkdir -p zap-reports
+          chmod 777 zap-reports
+          cp .zap/rules.tsv zap-reports/rules.tsv
+          docker run --rm --network host \
+            -v "$(pwd)/zap-reports:/zap/wrk/:rw" \
+            -t ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t http://127.0.0.1:4173 \
+            -c rules.tsv \
+            -I \
+            -J zap-report.json \
+            -w zap-report.md \
+            -r zap-report.html
+          kill "$PREVIEW_PID" || true
+
+      - name: Upload OWASP ZAP DAST Report Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: owasp-zap-dast-report
+          path: zap-reports/
+          retention-days: 14
+
+      - name: Generate OWASP ZAP DAST Summary
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const jobStatus = process.env.JOB_STATUS;
+            let md = "## 🕷️ OWASP ZAP Dynamic Application Security Testing (DAST)\n\n";
+            try {
+              if (fs.existsSync("zap-reports/zap-report.json")) {
+                const report = JSON.parse(fs.readFileSync("zap-reports/zap-report.json", "utf8"));
+                const site = (report.site && report.site[0]) || {};
+                const alerts = site.alerts || [];
+                if (jobStatus === "success") {
+                  md += "### ✅ DAST Baseline Scan Passed!\n\n";
+                } else {
+                  md += "### ❌ DAST Baseline Scan Detected Failing Alerts\n\n";
+                }
+                md += "| Metric | Value |\n";
+                md += "| :--- | :--- |\n";
+                md += "| **Scanner** | OWASP ZAP Baseline (`ghcr.io/zaproxy/zaproxy:stable`) |\n";
+                md += "| **Target URL** | `http://127.0.0.1:4173` (Production Preview) |\n";
+                md += "| **Rules Config** | `.zap/rules.tsv` |\n";
+                md += `| **Distinct Alert Types** | \`${alerts.length}\` |\n`;
+                md += "| **Report Artifact** | `owasp-zap-dast-report` (HTML, JSON, Markdown) |\n\n";
+                if (alerts.length > 0) {
+                  md += "#### Alert Breakdown\n\n";
+                  md += "| Plugin ID | Alert | Risk | Instances |\n";
+                  md += "| :--- | :--- | :--- | :--- |\n";
+                  for (const a of alerts.slice(0, 15)) {
+                    const count = Array.isArray(a.instances) ? a.instances.length : (a.count || 1);
+                    md += `| \`${a.pluginid || "-"}\` | ${a.name || a.alert || "-"} | ${a.riskdesc || "-"} | \`${count}\` |\n`;
+                  }
+                }
+              } else {
+                const status = jobStatus === "success" ? "✅ Passed" : "❌ Failed";
+                md += `| Metric | Status |\n| :--- | :--- |\n| **OWASP ZAP Baseline** | ${status} |\n`;
+              }
+            } catch (err) {
+              md += "OWASP ZAP scan completed. Inspect the uploaded artifact for details.\n";
+            }
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md);
+          '

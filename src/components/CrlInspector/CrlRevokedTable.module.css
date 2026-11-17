@@ -1,0 +1,186 @@
+.tableTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.sectionHeadingInline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 260px;
+  max-width: 400px;
+  flex: 1 1 260px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  padding: 0.45rem 2.1rem 0.45rem 2.2rem;
+  font-size: 0.85rem;
+}
+
+.searchClearBtn {
+  position: absolute;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0.2rem;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.emptyTableMsg {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.crlTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.crlTable th {
+  padding: 0.75rem 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.crlTable td {
+  padding: 0.75rem 0.95rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.crlTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.crlTable tbody tr:hover td {
+  background: var(--bg-secondary);
+}
+
+.serialCell {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.serialRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.copyIconBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.18rem 0.3rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.copyIconBtn:hover {
+  color: var(--text-primary);
+}
+
+.copyIconBtnSuccess {
+  color: var(--success-color);
+}
+
+.dateCell {
+  color: var(--text-secondary);
+}
+
+.reasonBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.reasonDanger {
+  background: var(--danger-bg);
+  color: var(--danger-color);
+  border: 1px solid var(--danger-border);
+}
+
+.reasonInfo {
+  background: var(--info-bg);
+  color: var(--info-color);
+  border: 1px solid var(--info-border);
+}
+
+.reasonWarning {
+  background: var(--warning-bg);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-border);
+}
+
+.reasonPurple {
+  background: var(--cat-keymanagement-bg);
+  color: var(--purple-color);
+  border: 1px solid var(--cat-keymanagement-border);
+}
+
+.reasonSuccess {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-border);
+}
+
+.reasonNeutral {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.paginationBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.paginationBtns {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

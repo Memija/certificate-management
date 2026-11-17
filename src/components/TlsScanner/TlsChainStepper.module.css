@@ -1,0 +1,203 @@
+.chainHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.chainHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chainHeaderIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+}
+
+.chainHeading {
+  margin: 0;
+  font: 700 1.25rem var(--font-sans);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.chainSub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.batchActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.copiedIcon {
+  color: var(--success-color);
+}
+
+.chainFlow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  margin-bottom: 2rem;
+  box-shadow: var(--glass-shadow);
+}
+
+.chainFlowStep {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.95rem 1.15rem;
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  cursor: pointer;
+  min-width: 250px;
+  flex: 1 1 250px;
+  text-align: left;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.chainFlowStep:hover {
+  transform: translateY(-2px);
+  border-color: var(--glass-border);
+}
+
+.stepActive {
+  border-color: var(--cyan-color);
+  box-shadow: 0 0 0 2px var(--cat-inspectionvalidation-border);
+}
+
+.step_leaf {
+  border-top: 3px solid var(--blue-color);
+}
+
+.step_intermediate {
+  border-top: 3px solid var(--cyan-color);
+}
+
+.step_root {
+  border-top: 3px solid var(--success-color);
+}
+
+.stepExpired {
+  border-top: 3px solid var(--danger-color);
+}
+
+.stepBadges {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.stepRoleBadge {
+  font: 600 0.72rem var(--font-sans);
+  padding: 0.2rem 0.58rem;
+  border-radius: 9999px;
+}
+
+.role_leaf {
+  background: var(--info-bg);
+  color: var(--blue-color);
+  border: 1px solid var(--info-border);
+}
+
+.role_intermediate {
+  background: var(--cat-inspectionvalidation-bg);
+  color: var(--cyan-color);
+  border: 1px solid var(--cat-inspectionvalidation-border);
+}
+
+.role_root {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-border);
+}
+
+.stepSubject {
+  font-weight: 700;
+  font-size: 0.94rem;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.stepIssuer {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.stepIssuerName {
+  color: var(--text-secondary);
+}
+
+.stepFooter {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--glass-border-subtle);
+  padding-top: 0.45rem;
+  width: 100%;
+}
+
+.chainFlowArrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  padding: 0 0.25rem;
+}
+
+.chainFlowArrowPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border-subtle);
+  color: var(--text-secondary);
+  font: 600 0.7rem var(--font-sans);
+  white-space: nowrap;
+}
+
+.cyanIcon {
+  color: var(--cyan-color);
+}
+
+.accentIcon {
+  color: var(--text-accent);
+}

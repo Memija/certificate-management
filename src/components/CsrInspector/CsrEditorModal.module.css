@@ -1,0 +1,254 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 15, 20, 0.78);
+  backdrop-filter: blur(8px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.dialog {
+  width: 94%;
+  max-width: 690px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 1.65rem;
+  box-shadow: var(--glass-shadow);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.headerMain {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.headerIconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modalSubtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+.errorAlert {
+  padding: 0.75rem 1rem;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-md);
+  color: var(--danger-color);
+  margin-bottom: 1.25rem;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.formSections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.sectionCard {
+  padding: 1.15rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.85rem;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.sansHeading {
+  margin: 0 0 0.35rem;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.sansHelp {
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.subjectGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.85rem;
+}
+
+.fieldGroup {
+  margin-bottom: 0;
+}
+
+.fullSpan {
+  grid-column: 1 / -1;
+}
+
+.compactLabel {
+  font-size: 0.8rem;
+}
+
+.inputError {
+  border-color: var(--danger-color);
+}
+
+.fieldError {
+  margin-top: 0.3rem;
+  color: var(--danger-color);
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.fieldSuccess {
+  margin-top: 0.3rem;
+  color: var(--success-color);
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.warningBox {
+  margin-top: 0.65rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-sm);
+  color: var(--warning-color);
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.usageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.checkboxList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.48rem;
+  font-size: 0.85rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.radioLabelActive {
+  font-weight: 600;
+}
+
+.generateKeyRow {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.keySizeField {
+  flex: 1 1 200px;
+}
+
+.keyNotice {
+  flex: 1 1 240px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding-bottom: 0.35rem;
+}
+
+.noticeIcon {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.pasteKeyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.keyTextarea {
+  font-size: 0.8rem;
+}
+
+.shrinkZero {
+  flex-shrink: 0;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}

@@ -1,0 +1,22 @@
+# OWASP ZAP Baseline Scan Rules Configuration
+# Format: <rule-id>	<ACTION>	<comment>
+# Actions: IGNORE | WARN | FAIL
+# Reference: https://www.zaproxy.org/docs/docker/baseline-scan/
+
+# Informational Alerts
+10049	IGNORE	(Storable and Cacheable Content - Informational alert on cacheable resources)
+10050	IGNORE	(Retrieved from Cache - Informational alert on resources fetched from browser/proxy cache)
+10109	IGNORE	(Modern Web Application - Informational alert identifying SPA architecture)
+
+# Vendor Bundle / Minified Asset False Positives
+10096	IGNORE	(Timestamp Disclosure - Unix - False positive on 10-digit numeric constants in minified vendor JS chunks)
+10110	IGNORE	(Dangerous JS Functions - False positive on vendor library internals; app source contains 0 eval or document.write)
+
+# Spectre Site Isolation & Cross-Origin Architecture
+90004	IGNORE	(Insufficient Site Isolation Against Spectre Vulnerability - Architectural requirements for local SPA and 3rd party assets)
+
+# Cache Control Directives
+10015	IGNORE	(Re-examine Cache-control Directives - Explicit caching headers configured on static hosting)
+
+# Content Security Policy (CSP) Framework Requirements
+10055	IGNORE	(Content Security Policy (CSP) Header - Single-page application requirements)

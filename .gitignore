@@ -6,19 +6,53 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+firebase-debug.log*
 
+# Dependencies & build output
 node_modules
 dist
 dist-ssr
+*.tsbuildinfo
+
+# Environment variables & local secrets
+.env
+.env.*
+!.env.example
 *.local
 
-# Editor directories and files
+# Firebase deploy cache
+.firebase/
+
+# Editor directories & OS files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
 .idea
 .DS_Store
+Thumbs.db
+Desktop.ini
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Testing, coverage & Lighthouse
+coverage
+coverage-ts
+.lighthouseci/
+lighthouse-reports/
+
+# SonarQube
+.scannerwork/
+sonar-issues.json
+
+# Security & audit artifacts
+cyclonedx.sbom.json
+spdx.sbom.json
+*.sarif
+sarif-results/
+zap-reports/
+codeql-db/

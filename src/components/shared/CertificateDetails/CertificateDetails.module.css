@@ -1,0 +1,120 @@
+.grid {
+  margin-top: 0.5rem;
+}
+
+.expiryValid,
+.expiryExpired {
+  font-size: 0.82rem;
+  margin-left: 0.35rem;
+  cursor: help;
+}
+
+.expiryValid {
+  color: var(--text-secondary);
+}
+
+.expiryExpired {
+  color: var(--danger-color);
+}
+
+.expiredBadge {
+  margin-left: 0.5rem;
+}
+
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.12rem 0.4rem;
+  margin: -0.12rem -0.4rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  line-height: 1.45;
+  text-align: left;
+  word-break: break-all;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.copyBtn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--glass-border-subtle);
+}
+
+.copyIcon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  opacity: 0.75;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
+}
+
+.copyBtn:hover .copyIcon {
+  opacity: 1;
+  color: var(--text-accent);
+}
+
+.extensionsDetails {
+  margin-top: 1rem;
+}
+
+.extensionsSummary {
+  cursor: pointer;
+  color: var(--text-accent);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.extensionsGrid {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border-subtle);
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+}
+
+.extensionRow {
+  display: contents;
+}
+
+.criticalBadge {
+  font-size: 0.7em;
+  margin-left: 0.35rem;
+}
+
+.extensionValue {
+  word-break: break-all;
+  font-size: 0.82em;
+  margin-top: 0.25rem;
+  color: var(--text-muted);
+}
+
+.pemSection {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--glass-border-subtle);
+}
+
+.pemActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.copiedIcon {
+  color: var(--success-color);
+}
+
+.pemBlock {
+  margin-top: 0.5rem;
+}

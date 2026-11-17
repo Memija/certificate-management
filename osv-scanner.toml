@@ -1,0 +1,42 @@
+# OSV-Scanner Configuration
+# https://google.github.io/osv-scanner/configuration/
+
+# ------------------------------------------------------------------------------
+# Dev-Only Transitive Dependencies (@lhci/cli, @puppeteer/browsers & CLI Tooling)
+# ------------------------------------------------------------------------------
+
+# extract-zip@2.0.1 — CVE-2026-26960 (Symlink Path Traversal, dev-only via @puppeteer/browsers)
+[[IgnoredVulns]]
+id = "GHSA-7pqw-9j4j-h8q3"
+ignoreUntil = 2027-04-30
+reason = "Mitigated: dev-only transitive dependency of @puppeteer/browsers used solely to unpack official Chromium test binaries."
+
+# extract-zip@2.0.1 — Symlink Directory Escape (dev-only via @puppeteer/browsers)
+[[IgnoredVulns]]
+id = "GHSA-jmr9-qjv8-65gv"
+ignoreUntil = 2027-04-30
+reason = "Mitigated: dev-only transitive dependency of @puppeteer/browsers used solely to unpack official Chromium test binaries."
+
+# uuid@8.3.2 — Buffer Bounds Check in v3/v5/v6 (dev-only via @lhci/cli)
+[[IgnoredVulns]]
+id = "GHSA-w5hq-g745-h8pq"
+ignoreUntil = 2027-04-30
+reason = "Mitigated: dev-only transitive dependency of @lhci/cli, which only invokes uuid.v4() without custom buffer arguments."
+
+# glob — AbortSignal Cancellation Bypass (dev-only via license-checker-rseidelsohn / @npmcli/arborist)
+[[IgnoredVulns]]
+id = "GHSA-3g3m-2fjr-6pw4"
+ignoreUntil = 2027-04-30
+reason = "Mitigated: dev-only CLI dependency of license-checker-rseidelsohn running exclusively against trusted local node_modules."
+
+# minimatch — ReDoS via globparts Amplification (dev-only via license-checker-rseidelsohn / @npmcli/arborist)
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2027-04-30
+reason = "Mitigated: dev-only CLI dependency of license-checker-rseidelsohn with no untrusted user glob patterns."
+
+# picomatch — ReDoS via Repeated Extglobs (dev-only via vite / vitest / typescript-eslint, no upstream fix)
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+ignoreUntil = 2027-04-30
+reason = "Mitigated: build/test-time dev dependency only; never bundled into client production assets or exposed to untrusted input."

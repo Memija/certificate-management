@@ -1,0 +1,79 @@
+name: 'CodeQL Security Analysis'
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  schedule:
+    - cron: '30 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: javascript-typescript
+            build-mode: none
+          - language: actions
+            build-mode: none
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        with:
+          category: '/language:${{matrix.language}}'
+
+      - name: Generate CodeQL Summary (${{ matrix.language }})
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          LANGUAGE: ${{ matrix.language }}
+          BUILD_MODE: ${{ matrix.build-mode }}
+        run: |
+          echo "## 🛡️ GitHub CodeQL Static Analysis (\`$LANGUAGE\`)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$JOB_STATUS" = "success" ]; then
+            echo "### ✅ CodeQL Analysis Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Target Language** | \`$LANGUAGE\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Build Mode** | \`$BUILD_MODE\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Category** | \`/language:$LANGUAGE\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Status** | Passed — Queries Evaluated |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
+            echo "> Detailed alerts and semantic query results are synced to the repository [Security Code Scanning](../../security/code-scanning) tab." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ CodeQL Analysis Failed or Interrupted" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Review job logs for query execution details." >> $GITHUB_STEP_SUMMARY
+          fi

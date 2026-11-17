@@ -1,0 +1,310 @@
+.container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 100%;
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.capabilityPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.22rem 0.6rem;
+}
+
+.capabilityPillActive {
+  color: var(--text-primary);
+  border-color: var(--glass-border);
+  background: var(--card-bg);
+}
+
+.iconSuccess {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.iconWarning {
+  color: var(--warning-color);
+  flex-shrink: 0;
+}
+
+.iconPurple {
+  color: var(--purple-color);
+  flex-shrink: 0;
+}
+
+.iconInfo {
+  color: var(--info-color);
+  flex-shrink: 0;
+}
+
+.iconDanger {
+  color: var(--danger-color);
+  flex-shrink: 0;
+}
+
+.iconAccent {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.alertBanner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+}
+
+.alertWarning {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-left: 3px solid var(--warning-color);
+  color: var(--text-primary);
+}
+
+.alertDanger {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-left: 3px solid var(--danger-color);
+  color: var(--danger-color);
+}
+
+.alertBody {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 220px;
+}
+
+.alertText {
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.alertActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.alertCloseBtn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.dropZoneWrap {
+  padding: 0 1.5rem 1.85rem;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.dropTriggerBtn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.dropIcon {
+  color: var(--text-accent);
+  margin-bottom: 0.85rem;
+  display: inline-flex;
+}
+
+.dropTitle {
+  font-family: var(--font-sans);
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.dropSubtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.dropSampleRow {
+  display: flex;
+  justify-content: center;
+}
+
+.loadedSection {
+  margin-top: 2rem;
+}
+
+.loadedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.loadedTitle {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.headerBtnRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tabsBar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.25rem 0.1rem 0.6rem;
+  margin-bottom: 1.25rem;
+  scrollbar-width: thin;
+}
+
+.tabsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.tabCountPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 0.42rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-accent);
+}
+
+.crlTabChip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.crlTabChipActive {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+
+.crlTabSelectBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.42rem 0.45rem 0.42rem 0.78rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.crlTabChipActive .crlTabSelectBtn {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tabActiveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger-color);
+  flex-shrink: 0;
+}
+
+.tabIssuerText {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sampleTabTag {
+  font-size: 0.65rem;
+  padding: 0.08rem 0.42rem;
+  border-radius: 9999px;
+  background: var(--warning-bg);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-border);
+  font-weight: 600;
+}
+
+.crlTabRemoveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.5rem;
+  margin-right: 0.15rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.crlTabRemoveBtn:hover {
+  color: var(--danger-color);
+  background: var(--danger-bg);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.15rem 0.85rem;
+  }
+}

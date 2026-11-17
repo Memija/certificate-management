@@ -1,0 +1,2 @@
+npm run security:secrets
+npx lint-staged --relative --max-arg-length 3000

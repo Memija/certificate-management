@@ -1,0 +1,33 @@
+# Gitleaks Configuration
+title = "Certificate Management Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for build artifacts, lockfiles, synthetic PKI demo/test fixtures, and secret-scanner unit test fixtures"
+paths = [
+  '''dist/.*''',
+  '''coverage/.*''',
+  '''\.lighthouseci/.*''',
+  '''lighthouse-reports/.*''',
+  '''zap-reports/.*''',
+  '''package-lock\.json''',
+  '''node_modules/.*''',
+  '''scripts/check-secrets\.spec\.js''',
+  '''scripts/generate-csr-test-files\.mjs''',
+  '''scripts/generate-matcher-test-files\.mjs''',
+  '''test-certs/.*''',
+  '''test-samples/.*''',
+  '''src/data/.*-samples\.ts''',
+  '''src/utils/.*Samples\.ts''',
+  '''src/utils/webFallbacks\.ts''',
+  '''src/utils/web-fallbacks/.*''',
+  '''src/.*\.test\.tsx?''',
+]
+regexes = [
+  '''YOUR_API_KEY''',
+  '''YOUR_PROJECT_ID''',
+  '''YOUR_APP_ID''',
+  '''YOUR_RECAPTCHA_V3_SITE_KEY''',
+]

@@ -1,0 +1,404 @@
+/* Stats bar & Filter bar */
+.statsGrid {
+  margin-bottom: 1.25rem;
+}
+
+.statBtn {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.statBtn:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.statBtnActive {
+  border-color: var(--accent-color);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 2px var(--cat-systemcheck-glow);
+}
+
+.metricInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.metricVal {
+  font: 800 1.55rem/1.1 var(--font-sans);
+  color: var(--text-primary);
+}
+
+.metricLabel {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.filterBar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1 1 240px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.searchIconDisabled {
+  opacity: 0.5;
+}
+
+.searchInput {
+  padding-left: 2.25rem;
+}
+
+.sortDesktop {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.sortMobile {
+  display: none;
+}
+
+.sortLabel {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sortLabelDisabled {
+  opacity: 0.6;
+}
+
+.sortSelect {
+  min-width: 185px;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.sortActions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sortTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0.38rem 0.65rem;
+  font: 600 0.82rem var(--font-sans);
+  color: var(--text-primary);
+  cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sortTrigger:hover:not(:disabled),
+.sortTriggerActive {
+  background: var(--bg-secondary);
+  border-color: var(--accent-color);
+}
+
+.sortTrigger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sortTriggerIcon {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.sortTriggerText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sortChevron {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.sortChevronOpen {
+  transform: rotate(180deg);
+  color: var(--text-accent);
+}
+
+.sortDirBtn {
+  gap: 0.25rem;
+  padding: 0.38rem 0.6rem;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Mobile / Dialog Sort Sheet */
+.sortBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 22, 0.62);
+  backdrop-filter: blur(6px);
+  z-index: 1100;
+}
+
+.sortSheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--glass-shadow);
+  padding: 0.75rem 1.15rem 1.25rem;
+  z-index: 1101;
+  max-height: min(85vh, 520px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sheetHandle {
+  width: 38px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--text-muted);
+  opacity: 0.35;
+  margin: 0.2rem auto 0.85rem;
+  flex-shrink: 0;
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--glass-border-subtle);
+  margin-bottom: 0.75rem;
+}
+
+.sheetTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.sheetTitleIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--success-bg);
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.sheetTitle {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sheetHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.sheetDirBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.32rem 0.65rem;
+  border-radius: 9999px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-accent);
+  font: 700 0.72rem var(--font-sans);
+  cursor: pointer;
+}
+
+.sheetCloseBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.sheetOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.sheetOption {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 12px;
+  border: 1.5px solid var(--glass-border-subtle);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+}
+
+.sheetOption:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.sheetOptionActive {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--text-accent);
+}
+
+.sheetOptLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.sheetOptIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border-subtle);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sheetOptIconActive {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--text-accent);
+}
+
+.sheetOptDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.sheetOptLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sheetOptHint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-accent);
+}
+
+.sheetActivePill {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 9999px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--text-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+@media (min-width: 641px) {
+  .sortSheet {
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 20px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sheetHandle {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .sortDesktop {
+    display: none;
+  }
+
+  .sortMobile {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .sortActions {
+    flex: 1;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 380px) {
+  .sortLabel {
+    display: none;
+  }
+}

@@ -1,0 +1,180 @@
+.certCard {
+  margin-bottom: 0.75rem;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 76px;
+}
+
+.certCardValid {
+  border-left: 3px solid var(--glass-border);
+}
+
+.certCardWarning {
+  border-left: 3px solid var(--warning-color);
+}
+
+.certCardExpired {
+  border-left: 3px solid var(--danger-color);
+}
+
+.certCardToggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  gap: 0.75rem;
+}
+
+.certCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+}
+
+.accentIcon {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.toneIconSuccess {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.toneIconDanger {
+  color: var(--danger-color);
+  flex-shrink: 0;
+}
+
+.certCardTitleWrap {
+  overflow: hidden;
+  min-width: 0;
+}
+
+.certCardTitle {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.issuerHint {
+  font-size: 0.75rem;
+  color: var(--text-accent);
+  margin-top: 2px;
+}
+
+.expiryMeta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.expirySpanValid {
+  color: var(--text-secondary);
+}
+
+.expirySpanWarning {
+  color: var(--warning-color);
+}
+
+.expirySpanExpired {
+  color: var(--danger-color);
+}
+
+.certCardBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.cardDetails {
+  margin-top: 1rem;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 1rem;
+}
+
+.inlineCopyBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.inlineCopyBtnCopied {
+  color: var(--success-color);
+}
+
+.purposeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.extensionsBlock {
+  margin-top: 1rem;
+}
+
+.extensionsSummary {
+  cursor: pointer;
+  color: var(--text-accent);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.extensionsGrid {
+  margin-top: 0.5rem;
+  background: var(--card-bg);
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.extensionRow {
+  display: contents;
+}
+
+.extensionVal {
+  font-size: 0.78rem;
+}
+
+.criticalBadge {
+  margin-left: 0.4rem;
+  font-size: 0.65rem;
+}
+
+.extensionFormatted {
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.cardActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pemCode {
+  font-size: 0.78rem;
+  margin-top: 0.75rem;
+}

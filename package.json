@@ -1,32 +1,127 @@
 {
-  "name": "secure-boot-certificates-management",
+  "name": "certificate-management",
   "private": true,
   "version": "1.0.0",
+  "description": "Modern local-first X.509 certificate, PKI, and UEFI Secure Boot inspection and management application",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Memija/certificate-management.git"
+  },
+  "homepage": "https://github.com/Memija/certificate-management#readme",
+  "bugs": {
+    "url": "https://github.com/Memija/certificate-management/issues"
+  },
+  "engines": {
+    "node": ">=22.13.0",
+    "npm": ">=10.0.0"
+  },
+  "packageManager": "npm@11.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "watch": "vite build --watch",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "sonar:scan": "sonar-scanner-npm",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lighthouse": "npm run lighthouse:mobile && npm run lighthouse:desktop",
+    "lighthouse:mobile": "lhci autorun --upload.outputDir=./.lighthouseci/mobile",
+    "lighthouse:desktop": "lhci autorun --collect.settings.preset=desktop --upload.outputDir=./.lighthouseci/desktop",
+    "lighthouse:flows": "node scripts/lighthouse-flow.mjs",
+    "lighthouse:flows:quick": "node scripts/lighthouse-flow.mjs --quick",
+    "security:all": "node scripts/run-security-scan.js all",
+    "security:audit": "npm audit --audit-level=critical",
+    "security:codeql": "node scripts/run-security-scan.js codeql",
+    "security:dast": "node scripts/run-security-scan.js dast",
+    "security:gitleaks": "node scripts/run-security-scan.js gitleaks",
+    "security:licenses": "license-checker-rseidelsohn --production --summary --excludePrivatePackages --onlyAllow \"MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC0-1.0;0BSD;Unlicense;Python-2.0;OFL-1.1\"",
+    "security:osv": "node scripts/run-security-scan.js osv",
+    "security:sbom": "cyclonedx-npm --ignore-npm-errors --output-file cyclonedx.sbom.json",
+    "security:secrets": "node scripts/check-secrets.js",
+    "security:socket": "node scripts/run-security-scan.js socket",
+    "security:trivy": "node scripts/run-security-scan.js trivy",
+    "security:zizmor": "node scripts/run-security-scan.js zizmor",
+    "validate": "npm run format:check && npm run lint && npm run typecheck && npm run security:secrets && npm run security:gitleaks && npm run security:audit && npm run security:licenses && npm run build && npm run test:coverage && npm run lighthouse",
+    "predeploy": "npm run build",
+    "deploy": "firebase deploy --only hosting",
+    "prepare": "husky"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
     "i18next": "^26.3.6",
     "i18next-browser-languagedetector": "^8.2.1",
-    "jks-js": "^1.1.7",
     "lucide-react": "^1.25.0",
-    "node-forge": "^1.4.0",
+    "node-forge": "^1.4.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-i18next": "^17.0.11"
+    "react-i18next": "^17.0.11",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@cyclonedx/cyclonedx-npm": "^6.0.1",
+    "@eslint/js": "^9.39.4",
+    "@lhci/cli": "^0.15.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.13.2",
     "@types/node-forge": "^1.3.14",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "oxlint": "^1.71.0",
+    "@vitest/coverage-v8": "^4.1.12",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-plugin-security": "^4.2.0",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
+    "globals": "^17.4.0",
+    "husky": "^9.1.7",
+    "jsdom": "^29.0.2",
+    "license-checker-rseidelsohn": "^5.0.1",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.8.4",
+    "sonarqube-scanner": "^5.0.2",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "typescript-eslint": "^8.58.0",
+    "vite": "^8.1.1",
+    "vitest": "^4.1.12",
+    "vitest-sonar-reporter": "^3.0.0"
+  },
+  "overrides": {
+    "adm-zip": "^0.6.1",
+    "basic-ftp": "^6.2.3",
+    "follow-redirects": "^1.16.1",
+    "http-cache-semantics": "^4.3.0",
+    "ip-address": "^10.7.4",
+    "js-yaml@^3": "^3.15.2",
+    "js-yaml@^4": "^4.1.1",
+    "node-forge": "^1.4.2",
+    "qs": "^6.16.0",
+    "tmp": "^0.2.7",
+    "undici": "^7.30.1",
+    "zod": "^4.6.7"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs}": [
+      "eslint --fix --no-warn-ignored --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{css,json,md,html,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

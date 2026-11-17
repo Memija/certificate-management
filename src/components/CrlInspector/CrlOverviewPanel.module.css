@@ -1,0 +1,221 @@
+.detailsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fileActionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+}
+
+.fileInfoLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.fileIconBox {
+  width: 38px;
+  height: 38px;
+}
+
+.fileTitleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fileNameText {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+  word-break: break-all;
+}
+
+.fileMetaText {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.headerBtnRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.clearBtnDanger {
+  color: var(--danger-color);
+}
+
+.badgesBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.inlineDateRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.iconDanger {
+  color: var(--danger-color);
+  flex-shrink: 0;
+}
+
+.iconMuted {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.expiredDateText {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+.fingerprintRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  word-break: break-all;
+}
+
+.copyIconBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.18rem 0.3rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.copyIconBtn:hover {
+  color: var(--text-primary);
+}
+
+.copyIconBtnSuccess {
+  color: var(--success-color);
+}
+
+.extensionsHeadingReset {
+  margin: 0;
+}
+
+.extensionsToggleBtn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text-accent);
+  font-family: var(--font-sans);
+  font-size: 0.96rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.extensionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.extensionItem {
+  margin-top: 0;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--glass-border-subtle);
+  align-items: center;
+}
+
+.extShortRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.extValueChip {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.86rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-accent);
+}
+
+.extOidMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.extOidText {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.extLongValueBox {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  word-break: break-all;
+  background: var(--input-bg);
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.rawPemBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.rawPemWrap {
+  margin-top: 1rem;
+  position: relative;
+}
+
+.rawPemCopyPos {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  z-index: 1;
+}
+
+.rawPemPre {
+  max-height: 280px;
+  margin: 0;
+}

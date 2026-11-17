@@ -1,0 +1,289 @@
+.graphWrapper {
+  background: var(--surface-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.5rem;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.graphLegendBar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--glass-border-subtle);
+  padding-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.graphHint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.iconCyan {
+  color: var(--cat-inspectionvalidation);
+  flex-shrink: 0;
+}
+
+.iconSuccess {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.statusBadges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.graphTree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  width: 100%;
+  max-width: 960px;
+}
+
+.graphLevel {
+  display: flex;
+  justify-content: center;
+  gap: 1.75rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.nodeWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.nodeCard {
+  min-width: 300px;
+  max-width: 400px;
+  padding: 1.1rem 1.2rem;
+  border-radius: 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  text-align: left;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.nodeRoot {
+  border-top: 3px solid var(--success-color);
+}
+
+.nodeIntermediate {
+  border-top: 3px solid var(--cyan-color);
+}
+
+.nodeLeaf {
+  border-top: 3px solid var(--info-color);
+}
+
+.nodeError {
+  border-top: 3px solid var(--danger-color);
+  border-color: var(--danger-border);
+}
+
+.nodeSelected {
+  border-color: var(--accent-color);
+}
+
+.nodeTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+}
+
+.badgeRoot {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-border);
+}
+
+.badgeIntermediate {
+  background: var(--cat-inspectionvalidation-bg);
+  color: var(--cyan-color);
+  border: 1px solid var(--cat-inspectionvalidation-border);
+}
+
+.badgeLeaf {
+  background: var(--info-bg);
+  color: var(--info-color);
+  border: 1px solid var(--info-border);
+}
+
+.nodeTitleBtn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 0.45rem;
+  font: 700 0.96rem/1.35 var(--font-sans);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  word-break: break-word;
+}
+
+.nodeTitleBtn:hover {
+  color: var(--text-accent);
+}
+
+.nodeMeta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  margin-bottom: 0.75rem;
+}
+
+.nodeMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.expiryValid {
+  color: var(--text-primary);
+  cursor: help;
+}
+
+.expiryExpired {
+  color: var(--danger-color);
+  cursor: help;
+}
+
+.nodeFooter {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--glass-border-subtle);
+  padding-top: 0.65rem;
+}
+
+.connectorLine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.connectorArrow {
+  width: 2px;
+  height: 20px;
+  background: var(--accent-color);
+}
+
+.connectorPill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.orphanSection {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--warning-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.classicStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.classicCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.classicIssuer {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.classicRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.singleTopBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--glass-border-subtle);
+}
+
+.singleHeadline {
+  margin-bottom: 1.15rem;
+}
+
+.singleTitle {
+  margin: 0 0 0.3rem;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+}
+
+.singleSubject {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+@media (max-width: 640px) {
+  .nodeCard {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .graphWrapper {
+    padding: 1.15rem 0.85rem;
+  }
+}
