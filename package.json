@@ -64,7 +64,7 @@
     "node-forge": "^1.4.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-i18next": "^17.0.11",
+    "react-i18next": "^18.0.1",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
