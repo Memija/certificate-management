@@ -4,7 +4,7 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import type { Plugin } from 'vite'
 
-import { createAsyncCache } from './async-cache'
+import { createAsyncCache } from './async-cache.ts'
 import {
   createApiMiddlewarePlugin,
   getErrorMessage,
@@ -13,8 +13,8 @@ import {
   readJsonBody,
   sendJson,
   sendOperationalError,
-} from './http-helpers'
-import { execFileAsync, isCommandUnavailableError, safeUnlink } from './powershell'
+} from './http-helpers.ts'
+import { execFileAsync, isCommandUnavailableError, safeUnlink } from './powershell.ts'
 
 interface OcspRequestBody {
   certB64?: unknown

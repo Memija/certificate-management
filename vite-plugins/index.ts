@@ -1,11 +1,11 @@
 import type { Plugin } from 'vite'
 
-import { certStoreApiPlugin } from './cert-store-plugin'
-import { ctSearchApiPlugin } from './ct-search-plugin'
-import { ocspApiPlugin } from './ocsp-plugin'
-import { secureBootApiPlugin } from './secure-boot-plugin'
-import { systemSettingsApiPlugin } from './system-settings-plugin'
-import { tlsScannerApiPlugin } from './tls-scanner-plugin'
+import { certStoreApiPlugin } from './cert-store-plugin.ts'
+import { ctSearchApiPlugin } from './ct-search-plugin.ts'
+import { ocspApiPlugin } from './ocsp-plugin.ts'
+import { secureBootApiPlugin } from './secure-boot-plugin.ts'
+import { systemSettingsApiPlugin } from './system-settings-plugin.ts'
+import { tlsScannerApiPlugin } from './tls-scanner-plugin.ts'
 
 export {
   certStoreApiPlugin,

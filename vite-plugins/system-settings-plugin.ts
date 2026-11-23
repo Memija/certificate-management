@@ -1,14 +1,14 @@
 import type { IndexHtmlTransformContext, Plugin, PreviewServer, ViteDevServer } from 'vite'
 
-import { createAsyncCache } from './async-cache'
+import { createAsyncCache } from './async-cache.ts'
 import {
   getErrorMessage,
   parseRequestUrl,
   registerApiMiddleware,
   sendJson,
   sendOperationalError,
-} from './http-helpers'
-import { execFileAsync } from './powershell'
+} from './http-helpers.ts'
+import { execFileAsync } from './powershell.ts'
 
 export type SupportedAppLanguage = 'en' | 'de' | 'bs' | 'sr-Cyrl' | 'id' | 'pl'
 

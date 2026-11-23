@@ -316,9 +316,15 @@ export function computeChainSummary(
   const { rootNodes, orphanNodes, allNodes } = graph
   const hasSignatureMismatch =
     allNodes.some((n) => n.signatureVerified === false) ||
-    certs.some((c) => {
-      const iss = certs.find((p) => p.subject === c.issuer && p !== c)
-      return Boolean(iss && !verifySignature(c.pem, iss.pem))
+    allNodes.some((n) => {
+      if (n.isSelfSigned) {
+        return false
+      }
+      if (n.signatureVerified === true && n.parent?.cert.subject === n.cert.issuer) {
+        return false
+      }
+      const iss = certs.find((p) => p.subject === n.cert.issuer && p !== n.cert)
+      return Boolean(iss && !verifySignature(n.cert.pem, iss.pem))
     })
   const hasExpiredCert = allNodes.some((n) => isCertExpired(n.cert.validTo, now))
   const isComplete =

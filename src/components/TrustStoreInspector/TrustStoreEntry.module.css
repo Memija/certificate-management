@@ -53,6 +53,8 @@
 }
 
 .certListItem {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 54px;
   display: block;
   width: 100%;
   text-align: left;

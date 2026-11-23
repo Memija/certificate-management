@@ -95,7 +95,8 @@ export function SecureBootInspector(_props?: SecureBootInspectorProps) {
         await applyParsedVariable(targetVar, data[targetVar])
       } catch (err: unknown) {
         if (isWebFallbackError(err)) {
-          const { getWebFallbackSecureBootVars } = await import('@/utils/web-fallbacks')
+          const { getWebFallbackSecureBootVars } =
+            await import('@/utils/web-fallbacks/secure-boot-fallback')
           const fallbackVars = getWebFallbackSecureBootVars()
           parsedVarsCacheRef.current = {}
           setVariablesCache(fallbackVars)

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Download, Eye, EyeOff, Key, Shield, Sparkles, Trash2 } from 'lucide-react'
 
-import { PFX_PRESETS } from '@/data'
+import { PFX_PRESETS } from '@/data/format-converter-samples'
 import type { PfxSamplePreset } from '@/types'
 
 import { getLocalizedPfxPresetName } from './format-converter-logic'

@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
-import { localApiPlugins } from './vite-plugins'
+import { localApiPlugins } from './vite-plugins/index.ts'
 
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',

@@ -15,11 +15,10 @@ import {
 } from 'lucide-react'
 
 import { ModuleHeader } from '@/components/shared'
-import { OCSP_SAMPLE_PRESETS } from '@/data'
+import { OCSP_SAMPLE_PRESETS } from '@/data/ocsp-samples'
 import { useAppStore } from '@/store'
 import type { AppMode, OcspRevocationResult, OcspSamplePreset } from '@/types'
 import { fetchLocalApiJson, WebApiUnavailableError } from '@/utils/api-client'
-import { verifyOcspClientSide } from '@/utils/web-fallbacks'
 
 import {
   detectNonCertInputType,
@@ -134,6 +133,7 @@ export function OcspChecker({ onNavigate }: OcspCheckerProps = {}) {
         setResult(json.data)
       } catch (apiErr: unknown) {
         if (apiErr instanceof WebApiUnavailableError) {
+          const { verifyOcspClientSide } = await import('@/utils/web-fallbacks/ocsp-ct-fallback')
           const certMeta = overrideCert
             ? parseOcspCertInput(overrideCert, activePreset, t)
             : parsedCert

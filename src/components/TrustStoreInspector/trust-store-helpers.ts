@@ -2,12 +2,8 @@ import type { LucideIcon } from 'lucide-react'
 import { AlertTriangle, Archive, FileKey, FileText, Lock, Shield, ShieldCheck } from 'lucide-react'
 import forge from 'node-forge'
 
-import {
-  getSampleCertDerBuffer,
-  PFX_PRESETS,
-  SAMPLE_MATCHING_CERT_PEM,
-  SAMPLE_RSA4096_CERT_PEM,
-} from '@/data'
+import { getSampleCertDerBuffer, PFX_PRESETS } from '@/data/format-converter-samples'
+import { SAMPLE_MATCHING_CERT_PEM, SAMPLE_RSA4096_CERT_PEM } from '@/data/key-matcher-samples'
 import type {
   AppMode,
   ParsedTrustStore,

@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, BookOpen, ExternalLink, X } from 'lucide-react'
 
-import { EDUCATION_TOPICS } from '@/data'
+import { EDUCATION_TOPICS } from '@/data/education-topics'
 import { useAppStore } from '@/store'
 import type { AppMode, TermId } from '@/types'
 

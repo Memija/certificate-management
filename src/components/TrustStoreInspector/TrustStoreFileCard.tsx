@@ -1,8 +1,8 @@
-import { memo, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Eye, EyeOff, FileKey, Info, Lock, ShieldAlert, X } from 'lucide-react'
 
-import type { AppMode } from '@/types'
+import type { AppMode, TrustStoreEntry } from '@/types'
 
 import type { FormatTone, LoadedTrustStoreFile } from './trust-store-helpers'
 import { getEntryKey, getFormatMeta, localizeTrustStoreWarning } from './trust-store-helpers'
@@ -69,6 +69,10 @@ export const TrustStoreFileCard = memo(function TrustStoreFileCard({
     }
     return store.entries[0]
   }, [store.entries, selectedEntryKey])
+
+  const handleSelectEntry = useCallback((entry: TrustStoreEntry) => {
+    setSelectedEntryKey(getEntryKey(entry))
+  }, [])
 
   const isInputEmpty = !loadedFile.passwordInput?.trim()
   const showError =
@@ -340,7 +344,7 @@ export const TrustStoreFileCard = memo(function TrustStoreFileCard({
             selectedEntry={selectedEntry}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            onSelectEntry={(entry) => setSelectedEntryKey(getEntryKey(entry))}
+            onSelectEntry={handleSelectEntry}
           />
           <TrustStoreEntryDetail
             key={selectedEntry ? getEntryKey(selectedEntry) : 'none'}

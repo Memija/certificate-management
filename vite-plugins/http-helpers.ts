@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin, PreviewServer, ViteDevServer } from 'vite'
 
-import { isCommandUnavailableError } from './powershell'
+import { isCommandUnavailableError } from './powershell.ts'
 
 export class HttpRequestError extends Error {
   readonly statusCode: number

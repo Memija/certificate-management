@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react'
+import { memo, useDeferredValue, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FileKey, Lock, Search, Shield, X } from 'lucide-react'
 
@@ -26,9 +26,10 @@ export const TrustStoreSidebar = memo(function TrustStoreSidebar({
   onSelectEntry,
 }: TrustStoreSidebarProps) {
   const { t, i18n } = useTranslation()
+  const deferredQuery = useDeferredValue(searchQuery)
 
   const filteredEntries = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!deferredQuery.trim()) {
       return entries
     }
     return entries.filter((entry) =>
@@ -41,10 +42,10 @@ export const TrustStoreSidebar = memo(function TrustStoreSidebar({
           entry.certificate.fingerprintSha1,
           entry.certificate.fingerprintSha256,
         ],
-        searchQuery,
+        deferredQuery,
       ),
     )
-  }, [entries, searchQuery])
+  }, [entries, deferredQuery])
 
   const searchPlaceholder = t(
     'app.winCertStore.filters.searchPlaceholder',

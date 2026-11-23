@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Check, FileKey, RefreshCw, Zap } from 'lucide-react'
 
 import { ModuleHeader, useToast } from '@/components/shared'
-import { getCountryName, isValidCountryCode } from '@/data'
+import { getCountryName, isValidCountryCode } from '@/data/country-codes'
 import { useAppStore } from '@/store'
 import type { AppMode } from '@/types'
 import {

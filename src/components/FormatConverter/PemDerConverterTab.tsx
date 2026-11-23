@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Binary, CheckCircle2, Download, FileText, Sparkles, Trash2, Upload, X } from 'lucide-react'
 
-import { PEM_DER_PRESETS } from '@/data'
+import { PEM_DER_PRESETS } from '@/data/format-converter-samples'
 import type { PemDerSamplePreset } from '@/types'
 
 import {

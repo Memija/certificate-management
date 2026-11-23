@@ -26,7 +26,7 @@ async function loadExpiryCerts(refresh: boolean): Promise<ExpiryDashboardCertEnt
     return json.data ?? []
   } catch (apiErr: unknown) {
     if (isWebFallbackError(apiErr)) {
-      const { getWebFallbackCertStore } = await import('@/utils/web-fallbacks')
+      const { getWebFallbackCertStore } = await import('@/utils/web-fallbacks/cert-store-fallback')
       return collectFallbackExpiryCerts(getWebFallbackCertStore)
     }
     throw apiErr

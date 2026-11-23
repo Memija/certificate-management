@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Activity, FileText, Globe, RefreshCw, Sparkles, Trash2 } from 'lucide-react'
 
-import { OCSP_SAMPLE_PRESETS } from '@/data'
+import { OCSP_SAMPLE_PRESETS } from '@/data/ocsp-samples'
 import type { OcspSamplePreset } from '@/types'
 
 import { getLocalizedPresetMeta } from './ocsp-helpers'

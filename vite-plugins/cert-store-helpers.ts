@@ -74,6 +74,7 @@ export function isValidCertLocation(value: string): value is CertStoreLocation {
 
 export function buildExpiryBatchPsScript(): string {
   return `
+Add-Type -AssemblyName System.Web.Extensions
 $now = Get-Date
 $thirtyDays = $now.AddDays(30)
 $results = [System.Collections.Generic.List[object]]::new()
@@ -85,7 +86,7 @@ foreach ($loc in @('CurrentUser', 'LocalMachine')) {
                 $isExpired = $cert.NotAfter -lt $now
                 $expiringSoon = (-not $isExpired) -and ($cert.NotAfter -lt $thirtyDays)
                 if ($isExpired -or $expiringSoon) {
-                    [void]$results.Add([PSCustomObject]@{
+                    [void]$results.Add(@{
                         thumbprint     = $cert.Thumbprint
                         subject        = $cert.Subject
                         issuer         = $cert.Issuer
@@ -101,22 +102,15 @@ foreach ($loc in @('CurrentUser', 'LocalMachine')) {
         } catch {}
     }
 }
-ConvertTo-Json -InputObject @($results.ToArray()) -Depth 3 -Compress
+$ser = [System.Web.Script.Serialization.JavaScriptSerializer]::new()
+$ser.MaxJsonLength = 67108864
+[Console]::Write($ser.Serialize($results))
 exit 0
 `
 }
 
-export function buildSingleStorePsBody(
-  storeLocation: CertStoreLocation,
-  storeName: CertStoreName,
-): string {
+function buildCertEnumerationLoopPs(): string {
   return `
-$ErrorActionPreference = 'Stop'
-$results = [System.Collections.Generic.List[object]]::new()
-$now = Get-Date
-$thirtyDays = $now.AddDays(30)
-$storePath = "Cert:\\\\${storeLocation}\\\\${storeName}"
-$certs = Get-ChildItem -Path $storePath -ErrorAction Stop
 foreach ($cert in $certs) {
     try {
         $certBytes = $cert.RawData
@@ -134,8 +128,9 @@ foreach ($cert in $certs) {
         foreach ($ext in $cert.Extensions) {
             $oidVal = $ext.Oid.Value
             $friendly = $ext.Oid.FriendlyName
+            $fmt0 = try { $ext.Format(0) } catch { "" }
             if ($oidVal -eq "2.5.29.15" -or $friendly -eq "Key Usage") {
-                $kuRaw = $ext.Format(0) -replace '\\s*\\([^)]*\\)', ''
+                $kuRaw = $fmt0 -replace '\\s*\\([^)]*\\)', ''
                 foreach ($part in ($kuRaw -split ',')) {
                     $trimmed = $part.Trim()
                     if ($trimmed -and -not $purposes.Contains($trimmed)) { [void]$purposes.Add($trimmed) }
@@ -152,19 +147,16 @@ foreach ($cert in $certs) {
                 if ($ext -is [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]) {
                     $isCA = [bool]$ext.CertificateAuthority
                 } else {
-                    $formatted = $ext.Format($false)
-                    $isCA = ($formatted -match "CA" -or $formatted -match "IsCertificateAuthority=True")
+                    $isCA = ($fmt0 -match "CA" -or $fmt0 -match "IsCertificateAuthority=True")
                 }
             }
 
-            try {
-                [void]$exts.Add([PSCustomObject]@{
-                    name     = if ($friendly) { $friendly } else { $oidVal }
-                    oid      = $oidVal
-                    critical = $ext.Critical
-                    value    = try { $ext.Format(0) } catch { "" }
-                })
-            } catch {}
+            [void]$exts.Add(@{
+                name     = if ($friendly) { $friendly } else { $oidVal }
+                oid      = $oidVal
+                critical = $ext.Critical
+                value    = $fmt0
+            })
         }
 
         if ($purposes.Count -eq 0) { [void]$purposes.Add("General Purpose") }
@@ -184,7 +176,7 @@ foreach ($cert in $certs) {
         $isRoot = $isCA -and $isSelfSigned
         $isIntermediate = $isCA -and (-not $isRoot)
 
-        [void]$results.Add([PSCustomObject]@{
+        [void]$results.Add(@{
             thumbprint         = $cert.Thumbprint
             subject            = $cert.Subject
             issuer             = $cert.Issuer
@@ -195,16 +187,52 @@ foreach ($cert in $certs) {
             publicKeyAlgorithm = $pubKeyAlg
             publicKeySize      = $pubKeySize
             friendlyName       = $cert.FriendlyName
-            purposes           = $purposes.ToArray()
+            purposes           = $purposes
             isRoot             = $isRoot
             isIntermediate     = $isIntermediate
             isExpired          = $isExpired
             isExpiringSoon     = $expiringSoon
             certB64            = $b64
-            extensions         = $exts.ToArray()
+            extensions         = $exts
         })
     } catch {}
 }
+`
+}
+
+export function buildSingleStorePsBody(
+  storeLocation: CertStoreLocation,
+  storeName: CertStoreName,
+): string {
+  return `
+$ErrorActionPreference = 'Stop'
+$results = [System.Collections.Generic.List[object]]::new()
+$now = Get-Date
+$thirtyDays = $now.AddDays(30)
+$storePath = "Cert:\\\\${storeLocation}\\\\${storeName}"
+$certs = Get-ChildItem -Path $storePath -ErrorAction Stop
+${buildCertEnumerationLoopPs()}
+`
+}
+
+export function buildLocationBatchPsBody(storeLocation: CertStoreLocation): string {
+  return `
+Add-Type -AssemblyName System.Web.Extensions
+$now = Get-Date
+$thirtyDays = $now.AddDays(30)
+$allStores = @{}
+foreach ($st in @('Root', 'CA', 'My', 'TrustedPublisher', 'Disallowed')) {
+    $results = [System.Collections.Generic.List[object]]::new()
+    try {
+        $certs = Get-ChildItem -Path "Cert:\\\\${storeLocation}\\\\$st" -ErrorAction Stop
+${buildCertEnumerationLoopPs()}
+        $allStores[$st] = @{ ok = $true; items = $results }
+    } catch {
+        $allStores[$st] = @{ ok = $false; error = $_.Exception.Message }
+    }
+}
+$ser = [System.Web.Script.Serialization.JavaScriptSerializer]::new()
+$ser.MaxJsonLength = 67108864
 `
 }
 
@@ -275,4 +303,57 @@ export function parseAndMapStoreOutput(clean: string): EnrichedCertStoreEntry[] 
       : []
 
   return rawList.map(mapRawCertEntry)
+}
+
+export type LocationStoreOutcome =
+  { ok: true; data: EnrichedCertStoreEntry[] } | { ok: false; error: string }
+
+export type LocationBatchMap = Partial<Record<CertStoreName, LocationStoreOutcome>>
+
+interface RawLocationStoreResult {
+  ok?: boolean
+  items?: RawCertStoreEntry[]
+  error?: string
+}
+
+export function parseLocationBatchOutput(clean: string): LocationBatchMap {
+  if (!clean) {
+    return {}
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(clean)
+  } catch {
+    throw new Error(`Could not parse PowerShell output: ${clean.substring(0, 200)}`)
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('Unexpected PowerShell store batch payload')
+  }
+
+  if ('error' in parsed && typeof (parsed as { error?: unknown }).error === 'string') {
+    throw new Error((parsed as { error: string }).error)
+  }
+
+  const record = parsed as Record<string, RawLocationStoreResult | undefined>
+  const out: LocationBatchMap = {}
+
+  for (const storeName of VALID_CERT_STORES) {
+    const rawStore = record[storeName]
+    if (!rawStore) {
+      continue
+    }
+    if (rawStore.ok) {
+      const items = Array.isArray(rawStore.items) ? rawStore.items : []
+      out[storeName] = { ok: true, data: items.map(mapRawCertEntry) }
+    } else {
+      out[storeName] = {
+        ok: false,
+        error: rawStore.error || `Failed to read ${storeName} certificate store`,
+      }
+    }
+  }
+
+  return out
 }

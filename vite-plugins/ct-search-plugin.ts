@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite'
 
-import { createAsyncCache } from './async-cache'
+import { createAsyncCache } from './async-cache.ts'
 import {
   createApiMiddlewarePlugin,
   getErrorMessage,
@@ -9,7 +9,7 @@ import {
   parseRequestUrl,
   sendJson,
   sendOperationalError,
-} from './http-helpers'
+} from './http-helpers.ts'
 
 export interface CtLogEntry {
   id: number

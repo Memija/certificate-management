@@ -5,7 +5,6 @@ import { AlertTriangle, Loader2, Monitor, RefreshCw, Shield, ShieldCheck } from 
 import { ModuleHeader } from '@/components/shared'
 import type { AppMode, StoreLocation, StoreName, WinCertEntry } from '@/types'
 import { fetchLocalApiJson } from '@/utils/api-client'
-import { getWebFallbackCertStore } from '@/utils/web-fallbacks'
 
 import {
   classifyWinStoreError,
@@ -41,9 +40,25 @@ export function WinCertStoreInspector(_props?: WinCertStoreInspectorProps) {
   const [sortAsc, setSortAsc] = useState(true)
   const [timelineFilter, setTimelineFilter] = useState<TimelineFilterType>('all')
   const hasLoadedRef = useRef(false)
+  const sessionCacheRef = useRef<Map<string, WinCertEntry[]>>(new Map())
 
   const fetchStore = useCallback(
     async (store: StoreName, loc: StoreLocation, elevate = false, refresh = false) => {
+      const cacheKey = `${loc}:${store}`
+      if (refresh || elevate) {
+        sessionCacheRef.current.clear()
+      } else {
+        const cached = sessionCacheRef.current.get(cacheKey)
+        if (cached) {
+          setError('')
+          setNeedsElevation(false)
+          setCerts(cached)
+          setLoading(false)
+          setElevating(false)
+          return
+        }
+      }
+
       setError('')
       if (!elevate) {
         setNeedsElevation(false)
@@ -57,13 +72,19 @@ export function WinCertStoreInspector(_props?: WinCertStoreInspectorProps) {
       try {
         const url = `/api/certstore?store=${store}&location=${loc}${elevate ? '&elevate=true' : ''}${refresh ? '&refresh=true' : ''}`
         const json = await fetchLocalApiJson<{ data: WinCertEntry[] }>(url)
+        const loaded = json.data ?? []
+        sessionCacheRef.current.set(cacheKey, loaded)
         setNeedsElevation(false)
-        setCerts(json.data ?? [])
+        setCerts(loaded)
       } catch (err: unknown) {
         const classified = classifyWinStoreError(err, elevate)
         if (classified.isFallback) {
+          const { getWebFallbackCertStore } =
+            await import('@/utils/web-fallbacks/cert-store-fallback')
+          const fallbackCerts = getWebFallbackCertStore(store, loc)
+          sessionCacheRef.current.set(cacheKey, fallbackCerts)
           setNeedsElevation(false)
-          setCerts(getWebFallbackCertStore(store, loc))
+          setCerts(fallbackCerts)
         } else if (classified.needsElevation) {
           console.warn('Certificate store read requires Administrator elevation:', err)
           setNeedsElevation(true)
@@ -93,7 +114,9 @@ export function WinCertStoreInspector(_props?: WinCertStoreInspectorProps) {
       }
       setLocation(nextLoc)
       setSearch('')
-      setCerts([])
+      if (!sessionCacheRef.current.has(`${nextLoc}:${activeStore}`)) {
+        setCerts([])
+      }
       void fetchStore(activeStore, nextLoc)
     },
     [activeStore, fetchStore, location],
@@ -106,7 +129,9 @@ export function WinCertStoreInspector(_props?: WinCertStoreInspectorProps) {
       }
       setActiveStore(nextStore)
       setSearch('')
-      setCerts([])
+      if (!sessionCacheRef.current.has(`${location}:${nextStore}`)) {
+        setCerts([])
+      }
       void fetchStore(nextStore, location)
     },
     [activeStore, fetchStore, location],
@@ -281,7 +306,7 @@ export function WinCertStoreInspector(_props?: WinCertStoreInspectorProps) {
                       <WinCertListCard
                         key={cert.thumbprint}
                         entry={cert}
-                        search={search}
+                        search={deferredSearch}
                         activeStore={activeStore}
                       />
                     ))}

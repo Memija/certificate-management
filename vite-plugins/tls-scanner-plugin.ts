@@ -3,7 +3,7 @@ import * as net from 'node:net'
 import * as tls from 'node:tls'
 import type { Plugin } from 'vite'
 
-import { createAsyncCache } from './async-cache'
+import { createAsyncCache } from './async-cache.ts'
 import {
   createApiMiddlewarePlugin,
   getErrorMessage,
@@ -12,8 +12,8 @@ import {
   parseRequestUrl,
   sendJson,
   sendOperationalError,
-} from './http-helpers'
-import { type ParsedTlsExtension, parseExtensionsFromRaw } from './tls-extension-parser'
+} from './http-helpers.ts'
+import { type ParsedTlsExtension, parseExtensionsFromRaw } from './tls-extension-parser.ts'
 
 export interface TlsChainCertificate {
   subject: string

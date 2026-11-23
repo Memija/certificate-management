@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircle, FileKey, Hash, Key, Shield, Sparkles, Trash2, XCircle } from 'lucide-react'
 
 import { ModuleHeader } from '@/components/shared'
-import { KEY_MATCHER_PRESETS } from '@/data'
+import { KEY_MATCHER_PRESETS } from '@/data/key-matcher-samples'
 import { useAppStore } from '@/store'
 import type {
   AppMode,

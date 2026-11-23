@@ -1,33 +1,36 @@
 import type { Plugin } from 'vite'
 
-import { createAsyncCache } from './async-cache'
+import { createAsyncCache } from './async-cache.ts'
 import {
   buildExpiryBatchPsScript,
-  buildSingleStorePsBody,
+  buildLocationBatchPsBody,
   type CertStoreLocation,
   type CertStoreName,
   type EnrichedCertStoreEntry,
   type ExpiryBatchEntry,
   isValidCertLocation,
   isValidCertStore,
-  parseAndMapStoreOutput,
+  type LocationBatchMap,
+  type LocationStoreOutcome,
   parseExpiryBatchOutput,
-} from './cert-store-helpers'
+  parseLocationBatchOutput,
+} from './cert-store-helpers.ts'
 import {
   createApiMiddlewarePlugin,
   getErrorMessage,
   parseRequestUrl,
   sendJson,
   sendOperationalError,
-} from './http-helpers'
-import { runElevatedPowerShellScript, runPowerShellEncoded } from './powershell'
+} from './http-helpers.ts'
+import { runElevatedPowerShellScript, runPowerShellEncoded } from './powershell.ts'
 
-async function fetchStoreCerts(
+const CERT_STORE_CACHE_TTL_MS = 300_000
+
+async function fetchLocationStoresBatch(
   storeLocation: CertStoreLocation,
-  storeName: CertStoreName,
   elevate: boolean,
-): Promise<EnrichedCertStoreEntry[]> {
-  const coreBody = buildSingleStorePsBody(storeLocation, storeName)
+): Promise<LocationBatchMap> {
+  const coreBody = buildLocationBatchPsBody(storeLocation)
 
   const clean = elevate
     ? await runElevatedPowerShellScript({
@@ -37,7 +40,7 @@ async function fetchStoreCerts(
         buildScript: (escapedOutPath) => `
 try {
 ${coreBody}
-    ConvertTo-Json -InputObject @($results.ToArray()) -Depth 5 -Compress | Out-File -FilePath '${escapedOutPath}' -Encoding utf8
+    [System.IO.File]::WriteAllText('${escapedOutPath}', $ser.Serialize($allStores), [System.Text.Encoding]::UTF8)
 } catch {
     [PSCustomObject]@{ error = $_.Exception.Message } | ConvertTo-Json -Compress | Out-File -FilePath '${escapedOutPath}' -Encoding utf8
 }
@@ -46,19 +49,20 @@ ${coreBody}
     : await runPowerShellEncoded(`
 try {
 ${coreBody}
-    ConvertTo-Json -InputObject @($results.ToArray()) -Depth 5 -Compress
+    [Console]::Write($ser.Serialize($allStores))
 } catch {
     [PSCustomObject]@{ error = $_.Exception.Message } | ConvertTo-Json -Compress
 }
 exit 0
 `)
 
-  return parseAndMapStoreOutput(clean)
+  return parseLocationBatchOutput(clean)
 }
 
 export function certStoreApiPlugin(): Plugin {
-  const storeCache = createAsyncCache<EnrichedCertStoreEntry[]>(30_000)
-  const expiryCache = createAsyncCache<ExpiryBatchEntry[]>(30_000)
+  const storeCache = createAsyncCache<EnrichedCertStoreEntry[]>(CERT_STORE_CACHE_TTL_MS)
+  const locationBatchCache = createAsyncCache<LocationBatchMap>(CERT_STORE_CACHE_TTL_MS)
+  const expiryCache = createAsyncCache<ExpiryBatchEntry[]>(CERT_STORE_CACHE_TTL_MS)
 
   return createApiMiddlewarePlugin('cert-store-api', '/api/certstore', async (req, res) => {
     const url = parseRequestUrl(req)
@@ -94,9 +98,30 @@ export function certStoreApiPlugin(): Plugin {
 
     try {
       const cacheKey = `certstore:${storeLocation}:${storeName}`
-      const enriched = await storeCache.getOrLoad(cacheKey, elevate || refresh, () =>
-        fetchStoreCerts(storeLocation, storeName, elevate),
-      )
+      const bypass = elevate || refresh
+      const enriched = await storeCache.getOrLoad(cacheKey, bypass, async () => {
+        const batch = await locationBatchCache.getOrLoad(
+          `certstore:loc:${storeLocation}`,
+          bypass,
+          () => fetchLocationStoresBatch(storeLocation, elevate),
+        )
+        for (const [st, outcome] of Object.entries(batch) as [
+          CertStoreName,
+          LocationStoreOutcome,
+        ][]) {
+          if (outcome.ok) {
+            storeCache.set(`certstore:${storeLocation}:${st}`, outcome.data)
+          }
+        }
+        const requested = batch[storeName]
+        if (!requested) {
+          return []
+        }
+        if (!requested.ok) {
+          throw new Error(requested.error)
+        }
+        return requested.data
+      })
       sendJson(res, 200, { ok: true, data: enriched })
     } catch (error: unknown) {
       const message = getErrorMessage(error)

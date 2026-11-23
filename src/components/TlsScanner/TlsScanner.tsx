@@ -16,7 +16,6 @@ import {
 import { ModuleHeader, useToast } from '@/components/shared'
 import type { TlsScanResult } from '@/types'
 import { fetchLocalApiJson, WebApiUnavailableError } from '@/utils/api-client'
-import { scanTlsClientSide } from '@/utils/web-fallbacks'
 
 import {
   enrichTlsChain,
@@ -128,6 +127,7 @@ export function TlsScanner() {
         rawData = json.data
       } catch (apiErr: unknown) {
         if (apiErr instanceof WebApiUnavailableError) {
+          const { scanTlsClientSide } = await import('@/utils/web-fallbacks/tls-fallback')
           rawData = scanTlsClientSide(targetHost, targetPort)
         } else {
           throw apiErr

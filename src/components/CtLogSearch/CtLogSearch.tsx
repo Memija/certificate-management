@@ -4,10 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { Globe, Home, RefreshCw, Search, Sparkles, Trash2, XCircle } from 'lucide-react'
 
 import { LearningTerm, ModuleHeader } from '@/components/shared'
-import { CT_LOG_PRESETS } from '@/data'
+import { CT_LOG_PRESETS } from '@/data/ct-log-samples'
 import type { AppMode, CtEntry, CtLogPreset, CtLogProvider } from '@/types'
 import { fetchLocalApiJson } from '@/utils/api-client'
-import { searchCtLogsClientSide } from '@/utils/web-fallbacks'
 
 import {
   CT_PAGE_SIZE,
@@ -73,6 +72,7 @@ export function CtLogSearch(_props: CtLogSearchProps = {}) {
           )
         } catch (apiErr: unknown) {
           if (isWebFallbackError(apiErr)) {
+            const { searchCtLogsClientSide } = await import('@/utils/web-fallbacks')
             response = await searchCtLogsClientSide(trimmed, preset)
           } else {
             throw apiErr

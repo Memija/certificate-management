@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle, Upload, Zap } from 'lucide-react'
 
-import { getCountryName, isValidCountryCode } from '@/data'
+import { getCountryName, isValidCountryCode } from '@/data/country-codes'
 import type { CsrFieldErrors } from '@/types'
 
 import type {

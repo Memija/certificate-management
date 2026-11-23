@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowRight, BookOpen, Layers, Search, X } from 'lucide-react'
 
 import { ModuleHeader } from '@/components/shared'
-import { EDUCATION_TOPICS } from '@/data'
+import { EDUCATION_TOPICS } from '@/data/education-topics'
 import { useAppStore } from '@/store'
 import type { AppMode, EducationCategory, TermId } from '@/types'
 import { matchesSearch } from '@/utils/text-search'

@@ -1,14 +1,14 @@
 import type { Plugin } from 'vite'
 
-import { createAsyncCache } from './async-cache'
+import { createAsyncCache } from './async-cache.ts'
 import {
   createApiMiddlewarePlugin,
   getErrorMessage,
   parseRequestUrl,
   sendJson,
   sendOperationalError,
-} from './http-helpers'
-import { runElevatedPowerShellScript, runPowerShellEncoded } from './powershell'
+} from './http-helpers.ts'
+import { runElevatedPowerShellScript, runPowerShellEncoded } from './powershell.ts'
 
 const VALID_VARS = ['all', 'PK', 'KEK', 'db', 'dbx'] as const
 type SecureBootVarParam = (typeof VALID_VARS)[number]
@@ -69,7 +69,11 @@ foreach ($v in @('PK', 'KEK', 'db', 'dbx')) {
     try {
         $b = (Get-SecureBootUEFI -Name $v -ErrorAction Stop).Bytes
         if ($b) { $results[$v] = [Convert]::ToBase64String($b) }
-    } catch {}
+    } catch {
+        if ($_.Exception -is [System.UnauthorizedAccessException] -or $_.Exception.Message -match 'Access|Privilege') {
+            break
+        }
+    }
 }
 $results | ConvertTo-Json -Compress
 exit 0
@@ -110,7 +114,7 @@ async function fetchSingleVarStandard(varName: SingleSecureBootVar): Promise<str
 }
 
 export function secureBootApiPlugin(): Plugin {
-  const cache = createAsyncCache<SecureBootResult>(30_000)
+  const cache = createAsyncCache<SecureBootResult>(300_000)
 
   return createApiMiddlewarePlugin('secure-boot-api', '/api/secureboot', async (req, res) => {
     const url = parseRequestUrl(req)
