@@ -2,8 +2,6 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FileText, GitFork, Upload } from 'lucide-react'
 
-import { LearningTerm } from '@/components/shared'
-
 import styles from './ChainValidator.module.css'
 
 export interface ChainEmptyInputGridProps {
@@ -52,9 +50,7 @@ export const ChainEmptyInputGrid = memo(function ChainEmptyInputGrid({
 
       <section className={`glass-panel ${styles.pemPanel}`}>
         <h2 className={styles.pemTitle}>
-          <LearningTerm termId="pem">
-            {t('app.formatConverter.certLabel', 'Certificate (PEM)')}
-          </LearningTerm>
+          {t('app.formatConverter.certLabel', 'Certificate (PEM)')}
         </h2>
         <div className="form-group">
           <label htmlFor="chain-pem-textarea" className="form-label">

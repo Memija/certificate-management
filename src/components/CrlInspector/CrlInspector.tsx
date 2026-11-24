@@ -16,7 +16,7 @@ import {
   X,
 } from 'lucide-react'
 
-import { LearningTerm, ModuleHeader } from '@/components/shared'
+import { ModuleHeader } from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode } from '@/types'
 
@@ -120,9 +120,7 @@ export function CrlInspector({ onNavigate }: CrlInspectorProps = {}) {
         >
           <span className={`${styles.capabilityPill} ${styles.capabilityPillActive}`}>
             <ShieldCheck size={12} className={styles.iconSuccess} aria-hidden="true" />
-            <LearningTerm termId="crl">
-              {t('app.crl.pills.rfc5280', 'RFC 5280 Parser')}
-            </LearningTerm>
+            <span>{t('app.crl.pills.rfc5280', 'RFC 5280 Parser')}</span>
           </span>
           <span className={styles.capabilityPill}>
             <FileText size={12} className={styles.iconInfo} aria-hidden="true" />

@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Globe, Home, RefreshCw, Search, Sparkles, Trash2, XCircle } from 'lucide-react'
 
-import { LearningTerm, ModuleHeader } from '@/components/shared'
+import { ModuleHeader } from '@/components/shared'
 import { CT_LOG_PRESETS } from '@/data/ct-log-samples'
 import type { AppMode, CtEntry, CtLogPreset, CtLogProvider } from '@/types'
 import { fetchLocalApiJson } from '@/utils/api-client'
@@ -182,9 +182,7 @@ export function CtLogSearch(_props: CtLogSearchProps = {}) {
         icon={<Search size={26} />}
       >
         <span className="badge badge-info">
-          <LearningTerm termId="ctlog">
-            {t('app.learningCategories.protocols', 'Protocols & Infrastructure')}
-          </LearningTerm>
+          {t('app.learningCategories.protocols', 'Protocols & Infrastructure')}
         </span>
       </ModuleHeader>
 

@@ -166,12 +166,10 @@
 
 .expiryValid {
   color: var(--text-primary);
-  cursor: help;
 }
 
 .expiryExpired {
   color: var(--danger-color);
-  cursor: help;
 }
 
 .nodeFooter {

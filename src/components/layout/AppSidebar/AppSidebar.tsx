@@ -59,6 +59,11 @@ export const AppSidebar = memo(function AppSidebar({
   const { t } = useTranslation()
   const navRef = useRef<HTMLElement>(null)
 
+  const appTitle = t('app.title', 'Certificate Management')
+  const titleSpaceIndex = appTitle.indexOf(' ')
+  const brandPrimary = titleSpaceIndex === -1 ? appTitle : appTitle.slice(0, titleSpaceIndex)
+  const brandSecondary = titleSpaceIndex === -1 ? '' : appTitle.slice(titleSpaceIndex + 1)
+
   useEffect(() => {
     const activeBtn = navRef.current?.querySelector<HTMLElement>('[aria-current="page"]')
     if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
@@ -101,8 +106,8 @@ export const AppSidebar = memo(function AppSidebar({
             className={styles.logo}
           />
           <div className={styles.brandTitle}>
-            <span className={styles.brandPrimary}>Certificate</span>
-            <span className={styles.brandSecondary}>Management</span>
+            <span className={styles.brandPrimary}>{brandPrimary}</span>
+            {brandSecondary && <span className={styles.brandSecondary}>{brandSecondary}</span>}
           </div>
           <button
             type="button"

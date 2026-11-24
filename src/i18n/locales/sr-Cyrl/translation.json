@@ -10,7 +10,7 @@
     },
     "nav": {
       "secure-boot": "Secure Boot NVRAM",
-      "win-cert-store": "Windows Certificate Store",
+      "win-cert-store": "Windows Складиште Сертификата",
       "expiry-dashboard": "Контролна Табла Истека",
       "trust-store": "Trust Store",
       "crl-inspector": "CRL Инспектор",
@@ -19,7 +19,7 @@
       "key-matcher": "Упоређивач Парова Кључева",
       "key-generator": "Генератор Кључева",
       "format-converter": "Конвертор Формата",
-      "tls-scanner": "Remote TLS Scanner",
+      "tls-scanner": "Удаљени TLS Скенер",
       "ocsp-checker": "OCSP Провера",
       "ct-log-search": "Претрага CT логова",
       "education-center": "Едукативни Центар"
@@ -87,7 +87,13 @@
       "critNoValidDb": "Нису пронађени важећи, неистекли сертификати у Бази потписа (db). Ваш систем можда неће покренути ниједан оперативни систем.",
       "critExpiredWindowsPca": "Windows Production PCA сертификат је истекао и није пронађена одговарајућа замена.",
       "warnMissingWindowsPca": "Није могуће пронаћи важећи Windows Production PCA сертификат. Ако користите Windows, ваш систем се можда неће покренути ако се ослања искључиво на стандардне кључеве за Secure Boot.",
-      "critExpiredUefiCa": "Microsoft/Windows UEFI CA сертификат је истекао и није пронађена одговарајућа замена."
+      "critExpiredUefiCa": "Microsoft/Windows UEFI CA сертификат је истекао и није пронађена одговарајућа замена.",
+      "loadingTitle": "Учитавање Secure Boot окружења...",
+      "parseErrorTitle": "Грешка при парсирању",
+      "emptyTitle": "Празна база података",
+      "emptyDesc": "Нису пронађени UEFI потписи у променљивој {{varName}}.",
+      "criticalWarning": "Критично упозорење",
+      "warning": "Упозорење"
     },
     "certDetails": {
       "signatureList": "Листа потписа #{{index}}",
@@ -648,8 +654,8 @@
       "alreadyCheckedTooltip": "Статус опозива је већ приказан на страници. Измените сертификат или очистите за поновну проверу.",
       "clearResultBtn": "Очисти резултат",
       "clearResultTooltip": "Уклони приказани резултат и поново омогући проверу",
-      "subjectLabel": "Subject",
-      "issuerLabel": "Issuer",
+      "subjectLabel": "Субјект",
+      "issuerLabel": "Издавач",
       "validityPeriod": "Период важења",
       "serialNumber": "Серијски број",
       "expiredBadge": "Истекао",
@@ -964,7 +970,29 @@
       "rsaOnlySupported": "Тренутно су подржани само RSA кључеви за упоређивање.",
       "invalidPem": "Неисправно форматирана PEM порука.",
       "noRsaInCsr": "Није пронађен RSA јавни кључ у CSR-у.",
-      "noRsaInCert": "Није пронађен RSA јавни кључ у сертификату."
+      "noRsaInCert": "Није пронађен RSA јавни кључ у сертификату.",
+      "presets": {
+        "match-cert-key": {
+          "name": "Одговарајући Серт + Кључ",
+          "badge": "RSA 2048",
+          "desc": "X.509 сертификат и одговарајући RSA 2048 приватни кључ (matcher.example.com)"
+        },
+        "match-csr-key": {
+          "name": "Одговарајући CSR + Кључ",
+          "badge": "RSA 2048 CSR",
+          "desc": "PKCS#10 CSR и одговарајући RSA 2048 приватни кључ"
+        },
+        "mismatch-cert-key": {
+          "name": "Неподударни пар",
+          "badge": "Неподударност",
+          "desc": "Сертификат из пара А са неповезаним приватним кључем из пара Б"
+        },
+        "match-rsa4096": {
+          "name": "Висока безбедност 4096-бит",
+          "badge": "RSA 4096",
+          "desc": "Одговарајући 4096-битни сертификат и приватни кључ (vault.internal.sec)"
+        }
+      }
     },
     "keyGenerator": {
       "title": "Генератор Парова Кључева & CSR / Самопотписаних Сертификата",
@@ -1078,7 +1106,7 @@
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Remote TLS Scanner",
+      "title": "Удаљени TLS Скенер",
       "subtitle": "Повежите се на било коју удаљену TLS/SSL крајњу тачку да бисте прегледали активан ланац сертификата, cipher suite, преговарање протокола и проверу поверења.",
       "hostLabel": "Назив хоста / Домен / IP",
       "portLabel": "Порт",
@@ -1181,7 +1209,8 @@
         "email": "Е-пошта"
       },
       "embeddedSct": "Уграђене временске ознаке сертификата (SCT)",
-      "specialPresetBadge": "Dev"
+      "specialPresetBadge": "Dev",
+      "presetUntrusted": "Непоуздано"
     },
     "educationCenter": {
       "title": "Едукативни Центар",
@@ -1448,6 +1477,16 @@
     },
     "footer": {
       "tagline": "Криптографија у прегледачу · Спремно за локални и веб рад"
+    },
+    "header": {
+      "secureBootTitle": "Инспектор за UEFI Secure Boot",
+      "secureBootSubtitle": "Прегледајте UEFI NVRAM базе потписа (db, dbx, KEK, PK) и верификујте системске сертификате за покретање.",
+      "winCertTitle": "Инспектор Windows Складишта Сертификата",
+      "winCertSubtitle": "Прегледајте, филтрирајте и испитајте сертификате инсталиране у CurrentUser и LocalMachine складиштима."
+    },
+    "errorBoundary": {
+      "description": "Дошло је до неочекиване грешке приликом приказа овог модула.",
+      "retry": "Покушај поново"
     }
   },
   "common": {
@@ -1460,6 +1499,8 @@
     "clear": "Очисти",
     "clearAll": "Очисти све",
     "remove": "Уклони",
-    "cancel": "Откажи"
+    "cancel": "Откажи",
+    "loadMore": "Прикажи више",
+    "close": "Затвори обавештење"
   }
 }

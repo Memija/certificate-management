@@ -3,19 +3,11 @@ import type {
   ParsedCertificate,
   SecureBootVarName,
   SimpleTranslateFn,
-  TermId,
   TranslateFn,
 } from '@/types'
 import { WebApiUnavailableError } from '@/utils/api-client'
 
 export const SECURE_BOOT_VARS: readonly SecureBootVarName[] = ['db', 'dbx', 'KEK', 'PK'] as const
-
-export const SECURE_BOOT_VAR_TERMS: Record<SecureBootVarName, TermId> = {
-  db: 'db',
-  dbx: 'dbx',
-  KEK: 'kek',
-  PK: 'pk',
-}
 
 export interface ParsedVarEntry {
   signatureLists: EfiSignatureList[]

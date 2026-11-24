@@ -17,7 +17,7 @@ import {
   XCircle,
 } from 'lucide-react'
 
-import { LearningTerm, useToast } from '@/components/shared'
+import { useToast } from '@/components/shared'
 import type { OcspRevocationResult, OcspSamplePreset } from '@/types'
 
 import { getLocalizedPresetMeta } from './ocsp-helpers'
@@ -180,8 +180,7 @@ export const OcspResultPanel = memo(function OcspResultPanel({
         <div className={styles.checkCard}>
           <div className={styles.checkCardHeader}>
             <h3 className={styles.checkCardTitle}>
-              <LearningTerm termId="ocsp">OCSP</LearningTerm>{' '}
-              {t('app.ocsp.ocspCheckTitle', 'OCSP Responder Check')}
+              OCSP {t('app.ocsp.ocspCheckTitle', 'OCSP Responder Check')}
             </h3>
             {result.ocspVerified ? (
               <span className="badge badge-success">{t('app.ocsp.badgeVerified', 'Verified')}</span>
@@ -208,8 +207,7 @@ export const OcspResultPanel = memo(function OcspResultPanel({
         <div className={styles.checkCard}>
           <div className={styles.checkCardHeader}>
             <h3 className={styles.checkCardTitle}>
-              <LearningTerm termId="crl">CRL</LearningTerm>{' '}
-              {t('app.ocsp.crlCheckTitle', 'CRL Distribution Point Check')}
+              CRL {t('app.ocsp.crlCheckTitle', 'CRL Distribution Point Check')}
             </h3>
             {result.crlVerified ? (
               <span className="badge badge-success">{t('app.ocsp.badgeVerified', 'Verified')}</span>

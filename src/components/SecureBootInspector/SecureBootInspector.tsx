@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { AlertTriangle, RefreshCw, Shield, ShieldCheck } from 'lucide-react'
 
-import { CertificateDetails, LearningTerm, ModuleHeader } from '@/components/shared'
+import { CertificateDetails, ModuleHeader } from '@/components/shared'
 import type { AppMode, EfiSignatureList, ParsedCertificate, SecureBootVarName } from '@/types'
 import { fetchLocalApiJson } from '@/utils/api-client'
 
@@ -12,7 +12,6 @@ import {
   isWebFallbackError,
   type ParsedVarEntry,
   parseSecureBootVariablePayload,
-  SECURE_BOOT_VAR_TERMS,
   SECURE_BOOT_VARS,
 } from './secure-boot-helpers'
 import { SignatureListCard } from './SignatureListCard'
@@ -187,7 +186,7 @@ export function SecureBootInspector(_props?: SecureBootInspectorProps) {
                 className={`${styles.varBtn} ${activeVar === v ? styles.varBtnActive : ''}`}
                 onClick={() => handleTabClick(v)}
               >
-                <LearningTerm termId={SECURE_BOOT_VAR_TERMS[v]}>{v}</LearningTerm>
+                {v}
               </button>
             ))}
           </div>
@@ -208,11 +207,7 @@ export function SecureBootInspector(_props?: SecureBootInspectorProps) {
                   <p className={styles.elevationDesc}>
                     <Trans
                       i18nKey="app.adminAccess.checkTaskbarUac"
-                      components={[
-                        <LearningTerm key="uac" termId="uac">
-                          {''}
-                        </LearningTerm>,
-                      ]}
+                      components={[<strong key="uac" />]}
                     />
                   </p>
                 </>
@@ -223,11 +218,7 @@ export function SecureBootInspector(_props?: SecureBootInspectorProps) {
                   <p className={styles.elevationDesc}>
                     <Trans
                       i18nKey="app.adminAccess.secureBootDesc"
-                      components={[
-                        <LearningTerm key="nvram" termId="nvram">
-                          {''}
-                        </LearningTerm>,
-                      ]}
+                      components={[<strong key="nvram" />]}
                     />
                   </p>
                   {Boolean(error) && (
@@ -289,25 +280,19 @@ export function SecureBootInspector(_props?: SecureBootInspectorProps) {
                           {rawCert.isRoot && (
                             <span className="badge badge-success">
                               <span className="badge-dot" />
-                              <LearningTerm termId="rootCa">
-                                {t('app.certDetails.rootCa', 'Root CA')}
-                              </LearningTerm>
+                              {t('app.certDetails.rootCa', 'Root CA')}
                             </span>
                           )}
                           {rawCert.isIntermediate && (
                             <span className="badge badge-warning">
                               <span className="badge-dot" />
-                              <LearningTerm termId="intermediateCa">
-                                {t('app.certDetails.intermediateCa', 'Intermediate CA')}
-                              </LearningTerm>
+                              {t('app.certDetails.intermediateCa', 'Intermediate CA')}
                             </span>
                           )}
                           {rawCert.isLeaf && (
                             <span className="badge badge-purple">
                               <span className="badge-dot" />
-                              <LearningTerm termId="leafCert">
-                                {t('app.certDetails.leafCert', 'Leaf Certificate')}
-                              </LearningTerm>
+                              {t('app.certDetails.leafCert', 'Leaf Certificate')}
                             </span>
                           )}
                           {rawCert.isExpired && (

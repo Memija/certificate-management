@@ -19,7 +19,7 @@
       "key-matcher": "Schlüsselpaar-Zuordner",
       "key-generator": "Schlüsselgenerator",
       "format-converter": "Formatkonverter",
-      "tls-scanner": "Remote TLS Scanner",
+      "tls-scanner": "TLS-Endpunkt-Scanner",
       "ocsp-checker": "OCSP-Prüfer",
       "ct-log-search": "CT-Protokollsuche",
       "education-center": "Bildungszentrum"
@@ -87,7 +87,13 @@
       "critNoValidDb": "Keine gültigen, nicht abgelaufenen Zertifikate in der Signaturdatenbank (db) gefunden. Ihr System könnte beim Start eines Betriebssystems scheitern.",
       "critExpiredWindowsPca": "Das Windows Production PCA-Zertifikat ist abgelaufen und es wurde kein gültiger Ersatz gefunden.",
       "warnMissingWindowsPca": "Es konnte kein gültiges Windows Production PCA-Zertifikat gefunden werden. Wenn Sie Windows verwenden, könnte Ihr System nicht booten, wenn es sich ausschließlich auf standardmäßige Secure Boot-Schlüssel stützt.",
-      "critExpiredUefiCa": "Das Microsoft/Windows UEFI CA-Zertifikat ist abgelaufen und es wurde kein gültiger Ersatz gefunden."
+      "critExpiredUefiCa": "Das Microsoft/Windows UEFI CA-Zertifikat ist abgelaufen und es wurde kein gültiger Ersatz gefunden.",
+      "loadingTitle": "Secure Boot-Umgebung wird geladen...",
+      "parseErrorTitle": "Analysefehler",
+      "emptyTitle": "Leere Datenbank",
+      "emptyDesc": "In der Variable {{varName}} wurden keine UEFI-Signaturen gefunden.",
+      "criticalWarning": "Kritische Warnung",
+      "warning": "Warnung"
     },
     "certDetails": {
       "signatureList": "Signaturliste #{{index}}",
@@ -377,7 +383,7 @@
         "title": "Trust Store & Keystore Inspektor",
         "eyebrow": "KeyStore- & Zertifikatsprüfung",
         "pills": {
-          "inMemory": "In-Memory-Parsing",
+          "inMemory": "Speicherinterne Analyse",
           "pkcs12": "PKCS#12 / PFX",
           "jks": "Java KeyStore (JKS)",
           "pemBundle": "PEM-Bündel",
@@ -636,7 +642,7 @@
       "verifyExample": "Dieses Beispiel überprüfen",
       "verifying": "Wird überprüft...",
       "inputLabel": "Zertifikat (PEM- / DER-Format)",
-      "uploadBtn": "Upload .pem / .cer / .crt / .der",
+      "uploadBtn": ".pem / .cer / .crt / .der hochladen",
       "placeholder": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
       "checkBtn": "Sperrstatus prüfen",
       "checkingBtn": "Sperrstatus wird online geprüft...",
@@ -644,8 +650,8 @@
       "alreadyCheckedTooltip": "Der Sperrstatus wird bereits auf der Seite angezeigt. Ändern Sie das Zertifikat oder löschen Sie es, um erneut zu prüfen.",
       "clearResultBtn": "Ergebnis löschen",
       "clearResultTooltip": "Ergebnisse verwerfen und Prüfung wieder aktivieren",
-      "subjectLabel": "Subject",
-      "issuerLabel": "Issuer",
+      "subjectLabel": "Inhaber",
+      "issuerLabel": "Aussteller",
       "validityPeriod": "Gültigkeitszeitraum",
       "serialNumber": "Seriennummer",
       "expiredBadge": "Abgelaufen",
@@ -786,7 +792,7 @@
         "selfSig": "Selbstsignatur-Überprüfung",
         "rfc2986": "PKCS#10 RFC 2986",
         "editor": "Interaktiver Editor & Neusignierung",
-        "offline": "100 % Offline-Parsing"
+        "offline": "100 % Offline-Analyse"
       },
       "dropTitle": "CSR-Dateien hier ablegen",
       "dropDesc": "Unterstützt PEM und DER · <0>.csr</0> · <1>.req</1> · <2>.pem</2> · <3>.der</3>",
@@ -960,7 +966,29 @@
       "rsaOnlySupported": "Aktuell werden nur RSA-Schlüssel für den Abgleich unterstützt.",
       "invalidPem": "Ungültig formatierte PEM-Nachricht.",
       "noRsaInCsr": "Kein öffentlicher RSA-Schlüssel im CSR gefunden.",
-      "noRsaInCert": "Kein öffentlicher RSA-Schlüssel im Zertifikat gefunden."
+      "noRsaInCert": "Kein öffentlicher RSA-Schlüssel im Zertifikat gefunden.",
+      "presets": {
+        "match-cert-key": {
+          "name": "Passendes Zertifikat + Schlüssel",
+          "badge": "RSA 2048",
+          "desc": "X.509-Zertifikat und passender privater RSA-2048-Schlüssel (matcher.example.com)"
+        },
+        "match-csr-key": {
+          "name": "Passende CSR + Schlüssel",
+          "badge": "RSA 2048 CSR",
+          "desc": "PKCS#10-CSR und passender privater RSA-2048-Schlüssel"
+        },
+        "mismatch-cert-key": {
+          "name": "Nicht passendes Paar",
+          "badge": "Abweichungswarnung",
+          "desc": "Zertifikat aus Paar A mit einem unabhängigen privaten Schlüssel aus Paar B"
+        },
+        "match-rsa4096": {
+          "name": "Hochsicher 4096-Bit",
+          "badge": "RSA 4096",
+          "desc": "Passendes 4096-Bit-Zertifikat und privater Schlüssel (vault.internal.sec)"
+        }
+      }
     },
     "keyGenerator": {
       "title": "Schlüsselpaar- & CSR- / Selbstsigniert-Generator",
@@ -1074,7 +1102,7 @@
       "presetPfxRsa4096": "Enterprise-Tresor (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Remote TLS Scanner",
+      "title": "TLS-Endpunkt-Scanner",
       "subtitle": "Verbinden Sie sich mit einem beliebigen Remote-TLS/SSL-Endpunkt, um die aktive Zertifikatskette, Cipher Suite, Protokollaushandlung und Vertrauensprüfung zu überprüfen.",
       "hostLabel": "Hostname / Domain / IP",
       "portLabel": "Port",
@@ -1177,7 +1205,8 @@
         "email": "E-Mail"
       },
       "embeddedSct": "Eingebettete signierte Zertifikats-Zeitstempel (SCT)",
-      "specialPresetBadge": "Dev"
+      "specialPresetBadge": "Dev",
+      "presetUntrusted": "Nicht vertrauenswürdig"
     },
     "educationCenter": {
       "title": "Bildungszentrum",
@@ -1444,6 +1473,16 @@
     },
     "footer": {
       "tagline": "Browser-Kryptografie · Lokal- & Web-bereit"
+    },
+    "header": {
+      "secureBootTitle": "UEFI Secure Boot-Inspektor",
+      "secureBootSubtitle": "Untersuchen Sie UEFI-NVRAM-Signaturdatenbanken (db, dbx, KEK, PK) und überprüfen Sie Plattform-Startzertifikate.",
+      "winCertTitle": "Windows-Zertifikatsspeicher-Inspektor",
+      "winCertSubtitle": "Durchsuchen, filtern und prüfen Sie Zertifikate in den Speichern CurrentUser und LocalMachine."
+    },
+    "errorBoundary": {
+      "description": "Beim Rendern dieses Moduls ist ein unerwarteter Fehler aufgetreten.",
+      "retry": "Erneut versuchen"
     }
   },
   "common": {
@@ -1456,6 +1495,8 @@
     "clear": "Löschen",
     "clearAll": "Alle löschen",
     "remove": "Entfernen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "loadMore": "Mehr anzeigen",
+    "close": "Benachrichtigung schließen"
   }
 }

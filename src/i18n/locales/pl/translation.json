@@ -19,7 +19,7 @@
       "key-matcher": "Dopasowywanie Par Kluczy",
       "key-generator": "Generator Kluczy",
       "format-converter": "Konwerter Formatów",
-      "tls-scanner": "Remote TLS Scanner",
+      "tls-scanner": "Zdalny Skaner TLS",
       "ocsp-checker": "Sprawdzanie OCSP",
       "ct-log-search": "Wyszukiwanie Logów CT",
       "education-center": "Centrum Edukacji"
@@ -87,7 +87,13 @@
       "critNoValidDb": "Nie znaleziono ważnych, niewygasłych certyfikatów w Bazie podpisów (db). Uruchomienie dowolnego systemu operacyjnego na Twoim systemie może się nie powieść.",
       "critExpiredWindowsPca": "Certyfikat Windows Production PCA wygasł i nie znaleziono dla niego ważnego zastępstwa.",
       "warnMissingWindowsPca": "Nie udało się znaleźć ważnego certyfikatu Windows Production PCA. Jeśli korzystasz z systemu Windows, system może się nie uruchomić, jeśli polega on wyłącznie na standardowych kluczach Secure Boot.",
-      "critExpiredUefiCa": "Certyfikat Microsoft/Windows UEFI CA wygasł i nie znaleziono dla niego ważnego zastępstwa."
+      "critExpiredUefiCa": "Certyfikat Microsoft/Windows UEFI CA wygasł i nie znaleziono dla niego ważnego zastępstwa.",
+      "loadingTitle": "Ładowanie środowiska Secure Boot...",
+      "parseErrorTitle": "Błąd przetwarzania",
+      "emptyTitle": "Pusta baza danych",
+      "emptyDesc": "Nie znaleziono podpisów UEFI w zmiennej {{varName}}.",
+      "criticalWarning": "Ostrzeżenie krytyczne",
+      "warning": "Ostrzeżenie"
     },
     "certDetails": {
       "signatureList": "Lista podpisów #{{index}}",
@@ -652,8 +658,8 @@
       "alreadyCheckedTooltip": "Status odwołania jest już wyświetlony na stronie. Zmodyfikuj certyfikat lub wyczyść, aby sprawdzić ponownie.",
       "clearResultBtn": "Wyczyść wynik",
       "clearResultTooltip": "Ukryj wynik i ponownie włącz przycisk sprawdzania",
-      "subjectLabel": "Subject",
-      "issuerLabel": "Issuer",
+      "subjectLabel": "Podmiot",
+      "issuerLabel": "Wystawca",
       "validityPeriod": "Okres ważności",
       "serialNumber": "Numer seryjny",
       "expiredBadge": "Wygasły",
@@ -968,7 +974,29 @@
       "rsaOnlySupported": "Obecnie do dopasowywania obsługiwane są tylko klucze RSA.",
       "invalidPem": "Nieprawidłowo sformatowana wiadomość PEM.",
       "noRsaInCsr": "Nie znaleziono klucza publicznego RSA w CSR.",
-      "noRsaInCert": "Nie znaleziono klucza publicznego RSA w certyfikacie."
+      "noRsaInCert": "Nie znaleziono klucza publicznego RSA w certyfikacie.",
+      "presets": {
+        "match-cert-key": {
+          "name": "Zgodny Certyfikat + Klucz",
+          "badge": "RSA 2048",
+          "desc": "Certyfikat X.509 i zgodny klucz prywatny RSA 2048 (matcher.example.com)"
+        },
+        "match-csr-key": {
+          "name": "Zgodny CSR + Klucz",
+          "badge": "RSA 2048 CSR",
+          "desc": "Żądanie CSR PKCS#10 i zgodny klucz prywatny RSA 2048"
+        },
+        "mismatch-cert-key": {
+          "name": "Niezgodna para",
+          "badge": "Brak zgodności",
+          "desc": "Certyfikat z pary A z niepowiązanym kluczem prywatnym z pary B"
+        },
+        "match-rsa4096": {
+          "name": "Wysokie bezp. 4096-bit",
+          "badge": "RSA 4096",
+          "desc": "Zgodny 4096-bitowy certyfikat i klucz prywatny (vault.internal.sec)"
+        }
+      }
     },
     "keyGenerator": {
       "title": "Generator Par Kluczy & CSR / Samopodpisanych Certyfikatów",
@@ -1082,7 +1110,7 @@
       "presetPfxRsa4096": "Enterprise Vault (RSA 4096)"
     },
     "tlsScanner": {
-      "title": "Remote TLS Scanner",
+      "title": "Zdalny Skaner TLS",
       "subtitle": "Połącz się z dowolnym zdalnym punktem końcowym TLS/SSL, aby sprawdzić aktywny łańcuch certyfikatów, zestaw szyfrów, negocjację protokołu i walidację zaufania.",
       "hostLabel": "Nazwa hosta / Domena / IP",
       "portLabel": "Port",
@@ -1185,7 +1213,8 @@
         "email": "E-mail"
       },
       "embeddedSct": "Wbudowane podpisane znaczniki czasu certyfikatów (SCT)",
-      "specialPresetBadge": "Dev"
+      "specialPresetBadge": "Dev",
+      "presetUntrusted": "Niezaufany"
     },
     "educationCenter": {
       "title": "Centrum Edukacji",
@@ -1452,6 +1481,16 @@
     },
     "footer": {
       "tagline": "Kryptografia w przeglądarce · Gotowe do pracy lokalnej i w sieci Web"
+    },
+    "header": {
+      "secureBootTitle": "Inspektor UEFI Secure Boot",
+      "secureBootSubtitle": "Sprawdzaj bazy podpisów UEFI NVRAM (db, dbx, KEK, PK) i weryfikuj certyfikaty rozruchowe platformy.",
+      "winCertTitle": "Inspektor Magazynu Certyfikatów Windows",
+      "winCertSubtitle": "Przeglądaj, filtruj i badaj certyfikaty zainstalowane w magazynach CurrentUser i LocalMachine."
+    },
+    "errorBoundary": {
+      "description": "Wystąpił nieoczekiwany błąd podczas renderowania tego modułu.",
+      "retry": "Spróbuj ponownie"
     }
   },
   "common": {
@@ -1464,6 +1503,8 @@
     "clear": "Wyczyść",
     "clearAll": "Wyczyść wszystko",
     "remove": "Usuń",
-    "cancel": "Anuluj"
+    "cancel": "Anuluj",
+    "loadMore": "Pokaż więcej",
+    "close": "Zamknij powiadomienie"
   }
 }

@@ -87,7 +87,13 @@
       "critNoValidDb": "No valid, unexpired certificates found in the Signature Database (db). Your system may fail to boot any operating system.",
       "critExpiredWindowsPca": "The Windows Production PCA certificate is expired and no valid replacement was found.",
       "warnMissingWindowsPca": "Could not find a valid Windows Production PCA certificate. If you use Windows, your system might fail to boot if it relies solely on standard Secure Boot keys.",
-      "critExpiredUefiCa": "The Microsoft/Windows UEFI CA certificate is expired and no valid replacement was found."
+      "critExpiredUefiCa": "The Microsoft/Windows UEFI CA certificate is expired and no valid replacement was found.",
+      "loadingTitle": "Loading Secure Boot Environment...",
+      "parseErrorTitle": "Error parsing variable",
+      "emptyTitle": "Variable is Empty",
+      "emptyDesc": "No valid signatures or certificates found in {{varName}}.",
+      "criticalWarning": "Critical Warning",
+      "warning": "Warning"
     },
     "certDetails": {
       "signatureList": "Signature List #{{index}}",
@@ -960,7 +966,29 @@
       "rsaOnlySupported": "Only RSA keys are currently supported for matching.",
       "invalidPem": "Invalid PEM formatted message.",
       "noRsaInCsr": "No RSA public key found in CSR.",
-      "noRsaInCert": "No RSA public key found in Certificate."
+      "noRsaInCert": "No RSA public key found in Certificate.",
+      "presets": {
+        "match-cert-key": {
+          "name": "Matching Cert + Key",
+          "badge": "RSA 2048",
+          "desc": "X.509 Certificate and matching RSA 2048 Private Key (matcher.example.com)"
+        },
+        "match-csr-key": {
+          "name": "Matching CSR + Key",
+          "badge": "RSA 2048 CSR",
+          "desc": "PKCS#10 CSR and matching RSA 2048 Private Key"
+        },
+        "mismatch-cert-key": {
+          "name": "Mismatched Pair",
+          "badge": "Mismatch Alert",
+          "desc": "Certificate from Pair A with an unrelated Private Key from Pair B"
+        },
+        "match-rsa4096": {
+          "name": "High-Sec 4096-bit",
+          "badge": "RSA 4096",
+          "desc": "Matching 4096-bit Certificate and Private Key (vault.internal.sec)"
+        }
+      }
     },
     "keyGenerator": {
       "title": "Key Pair & CSR / Self-Signed Generator",
@@ -1177,7 +1205,8 @@
         "email": "Email"
       },
       "embeddedSct": "Embedded Signed Certificate Timestamps",
-      "specialPresetBadge": "Dev"
+      "specialPresetBadge": "Dev",
+      "presetUntrusted": "Untrusted"
     },
     "educationCenter": {
       "title": "Education Center",
@@ -1444,6 +1473,16 @@
     },
     "footer": {
       "tagline": "In-Browser Cryptography · Local & Web Ready"
+    },
+    "header": {
+      "secureBootTitle": "UEFI Secure Boot Inspector",
+      "secureBootSubtitle": "Inspect UEFI NVRAM signature databases (db, dbx, KEK, PK) and verify platform boot certificates.",
+      "winCertTitle": "Windows Certificate Store Inspector",
+      "winCertSubtitle": "Browse, filter, and inspect certificates installed in CurrentUser and LocalMachine stores."
+    },
+    "errorBoundary": {
+      "description": "An unexpected error occurred while rendering this module.",
+      "retry": "Try Again"
     }
   },
   "common": {
@@ -1456,6 +1495,8 @@
     "clear": "Clear",
     "clearAll": "Clear All",
     "remove": "Remove",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "loadMore": "Show More",
+    "close": "Close notification"
   }
 }

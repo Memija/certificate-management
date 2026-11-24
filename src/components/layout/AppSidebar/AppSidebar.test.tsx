@@ -152,6 +152,7 @@ describe('AppSidebar', () => {
       await i18n.changeLanguage('de')
     })
 
+    expect(screen.getByText('Zertifikatsverwaltung')).toBeInTheDocument()
     expect(screen.getByText('Systemprüfung')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Bildungszentrum' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Seitenleiste schließen' })).toBeInTheDocument()

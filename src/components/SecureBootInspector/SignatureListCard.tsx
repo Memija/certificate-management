@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Shield, ShieldCheck } from 'lucide-react'
 
-import { CertificateDetails, LearningTerm } from '@/components/shared'
+import { CertificateDetails } from '@/components/shared'
 import type { EfiSignatureData, EfiSignatureList, SecureBootVarName } from '@/types'
 
 import { extractSubjectCn } from './secure-boot-helpers'
@@ -39,13 +39,9 @@ const SignatureItem = memo(function SignatureItem({ signature }: SignatureItemPr
             aria-hidden="true"
           />
           <span className={styles.signatureTitle}>
-            {cert ? (
-              <LearningTerm termId="x509">
-                {t('app.certDetails.rawX509', 'Raw X.509 Certificate')}
-              </LearningTerm>
-            ) : (
-              t('app.certDetails.unknownSignatureType', 'Hash / Binary Signature')
-            )}
+            {cert
+              ? t('app.certDetails.rawX509', 'Raw X.509 Certificate')
+              : t('app.certDetails.unknownSignatureType', 'Hash / Binary Signature')}
           </span>
           {cert !== undefined && (
             <span className={styles.signatureSubject}>{extractSubjectCn(cert.subject)}</span>

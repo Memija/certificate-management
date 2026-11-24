@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react'
 
-import { LearningTerm, ModuleHeader, useToast } from '@/components/shared'
+import { ModuleHeader, useToast } from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode, ParsedCSR } from '@/types'
 import { parseCSRFile, parseCSRFromText } from '@/utils/csr-parser'
@@ -223,9 +223,7 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
           </span>
           <span className={styles.headerPill}>
             <FileKey size={12} className={styles.iconPurple} aria-hidden="true" />
-            <LearningTerm termId="csr">
-              {t('app.csr.pills.rfc2986', 'PKCS#10 RFC 2986')}
-            </LearningTerm>
+            <span>{t('app.csr.pills.rfc2986', 'PKCS#10 RFC 2986')}</span>
           </span>
           <span className={styles.headerPill}>
             <Edit3 size={12} className={styles.iconInfo} aria-hidden="true" />

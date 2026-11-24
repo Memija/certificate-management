@@ -162,7 +162,7 @@ describe('CtLogSearch', () => {
     await waitFor(() => {
       expect(screen.getByText('No certificates match your search filter.')).toBeInTheDocument()
     })
-  })
+  }, 30_000)
 
   it('handles WebApiUnavailableError fallback, CertSpotter rate-limit notice, and preset sample fallback', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})

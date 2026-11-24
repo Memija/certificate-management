@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react'
 
-import { LearningTerm, ModuleHeader } from '@/components/shared'
+import { ModuleHeader } from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode } from '@/types'
 
@@ -107,15 +107,11 @@ export function TrustStoreInspector({ onNavigate }: TrustStoreInspectorProps = {
           </span>
           <span className={styles.capabilityPill}>
             <Archive size={12} className={styles.iconPurple} aria-hidden="true" />
-            <LearningTerm termId="pem">
-              {t('app.trustStore.inspector.pills.pemBundle', 'PEM Bundles')}
-            </LearningTerm>
+            <span>{t('app.trustStore.inspector.pills.pemBundle', 'PEM Bundles')}</span>
           </span>
           <span className={styles.capabilityPill}>
             <Shield size={12} className={styles.iconInfo} aria-hidden="true" />
-            <LearningTerm termId="der">
-              {t('app.trustStore.inspector.pills.derPkcs7', 'DER & PKCS#7')}
-            </LearningTerm>
+            <span>{t('app.trustStore.inspector.pills.derPkcs7', 'DER & PKCS#7')}</span>
           </span>
         </ModuleHeader>
 

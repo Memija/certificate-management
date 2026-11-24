@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react'
 
-import { LearningTerm, ModuleHeader } from '@/components/shared'
+import { ModuleHeader } from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode, ChainPreset } from '@/types'
 
@@ -204,9 +204,7 @@ export function ChainValidator({ onNavigate }: ChainValidatorProps = {}) {
             </span>
             <span className={styles.headerPill}>
               <Shield size={12} className={styles.iconInfo} aria-hidden="true" />
-              <LearningTerm termId="rootCa">
-                {t('app.chain.pills.rootAnchor', 'Root Anchor Detection')}
-              </LearningTerm>
+              <span>{t('app.chain.pills.rootAnchor', 'Root Anchor Detection')}</span>
             </span>
             <span className={styles.headerPill}>
               <AlertTriangle size={12} className={styles.iconWarning} aria-hidden="true" />

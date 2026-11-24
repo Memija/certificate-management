@@ -11,7 +11,6 @@ import {
   XCircle,
 } from 'lucide-react'
 
-import { LearningTerm } from '@/components/shared'
 import { formatExpiry, formatExpiryTooltip } from '@/utils/expiry-formatter'
 
 import type { ChainNode } from './chain-validator-logic'
@@ -266,17 +265,15 @@ export const ChainHierarchyTree = memo(function ChainHierarchyTree({
         <div className={styles.statusBadges}>
           <span className={`badge ${styles.badgeRoot}`}>
             <ShieldCheck size={11} aria-hidden="true" />
-            <LearningTerm termId="rootCa">{t('app.chain.roles.root', 'Root')}</LearningTerm>
+            <span>{t('app.chain.roles.root', 'Root')}</span>
           </span>
           <span className={`badge ${styles.badgeIntermediate}`}>
             <Shield size={11} aria-hidden="true" />
-            <LearningTerm termId="intermediateCa">
-              {t('app.chain.roles.intermediate', 'Intermediate')}
-            </LearningTerm>
+            <span>{t('app.chain.roles.intermediate', 'Intermediate')}</span>
           </span>
           <span className={`badge ${styles.badgeLeaf}`}>
             <Globe size={11} aria-hidden="true" />
-            <LearningTerm termId="leafCert">{t('app.chain.roles.leaf', 'Leaf')}</LearningTerm>
+            <span>{t('app.chain.roles.leaf', 'Leaf')}</span>
           </span>
         </div>
       </div>

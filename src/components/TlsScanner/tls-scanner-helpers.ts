@@ -12,6 +12,7 @@ export interface TlsQuickPreset {
   port: number
   isSpecial?: boolean
   badge?: string
+  badgeKey?: string
   badgeType?: TlsPresetBadgeType
 }
 
@@ -47,6 +48,7 @@ export const TLS_QUICK_PRESETS: readonly TlsQuickPreset[] = [
     host: 'expired.badssl.com',
     port: 443,
     badge: 'Expired',
+    badgeKey: 'app.winCertStore.certCard.expired',
     badgeType: 'warning',
   },
   {
@@ -54,6 +56,7 @@ export const TLS_QUICK_PRESETS: readonly TlsQuickPreset[] = [
     host: 'self-signed.badssl.com',
     port: 443,
     badge: 'Untrusted',
+    badgeKey: 'app.tlsScanner.presetUntrusted',
     badgeType: 'danger',
   },
 ]

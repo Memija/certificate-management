@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check, Copy, Download, EyeOff, FileKey } from 'lucide-react'
 
-import { CertificateDetails, LearningTerm, useToast } from '@/components/shared'
+import { CertificateDetails, useToast } from '@/components/shared'
 import type { TrustStoreEntry } from '@/types'
 
 import { downloadPrivateKeyFile } from './trust-store-helpers'
@@ -84,23 +84,19 @@ export const TrustStoreEntryDetail = memo(function TrustStoreEntryDetail({
           {cert.isRoot && (
             <span className="badge badge-success">
               <span className="badge-dot" />
-              <LearningTerm termId="rootCa">{t('app.certDetails.rootCa', 'Root CA')}</LearningTerm>
+              {t('app.certDetails.rootCa', 'Root CA')}
             </span>
           )}
           {cert.isIntermediate && (
             <span className="badge badge-warning">
               <span className="badge-dot" />
-              <LearningTerm termId="intermediateCa">
-                {t('app.certDetails.intermediateCa', 'Intermediate CA')}
-              </LearningTerm>
+              {t('app.certDetails.intermediateCa', 'Intermediate CA')}
             </span>
           )}
           {cert.isLeaf && (
             <span className="badge badge-purple">
               <span className="badge-dot" />
-              <LearningTerm termId="leafCert">
-                {t('app.certDetails.leafCert', 'Leaf Certificate')}
-              </LearningTerm>
+              {t('app.certDetails.leafCert', 'Leaf Certificate')}
             </span>
           )}
           {cert.isExpired && (

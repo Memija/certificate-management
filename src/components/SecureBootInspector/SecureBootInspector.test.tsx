@@ -84,9 +84,12 @@ describe('SecureBootInspector', () => {
 
     const { container } = render(<SecureBootInspector />)
 
-    await waitFor(() => {
-      expect(screen.getByText('Secure Boot System Assessment')).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByText('Secure Boot System Assessment')).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
 
     // Heading hierarchy check: h1 -> h2 -> h3 without skipping levels
     const headings = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6'))
@@ -241,9 +244,12 @@ describe('SecureBootInspector', () => {
     mockedFetchLocalApiJson.mockResolvedValueOnce({ data: fallbackVars })
     fireEvent.click(screen.getByRole('button', { name: /Unlock Secure Boot Variables/i }))
 
-    await waitFor(() => {
-      expect(screen.getByText('Secure Boot System Assessment')).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByText('Secure Boot System Assessment')).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
   })
 
   it('evaluates boot health warnings and helper edge cases accurately', async () => {

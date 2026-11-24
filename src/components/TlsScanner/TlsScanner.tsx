@@ -272,9 +272,9 @@ export function TlsScanner() {
                 title={`${preset.host}:${preset.port}`}
               >
                 <span className="mono">{preset.label}</span>
-                {Boolean(preset.badge) && preset.badgeType && (
+                {preset.badge && preset.badgeType && (
                   <span className={`${styles.presetBadge} ${styles[`badge_${preset.badgeType}`]}`}>
-                    {preset.badge}
+                    {preset.badgeKey ? t(preset.badgeKey, preset.badge) : preset.badge}
                   </span>
                 )}
               </button>

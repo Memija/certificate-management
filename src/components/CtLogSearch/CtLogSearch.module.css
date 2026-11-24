@@ -24,9 +24,6 @@
 :is(.presetsTitle, .dateItem, .dateExpiryItem) {
   gap: 0.4rem;
 }
-.dateExpiryItem {
-  cursor: help;
-}
 :is(.accentIcon, .shrinkZero) {
   flex-shrink: 0;
 }

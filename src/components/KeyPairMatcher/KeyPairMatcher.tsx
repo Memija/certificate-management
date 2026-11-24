@@ -183,23 +183,28 @@ export function KeyPairMatcher({ onNavigate }: KeyPairMatcherProps = {}) {
         <div className={styles.presetsList}>
           {KEY_MATCHER_PRESETS.map((preset) => {
             const isActive = activePreset === preset.id
+            const presetName = t(`app.keyMatcher.presets.${preset.id}.name`, preset.name)
+            const presetDesc = t(`app.keyMatcher.presets.${preset.id}.desc`, preset.description)
+            const presetBadge = preset.badge
+              ? t(`app.keyMatcher.presets.${preset.id}.badge`, preset.badge)
+              : undefined
             return (
               <button
                 key={preset.id}
                 type="button"
                 className={`${styles.presetPill} ${isActive ? styles.presetPillActive : ''}`}
                 onClick={() => loadPreset(preset)}
-                title={preset.description}
+                title={presetDesc}
                 aria-pressed={isActive}
               >
-                <span className={styles.presetName}>{preset.name}</span>
-                {preset.badge && (
+                <span className={styles.presetName}>{presetName}</span>
+                {presetBadge && (
                   <span
                     className={`${styles.presetBadge} ${
                       preset.expectedMatch ? styles.presetBadgeSuccess : styles.presetBadgeDanger
                     }`}
                   >
-                    {preset.badge}
+                    {presetBadge}
                   </span>
                 )}
               </button>
