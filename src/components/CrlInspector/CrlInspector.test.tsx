@@ -371,4 +371,25 @@ describe('CrlInspector', () => {
     const pemNoCrl = buildCrlErrorInfo('c.pem', new Error('ERR_PEM_NO_CRL'))
     expect(formatLocalizedCrlError(pemNoCrl, mockT)).toContain('BEGIN X509 CRL')
   })
+
+  it('loads Sample DER CRL and Expired CRL presets with distinct tabs and Expired status badge', async () => {
+    render(<CrlInspector />)
+
+    const derBtn = screen.getByRole('button', { name: /Sample DER CRL/i })
+    fireEvent.click(derBtn)
+    await waitFor(() => {
+      expect(screen.getAllByText(/Contoso Binary DER Issuing CA/).length).toBeGreaterThanOrEqual(2)
+    })
+    expect(derBtn).toBeDisabled()
+
+    const expiredBtn = screen.getByRole('button', { name: /Expired CRL/i })
+    fireEvent.click(expiredBtn)
+    await waitFor(() => {
+      expect(screen.getAllByText(/Legacy Root Revocation Authority/).length).toBeGreaterThanOrEqual(
+        2,
+      )
+    })
+    expect(expiredBtn).toBeDisabled()
+    expect(screen.getAllByText('Expired CRL').length).toBeGreaterThanOrEqual(2)
+  })
 })

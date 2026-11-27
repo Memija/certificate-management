@@ -61,6 +61,18 @@ const SAMPLE_PRESETS: readonly {
     defaultLabel: 'Broken Chain Warning',
     toastLabel: 'Broken Chain (Missing Intermediate)',
   },
+  {
+    id: 'expired-chain',
+    labelKey: 'app.chain.sampleExpired',
+    defaultLabel: 'Expired Certificate',
+    toastLabel: 'Expired Leaf Certificate Chain',
+  },
+  {
+    id: 'invalid-signature',
+    labelKey: 'app.chain.sampleBadSig',
+    defaultLabel: 'Invalid Signature',
+    toastLabel: 'Invalid Signature (Tampered Leaf)',
+  },
 ]
 
 export function ChainValidator({ onNavigate }: ChainValidatorProps = {}) {
@@ -199,16 +211,16 @@ export function ChainValidator({ onNavigate }: ChainValidatorProps = {}) {
               <span>{t('app.chain.pills.sigVerify', 'Signature Verification')}</span>
             </span>
             <span className={styles.headerPill}>
-              <GitFork size={12} className={styles.iconPurple} aria-hidden="true" />
-              <span>{t('app.chain.pills.treeGraph', 'Interactive Tree Graph')}</span>
-            </span>
-            <span className={styles.headerPill}>
               <Shield size={12} className={styles.iconInfo} aria-hidden="true" />
               <span>{t('app.chain.pills.rootAnchor', 'Root Anchor Detection')}</span>
             </span>
             <span className={styles.headerPill}>
               <AlertTriangle size={12} className={styles.iconWarning} aria-hidden="true" />
               <span>{t('app.chain.pills.brokenChain', 'Broken Chain Isolation')}</span>
+            </span>
+            <span className={styles.headerPill}>
+              <GitFork size={12} className={styles.iconPurple} aria-hidden="true" />
+              <span>{t('app.chain.pills.treeGraph', 'Interactive Tree Graph')}</span>
             </span>
           </div>
         </ModuleHeader>

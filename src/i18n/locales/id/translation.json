@@ -396,7 +396,9 @@
           "pkcs12": "PKCS#12 / PFX",
           "jks": "Java KeyStore (JKS)",
           "pemBundle": "Bundel PEM",
-          "derPkcs7": "DER & PKCS#7"
+          "derPkcs7": "DER & PKCS#7",
+          "pkcs7Badge": "PKCS#7 (.p7b)",
+          "jksBadge": "JKS (.jks)"
         },
         "incorrectPassword": "Kata sandi salah.",
         "pkcs12RequiresPassword": "Berkas PKCS#12 ini memerlukan kata sandi.",
@@ -506,7 +508,9 @@
       "pfxPasswordPrompt": "File \"{{fileName}}\" dilindungi kata sandi. Masukkan kata sandi untuk mengekstrak sertifikat ke pool validasi rantai.",
       "unlocking": "Membuka kunci…",
       "sampleAlreadyLoaded": "Contoh rantai ini sudah dimuat",
-      "pathLenConstraint": "Batasan Panjang Jalur"
+      "pathLenConstraint": "Batasan Panjang Jalur",
+      "sampleExpired": "Sertifikat Kedaluwarsa",
+      "sampleBadSig": "Tanda Tangan Tidak Valid"
     },
     "crl": {
       "eyebrow": "Status Pencabutan & RFC 5280",
@@ -592,7 +596,9 @@
         "deltaCRLIndicator": "Indikator Delta CRL",
         "issuingDistributionPoint": "Titik Distribusi Penerbit",
         "authorityKeyIdentifier": "Pengidentifikasi Kunci Otoritas"
-      }
+      },
+      "trySampleDerCrl": "Contoh DER CRL",
+      "trySampleExpiredCrl": "CRL Kedaluwarsa"
     },
     "ocsp": {
       "eyebrow": "Pencabutan Real-Time · RFC 6960 & RFC 5280",
@@ -940,7 +946,9 @@
         "placeholderStateWarning": "Provinsi berisi nilai placeholder umum (\"{{value}}\").",
         "sanMissingWarning": "Autentikasi Server TLS dipilih, tetapi tidak ada Subject Alternative Names (SAN) yang ditentukan. Peramban modern dan klien TLS (RFC 2818) mengabaikan Common Name dan akan menolak sertifikat ini.",
         "wildcardCnSanWarning": "Nama Umum adalah domain wildcard ({{cn}}), tetapi tidak tercantum dalam SAN. Pastikan untuk menambahkannya ke SAN demi kompatibilitas klien."
-      }
+      },
+      "trySampleDerCsr": "CSR DER Multi-SAN",
+      "trySampleBadSigCsr": "CSR Tanda Tangan Tidak Valid"
     },
     "keyMatcher": {
       "title": "Pencocok Modulus Pasangan Kunci",
@@ -1046,7 +1054,22 @@
       "countryLengthHint": "Kode 2 huruf ISO 3166-1 alpha-2",
       "limitReached": "Batas maksimum {{count}} karakter tercapai (RFC 5280).",
       "countryLengthError": "Kode Negara harus berupa kode ISO 3166-1 alpha-2 2 huruf (mis. ID, US, GB).",
-      "countryUnrecognized": "Kode negara tidak dikenal \"{{code}}\". Harus berupa kode ISO 3166-1 alpha-2 yang valid (mis. ID, US, GB)."
+      "countryUnrecognized": "Kode negara tidak dikenal \"{{code}}\". Harus berupa kode ISO 3166-1 alpha-2 yang valid (mis. ID, US, GB).",
+      "tryExamples": "Coba Contoh Pengujian:",
+      "presets": {
+        "webTlsCsr": {
+          "name": "CSR TLS Server Web",
+          "badge": "RSA 2048 · CSR"
+        },
+        "enterpriseWildcardCsr": {
+          "name": "CSR Wildcard Enterprise",
+          "badge": "RSA 4096 · CSR"
+        },
+        "selfSignedDevCert": {
+          "name": "Sertifikat Dev Self-Signed",
+          "badge": "RSA 2048 · Cert"
+        }
+      }
     },
     "formatConverter": {
       "title": "Pengonversi Format Sertifikat & Pembuat PFX",
@@ -1206,7 +1229,9 @@
       },
       "embeddedSct": "Stempel Waktu Sertifikat Tertandatangani Tertanam (SCT)",
       "specialPresetBadge": "Dev",
-      "presetUntrusted": "Tidak Tepercaya"
+      "presetUntrusted": "Tidak Tepercaya",
+      "presetUntrustedRoot": "Root Tidak Tepercaya",
+      "presetWrongHost": "Host Tidak Cocok"
     },
     "educationCenter": {
       "title": "Pusat Pendidikan",
@@ -1472,7 +1497,7 @@
       }
     },
     "footer": {
-      "tagline": "Kriptografi di Browser · Siap untuk Lokal & Web"
+      "tagline": "Kriptografi di Browser · Utamakan Privasi"
     },
     "header": {
       "secureBootTitle": "Inspektur UEFI Secure Boot",

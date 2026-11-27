@@ -1,9 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { AlertTriangle, Archive, FileKey, FileText, Lock, Shield, ShieldCheck } from 'lucide-react'
-import forge from 'node-forge'
 
-import { getSampleCertDerBuffer, PFX_PRESETS } from '@/data/format-converter-samples'
-import { SAMPLE_MATCHING_CERT_PEM, SAMPLE_RSA4096_CERT_PEM } from '@/data/key-matcher-samples'
 import type {
   AppMode,
   ParsedTrustStore,
@@ -12,6 +9,14 @@ import type {
   TrustStoreEntry,
   TrustStoreFormat,
 } from '@/types'
+
+export type { TrustStoreSamplePreset } from './trust-store-samples'
+export {
+  getSampleJksBuffer,
+  getSamplePkcs7Pem,
+  getSamplePkcs12Buffer,
+  TRUST_STORE_SAMPLE_PRESETS,
+} from './trust-store-samples'
 
 export type FormatTone = 'cyan' | 'info' | 'purple' | 'warning' | 'success' | 'danger'
 
@@ -32,17 +37,6 @@ export interface LoadedTrustStoreFile {
   loading?: boolean
   isSample?: boolean
   samplePasswordHint?: string
-}
-
-export interface TrustStoreSamplePreset {
-  id: string
-  nameKey: string
-  defaultName: string
-  badgeKey: string
-  defaultBadge: string
-  fileName: string
-  passwordHint?: string
-  createFile: () => File
 }
 
 export interface LocalizedWarningInfo {
@@ -128,69 +122,6 @@ export function isSameEntry(a: TrustStoreEntry | null, b: TrustStoreEntry | null
   }
   return getEntryKey(a) === getEntryKey(b)
 }
-
-let cachedSampleP12Buffer: ArrayBuffer | null = null
-
-export function getSamplePkcs12Buffer(): ArrayBuffer {
-  if (!cachedSampleP12Buffer) {
-    const preset = PFX_PRESETS[0]
-    const cert = forge.pki.certificateFromPem(preset.certPem)
-    const key = forge.pki.privateKeyFromPem(preset.keyPem)
-    const p12Asn1 = forge.pkcs12.toPkcs12Asn1(key, [cert], preset.defaultPassword, {
-      algorithm: '3des',
-      friendlyName: preset.commonName,
-    })
-    const derStr = forge.asn1.toDer(p12Asn1).getBytes()
-    const bytes = new Uint8Array(derStr.length)
-    for (let i = 0; i < derStr.length; i += 1) {
-      bytes[i] = derStr.charCodeAt(i)
-    }
-    cachedSampleP12Buffer = bytes.buffer
-  }
-  return cachedSampleP12Buffer.slice(0)
-}
-
-export const TRUST_STORE_SAMPLE_PRESETS: readonly TrustStoreSamplePreset[] = [
-  {
-    id: 'sample-pem-bundle',
-    nameKey: 'app.trustStore.format.pemBundle',
-    defaultName: 'PEM Bundle',
-    badgeKey: 'app.trustStore.inspector.pills.pemBundle',
-    defaultBadge: 'PEM Bundles',
-    fileName: 'sample_trust_bundle.pem',
-    createFile: () =>
-      new File(
-        [`${SAMPLE_MATCHING_CERT_PEM}\n${SAMPLE_RSA4096_CERT_PEM}`],
-        'sample_trust_bundle.pem',
-        { type: 'application/x-pem-file' },
-      ),
-  },
-  {
-    id: 'sample-der-cert',
-    nameKey: 'app.trustStore.format.x509Der',
-    defaultName: 'DER Certificate',
-    badgeKey: 'app.formatConverter.badgeDer',
-    defaultBadge: 'DER (Binary)',
-    fileName: 'sample_webserver_cert.der',
-    createFile: () =>
-      new File([getSampleCertDerBuffer()], 'sample_webserver_cert.der', {
-        type: 'application/x-x509-ca-cert',
-      }),
-  },
-  {
-    id: 'sample-encrypted-p12',
-    nameKey: 'app.trustStore.format.pkcs12',
-    defaultName: 'PKCS#12 / PFX',
-    badgeKey: 'app.formatConverter.presetPfxRsa2048',
-    defaultBadge: 'Web Server (RSA 2048)',
-    fileName: 'sample_keystore.p12',
-    passwordHint: PFX_PRESETS[0].defaultPassword,
-    createFile: () =>
-      new File([getSamplePkcs12Buffer()], 'sample_keystore.p12', {
-        type: 'application/x-pkcs12',
-      }),
-  },
-]
 
 const STATIC_WARNINGS: Record<string, [string, string]> = {
   ERR_PRIVATE_KEY_FILE: [

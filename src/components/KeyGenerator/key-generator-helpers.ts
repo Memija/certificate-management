@@ -18,6 +18,70 @@ export interface GeneratedKeyPairBundle {
   outputPem: string
 }
 
+export interface KeyGeneratorPreset {
+  id: 'web-tls-csr' | 'enterprise-wildcard-csr' | 'self-signed-dev-cert'
+  nameKey: string
+  defaultName: string
+  badgeKey: string
+  defaultBadge: string
+  cn: string
+  org: string
+  ou: string
+  locality: string
+  state: string
+  country: string
+  keySize: number
+  outputType: KeyGeneratorOutputType
+}
+
+export const KEY_GENERATOR_PRESETS: readonly KeyGeneratorPreset[] = [
+  {
+    id: 'web-tls-csr',
+    nameKey: 'app.keyGenerator.presets.webTlsCsr.name',
+    defaultName: 'Web Server TLS CSR',
+    badgeKey: 'app.keyGenerator.presets.webTlsCsr.badge',
+    defaultBadge: 'RSA 2048 · CSR',
+    cn: 'api.acme-cloud.io',
+    org: 'Acme Cloud Systems',
+    ou: 'Platform Security',
+    locality: 'Zurich',
+    state: 'Zurich',
+    country: 'CH',
+    keySize: 2048,
+    outputType: 'csr',
+  },
+  {
+    id: 'enterprise-wildcard-csr',
+    nameKey: 'app.keyGenerator.presets.enterpriseWildcardCsr.name',
+    defaultName: 'Enterprise Wildcard CSR',
+    badgeKey: 'app.keyGenerator.presets.enterpriseWildcardCsr.badge',
+    defaultBadge: 'RSA 4096 · CSR',
+    cn: '*.vault.acme-cloud.io',
+    org: 'Acme Cloud Systems',
+    ou: 'Core PKI Operations',
+    locality: 'Frankfurt',
+    state: 'Hesse',
+    country: 'DE',
+    keySize: 4096,
+    outputType: 'csr',
+  },
+  {
+    id: 'self-signed-dev-cert',
+    nameKey: 'app.keyGenerator.presets.selfSignedDevCert.name',
+    defaultName: 'Self-Signed Dev Cert',
+    badgeKey: 'app.keyGenerator.presets.selfSignedDevCert.badge',
+    defaultBadge: 'RSA 2048 · Cert',
+    cn: 'dev-gateway.acme-cloud.internal',
+    org: 'Acme Cloud Systems',
+    ou: 'DevOps Engineering',
+    locality: 'Austin',
+    state: 'Texas',
+    country: 'US',
+    keySize: 2048,
+    outputType: 'self-signed',
+  },
+]
+
 function buildSubjectAttributes(subject: KeyGeneratorSubjectInput): forge.pki.CertificateField[] {
   const attrs: forge.pki.CertificateField[] = []
   const trimmedCn = subject.cn.trim()

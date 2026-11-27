@@ -387,7 +387,9 @@
           "pkcs12": "PKCS#12 / PFX",
           "jks": "Java KeyStore (JKS)",
           "pemBundle": "PEM Bundles",
-          "derPkcs7": "DER & PKCS#7"
+          "derPkcs7": "DER & PKCS#7",
+          "pkcs7Badge": "PKCS#7 (.p7b)",
+          "jksBadge": "JKS (.jks)"
         },
         "parsingFiles": "Parsing file(s)…",
         "loadedFiles": "Loaded Files",
@@ -506,7 +508,9 @@
       "pfxPasswordPrompt": "The file \"{{fileName}}\" is password-protected. Enter the password to extract certificates into the chain validation pool.",
       "unlocking": "Unlocking…",
       "sampleAlreadyLoaded": "This sample chain is already loaded",
-      "pathLenConstraint": "Path Length Constraint"
+      "pathLenConstraint": "Path Length Constraint",
+      "sampleExpired": "Expired Certificate",
+      "sampleBadSig": "Invalid Signature"
     },
     "crl": {
       "eyebrow": "Revocation Status & RFC 5280",
@@ -592,7 +596,9 @@
         "deltaCRLIndicator": "Delta CRL Indicator",
         "issuingDistributionPoint": "Issuing Distribution Point",
         "authorityKeyIdentifier": "Authority Key Identifier"
-      }
+      },
+      "trySampleDerCrl": "Sample DER CRL",
+      "trySampleExpiredCrl": "Expired CRL"
     },
     "ocsp": {
       "eyebrow": "Real-Time Revocation · RFC 6960 & RFC 5280",
@@ -940,7 +946,9 @@
         "placeholderStateWarning": "State contains generic placeholder value (\"{{value}}\").",
         "sanMissingWarning": "TLS Server Authentication is selected, but no Subject Alternative Names (SANs) are defined. Modern browsers and TLS clients (RFC 2818) ignore Common Name and will reject this certificate.",
         "wildcardCnSanWarning": "Common Name is a wildcard ({{cn}}), but it is not listed in SANs. Make sure to add it to SANs for broad client compatibility."
-      }
+      },
+      "trySampleDerCsr": "Multi-SAN DER CSR",
+      "trySampleBadSigCsr": "Invalid Signature CSR"
     },
     "keyMatcher": {
       "title": "Key Pair Modulus Matcher",
@@ -1046,7 +1054,22 @@
       "countryLengthHint": "2-letter ISO 3166-1 alpha-2 code",
       "limitReached": "Maximum limit of {{count}} characters reached (RFC 5280).",
       "countryLengthError": "Country Code must be a 2-letter ISO 3166-1 alpha-2 code (e.g. US, DE, GB).",
-      "countryUnrecognized": "Unknown country code \"{{code}}\". Must be a valid ISO 3166-1 alpha-2 code (e.g. US, DE, GB)."
+      "countryUnrecognized": "Unknown country code \"{{code}}\". Must be a valid ISO 3166-1 alpha-2 code (e.g. US, DE, GB).",
+      "tryExamples": "Try Test Examples:",
+      "presets": {
+        "webTlsCsr": {
+          "name": "Web Server TLS CSR",
+          "badge": "RSA 2048 · CSR"
+        },
+        "enterpriseWildcardCsr": {
+          "name": "Enterprise Wildcard CSR",
+          "badge": "RSA 4096 · CSR"
+        },
+        "selfSignedDevCert": {
+          "name": "Self-Signed Dev Cert",
+          "badge": "RSA 2048 · Cert"
+        }
+      }
     },
     "formatConverter": {
       "title": "Certificate Format Converter & PFX Builder",
@@ -1206,7 +1229,9 @@
       },
       "embeddedSct": "Embedded Signed Certificate Timestamps",
       "specialPresetBadge": "Dev",
-      "presetUntrusted": "Untrusted"
+      "presetUntrusted": "Untrusted",
+      "presetUntrustedRoot": "Untrusted Root",
+      "presetWrongHost": "Wrong Host"
     },
     "educationCenter": {
       "title": "Education Center",
@@ -1472,7 +1497,7 @@
       }
     },
     "footer": {
-      "tagline": "In-Browser Cryptography · Local & Web Ready"
+      "tagline": "In-Browser Cryptography · Privacy-First"
     },
     "header": {
       "secureBootTitle": "UEFI Secure Boot Inspector",

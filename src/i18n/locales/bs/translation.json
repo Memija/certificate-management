@@ -390,7 +390,9 @@
           "pkcs12": "PKCS#12 / PFX",
           "jks": "Java KeyStore (JKS)",
           "pemBundle": "PEM paketi",
-          "derPkcs7": "DER i PKCS#7"
+          "derPkcs7": "DER i PKCS#7",
+          "pkcs7Badge": "PKCS#7 (.p7b)",
+          "jksBadge": "JKS (.jks)"
         },
         "parsingFiles": "Parsiranje fajla(ova)…",
         "loadedFiles": "Učitani fajlovi",
@@ -510,7 +512,9 @@
       "pfxPasswordPrompt": "Datoteka \"{{fileName}}\" je zaštićena lozinkom. Unesite lozinku za izdvajanje certifikata u bazu provjere lanca.",
       "unlocking": "Otključavanje…",
       "sampleAlreadyLoaded": "Ovaj primjer lanca je već učitan",
-      "pathLenConstraint": "Ograničenje dužine putanje"
+      "pathLenConstraint": "Ograničenje dužine putanje",
+      "sampleExpired": "Istekli certifikat",
+      "sampleBadSig": "Nevažeći potpis"
     },
     "crl": {
       "eyebrow": "Status opoziva i RFC 5280",
@@ -596,7 +600,9 @@
         "deltaCRLIndicator": "Indikator Delta CRL-a",
         "issuingDistributionPoint": "Tačka distribucije izdavaoca",
         "authorityKeyIdentifier": "Identifikator ključa autoriteta"
-      }
+      },
+      "trySampleDerCrl": "Primjer DER CRL-a",
+      "trySampleExpiredCrl": "Istekli CRL"
     },
     "ocsp": {
       "eyebrow": "Provjera opoziva u realnom vremenu · RFC 6960 & RFC 5280",
@@ -944,7 +950,9 @@
         "placeholderStateWarning": "Regija/Pokrajina sadrži generičku rezerviranu vrijednost (\"{{value}}\").",
         "sanMissingWarning": "Odabrana je autentifikacija TLS servera, ali nisu definirana alternativna imena subjekta (SAN). Savremeni preglednici i TLS klijenti (RFC 2818) ignoriraju Common Name i odbit će ovaj certifikat.",
         "wildcardCnSanWarning": "Zajedničko ime je džoker domena ({{cn}}), ali se ne nalazi u listi SAN-ova. Obavezno je dodajte u SAN radi kompatibilnosti."
-      }
+      },
+      "trySampleDerCsr": "Multi-SAN DER CSR",
+      "trySampleBadSigCsr": "Nevažeći CSR potpis"
     },
     "keyMatcher": {
       "title": "Upoređivač Modula Parova Ključeva",
@@ -1050,7 +1058,22 @@
       "countryLengthHint": "2-slovni ISO 3166-1 alpha-2 kod",
       "limitReached": "Dosegnuto je maksimalno ograničenje od {{count}} znakova (RFC 5280).",
       "countryLengthError": "Oznaka države mora biti 2-slovni ISO 3166-1 alpha-2 kod (npr. BA, DE, US).",
-      "countryUnrecognized": "Nepoznata oznaka države \"{{code}}\". Mora biti važeći ISO 3166-1 alpha-2 kod (npr. BA, DE, US)."
+      "countryUnrecognized": "Nepoznata oznaka države \"{{code}}\". Mora biti važeći ISO 3166-1 alpha-2 kod (npr. BA, DE, US).",
+      "tryExamples": "Isprobajte primjere:",
+      "presets": {
+        "webTlsCsr": {
+          "name": "Web server TLS CSR",
+          "badge": "RSA 2048 · CSR"
+        },
+        "enterpriseWildcardCsr": {
+          "name": "Enterprise Wildcard CSR",
+          "badge": "RSA 4096 · CSR"
+        },
+        "selfSignedDevCert": {
+          "name": "Samopotpisani Dev certifikat",
+          "badge": "RSA 2048 · Cert"
+        }
+      }
     },
     "formatConverter": {
       "title": "Konverter Formata Certifikata & PFX Kreator",
@@ -1210,7 +1233,9 @@
       },
       "embeddedSct": "Ugrađene vremenske oznake certifikata (SCT)",
       "specialPresetBadge": "Dev",
-      "presetUntrusted": "Nepouzdano"
+      "presetUntrusted": "Nepouzdano",
+      "presetUntrustedRoot": "Nepouzdani korijenski CA",
+      "presetWrongHost": "Pogrešan host"
     },
     "educationCenter": {
       "title": "Edukativni Centar",
@@ -1476,7 +1501,7 @@
       }
     },
     "footer": {
-      "tagline": "Kriptografija u pregledniku · Spremno za lokalni i web rad"
+      "tagline": "Kriptografija u pregledniku · Privatnost na prvom mjestu"
     },
     "header": {
       "secureBootTitle": "Inspektor za UEFI Secure Boot",

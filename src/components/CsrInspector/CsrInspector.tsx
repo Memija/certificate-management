@@ -16,13 +16,14 @@ import {
 import { ModuleHeader, useToast } from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode, ParsedCSR } from '@/types'
-import { parseCSRFile, parseCSRFromText } from '@/utils/csr-parser'
+import { parseCSRFile } from '@/utils/csr-parser'
 
+import type { CsrSampleId } from './csr-presets'
 import {
+  createSampleParsedCsr,
   CSR_ACCEPT_EXTENSIONS,
+  CSR_SAMPLE_PRESETS,
   isAcceptedCsrFile,
-  SAMPLE_CSR_FILENAME,
-  SAMPLE_CSR_PEM,
 } from './csr-presets'
 import { CsrEditorModal } from './CsrEditorModal'
 import { CsrErrorCard, CsrParsedView } from './CsrParsedView'
@@ -64,10 +65,15 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
     return entries[0]!.id
   }, [entries, activeEntryId])
 
-  const hasSample = useMemo(
-    () => entries.some((e) => e.id.startsWith('sample-csr-') || e.name === SAMPLE_CSR_FILENAME),
-    [entries],
-  )
+  const loadedSampleIds = useMemo(() => {
+    const ids = new Set<CsrSampleId>()
+    for (const preset of CSR_SAMPLE_PRESETS) {
+      if (entries.some((e) => e.name === preset.fileName)) {
+        ids.add(preset.id)
+      }
+    }
+    return ids
+  }, [entries])
 
   const handleFiles = useCallback(
     async (files: File[]) => {
@@ -146,33 +152,35 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
     setActiveEntryId(null)
   }
 
-  const loadSampleCsr = useCallback(() => {
-    const existing = entries.find(
-      (e) => e.id.startsWith('sample-csr-') || e.name === SAMPLE_CSR_FILENAME,
-    )
-    if (existing) {
-      setActiveEntryId(existing.id)
-      return
-    }
-    try {
-      const csr = parseCSRFromText(SAMPLE_CSR_PEM)
-      const entry: CSREntry = {
-        id: `sample-csr-${Date.now()}`,
-        name: SAMPLE_CSR_FILENAME,
-        result: { ok: true, csr },
-        loading: false,
+  const loadSampleCsr = useCallback(
+    (sampleId: CsrSampleId = 'standard-pem') => {
+      const preset = CSR_SAMPLE_PRESETS.find((p) => p.id === sampleId) ?? CSR_SAMPLE_PRESETS[0]
+      const existing = entries.find((e) => e.name === preset.fileName)
+      if (existing) {
+        setActiveEntryId(existing.id)
+        return
       }
-      setEntries((prev) => {
-        if (prev.some((e) => e.id.startsWith('sample-csr-') || e.name === SAMPLE_CSR_FILENAME)) {
-          return prev
+      try {
+        const { fileName, csr } = createSampleParsedCsr(sampleId)
+        const entry: CSREntry = {
+          id: `sample-csr-${sampleId}-${Date.now()}`,
+          name: fileName,
+          result: { ok: true, csr },
+          loading: false,
         }
-        return [...prev, entry]
-      })
-      setActiveEntryId(entry.id)
-    } catch (err: unknown) {
-      console.error('Failed to load sample CSR:', err)
-    }
-  }, [entries])
+        setEntries((prev) => {
+          if (prev.some((e) => e.name === fileName)) {
+            return prev
+          }
+          return [...prev, entry]
+        })
+        setActiveEntryId(entry.id)
+      } catch (err: unknown) {
+        console.error('Failed to load sample CSR:', err)
+      }
+    },
+    [entries],
+  )
 
   const getErrorAction = (
     errorCode: string,
@@ -278,20 +286,26 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
             <Upload size={14} aria-hidden="true" />
             <span>{t('app.csr.addCsr', 'Add CSR')}</span>
           </button>
-          <button
-            type="button"
-            onClick={loadSampleCsr}
-            disabled={hasSample}
-            className="btn btn-secondary btn-sm"
-            title={
-              hasSample
-                ? t('app.csr.sampleAlreadyLoaded', 'Sample CSR is already loaded')
-                : undefined
-            }
-          >
-            <Sparkles size={14} className={styles.iconAccent} aria-hidden="true" />
-            <span>{t('app.csr.trySampleCsr', 'Try Sample CSR')}</span>
-          </button>
+          {CSR_SAMPLE_PRESETS.map((preset) => {
+            const isLoaded = loadedSampleIds.has(preset.id)
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => loadSampleCsr(preset.id)}
+                disabled={isLoaded}
+                className="btn btn-secondary btn-sm"
+                title={
+                  isLoaded
+                    ? t('app.csr.sampleAlreadyLoaded', 'Sample CSR is already loaded')
+                    : undefined
+                }
+              >
+                <Sparkles size={14} className={styles.iconAccent} aria-hidden="true" />
+                <span>{t(preset.labelKey, preset.defaultLabel)}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 

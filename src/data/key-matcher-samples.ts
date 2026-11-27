@@ -200,6 +200,15 @@ export const KEY_MATCHER_PRESETS: KeyMatcherSamplePreset[] = [
     expectedMatch: true,
   },
   {
+    id: 'match-rsa4096',
+    name: 'High-Sec 4096-bit',
+    badge: 'RSA 4096',
+    description: 'Matching 4096-bit Certificate and Private Key (vault.internal.sec)',
+    certOrCsr: SAMPLE_RSA4096_CERT_PEM,
+    privateKey: SAMPLE_RSA4096_KEY_PEM,
+    expectedMatch: true,
+  },
+  {
     id: 'match-csr-key',
     name: 'Matching CSR + Key',
     badge: 'RSA 2048 CSR',
@@ -216,14 +225,5 @@ export const KEY_MATCHER_PRESETS: KeyMatcherSamplePreset[] = [
     certOrCsr: SAMPLE_MATCHING_CERT_PEM,
     privateKey: SAMPLE_MISMATCH_KEY_PEM,
     expectedMatch: false,
-  },
-  {
-    id: 'match-rsa4096',
-    name: 'High-Sec 4096-bit',
-    badge: 'RSA 4096',
-    description: 'Matching 4096-bit Certificate and Private Key (vault.internal.sec)',
-    certOrCsr: SAMPLE_RSA4096_CERT_PEM,
-    privateKey: SAMPLE_RSA4096_KEY_PEM,
-    expectedMatch: true,
   },
 ]

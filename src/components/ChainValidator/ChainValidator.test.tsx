@@ -224,6 +224,19 @@ describe('ChainValidator component', () => {
     ).toBeInTheDocument()
     expect(screen.getByText(/Orphaned \/ Incomplete Chains/i)).toBeInTheDocument()
     expect(screen.getByText(/Missing Parent/i)).toBeInTheDocument()
+
+    // 5. expired-chain
+    fireEvent.click(screen.getByRole('button', { name: /Expired Certificate/i }))
+    expect(
+      screen.getAllByRole('button', { name: 'expired.cloudsecurity.io' }).length,
+    ).toBeGreaterThanOrEqual(2)
+
+    // 6. invalid-signature
+    fireEvent.click(screen.getByRole('button', { name: /Invalid Signature/i }))
+    expect(
+      screen.getAllByRole('button', { name: 'tampered.cloudsecurity.io' }).length,
+    ).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText(/Bad Sig/i)).toBeInTheDocument()
   })
 
   it('opens ChainNodeInspectorModal, navigates parent/child links, exports PEM/DER, and closes via Escape/backdrop', () => {

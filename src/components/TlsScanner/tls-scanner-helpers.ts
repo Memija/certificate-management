@@ -59,6 +59,22 @@ export const TLS_QUICK_PRESETS: readonly TlsQuickPreset[] = [
     badgeKey: 'app.tlsScanner.presetUntrusted',
     badgeType: 'danger',
   },
+  {
+    label: 'untrusted-root.badssl.com',
+    host: 'untrusted-root.badssl.com',
+    port: 443,
+    badge: 'Untrusted Root',
+    badgeKey: 'app.tlsScanner.presetUntrustedRoot',
+    badgeType: 'danger',
+  },
+  {
+    label: 'wrong.host.badssl.com',
+    host: 'wrong.host.badssl.com',
+    port: 443,
+    badge: 'Wrong Host',
+    badgeKey: 'app.tlsScanner.presetWrongHost',
+    badgeType: 'danger',
+  },
 ]
 
 const DN_META: Record<string, readonly [string, string]> = {

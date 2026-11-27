@@ -4,8 +4,12 @@ import { parseCrlFile } from '@/utils/crl-parser'
 
 import type { CrlErrorInfo } from './crl-helpers'
 import { buildCrlErrorInfo } from './crl-helpers'
-import type { LoadedCRL } from './crl-sample-generator'
-import { createSampleLoadedCrl, SAMPLE_CRL_FILENAME } from './crl-sample-generator'
+import type { CrlSampleId, LoadedCRL } from './crl-sample-generator'
+import {
+  createSampleLoadedCrl,
+  CRL_SAMPLE_PRESETS,
+  SAMPLE_CRL_FILENAME,
+} from './crl-sample-generator'
 
 export function useCrlFiles() {
   const [loadedCrls, setLoadedCrls] = useState<LoadedCRL[]>([])
@@ -19,10 +23,19 @@ export function useCrlFiles() {
     return loadedCrls.find((c) => c.id === activeCrlId) ?? loadedCrls[0]
   }, [loadedCrls, activeCrlId])
 
-  const hasSample = useMemo(
-    () => loadedCrls.some((c) => c.isSample || c.name === SAMPLE_CRL_FILENAME),
-    [loadedCrls],
-  )
+  const loadedSampleIds = useMemo(() => {
+    const ids = new Set<CrlSampleId>()
+    for (const item of loadedCrls) {
+      if (item.sampleId) {
+        ids.add(item.sampleId)
+      } else if (item.isSample || item.name === SAMPLE_CRL_FILENAME) {
+        ids.add('active-pem')
+      }
+    }
+    return ids
+  }, [loadedCrls])
+
+  const hasSample = loadedSampleIds.has('active-pem')
 
   const processFiles = useCallback(
     async (files: File[] | FileList): Promise<void> => {
@@ -70,27 +83,31 @@ export function useCrlFiles() {
     [loadedCrls],
   )
 
-  const loadSampleCrl = useCallback((): void => {
-    const existing = loadedCrls.find((c) => c.isSample || c.name === SAMPLE_CRL_FILENAME)
-    if (existing) {
-      setActiveCrlId(existing.id)
-      return
-    }
-    try {
-      const item = createSampleLoadedCrl()
-      setLoadedCrls((prev) => {
-        if (prev.some((c) => c.isSample || c.name === SAMPLE_CRL_FILENAME)) {
-          return prev
-        }
-        return [...prev, item]
-      })
-      setActiveCrlId(item.id)
-      setErrorInfo(null)
-    } catch (err: unknown) {
-      console.error('Failed to load sample CRL:', err)
-      setErrorInfo(buildCrlErrorInfo(SAMPLE_CRL_FILENAME, err))
-    }
-  }, [loadedCrls])
+  const loadSampleCrl = useCallback(
+    (sampleId: CrlSampleId = 'active-pem'): void => {
+      const preset = CRL_SAMPLE_PRESETS.find((p) => p.id === sampleId) ?? CRL_SAMPLE_PRESETS[0]
+      const existing = loadedCrls.find((c) => c.sampleId === sampleId || c.name === preset.fileName)
+      if (existing) {
+        setActiveCrlId(existing.id)
+        return
+      }
+      try {
+        const item = createSampleLoadedCrl(sampleId)
+        setLoadedCrls((prev) => {
+          if (prev.some((c) => c.sampleId === sampleId || c.name === preset.fileName)) {
+            return prev
+          }
+          return [...prev, item]
+        })
+        setActiveCrlId(item.id)
+        setErrorInfo(null)
+      } catch (err: unknown) {
+        console.error('Failed to load sample CRL:', err)
+        setErrorInfo(buildCrlErrorInfo(preset.fileName, err))
+      }
+    },
+    [loadedCrls],
+  )
 
   const removeCrl = useCallback(
     (id: string): void => {
@@ -146,6 +163,7 @@ export function useCrlFiles() {
     loadedCrls,
     activeItem,
     hasSample,
+    loadedSampleIds,
     errorInfo,
     setErrorInfo,
     setActiveCrlId,

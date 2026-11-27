@@ -228,6 +228,30 @@ describe('TrustStoreInspector', () => {
     expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
   })
 
+  it('loads PKCS#7 Chain and Java KeyStore sample presets and unlocks the sample JKS private key', async () => {
+    render(<TrustStoreInspector />)
+
+    fireEvent.click(screen.getByRole('button', { name: /PKCS#7 Chain/i }))
+    await waitFor(() => {
+      expect(screen.getAllByText('sample_cert_chain.p7b').length).toBeGreaterThanOrEqual(2)
+    })
+    expect(screen.getByText(/2 certs/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Java KeyStore/i }))
+    await waitFor(() => {
+      expect(screen.getAllByText('sample_keystore.jks').length).toBeGreaterThanOrEqual(2)
+    })
+    expect(screen.getByText('changeit')).toBeInTheDocument()
+
+    const pwdInput = screen.getByLabelText(/Enter keystore password/i)
+    expect(pwdInput).toHaveValue('changeit')
+    fireEvent.click(screen.getByRole('button', { name: /^Unlock$/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Unlock Private Keys/i)).not.toBeInTheDocument()
+    })
+  })
+
   it('prompts for PKCS#12 password, validates empty/wrong password, unlocks, and exports private key', async () => {
     render(<TrustStoreInspector />)
 
@@ -235,6 +259,7 @@ describe('TrustStoreInspector', () => {
 
     const passwordInput = await screen.findByPlaceholderText(/Enter keystore password/i)
     expect(screen.getByText('export123')).toBeInTheDocument()
+    expect(passwordInput).toHaveValue('export123')
 
     // Toggle password visibility
     const showPwdBtn = screen.getByRole('button', { name: /Show password/i })
@@ -243,7 +268,8 @@ describe('TrustStoreInspector', () => {
     fireEvent.click(screen.getByRole('button', { name: /Hide password/i }))
     expect(passwordInput).toHaveAttribute('type', 'password')
 
-    // Blur empty shows required error
+    // Clearing and blurring empty shows required error
+    fireEvent.change(passwordInput, { target: { value: '' } })
     fireEvent.blur(passwordInput)
     expect(screen.getByText(/This PKCS#12 file requires a password/i)).toBeInTheDocument()
 
@@ -304,6 +330,7 @@ describe('TrustStoreInspector', () => {
     expect(screen.getByText(/JKS MAC verification skipped/i)).toBeInTheDocument()
 
     const pwdInput = screen.getByPlaceholderText(/Enter keystore password/i)
+    expect(pwdInput).toHaveValue('')
     fireEvent.change(pwdInput, { target: { value: 'bad-jks-pwd' } })
     fireEvent.click(screen.getByRole('button', { name: 'Unlock' }))
     expect(screen.getByText(/Incorrect password/i)).toBeInTheDocument()

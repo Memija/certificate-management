@@ -1,0 +1,67 @@
+.presetsBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 1.4rem;
+  padding: 0.72rem 1rem;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border-subtle);
+}
+
+.presetsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.iconAccent {
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.presetsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.presetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.36rem 0.72rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.presetBtn:hover,
+.presetBtnActive {
+  border-color: var(--accent-color);
+  background: var(--card-bg);
+}
+
+.presetBadge {
+  font-family: var(--font-mono);
+  font-size: 0.71rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 9999px;
+  background: var(--cat-keymanagement-bg);
+  color: var(--purple-color);
+  border: 1px solid var(--cat-keymanagement-border);
+}

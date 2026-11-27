@@ -255,6 +255,9 @@ export const TrustStoreFileCard = memo(function TrustStoreFileCard({
             <Lock size={16} className={styles.iconWarning} aria-hidden="true" />
             <span>{t('app.trustStore.inspector.unlockJksTitle', 'Unlock Private Keys')}</span>
           </p>
+          {Boolean(loadedFile.isSample && loadedFile.samplePasswordHint) && (
+            <div className={styles.passwordHint}>{loadedFile.samplePasswordHint}</div>
+          )}
           <div className={styles.passwordInputRow}>
             <div className={styles.passwordFieldWrap}>
               <input

@@ -402,7 +402,9 @@
           "pkcs12": "PKCS#12 / PFX",
           "jks": "Java KeyStore (JKS)",
           "pemBundle": "Pakiety PEM",
-          "derPkcs7": "DER i PKCS#7"
+          "derPkcs7": "DER i PKCS#7",
+          "pkcs7Badge": "PKCS#7 (.p7b)",
+          "jksBadge": "JKS (.jks)"
         },
         "incorrectPassword": "Nieprawidłowe hasło.",
         "pkcs12RequiresPassword": "Ten plik PKCS#12 wymaga hasła.",
@@ -514,7 +516,9 @@
       "pfxPasswordPrompt": "Plik \"{{fileName}}\" jest chroniony hasłem. Wprowadź hasło, aby wyodrębnić certyfikaty do puli walidacji łańcucha.",
       "unlocking": "Odblokowywanie…",
       "sampleAlreadyLoaded": "Ten przykładowy łańcuch jest już załadowany",
-      "pathLenConstraint": "Ograniczenie długości ścieżki"
+      "pathLenConstraint": "Ograniczenie długości ścieżki",
+      "sampleExpired": "Wygasły certyfikat",
+      "sampleBadSig": "Nieprawidłowy podpis"
     },
     "crl": {
       "eyebrow": "Status odwołania i RFC 5280",
@@ -600,7 +604,9 @@
         "deltaCRLIndicator": "Wskaźnik Delta CRL",
         "issuingDistributionPoint": "Punkt Dystrybucji Wystawcy",
         "authorityKeyIdentifier": "Identyfikator Klucza Urzędu"
-      }
+      },
+      "trySampleDerCrl": "Przykładowy DER CRL",
+      "trySampleExpiredCrl": "Wygasły CRL"
     },
     "ocsp": {
       "eyebrow": "Weryfikacja odwołania w czasie rzeczywistym · RFC 6960 & RFC 5280",
@@ -948,7 +954,9 @@
         "placeholderStateWarning": "Województwo zawiera ogólną wartość zastępczą (\"{{value}}\").",
         "sanMissingWarning": "Wybrano uwierzytelnianie serwera TLS, ale nie zdefiniowano alternatywnych nazw podmiotu (SAN). Nowoczesne przeglądarki i klienci TLS (RFC 2818) ignorują nazwę Common Name i odrzucą ten certyfikat.",
         "wildcardCnSanWarning": "Nazwa powszechna jest domeną z symbolem wieloznacznym ({{cn}}), ale nie znajduje się na liście SAN. Dodaj ją do SAN w celu zachowania zgodności z klientami."
-      }
+      },
+      "trySampleDerCsr": "Multi-SAN DER CSR",
+      "trySampleBadSigCsr": "Nieprawidłowy podpis CSR"
     },
     "keyMatcher": {
       "title": "Dopasowywanie Modułów Par Kluczy",
@@ -1054,7 +1062,22 @@
       "countryLengthHint": "2-literowy kod ISO 3166-1 alpha-2",
       "limitReached": "Osiągnięto maksymalny limit {{count}} znaków (RFC 5280).",
       "countryLengthError": "Kod kraju musi być 2-literowym kodem ISO 3166-1 alpha-2 (np. PL, DE, US).",
-      "countryUnrecognized": "Nieznany kod kraju \"{{code}}\". Musi to być prawidłowy kod ISO 3166-1 alpha-2 (np. PL, DE, US)."
+      "countryUnrecognized": "Nieznany kod kraju \"{{code}}\". Musi to być prawidłowy kod ISO 3166-1 alpha-2 (np. PL, DE, US).",
+      "tryExamples": "Wypróbuj przykłady:",
+      "presets": {
+        "webTlsCsr": {
+          "name": "CSR TLS serwera WWW",
+          "badge": "RSA 2048 · CSR"
+        },
+        "enterpriseWildcardCsr": {
+          "name": "Enterprise Wildcard CSR",
+          "badge": "RSA 4096 · CSR"
+        },
+        "selfSignedDevCert": {
+          "name": "Samopodpisany certyfikat Dev",
+          "badge": "RSA 2048 · Cert"
+        }
+      }
     },
     "formatConverter": {
       "title": "Konwerter Formatów Certyfikatów & Kreator PFX",
@@ -1214,7 +1237,9 @@
       },
       "embeddedSct": "Wbudowane podpisane znaczniki czasu certyfikatów (SCT)",
       "specialPresetBadge": "Dev",
-      "presetUntrusted": "Niezaufany"
+      "presetUntrusted": "Niezaufany",
+      "presetUntrustedRoot": "Niezaufany główny CA",
+      "presetWrongHost": "Błędna nazwa hosta"
     },
     "educationCenter": {
       "title": "Centrum Edukacji",
@@ -1480,7 +1505,7 @@
       }
     },
     "footer": {
-      "tagline": "Kryptografia w przeglądarce · Gotowe do pracy lokalnej i w sieci Web"
+      "tagline": "Kryptografia w przeglądarce · Prywatność przede wszystkim"
     },
     "header": {
       "secureBootTitle": "Inspektor UEFI Secure Boot",

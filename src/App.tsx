@@ -237,7 +237,7 @@ export function App() {
             </ErrorBoundary>
           </main>
 
-          <AppFooter />
+          <AppFooter mode={mode} />
         </div>
       </div>
     </ToastProvider>

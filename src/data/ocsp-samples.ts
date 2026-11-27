@@ -146,21 +146,6 @@ kQzEtbWTeB2mYx+QYm/MrwgoDPzPl8WKvoTgfSoY7H2l2Wg+ulqiL8gE
 
 export const OCSP_SAMPLE_PRESETS: OcspSamplePreset[] = [
   {
-    id: 'revoked-badssl',
-    name: 'Revoked Certificate (BadSSL)',
-    badge: 'Revoked',
-    badgeType: 'danger',
-    expectedStatus: 'revoked',
-    category: 'Live Revocation Test',
-    description:
-      "Live test certificate issued to revoked.badssl.com by Let's Encrypt. The issuing CA has revoked this certificate and published it in its active Certificate Revocation List (CRL).",
-    subject: 'CN=revoked.badssl.com',
-    issuer: "CN=YE2, O=Let's Encrypt, C=US",
-    ocspUrl: null,
-    crlUrl: 'http://ye2.c.lencr.org/74.crl',
-    certificatePem: SAMPLE_REVOKED_BADSSL_PEM,
-  },
-  {
     id: 'valid-digicert',
     name: 'DigiCert EV RSA (OCSP & CRL)',
     badge: 'Valid (OCSP & CRL)',
@@ -204,6 +189,21 @@ export const OCSP_SAMPLE_PRESETS: OcspSamplePreset[] = [
     ocspUrl: null,
     crlUrl: 'http://ye2.c.lencr.org/74.crl',
     certificatePem: SAMPLE_VALID_LETSENCRYPT_PEM,
+  },
+  {
+    id: 'revoked-badssl',
+    name: 'Revoked Certificate (BadSSL)',
+    badge: 'Revoked',
+    badgeType: 'danger',
+    expectedStatus: 'revoked',
+    category: 'Live Revocation Test',
+    description:
+      "Live test certificate issued to revoked.badssl.com by Let's Encrypt. The issuing CA has revoked this certificate and published it in its active Certificate Revocation List (CRL).",
+    subject: 'CN=revoked.badssl.com',
+    issuer: "CN=YE2, O=Let's Encrypt, C=US",
+    ocspUrl: null,
+    crlUrl: 'http://ye2.c.lencr.org/74.crl',
+    certificatePem: SAMPLE_REVOKED_BADSSL_PEM,
   },
   {
     id: 'offline-selfsigned',

@@ -62,7 +62,12 @@ function buildChainUncached(preset: ChainPreset): ParsedCertificate[] {
 
   const rootPem = forge.pki.certificateToPem(rootCert)
 
-  if (preset === '3-tier-web' || preset === 'broken-intermediate') {
+  if (
+    preset === '3-tier-web' ||
+    preset === 'broken-intermediate' ||
+    preset === 'expired-chain' ||
+    preset === 'invalid-signature'
+  ) {
     const interKeys = getPooledKeyPair(1)
     const interCert = forge.pki.createCertificate()
     interCert.publicKey = interKeys.publicKey
@@ -91,11 +96,21 @@ function buildChainUncached(preset: ChainPreset): ParsedCertificate[] {
     const leafCert = forge.pki.createCertificate()
     leafCert.publicKey = leafKeys.publicKey
     leafCert.serialNumber = '03' + forge.util.bytesToHex(forge.random.getBytesSync(8))
-    leafCert.validity.notBefore = new Date(now.getTime() - 10 * 24 * 3600 * 1000)
-    leafCert.validity.notAfter = new Date(now.getTime() + 355 * 24 * 3600 * 1000)
+    const isExpiredPreset = preset === 'expired-chain'
+    leafCert.validity.notBefore = new Date(
+      now.getTime() - (isExpiredPreset ? 400 : 10) * 24 * 3600 * 1000,
+    )
+    leafCert.validity.notAfter = new Date(
+      now.getTime() + (isExpiredPreset ? -30 : 355) * 24 * 3600 * 1000,
+    )
 
+    const leafCn = isExpiredPreset
+      ? 'expired.cloudsecurity.io'
+      : preset === 'invalid-signature'
+        ? 'tampered.cloudsecurity.io'
+        : '*.cloudsecurity.io'
     const leafAttrs = [
-      { name: 'commonName', value: '*.cloudsecurity.io' },
+      { name: 'commonName', value: leafCn },
       { name: 'organizationName', value: 'Cloud Security Systems Corp' },
       { name: 'countryName', value: 'US' },
     ]
@@ -107,15 +122,21 @@ function buildChainUncached(preset: ChainPreset): ParsedCertificate[] {
       { name: 'extKeyUsage', serverAuth: true, clientAuth: true },
       {
         name: 'subjectAltName',
-        altNames: [
-          { type: 2, value: 'cloudsecurity.io' },
-          { type: 2, value: '*.cloudsecurity.io' },
-          { type: 2, value: 'api.cloudsecurity.io' },
-        ],
+        altNames: isExpiredPreset
+          ? [{ type: 2, value: 'expired.cloudsecurity.io' }]
+          : preset === 'invalid-signature'
+            ? [{ type: 2, value: 'tampered.cloudsecurity.io' }]
+            : [
+                { type: 2, value: 'cloudsecurity.io' },
+                { type: 2, value: '*.cloudsecurity.io' },
+                { type: 2, value: 'api.cloudsecurity.io' },
+              ],
       },
       { name: 'subjectKeyIdentifier' },
     ])
-    leafCert.sign(interKeys.privateKey, forge.md.sha256.create())
+    const signingKey =
+      preset === 'invalid-signature' ? getPooledKeyPair(4).privateKey : interKeys.privateKey
+    leafCert.sign(signingKey, forge.md.sha256.create())
     const leafPem = forge.pki.certificateToPem(leafCert)
 
     if (preset === 'broken-intermediate') {

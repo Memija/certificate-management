@@ -98,20 +98,20 @@ export function TrustStoreInspector({ onNavigate }: TrustStoreInspectorProps = {
             <span>{t('app.trustStore.inspector.pills.inMemory', 'In-Memory Parsing')}</span>
           </span>
           <span className={styles.capabilityPill}>
-            <Lock size={12} className={styles.iconWarning} aria-hidden="true" />
-            <span>{t('app.trustStore.inspector.pills.pkcs12', 'PKCS#12 / PFX')}</span>
-          </span>
-          <span className={styles.capabilityPill}>
-            <FileKey size={12} className={styles.iconSuccess} aria-hidden="true" />
-            <span>{t('app.trustStore.inspector.pills.jks', 'Java KeyStore (JKS)')}</span>
-          </span>
-          <span className={styles.capabilityPill}>
             <Archive size={12} className={styles.iconPurple} aria-hidden="true" />
             <span>{t('app.trustStore.inspector.pills.pemBundle', 'PEM Bundles')}</span>
           </span>
           <span className={styles.capabilityPill}>
             <Shield size={12} className={styles.iconInfo} aria-hidden="true" />
             <span>{t('app.trustStore.inspector.pills.derPkcs7', 'DER & PKCS#7')}</span>
+          </span>
+          <span className={styles.capabilityPill}>
+            <Lock size={12} className={styles.iconWarning} aria-hidden="true" />
+            <span>{t('app.trustStore.inspector.pills.pkcs12', 'PKCS#12 / PFX')}</span>
+          </span>
+          <span className={styles.capabilityPill}>
+            <FileKey size={12} className={styles.iconSuccess} aria-hidden="true" />
+            <span>{t('app.trustStore.inspector.pills.jks', 'Java KeyStore (JKS)')}</span>
           </span>
         </ModuleHeader>
 

@@ -214,7 +214,12 @@ export interface ParsedCRL {
 }
 
 export type ChainPreset =
-  '3-tier-web' | '4-tier-enterprise' | 'multi-leaf-branch' | 'broken-intermediate'
+  | '3-tier-web'
+  | '4-tier-enterprise'
+  | 'multi-leaf-branch'
+  | 'broken-intermediate'
+  | 'expired-chain'
+  | 'invalid-signature'
 
 export interface CertChainNode {
   id: string

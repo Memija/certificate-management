@@ -21,6 +21,7 @@ import { useAppStore } from '@/store'
 import type { AppMode } from '@/types'
 
 import { formatLocalizedCrlError, getIssuerCN } from './crl-helpers'
+import { CRL_SAMPLE_PRESETS } from './crl-sample-generator'
 import { CrlOverviewPanel } from './CrlOverviewPanel'
 import { CrlRevokedTable } from './CrlRevokedTable'
 import { useCrlFiles } from './useCrlFiles'
@@ -39,7 +40,7 @@ export function CrlInspector({ onNavigate }: CrlInspectorProps = {}) {
   const {
     loadedCrls,
     activeItem,
-    hasSample,
+    loadedSampleIds,
     errorInfo,
     setErrorInfo,
     setActiveCrlId,
@@ -127,12 +128,12 @@ export function CrlInspector({ onNavigate }: CrlInspectorProps = {}) {
             <span>{t('app.crl.pills.pemDer', 'PEM & DER Decoders')}</span>
           </span>
           <span className={styles.capabilityPill}>
-            <Search size={12} className={styles.iconWarning} aria-hidden="true" />
-            <span>{t('app.crl.pills.serialLookup', 'Revoked Serial Lookup')}</span>
-          </span>
-          <span className={styles.capabilityPill}>
             <Calendar size={12} className={styles.iconPurple} aria-hidden="true" />
             <span>{t('app.crl.pills.updateWindow', 'Update Window Audit')}</span>
+          </span>
+          <span className={styles.capabilityPill}>
+            <Search size={12} className={styles.iconWarning} aria-hidden="true" />
+            <span>{t('app.crl.pills.serialLookup', 'Revoked Serial Lookup')}</span>
           </span>
         </ModuleHeader>
 
@@ -232,20 +233,26 @@ export function CrlInspector({ onNavigate }: CrlInspectorProps = {}) {
           </button>
 
           <div className={styles.dropSampleRow}>
-            <button
-              type="button"
-              onClick={loadSampleCrl}
-              disabled={hasSample}
-              className="btn btn-secondary btn-sm"
-              title={
-                hasSample
-                  ? t('app.crl.sampleAlreadyLoaded', 'Sample CRL is already loaded')
-                  : undefined
-              }
-            >
-              <Sparkles size={14} className={styles.iconAccent} aria-hidden="true" />
-              <span>{t('app.crl.trySampleCrl', 'Try Sample CRL')}</span>
-            </button>
+            {CRL_SAMPLE_PRESETS.map((preset) => {
+              const isLoaded = loadedSampleIds.has(preset.id)
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => loadSampleCrl(preset.id)}
+                  disabled={isLoaded}
+                  className="btn btn-secondary btn-sm"
+                  title={
+                    isLoaded
+                      ? t('app.crl.sampleAlreadyLoaded', 'Sample CRL is already loaded')
+                      : undefined
+                  }
+                >
+                  <Sparkles size={14} className={styles.iconAccent} aria-hidden="true" />
+                  <span>{t(preset.labelKey, preset.defaultLabel)}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
 

@@ -387,7 +387,9 @@
           "pkcs12": "PKCS#12 / PFX",
           "jks": "Java KeyStore (JKS)",
           "pemBundle": "PEM-Bündel",
-          "derPkcs7": "DER & PKCS#7"
+          "derPkcs7": "DER & PKCS#7",
+          "pkcs7Badge": "PKCS#7 (.p7b)",
+          "jksBadge": "JKS (.jks)"
         },
         "parsingFiles": "Datei(en) analysieren…",
         "loadedFiles": "Geladene Dateien",
@@ -506,7 +508,9 @@
       "pfxPasswordPrompt": "Die Datei „{{fileName}}“ ist passwortgeschützt. Geben Sie das Passwort ein, um Zertifikate in den Kettenvalidierungs-Pool zu extrahieren.",
       "unlocking": "Wird entsperrt…",
       "sampleAlreadyLoaded": "Diese Beispielkette ist bereits geladen",
-      "pathLenConstraint": "Pfadlängenbeschränkung"
+      "pathLenConstraint": "Pfadlängenbeschränkung",
+      "sampleExpired": "Abgelaufenes Zertifikat",
+      "sampleBadSig": "Ungültige Signatur"
     },
     "crl": {
       "eyebrow": "Sperrstatus & RFC 5280",
@@ -592,7 +596,9 @@
         "deltaCRLIndicator": "Delta-CRL-Indikator",
         "issuingDistributionPoint": "Ausgabeverteilungspunkt",
         "authorityKeyIdentifier": "Autoritätsschlüsselkennung"
-      }
+      },
+      "trySampleDerCrl": "DER-CRL-Beispiel",
+      "trySampleExpiredCrl": "Abgelaufene CRL"
     },
     "ocsp": {
       "eyebrow": "Echtzeit-Sperrprüfung · RFC 6960 & RFC 5280",
@@ -940,7 +946,9 @@
         "placeholderStateWarning": "Bundesland enthält einen generischen Platzhalterwert (\"{{value}}\").",
         "sanMissingWarning": "TLS-Serverauthentifizierung ist ausgewählt, aber es sind keine Subject Alternative Names (SANs) definiert. Moderne Browser und TLS-Clients (RFC 2818) ignorieren den Common Name und weisen dieses Zertifikat ab.",
         "wildcardCnSanWarning": "Common Name ist eine Wildcard ({{cn}}), ist jedoch nicht in den SANs aufgeführt. Fügen Sie diesen bitte zur SAN-Liste hinzu."
-      }
+      },
+      "trySampleDerCsr": "Multi-SAN-DER-CSR",
+      "trySampleBadSigCsr": "Ungültige CSR-Signatur"
     },
     "keyMatcher": {
       "title": "Schlüsselpaar-Modulus-Zuordner",
@@ -1046,7 +1054,22 @@
       "countryLengthHint": "2-stelliger ISO 3166-1 Alpha-2-Code",
       "limitReached": "Maximale Zeichenbegrenzung von {{count}} Zeichen erreicht (RFC 5280).",
       "countryLengthError": "Ländercode muss ein 2-stelliger ISO 3166-1 Alpha-2-Code sein (z. B. DE, AT, CH).",
-      "countryUnrecognized": "Unbekannter Ländercode \"{{code}}\". Muss ein gültiger ISO 3166-1 Alpha-2-Code sein (z. B. DE, AT, CH)."
+      "countryUnrecognized": "Unbekannter Ländercode \"{{code}}\". Muss ein gültiger ISO 3166-1 Alpha-2-Code sein (z. B. DE, AT, CH).",
+      "tryExamples": "Testbeispiele ausprobieren:",
+      "presets": {
+        "webTlsCsr": {
+          "name": "Webserver-TLS-CSR",
+          "badge": "RSA 2048 · CSR"
+        },
+        "enterpriseWildcardCsr": {
+          "name": "Enterprise-Wildcard-CSR",
+          "badge": "RSA 4096 · CSR"
+        },
+        "selfSignedDevCert": {
+          "name": "Selbstsigniertes Dev-Zertifikat",
+          "badge": "RSA 2048 · Cert"
+        }
+      }
     },
     "formatConverter": {
       "title": "Zertifikatsformat-Konverter & PFX-Builder",
@@ -1206,7 +1229,9 @@
       },
       "embeddedSct": "Eingebettete signierte Zertifikats-Zeitstempel (SCT)",
       "specialPresetBadge": "Dev",
-      "presetUntrusted": "Nicht vertrauenswürdig"
+      "presetUntrusted": "Nicht vertrauenswürdig",
+      "presetUntrustedRoot": "Nicht vertrauenswürdige Stamm-CA",
+      "presetWrongHost": "Falscher Hostname"
     },
     "educationCenter": {
       "title": "Bildungszentrum",
@@ -1472,7 +1497,7 @@
       }
     },
     "footer": {
-      "tagline": "Browser-Kryptografie · Lokal- & Web-bereit"
+      "tagline": "Browser-Kryptografie · Datenschutzorientiert"
     },
     "header": {
       "secureBootTitle": "UEFI Secure Boot-Inspektor",

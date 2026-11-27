@@ -77,6 +77,23 @@ describe('CsrInspector', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2)
   })
 
+  it('loads Multi-SAN DER CSR and Invalid Signature CSR sample presets', async () => {
+    render(<CsrInspector />)
+
+    const derBtn = screen.getByRole('button', { name: /Multi-SAN DER CSR/i })
+    fireEvent.click(derBtn)
+    expect(await screen.findByText('Cloud Edge Security Ltd')).toBeInTheDocument()
+    expect(derBtn).toBeDisabled()
+    expect(screen.getByText('Self-Signature Valid')).toBeInTheDocument()
+    expect(screen.getByText(/Requested Extensions/i)).toBeInTheDocument()
+
+    const badSigBtn = screen.getByRole('button', { name: /Invalid Signature CSR/i })
+    fireEvent.click(badSigBtn)
+    expect(await screen.findByText('Security Audit Lab')).toBeInTheDocument()
+    expect(badSigBtn).toBeDisabled()
+    expect(screen.getByText('Self-Signature Invalid')).toBeInTheDocument()
+  })
+
   it('uploads CSR files with extensions, supports drag-and-drop, deduplicates, switches tabs, collapses, and clears all', async () => {
     render(<CsrInspector />)
 

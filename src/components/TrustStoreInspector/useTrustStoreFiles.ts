@@ -77,13 +77,20 @@ export function useTrustStoreFiles() {
             if (result.needsPassword) {
               result.warnings = result.warnings.filter((w) => w !== 'Incorrect password.')
             }
+            const requiresPassword =
+              Boolean(result.needsPassword) ||
+              result.entries.some((entry) =>
+                Boolean(entry.isEncryptedJksKey && !entry.privateKeyPem),
+              )
+            const initialPasswordInput =
+              meta?.isSample && requiresPassword ? (meta.samplePasswordHint ?? '') : ''
             newEntries.push({
               id,
               name: file.name,
               store: result,
               needsPassword: result.needsPassword,
               pendingFile: result.needsPassword ? file : undefined,
-              passwordInput: '',
+              passwordInput: initialPasswordInput,
               isSample: meta?.isSample,
               samplePasswordHint: meta?.samplePasswordHint,
             })

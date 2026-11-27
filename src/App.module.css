@@ -39,7 +39,7 @@
   max-width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 1.75rem 2rem 2.25rem;
+  padding: 1.75rem 2rem 4.5rem;
   box-sizing: border-box;
   scrollbar-width: thin;
 }
@@ -50,7 +50,7 @@
     [data-mode='chain-validator']
   )
   .mainContentArea {
-  padding: 0;
+  padding: 0 0 2.75rem;
 }
 
 .loadingFallback {

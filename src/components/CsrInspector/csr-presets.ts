@@ -1,13 +1,148 @@
-import type { SimpleTranslateFn, TranslateFn } from '@/types'
-import { SAMPLE_CSR_PEM } from '@/utils/csr-parser'
+import forge from 'node-forge'
+
+import { SAMPLE_MATCHING_KEY_PEM } from '@/data/key-matcher-samples'
+import type { ParsedCSR, SimpleTranslateFn, TranslateFn } from '@/types'
+import { parseCSRFromBytes, parseCSRFromText, SAMPLE_CSR_PEM } from '@/utils/csr-parser'
 
 export { SAMPLE_CSR_PEM }
 
 export const SAMPLE_CSR_FILENAME = 'sample_request.csr'
+export const SAMPLE_DER_CSR_FILENAME = 'sample_multisan_request.der'
+export const SAMPLE_BAD_SIG_CSR_FILENAME = 'sample_invalid_sig.csr'
+
+export type CsrSampleId = 'standard-pem' | 'multisan-der' | 'invalid-sig'
+
+export interface CsrSamplePreset {
+  id: CsrSampleId
+  fileName: string
+  labelKey: string
+  defaultLabel: string
+}
+
+export const CSR_SAMPLE_PRESETS: readonly CsrSamplePreset[] = [
+  {
+    id: 'standard-pem',
+    fileName: SAMPLE_CSR_FILENAME,
+    labelKey: 'app.csr.trySampleCsr',
+    defaultLabel: 'Try Sample CSR',
+  },
+  {
+    id: 'multisan-der',
+    fileName: SAMPLE_DER_CSR_FILENAME,
+    labelKey: 'app.csr.trySampleDerCsr',
+    defaultLabel: 'Multi-SAN DER CSR',
+  },
+  {
+    id: 'invalid-sig',
+    fileName: SAMPLE_BAD_SIG_CSR_FILENAME,
+    labelKey: 'app.csr.trySampleBadSigCsr',
+    defaultLabel: 'Invalid Signature CSR',
+  },
+]
 
 export const CSR_ACCEPT_EXTENSIONS = '.csr,.req,.pem,.der,.cer,.txt'
 
 const ACCEPTED_CSR_FILE_PATTERN = /\.(csr|req|pem|der|cer|txt)$/i
+
+let cachedMultiSanDerBytes: Uint8Array | null = null
+let cachedInvalidSigPem: string | null = null
+
+function buildMultiSanDerBytes(): Uint8Array {
+  if (!cachedMultiSanDerBytes) {
+    const privateKey = forge.pki.privateKeyFromPem(SAMPLE_MATCHING_KEY_PEM)
+    const publicKey = forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
+    const csr = forge.pki.createCertificationRequest()
+    csr.publicKey = publicKey
+    csr.setSubject([
+      { name: 'commonName', value: '*.cloud-edge.io' },
+      { name: 'organizationName', value: 'Cloud Edge Security Ltd' },
+      { name: 'organizationalUnitName', value: 'Platform PKI' },
+      { name: 'localityName', value: 'Zurich' },
+      { name: 'stateOrProvinceName', value: 'Zurich' },
+      { name: 'countryName', value: 'CH' },
+    ])
+    csr.setAttributes([
+      {
+        name: 'extensionRequest',
+        extensions: [
+          {
+            name: 'keyUsage',
+            digitalSignature: true,
+            keyEncipherment: true,
+            critical: true,
+          },
+          {
+            name: 'extKeyUsage',
+            serverAuth: true,
+            clientAuth: true,
+          },
+          {
+            name: 'subjectAltName',
+            altNames: [
+              { type: 2, value: 'cloud-edge.io' },
+              { type: 2, value: '*.cloud-edge.io' },
+              { type: 2, value: 'api.cloud-edge.io' },
+              { type: 7, ip: '10.42.0.10' },
+            ],
+          },
+        ],
+      },
+    ])
+    csr.sign(privateKey, forge.md.sha256.create())
+    const derStr = forge.asn1.toDer(forge.pki.certificationRequestToAsn1(csr)).getBytes()
+    cachedMultiSanDerBytes = Uint8Array.from(derStr, (ch) => ch.charCodeAt(0))
+  }
+  return cachedMultiSanDerBytes
+}
+
+function buildInvalidSigCsrPem(): string {
+  if (!cachedInvalidSigPem) {
+    const privateKey = forge.pki.privateKeyFromPem(SAMPLE_MATCHING_KEY_PEM)
+    const publicKey = forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
+    const csr = forge.pki.createCertificationRequest()
+    csr.publicKey = publicKey
+    csr.setSubject([
+      { name: 'commonName', value: 'tampered-request.internal' },
+      { name: 'organizationName', value: 'Security Audit Lab' },
+      { name: 'countryName', value: 'US' },
+    ])
+    csr.sign(privateKey, forge.md.sha256.create())
+    const asn1 = forge.pki.certificationRequestToAsn1(csr)
+    const children = asn1.value as forge.asn1.Asn1[]
+    const sigBitString = children[2]
+    if (sigBitString && typeof sigBitString.value === 'string' && sigBitString.value.length > 4) {
+      const idx = sigBitString.value.length - 1
+      const flipped = String.fromCharCode(sigBitString.value.charCodeAt(idx) ^ 0xff)
+      sigBitString.value = sigBitString.value.slice(0, idx) + flipped
+    }
+    const derStr = forge.asn1.toDer(asn1).getBytes()
+    const b64 = forge.util.encode64(derStr, 64)
+    cachedInvalidSigPem = `-----BEGIN CERTIFICATE REQUEST-----\n${b64}\n-----END CERTIFICATE REQUEST-----`
+  }
+  return cachedInvalidSigPem
+}
+
+export function createSampleParsedCsr(sampleId: CsrSampleId = 'standard-pem'): {
+  fileName: string
+  csr: ParsedCSR
+} {
+  if (sampleId === 'multisan-der') {
+    return {
+      fileName: SAMPLE_DER_CSR_FILENAME,
+      csr: parseCSRFromBytes(buildMultiSanDerBytes()),
+    }
+  }
+  if (sampleId === 'invalid-sig') {
+    return {
+      fileName: SAMPLE_BAD_SIG_CSR_FILENAME,
+      csr: parseCSRFromText(buildInvalidSigCsrPem()),
+    }
+  }
+  return {
+    fileName: SAMPLE_CSR_FILENAME,
+    csr: parseCSRFromText(SAMPLE_CSR_PEM),
+  }
+}
 
 function invokeTranslate(
   t: TranslateFn,

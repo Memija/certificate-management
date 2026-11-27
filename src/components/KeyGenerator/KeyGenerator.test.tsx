@@ -184,4 +184,26 @@ describe('KeyGenerator', () => {
 
     spy.mockRestore()
   })
+
+  it('populates valid RFC 5280 subject fields, key size, and output type from sample presets', () => {
+    render(<KeyGenerator />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Web Server TLS CSR/i }))
+    expect(screen.getByLabelText(/Common Name \(CN\)/i)).toHaveValue('api.acme-cloud.io')
+    expect(screen.getByLabelText(/Key Size/i)).toHaveValue('2048')
+    expect(screen.getByLabelText(/Output Type/i)).toHaveValue('csr')
+    expect(screen.getByRole('button', { name: /Generate Key Pair & CSR/i })).toBeEnabled()
+
+    fireEvent.click(screen.getByRole('button', { name: /Enterprise Wildcard CSR/i }))
+    expect(screen.getByLabelText(/Common Name \(CN\)/i)).toHaveValue('*.vault.acme-cloud.io')
+    expect(screen.getByLabelText(/Key Size/i)).toHaveValue('4096')
+    expect(screen.getByLabelText(/Output Type/i)).toHaveValue('csr')
+
+    fireEvent.click(screen.getByRole('button', { name: /Self-Signed Dev Cert/i }))
+    expect(screen.getByLabelText(/Common Name \(CN\)/i)).toHaveValue(
+      'dev-gateway.acme-cloud.internal',
+    )
+    expect(screen.getByLabelText(/Output Type/i)).toHaveValue('self-signed')
+    expect(screen.getByRole('button', { name: /Generate Key Pair & Cert/i })).toBeEnabled()
+  })
 })

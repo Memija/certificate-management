@@ -13,8 +13,13 @@ import {
   validateCsr,
 } from '@/utils/csr-validation'
 
-import { generateKeyPairAndOutput, type KeyGeneratorOutputType } from './key-generator-helpers'
+import {
+  generateKeyPairAndOutput,
+  type KeyGeneratorOutputType,
+  type KeyGeneratorPreset,
+} from './key-generator-helpers'
 import { KeyGeneratorOutputPanel } from './KeyGeneratorOutputPanel'
+import { KeyGeneratorPresetsBar } from './KeyGeneratorPresetsBar'
 
 import styles from './KeyGenerator.module.css'
 
@@ -100,16 +105,31 @@ export function KeyGenerator({ onNavigate }: KeyGeneratorProps = {}) {
   const [country, setCountry] = useState('')
   const [keySize, setKeySize] = useState(2048)
   const [outputType, setOutputType] = useState<KeyGeneratorOutputType>('csr')
+  const [activePreset, setActivePreset] = useState<KeyGeneratorPreset['id'] | null>(null)
 
   const [generating, setGenerating] = useState(false)
   const [generatedKey, setGeneratedKey] = useState('')
   const [generatedOutput, setGeneratedOutput] = useState('')
   const [error, setError] = useState('')
 
+  const handleSelectPreset = (preset: KeyGeneratorPreset): void => {
+    setActivePreset(preset.id)
+    setCn(preset.cn)
+    setOrg(preset.org)
+    setOu(preset.ou)
+    setLocality(preset.locality)
+    setState(preset.state)
+    setCountry(preset.country)
+    setKeySize(preset.keySize)
+    setOutputType(preset.outputType)
+    setError('')
+  }
+
   const clearErrorAndSet =
     (setter: (val: string) => void) =>
     (nextVal: string): void => {
       setter(nextVal)
+      setActivePreset(null)
       if (error) {
         setError('')
       }
@@ -240,6 +260,8 @@ export function KeyGenerator({ onNavigate }: KeyGeneratorProps = {}) {
           'Generate a new RSA Key Pair and a Certificate Signing Request (CSR) or Self-Signed Certificate entirely in your browser using pure cryptography.',
         )}
       />
+
+      <KeyGeneratorPresetsBar activePresetId={activePreset} onSelectPreset={handleSelectPreset} />
 
       <div className={styles.mainGrid}>
         <div className="glass-panel">

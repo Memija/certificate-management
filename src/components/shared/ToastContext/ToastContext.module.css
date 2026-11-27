@@ -1,7 +1,7 @@
 .container {
   position: fixed;
-  bottom: 1.75rem;
-  right: 1.75rem;
+  bottom: 4.5rem;
+  right: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
