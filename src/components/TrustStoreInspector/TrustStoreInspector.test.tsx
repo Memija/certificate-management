@@ -178,6 +178,9 @@ describe('TrustStoreInspector', () => {
         screen.getByRole('heading', { level: 2, name: /Loaded Files \(1\)/i }),
       ).toBeInTheDocument()
     })
+    expect(pemBundleBtn).toBeEnabled()
+    expect(pemBundleBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getAllByText('Sample').length).toBeGreaterThanOrEqual(2)
 
     expect(
       screen.getByRole('heading', { level: 3, name: 'matcher.example.com' }),

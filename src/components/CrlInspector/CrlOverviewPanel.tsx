@@ -133,9 +133,9 @@ export const CrlOverviewPanel = memo(function CrlOverviewPanel({
             <div className={styles.fileTitleRow}>
               <span className={styles.fileNameText}>{fileName}</span>
               {Boolean(isSample) && (
-                <span className="badge badge-warning">
+                <span className="badge badge-info">
                   <Sparkles size={11} aria-hidden="true" />
-                  <span>{t('app.crl.sampleBadge', 'Sample CRL')}</span>
+                  <span>{t('common.sample', 'Sample')}</span>
                 </span>
               )}
             </div>

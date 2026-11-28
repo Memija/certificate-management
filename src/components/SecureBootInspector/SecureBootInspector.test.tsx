@@ -254,7 +254,7 @@ describe('SecureBootInspector', () => {
 
   it('evaluates boot health warnings and helper edge cases accurately', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const now = new Date('2026-11-17T12:00:00Z')
+    const now = new Date()
     const translate = (key: string) => key
 
     // All expired MS certs -> critical warnings
@@ -279,7 +279,7 @@ describe('SecureBootInspector', () => {
     const soonList = createSignatureList([
       createMockCert({
         subject: 'CN=Linux Vendor Shim CA',
-        validTo: '2026-11-28T00:00:00Z',
+        validTo: new Date(now.getTime() + 10 * 86_400_000).toISOString(),
       }),
     ])
     const warnResult = assessBootHealth([soonList], translate, now)

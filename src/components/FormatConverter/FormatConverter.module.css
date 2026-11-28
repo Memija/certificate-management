@@ -43,30 +43,6 @@
   border-color: #4338ca;
   box-shadow: 0 4px 14px var(--cat-keymanagement-glow);
 }
-.presetsPanel {
-  padding: 0.85rem 1.25rem;
-  margin-bottom: 1.5rem;
-  background: var(--card-bg);
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-.presetsHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font: 600 0.82rem var(--font-sans);
-  color: var(--text-secondary);
-  margin-right: 0.25rem;
-  flex-shrink: 0;
-}
-.presetsTitle {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-.sparkleIcon,
 .iconAccent {
   color: var(--accent-color);
   flex-shrink: 0;
@@ -74,74 +50,6 @@
 .iconBinary {
   color: var(--warning-color);
   flex-shrink: 0;
-}
-.presetsList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  flex: 1;
-  align-items: center;
-}
-.presetPill {
-  padding: 0.38rem 0.95rem;
-  font: 500 0.8rem var(--font-sans);
-  border-radius: 9999px;
-  background: var(--bg-surface);
-  border: 1px solid var(--glass-border-subtle);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.presetPill:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border-color: var(--info-border);
-  transform: translateY(-1px);
-}
-.presetPillActive {
-  background: var(--info-bg);
-  border-color: var(--info-color);
-  color: var(--text-primary);
-  font-weight: 600;
-}
-.presetName {
-  white-space: nowrap;
-  font-size: 0.8rem;
-}
-.presetBadge {
-  padding: 0.12rem 0.52rem;
-  font-size: 0.68rem;
-}
-.clearBtn {
-  padding: 0.38rem 0.85rem;
-  font: 500 0.8rem var(--font-sans);
-  border-radius: 9999px;
-  background: var(--danger-bg);
-  border: 1px dashed var(--danger-border);
-  color: var(--danger-color);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-.clearBtn:hover {
-  border-style: solid;
-  border-color: var(--danger-color);
-}
-.clearBtnMobile {
-  display: none;
-}
-.clearBtnDesktop {
-  display: inline-flex;
-  margin-left: auto;
 }
 .pemDerPanel {
   max-width: 720px;
@@ -387,38 +295,6 @@
   background: var(--success-bg);
   border-color: var(--success-border);
   color: var(--success-color);
-}
-@media (max-width: 768px) {
-  .presetsPanel {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0.85rem 0.9rem;
-  }
-  .presetsHeader {
-    justify-content: space-between;
-    width: 100%;
-    margin-right: 0;
-  }
-  .clearBtnMobile {
-    display: inline-flex;
-  }
-  .clearBtnDesktop {
-    display: none;
-  }
-  .presetsList {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-  }
-  .presetPill {
-    justify-content: space-between;
-    width: 100%;
-    white-space: normal;
-  }
-  .presetName {
-    white-space: normal;
-    text-align: left;
-  }
 }
 @media (max-width: 580px) {
   .converterGrid {

@@ -1,0 +1,216 @@
+.presetsBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.75rem;
+  padding: 0.8rem 1.15rem;
+  margin-bottom: 1.5rem;
+  background: var(--card-bg);
+}
+
+.presetsHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font: 600 0.82rem var(--font-sans);
+  color: var(--text-secondary);
+  margin-right: 0.2rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.sparkleIcon {
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.presetsList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+}
+
+.presetPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.36rem 0.88rem;
+  border-radius: 9999px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font: 500 0.8rem var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.presetPill:hover {
+  background: var(--bg-surface);
+  border-color: var(--info-border);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.presetPillLoaded {
+  border-color: var(--info-border);
+  color: var(--text-primary);
+}
+
+.presetPillActive {
+  background: var(--info-bg);
+  border-color: var(--info-color);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.presetPillActive:hover {
+  background: var(--info-bg);
+  border-color: var(--info-color);
+  color: var(--text-primary);
+}
+
+.activeCheckIcon {
+  color: var(--info-color);
+  flex-shrink: 0;
+}
+
+.loadedCheckIcon {
+  color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.presetLabel {
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.presetBadge {
+  font: 600 0.68rem var(--font-sans);
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  line-height: 1.25;
+}
+
+.badgeInfo {
+  background: var(--info-bg);
+  color: var(--info-color);
+  border-color: var(--info-border);
+}
+
+.badgeSuccess {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border-color: var(--success-border);
+}
+
+.badgeWarning {
+  background: var(--warning-bg);
+  color: var(--warning-color);
+  border-color: var(--warning-border);
+}
+
+.badgeDanger {
+  background: var(--danger-bg);
+  color: var(--danger-color);
+  border-color: var(--danger-border);
+}
+
+.badgePurple {
+  background: var(--cat-keymanagement-bg);
+  color: var(--purple-color);
+  border-color: var(--cat-keymanagement-border);
+}
+
+.presetSpecial {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.34rem 0.85rem 0.34rem 0.72rem;
+  border-radius: 9999px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-color);
+  font: 600 0.8rem var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.presetSpecial:hover,
+.presetSpecialActive {
+  transform: translateY(-1px);
+  border-color: var(--success-color);
+  color: var(--text-primary);
+}
+
+.presetSpecialActive {
+  box-shadow: 0 0 0 1.5px var(--success-border);
+}
+
+.specialIcon,
+.specialSparkle {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.specialIcon {
+  color: var(--success-color);
+}
+
+.specialSparkle {
+  color: var(--info-color);
+}
+
+.clearBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.36rem 0.85rem;
+  border-radius: 9999px;
+  background: var(--danger-bg);
+  border: 1px dashed var(--danger-border);
+  color: var(--danger-color);
+  font: 600 0.78rem var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.clearBtn:hover {
+  border-style: solid;
+  border-color: var(--danger-color);
+}
+
+@media (max-width: 768px) {
+  .presetsBar {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .presetPill,
+  .presetSpecial {
+    white-space: normal;
+  }
+
+  .presetLabel {
+    white-space: normal;
+    text-align: left;
+  }
+}

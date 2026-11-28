@@ -1,9 +1,9 @@
 import type React from 'react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Globe, Home, RefreshCw, Search, Sparkles, Trash2, XCircle } from 'lucide-react'
+import { Globe, RefreshCw, Search, Trash2, XCircle } from 'lucide-react'
 
-import { ModuleHeader } from '@/components/shared'
+import { ModuleHeader, type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 import { CT_LOG_PRESETS } from '@/data/ct-log-samples'
 import type { AppMode, CtEntry, CtLogPreset, CtLogProvider } from '@/types'
 import { fetchLocalApiJson } from '@/utils/api-client'
@@ -13,7 +13,6 @@ import {
   type CtFilterStatus,
   type CtProviderInfo,
   deduplicateAndSortCtEntries,
-  getPresetBadgeClass,
   isWebFallbackError,
 } from './ct-log-helpers'
 import { CtLogResultsTable } from './CtLogResultsTable'
@@ -168,6 +167,34 @@ export function CtLogSearch(_props: CtLogSearchProps = {}) {
   const queryTitle = t('app.ctLog.queryTitle', 'Domain / Subdomain Query')
   const hasDomainOrResults = Boolean(domain || results)
 
+  const presetItems: SamplePresetItem[] = CT_LOG_PRESETS.map((preset) => {
+    const isActive =
+      activePresetId === preset.id || domain.toLowerCase() === preset.domain.toLowerCase()
+    const presetName = preset.isSpecial
+      ? preset.domain
+      : t(`app.ctLog.presets.${preset.id}.name`, preset.domain)
+    const presetBadge = preset.isSpecial
+      ? undefined
+      : t(`app.ctLog.presets.${preset.id}.badge`, preset.domain)
+    const presetDesc = t(
+      `app.ctLog.presets.${preset.id}.desc`,
+      `Search CT logs for ${preset.domain}`,
+    )
+
+    return {
+      id: preset.id,
+      buttonId: `ct-preset-${preset.domain.replace(/[^a-zA-Z0-9]/g, '-')}`,
+      label: presetName,
+      badge: presetBadge,
+      badgeTone: preset.badgeType ?? 'info',
+      title: presetDesc,
+      isActive,
+      isSpecial: preset.isSpecial,
+      isMonoLabel: Boolean(preset.isSpecial),
+      onSelect: () => handleSelectPreset(preset),
+    }
+  })
+
   return (
     <div className={styles.wrapper}>
       <ModuleHeader
@@ -186,93 +213,13 @@ export function CtLogSearch(_props: CtLogSearchProps = {}) {
         </span>
       </ModuleHeader>
 
-      <div className={`glass-panel animate-fade-in ${styles.presetsPanel}`}>
-        <div className={styles.presetsHeader}>
-          <div className={styles.presetsTitle}>
-            <Sparkles size={15} className={styles.accentIcon} aria-hidden="true" />
-            <span>{t('app.ctLog.tryExamples', 'Try Quick Examples:')}</span>
-          </div>
-
-          {hasDomainOrResults && (
-            <button
-              type="button"
-              className={`${styles.clearBtn} ${styles.clearBtnMobile}`}
-              onClick={handleClear}
-              title={clearLabel}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-              <span>{clearLabel}</span>
-            </button>
-          )}
-        </div>
-
-        <div className={styles.presetsList}>
-          {CT_LOG_PRESETS.map((preset) => {
-            const isActive =
-              activePresetId === preset.id || domain.toLowerCase() === preset.domain.toLowerCase()
-            const presetName = t(`app.ctLog.presets.${preset.id}.name`, preset.domain)
-            const presetBadge = t(`app.ctLog.presets.${preset.id}.badge`, preset.domain)
-            const presetDesc = t(
-              `app.ctLog.presets.${preset.id}.desc`,
-              `Search CT logs for ${preset.domain}`,
-            )
-            const buttonId = `ct-preset-${preset.domain.replace(/[^a-zA-Z0-9]/g, '-')}`
-
-            if (preset.isSpecial) {
-              return (
-                <button
-                  key={preset.id}
-                  id={buttonId}
-                  type="button"
-                  className={`${styles.presetSpecial} ${
-                    isActive ? styles.presetSpecialActive : ''
-                  }`}
-                  onClick={() => handleSelectPreset(preset)}
-                  title={presetDesc}
-                >
-                  <span className={styles.presetSpecialIcon}>
-                    <Home size={13} aria-hidden="true" />
-                  </span>
-                  <span className="mono">{preset.domain}</span>
-                  <span className={styles.presetSpecialSparkle}>
-                    <Sparkles size={11} aria-hidden="true" />
-                  </span>
-                </button>
-              )
-            }
-
-            return (
-              <button
-                key={preset.id}
-                id={buttonId}
-                type="button"
-                className={`${styles.presetPill} ${isActive ? styles.presetPillActive : ''}`}
-                onClick={() => handleSelectPreset(preset)}
-                title={presetDesc}
-              >
-                <span className={styles.presetName}>{presetName}</span>
-                <span
-                  className={`badge ${getPresetBadgeClass(preset.badgeType)} ${styles.presetBadge}`}
-                >
-                  {presetBadge}
-                </span>
-              </button>
-            )
-          })}
-
-          {hasDomainOrResults && (
-            <button
-              type="button"
-              className={`${styles.clearBtn} ${styles.clearBtnDesktop}`}
-              onClick={handleClear}
-              title={clearLabel}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-              <span>{clearLabel}</span>
-            </button>
-          )}
-        </div>
-      </div>
+      <SamplePresetsBar
+        items={presetItems}
+        showClear={hasDomainOrResults}
+        clearLabel={clearLabel}
+        clearTitle={clearLabel}
+        onClear={handleClear}
+      />
 
       <div className={`glass-panel ${styles.queryPanel}`}>
         <h2 className={styles.queryTitle}>

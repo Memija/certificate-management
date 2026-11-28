@@ -3,17 +3,20 @@ import { useTranslation } from 'react-i18next'
 import {
   AlertTriangle,
   Globe,
-  Home,
   Layers,
   Lock,
   RefreshCw,
   Server,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
 } from 'lucide-react'
 
-import { ModuleHeader, useToast } from '@/components/shared'
+import {
+  ModuleHeader,
+  type SamplePresetItem,
+  SamplePresetsBar,
+  useToast,
+} from '@/components/shared'
 import type { TlsScanResult } from '@/types'
 import { fetchLocalApiJson, WebApiUnavailableError } from '@/utils/api-client'
 
@@ -152,6 +155,28 @@ export function TlsScanner() {
 
   const authErrorInfo = scanResult ? formatAuthError(scanResult.authorizationError, t) : null
 
+  const presetItems: SamplePresetItem[] = TLS_QUICK_PRESETS.map((preset) => ({
+    id: preset.host,
+    buttonId: `tls-preset-${preset.host.replace(/[^a-zA-Z0-9]/g, '-')}`,
+    label: preset.label,
+    isMonoLabel: true,
+    isSpecial: preset.isSpecial,
+    badge:
+      preset.badge && preset.badgeType
+        ? preset.badgeKey
+          ? t(preset.badgeKey, preset.badge)
+          : preset.badge
+        : undefined,
+    badgeTone: preset.badgeType,
+    title: `${preset.host}:${preset.port}`,
+    isActive: host === preset.host,
+    onSelect: () => {
+      setHost(preset.host)
+      setPort(preset.port)
+      void scan(preset.host, preset.port)
+    },
+  }))
+
   return (
     <div className={styles.container}>
       <ModuleHeader
@@ -165,6 +190,8 @@ export function TlsScanner() {
           'Connect to any remote TLS/SSL endpoint to inspect its active certificate chain, cipher suite, protocol negotiation, and trust validation.',
         )}
       />
+
+      <SamplePresetsBar items={presetItems} />
 
       <div className={`glass-panel ${styles.searchPanel}`}>
         <form
@@ -225,62 +252,6 @@ export function TlsScanner() {
             </span>
           </button>
         </form>
-
-        <div className={styles.presetsRow}>
-          <span className={styles.presetsLabel}>
-            {t('app.tlsScanner.quickPresets', 'Quick Presets:')}
-          </span>
-          {TLS_QUICK_PRESETS.map((preset) => {
-            const isActive = host === preset.host
-            const presetId = `tls-preset-${preset.host.replace(/[^a-zA-Z0-9]/g, '-')}`
-            if (preset.isSpecial) {
-              return (
-                <button
-                  key={preset.host}
-                  id={presetId}
-                  type="button"
-                  className={`${styles.presetSpecial} ${isActive ? styles.presetSpecialActive : ''}`}
-                  onClick={() => {
-                    setHost(preset.host)
-                    setPort(preset.port)
-                    void scan(preset.host, preset.port)
-                  }}
-                  title={`${preset.host}:${preset.port}`}
-                >
-                  <span className={styles.presetSpecialIcon} aria-hidden="true">
-                    <Home size={13} />
-                  </span>
-                  <span className="mono">{preset.label}</span>
-                  <span className={styles.presetSpecialSparkle} aria-hidden="true">
-                    <Sparkles size={11} />
-                  </span>
-                </button>
-              )
-            }
-
-            return (
-              <button
-                key={preset.host}
-                id={presetId}
-                type="button"
-                className={`${styles.presetPill} ${isActive ? styles.presetPillActive : ''}`}
-                onClick={() => {
-                  setHost(preset.host)
-                  setPort(preset.port)
-                  void scan(preset.host, preset.port)
-                }}
-                title={`${preset.host}:${preset.port}`}
-              >
-                <span className="mono">{preset.label}</span>
-                {preset.badge && preset.badgeType && (
-                  <span className={`${styles.presetBadge} ${styles[`badge_${preset.badgeType}`]}`}>
-                    {preset.badgeKey ? t(preset.badgeKey, preset.badge) : preset.badge}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
       </div>
 
       {Boolean(error) && (

@@ -417,7 +417,10 @@ export function KeyGenerator({ onNavigate }: KeyGeneratorProps = {}) {
                 <select
                   id="keygen-key-size"
                   value={keySize}
-                  onChange={(e) => setKeySize(Number(e.target.value))}
+                  onChange={(e) => {
+                    setKeySize(Number(e.target.value))
+                    setActivePreset(null)
+                  }}
                   className="form-select"
                 >
                   <option value={2048}>
@@ -436,9 +439,10 @@ export function KeyGenerator({ onNavigate }: KeyGeneratorProps = {}) {
                 <select
                   id="keygen-output-type"
                   value={outputType}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setOutputType(e.target.value === 'self-signed' ? 'self-signed' : 'csr')
-                  }
+                    setActivePreset(null)
+                  }}
                   className="form-select"
                 >
                   <option value="csr">

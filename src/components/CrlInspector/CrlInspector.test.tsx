@@ -107,7 +107,9 @@ describe('CrlInspector', () => {
         screen.getByRole('heading', { level: 2, name: /Loaded Files \(1\)/i }),
       ).toBeInTheDocument()
     })
-    expect(sampleBtn).toBeDisabled()
+    expect(sampleBtn).toBeEnabled()
+    expect(sampleBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getAllByText('Sample').length).toBeGreaterThanOrEqual(2)
 
     expect(
       screen.getByRole('heading', { level: 3, name: /CRL Overview & Issuer/i }),
@@ -372,7 +374,7 @@ describe('CrlInspector', () => {
     expect(formatLocalizedCrlError(pemNoCrl, mockT)).toContain('BEGIN X509 CRL')
   })
 
-  it('loads Sample DER CRL and Expired CRL presets with distinct tabs and Expired status badge', async () => {
+  it('loads Sample DER CRL and Expired CRL presets with distinct tabs, focus switching, and Expired status badge', async () => {
     render(<CrlInspector />)
 
     const derBtn = screen.getByRole('button', { name: /Sample DER CRL/i })
@@ -380,7 +382,8 @@ describe('CrlInspector', () => {
     await waitFor(() => {
       expect(screen.getAllByText(/Contoso Binary DER Issuing CA/).length).toBeGreaterThanOrEqual(2)
     })
-    expect(derBtn).toBeDisabled()
+    expect(derBtn).toBeEnabled()
+    expect(derBtn).toHaveAttribute('aria-pressed', 'true')
 
     const expiredBtn = screen.getByRole('button', { name: /Expired CRL/i })
     fireEvent.click(expiredBtn)
@@ -389,7 +392,16 @@ describe('CrlInspector', () => {
         2,
       )
     })
-    expect(expiredBtn).toBeDisabled()
+    expect(expiredBtn).toBeEnabled()
+    expect(expiredBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(derBtn).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getAllByText('Expired CRL').length).toBeGreaterThanOrEqual(2)
+
+    // Clicking already-loaded DER preset focuses its tab without duplicating
+    fireEvent.click(derBtn)
+    expect(derBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Loaded Files \(2\)/i }),
+    ).toBeInTheDocument()
   })
 })

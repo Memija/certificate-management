@@ -36,6 +36,7 @@ export interface LoadedTrustStoreFile {
   passwordInput?: string
   loading?: boolean
   isSample?: boolean
+  sampleId?: string
   samplePasswordHint?: string
 }
 

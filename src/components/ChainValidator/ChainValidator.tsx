@@ -1,19 +1,9 @@
 import type React from 'react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  AlertTriangle,
-  GitFork,
-  List,
-  Shield,
-  ShieldCheck,
-  Sparkles,
-  Trash2,
-  Upload,
-  X,
-} from 'lucide-react'
+import { AlertTriangle, GitFork, List, Shield, ShieldCheck, Trash2, Upload, X } from 'lucide-react'
 
-import { ModuleHeader } from '@/components/shared'
+import { ModuleHeader, type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode, ChainPreset } from '@/types'
 
@@ -126,6 +116,17 @@ export function ChainValidator({ onNavigate }: ChainValidatorProps = {}) {
 
   const dismissErrorLabel = t('app.educationCenter.modal.close', 'Close')
 
+  const presetItems = useMemo<SamplePresetItem[]>(
+    () =>
+      SAMPLE_PRESETS.map((preset) => ({
+        id: preset.id,
+        label: t(preset.labelKey, preset.defaultLabel),
+        isActive: activePreset === preset.id && certs.length > 0,
+        onSelect: () => loadSample(preset.id, preset.toastLabel),
+      })),
+    [activePreset, certs.length, loadSample, t],
+  )
+
   return (
     <div
       className={styles.container}
@@ -225,31 +226,7 @@ export function ChainValidator({ onNavigate }: ChainValidatorProps = {}) {
           </div>
         </ModuleHeader>
 
-        <div className={styles.presetsBar}>
-          <span className={styles.presetsLabel}>
-            <Sparkles size={14} className={styles.iconCyan} aria-hidden="true" />
-            <span>{t('app.chain.trySamples', 'Try Sample Chains:')}</span>
-          </span>
-          {SAMPLE_PRESETS.map((preset) => {
-            const isLoaded = activePreset === preset.id && certs.length > 0
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                className={`${styles.presetPill} ${isLoaded ? styles.presetPillActive : ''}`}
-                onClick={() => loadSample(preset.id, preset.toastLabel)}
-                disabled={isLoaded}
-                title={
-                  isLoaded
-                    ? t('app.chain.sampleAlreadyLoaded', 'This sample chain is already loaded')
-                    : undefined
-                }
-              >
-                {t(preset.labelKey, preset.defaultLabel)}
-              </button>
-            )
-          })}
-        </div>
+        <SamplePresetsBar items={presetItems} />
 
         <input
           ref={fileInputRef}

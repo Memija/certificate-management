@@ -1,19 +1,14 @@
 import type React from 'react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import {
-  Edit3,
-  FileKey,
-  Key,
-  Lock,
-  RefreshCw,
-  ShieldCheck,
-  Sparkles,
-  Upload,
-  X,
-} from 'lucide-react'
+import { Edit3, FileKey, Key, Lock, RefreshCw, ShieldCheck, Upload, X } from 'lucide-react'
 
-import { ModuleHeader, useToast } from '@/components/shared'
+import {
+  ModuleHeader,
+  type SamplePresetItem,
+  SamplePresetsBar,
+  useToast,
+} from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode, ParsedCSR } from '@/types'
 import { parseCSRFile } from '@/utils/csr-parser'
@@ -39,6 +34,8 @@ interface CSREntry {
   name: string
   result: { ok: true; csr: ParsedCSR; privateKeyPem?: string } | { ok: false; error: string }
   loading: boolean
+  isSample?: boolean
+  sampleId?: CsrSampleId
 }
 
 export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
@@ -167,6 +164,8 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
           name: fileName,
           result: { ok: true, csr },
           loading: false,
+          isSample: true,
+          sampleId,
         }
         setEntries((prev) => {
           if (prev.some((e) => e.name === fileName)) {
@@ -214,6 +213,27 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
   const removeLabel = t('common.remove', 'Remove')
   const activeEntry = entries.find((e) => e.id === resolvedActiveId)
 
+  const presetItems = useMemo<SamplePresetItem[]>(
+    () =>
+      CSR_SAMPLE_PRESETS.map((preset) => {
+        const isLoaded = loadedSampleIds.has(preset.id)
+        const isActive = Boolean(
+          activeEntry?.isSample &&
+          (activeEntry.sampleId === preset.id || activeEntry.name === preset.fileName),
+        )
+        return {
+          id: preset.id,
+          label: t(preset.labelKey, preset.defaultLabel),
+          badge: preset.badge,
+          badgeTone: preset.badgeTone,
+          isActive,
+          isLoaded,
+          onSelect: () => loadSampleCsr(preset.id),
+        }
+      }),
+    [activeEntry, loadSampleCsr, loadedSampleIds, t],
+  )
+
   return (
     <div className={styles.container}>
       <ModuleHeader
@@ -243,6 +263,8 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
           </span>
         </div>
       </ModuleHeader>
+
+      <SamplePresetsBar items={presetItems} />
 
       <div
         className={`drop-zone ${styles.dropZone} ${dragging ? styles.dropZoneDragging : ''}`}
@@ -286,26 +308,6 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
             <Upload size={14} aria-hidden="true" />
             <span>{t('app.csr.addCsr', 'Add CSR')}</span>
           </button>
-          {CSR_SAMPLE_PRESETS.map((preset) => {
-            const isLoaded = loadedSampleIds.has(preset.id)
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() => loadSampleCsr(preset.id)}
-                disabled={isLoaded}
-                className="btn btn-secondary btn-sm"
-                title={
-                  isLoaded
-                    ? t('app.csr.sampleAlreadyLoaded', 'Sample CSR is already loaded')
-                    : undefined
-                }
-              >
-                <Sparkles size={14} className={styles.iconAccent} aria-hidden="true" />
-                <span>{t(preset.labelKey, preset.defaultLabel)}</span>
-              </button>
-            )
-          })}
         </div>
       </div>
 
@@ -385,6 +387,9 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
                       </span>
                     )}
                   </button>
+                  {Boolean(entry.isSample) && (
+                    <span className={styles.sampleTabTag}>{t('common.sample', 'Sample')}</span>
+                  )}
                   <button
                     type="button"
                     className={styles.tabRemoveBtn}
@@ -415,6 +420,7 @@ export function CsrInspector({ onNavigate }: CsrInspectorProps = {}) {
                 key={activeEntry.id}
                 csr={activeEntry.result.csr}
                 fileName={activeEntry.name}
+                isSample={activeEntry.isSample}
                 privateKeyPem={activeEntry.result.privateKeyPem}
                 onRemove={() => removeEntry(activeEntry.id)}
                 onEdit={() =>

@@ -53,7 +53,9 @@ describe('CsrInspector', () => {
     fireEvent.click(sampleBtn)
 
     expect(await screen.findByText(/Loaded Files/i)).toBeInTheDocument()
-    expect(sampleBtn).toBeDisabled()
+    expect(sampleBtn).toBeEnabled()
+    expect(sampleBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getAllByText('Sample').length).toBeGreaterThanOrEqual(2)
     expect(screen.getByText('Self-Signature Valid')).toBeInTheDocument()
     expect(screen.getAllByText('example.com').length).toBeGreaterThan(0)
     expect(screen.getByText('Acme Corp')).toBeInTheDocument()
@@ -77,21 +79,32 @@ describe('CsrInspector', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2)
   })
 
-  it('loads Multi-SAN DER CSR and Invalid Signature CSR sample presets', async () => {
+  it('loads Multi-SAN DER CSR and Invalid Signature CSR sample presets and focuses loaded tabs on re-click', async () => {
     render(<CsrInspector />)
 
     const derBtn = screen.getByRole('button', { name: /Multi-SAN DER CSR/i })
     fireEvent.click(derBtn)
     expect(await screen.findByText('Cloud Edge Security Ltd')).toBeInTheDocument()
-    expect(derBtn).toBeDisabled()
+    expect(derBtn).toBeEnabled()
+    expect(derBtn).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText('Self-Signature Valid')).toBeInTheDocument()
     expect(screen.getByText(/Requested Extensions/i)).toBeInTheDocument()
 
     const badSigBtn = screen.getByRole('button', { name: /Invalid Signature CSR/i })
     fireEvent.click(badSigBtn)
     expect(await screen.findByText('Security Audit Lab')).toBeInTheDocument()
-    expect(badSigBtn).toBeDisabled()
+    expect(badSigBtn).toBeEnabled()
+    expect(badSigBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(derBtn).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByText('Self-Signature Invalid')).toBeInTheDocument()
+
+    // Clicking already-loaded DER preset switches back to its tab without duplicating
+    fireEvent.click(derBtn)
+    expect(derBtn).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Cloud Edge Security Ltd')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Loaded Files \(2\)/i }),
+    ).toBeInTheDocument()
   })
 
   it('uploads CSR files with extensions, supports drag-and-drop, deduplicates, switches tabs, collapses, and clears all', async () => {

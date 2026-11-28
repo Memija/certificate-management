@@ -17,6 +17,8 @@ export interface CsrSamplePreset {
   fileName: string
   labelKey: string
   defaultLabel: string
+  badge: string
+  badgeTone: 'info' | 'danger'
 }
 
 export const CSR_SAMPLE_PRESETS: readonly CsrSamplePreset[] = [
@@ -25,18 +27,24 @@ export const CSR_SAMPLE_PRESETS: readonly CsrSamplePreset[] = [
     fileName: SAMPLE_CSR_FILENAME,
     labelKey: 'app.csr.trySampleCsr',
     defaultLabel: 'Try Sample CSR',
+    badge: 'PEM',
+    badgeTone: 'info',
   },
   {
     id: 'multisan-der',
     fileName: SAMPLE_DER_CSR_FILENAME,
     labelKey: 'app.csr.trySampleDerCsr',
     defaultLabel: 'Multi-SAN DER CSR',
+    badge: 'DER',
+    badgeTone: 'info',
   },
   {
     id: 'invalid-sig',
     fileName: SAMPLE_BAD_SIG_CSR_FILENAME,
     labelKey: 'app.csr.trySampleBadSigCsr',
     defaultLabel: 'Invalid Signature CSR',
+    badge: 'PEM',
+    badgeTone: 'danger',
   },
 ]
 

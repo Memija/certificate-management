@@ -249,37 +249,42 @@ export function useChainPool() {
     notifyPoolLoaded(parsedCerts.length)
   }
 
-  const loadSample = (preset: ChainPreset, toastLabel: string): void => {
-    if (activePreset === preset && certs.length > 0) {
-      return
-    }
-    try {
-      const sampleCerts = createCryptographicChain(preset)
-      setActivePreset(preset)
-      setCerts(sampleCerts)
-      setInspectingNodeId(null)
-      setActiveNodeId('all')
-      setError(null)
-      setSuggestedMode(undefined)
-      setPendingPfxUnlock(null)
-      showToast(
-        t('app.chain.loadedSample', {
-          label: toastLabel,
-          defaultValue: `Loaded sample: ${toastLabel}`,
-        }),
-        'info',
-      )
-    } catch (err: unknown) {
-      console.error('Failed to load sample chain:', err)
-      const errMsg = err instanceof Error ? err.message : 'Unknown error'
-      setError(
-        t('app.chain.failedLoadSample', {
-          error: errMsg,
-          defaultValue: `Failed to load sample: ${errMsg}`,
-        }),
-      )
-    }
-  }
+  const loadSample = useCallback(
+    (preset: ChainPreset, toastLabel: string): void => {
+      if (activePreset === preset && certs.length > 0) {
+        setActiveNodeId('all')
+        setInspectingNodeId(null)
+        return
+      }
+      try {
+        const sampleCerts = createCryptographicChain(preset)
+        setActivePreset(preset)
+        setCerts(sampleCerts)
+        setInspectingNodeId(null)
+        setActiveNodeId('all')
+        setError(null)
+        setSuggestedMode(undefined)
+        setPendingPfxUnlock(null)
+        showToast(
+          t('app.chain.loadedSample', {
+            label: toastLabel,
+            defaultValue: `Loaded sample: ${toastLabel}`,
+          }),
+          'info',
+        )
+      } catch (err: unknown) {
+        console.error('Failed to load sample chain:', err)
+        const errMsg = err instanceof Error ? err.message : 'Unknown error'
+        setError(
+          t('app.chain.failedLoadSample', {
+            error: errMsg,
+            defaultValue: `Failed to load sample: ${errMsg}`,
+          }),
+        )
+      }
+    },
+    [activePreset, certs.length, showToast, t],
+  )
 
   const removeCert = useCallback(
     (nodeId: string) => {

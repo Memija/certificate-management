@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Download, Eye, EyeOff, Key, Shield, Sparkles, Trash2 } from 'lucide-react'
+import { Download, Eye, EyeOff, Key, Shield } from 'lucide-react'
 
+import { type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 import { PFX_PRESETS } from '@/data/format-converter-samples'
 import type { PfxSamplePreset } from '@/types'
 
@@ -44,58 +45,29 @@ export function PfxBuilderTab({
     ? t('app.formatConverter.hidePassword', 'Hide password')
     : t('app.formatConverter.showPassword', 'Show password')
 
+  const presetItems = useMemo<SamplePresetItem[]>(
+    () =>
+      PFX_PRESETS.map((preset) => ({
+        id: preset.id,
+        label: getLocalizedPfxPresetName(preset, t),
+        badge: preset.badge,
+        badgeTone: 'success',
+        title: preset.description,
+        isActive: activePresetId === preset.id,
+        onSelect: () => onSelectPreset(preset),
+      })),
+    [activePresetId, onSelectPreset, t],
+  )
+
   return (
     <>
-      <div className={`glass-panel animate-fade-in ${styles.presetsPanel}`}>
-        <div className={styles.presetsHeader}>
-          <div className={styles.presetsTitle}>
-            <Sparkles size={15} className={styles.sparkleIcon} aria-hidden="true" />
-            <span>{t('app.formatConverter.tryExamples', 'Try Test Examples:')}</span>
-          </div>
-
-          {hasAnyInput && (
-            <button
-              type="button"
-              className={`${styles.clearBtn} ${styles.clearBtnMobile}`}
-              onClick={onClear}
-              title={clearTitle}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-              <span>{clearLabel}</span>
-            </button>
-          )}
-        </div>
-
-        <div className={styles.presetsList}>
-          {PFX_PRESETS.map((preset) => {
-            const isActive = activePresetId === preset.id
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                className={`${styles.presetPill} ${isActive ? styles.presetPillActive : ''}`}
-                onClick={() => onSelectPreset(preset)}
-                title={preset.description}
-              >
-                <span className={styles.presetName}>{getLocalizedPfxPresetName(preset, t)}</span>
-                <span className={`badge badge-success ${styles.presetBadge}`}>{preset.badge}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {hasAnyInput && (
-          <button
-            type="button"
-            className={`${styles.clearBtn} ${styles.clearBtnDesktop}`}
-            onClick={onClear}
-            title={clearTitle}
-          >
-            <Trash2 size={13} aria-hidden="true" />
-            <span>{clearLabel}</span>
-          </button>
-        )}
-      </div>
+      <SamplePresetsBar
+        items={presetItems}
+        showClear={hasAnyInput}
+        clearLabel={clearLabel}
+        clearTitle={clearTitle}
+        onClear={onClear}
+      />
 
       <div className={`glass-panel animate-fade-in ${styles.pfxPanel}`}>
         <h2 className={styles.pfxTitle}>

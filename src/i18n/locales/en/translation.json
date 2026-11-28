@@ -1522,6 +1522,8 @@
     "remove": "Remove",
     "cancel": "Cancel",
     "loadMore": "Show More",
-    "close": "Close notification"
+    "close": "Close notification",
+    "tryExamples": "Try Test Examples:",
+    "sample": "Sample"
   }
 }

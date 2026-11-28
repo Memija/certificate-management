@@ -233,6 +233,17 @@
   color: var(--purple-color);
 }
 
+.sampleTabTag {
+  font-size: 0.65rem;
+  padding: 0.08rem 0.42rem;
+  border-radius: 9999px;
+  background: var(--info-bg);
+  color: var(--info-color);
+  border: 1px solid var(--info-border);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 .tabRemoveBtn {
   display: inline-flex;
   align-items: center;

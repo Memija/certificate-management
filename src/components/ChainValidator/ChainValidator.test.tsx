@@ -183,7 +183,10 @@ describe('ChainValidator component', () => {
     const { container } = render(<ChainValidator />)
 
     // 1. 3-tier-web
-    fireEvent.click(screen.getByRole('button', { name: /3-Tier Web PKI/i }))
+    const threeTierBtn = screen.getByRole('button', { name: /3-Tier Web PKI/i })
+    fireEvent.click(threeTierBtn)
+    expect(threeTierBtn).toBeEnabled()
+    expect(threeTierBtn).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText(/Valid Complete Trust Hierarchy/i)).toBeInTheDocument()
     expect(screen.getByText(/3 Loaded Certs/i)).toBeInTheDocument()
     expect(

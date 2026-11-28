@@ -4,31 +4,6 @@
   width: 100%;
 }
 
-.presetsPanel {
-  padding: 0.85rem 1.15rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.presetsHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font: 600 0.82rem var(--font-sans);
-  color: var(--text-secondary);
-  margin-right: 0.25rem;
-  flex-shrink: 0;
-}
-
-.presetsTitle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
 .iconAccent {
   color: var(--text-accent);
   flex-shrink: 0;
@@ -37,97 +12,6 @@
 .iconWarning {
   color: var(--warning-color);
   flex-shrink: 0;
-}
-
-.presetsList {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-}
-
-.presetPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.38rem 0.9rem;
-  border-radius: 9999px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  font: 500 0.8rem var(--font-sans);
-  cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    background-color 0.18s ease,
-    color 0.18s ease;
-}
-
-.presetPill:hover {
-  border-color: var(--glass-border);
-  color: var(--text-primary);
-}
-
-.presetPillActive {
-  background: var(--info-bg);
-  border-color: var(--info-border);
-  color: var(--info-color);
-  font-weight: 600;
-}
-
-.presetName {
-  font-size: 0.8rem;
-}
-
-.presetBadge {
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 0.12rem 0.5rem;
-  border-radius: 9999px;
-  line-height: 1.25;
-}
-
-.presetBadgeSuccess {
-  background: var(--success-bg);
-  color: var(--success-color);
-  border: 1px solid var(--success-border);
-}
-
-.presetBadgeDanger {
-  background: var(--danger-bg);
-  color: var(--danger-color);
-  border: 1px solid var(--danger-border);
-}
-
-.clearBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.36rem 0.85rem;
-  border-radius: 9999px;
-  background: var(--danger-bg);
-  border: 1px dashed var(--danger-border);
-  color: var(--danger-color);
-  font: 600 0.78rem var(--font-sans);
-  cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    background-color 0.18s ease;
-}
-
-.clearBtn:hover {
-  border-style: solid;
-  border-color: var(--danger-color);
-}
-
-.clearMobile {
-  display: none;
-}
-
-.clearDesktop {
-  display: inline-flex;
-  margin-left: auto;
 }
 
 .inputGrid {
@@ -283,36 +167,6 @@
 }
 
 @media (max-width: 768px) {
-  .presetsPanel {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .presetsHeader {
-    justify-content: space-between;
-    width: 100%;
-    margin-right: 0;
-  }
-
-  .clearMobile {
-    display: inline-flex;
-  }
-
-  .clearDesktop {
-    display: none;
-  }
-
-  .presetsList {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .presetPill {
-    justify-content: space-between;
-    width: 100%;
-    white-space: normal;
-  }
-
   .comparisonGrid {
     grid-template-columns: 1fr;
     gap: 0.25rem;

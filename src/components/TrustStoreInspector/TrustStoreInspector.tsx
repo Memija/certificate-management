@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Archive,
@@ -9,12 +9,11 @@ import {
   RefreshCw,
   Shield,
   ShieldCheck,
-  Sparkles,
   Upload,
   X,
 } from 'lucide-react'
 
-import { ModuleHeader } from '@/components/shared'
+import { ModuleHeader, type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode } from '@/types'
 
@@ -82,6 +81,31 @@ export function TrustStoreInspector({ onNavigate }: TrustStoreInspectorProps = {
     'Client-side cryptographic parsing: private keys and certificates never leave your browser.',
   )}`
 
+  const presetItems = useMemo<SamplePresetItem[]>(
+    () =>
+      TRUST_STORE_SAMPLE_PRESETS.map((preset) => {
+        const isLoaded = loadedFiles.some(
+          (f) => f.isSample && (f.sampleId === preset.id || f.name === preset.fileName),
+        )
+        const isActive = Boolean(
+          activeFile?.isSample &&
+          (activeFile.sampleId === preset.id || activeFile.name === preset.fileName),
+        )
+        return {
+          id: preset.id,
+          label: t(preset.nameKey, preset.defaultName),
+          badge: t(preset.badgeKey, preset.defaultBadge),
+          badgeTone: 'info',
+          isActive,
+          isLoaded,
+          onSelect: () => {
+            void handleLoadPreset(preset)
+          },
+        }
+      }),
+    [activeFile, handleLoadPreset, loadedFiles, t],
+  )
+
   return (
     <div className={styles.container}>
       <div className={styles.inner}>
@@ -115,27 +139,7 @@ export function TrustStoreInspector({ onNavigate }: TrustStoreInspectorProps = {
           </span>
         </ModuleHeader>
 
-        <div className={styles.presetsBar}>
-          <span className={styles.presetsLabel}>
-            <Sparkles size={14} className={styles.iconAccent} aria-hidden="true" />
-            <span>{t('app.formatConverter.tryExamples', 'Try Test Examples:')}</span>
-          </span>
-          <div className={styles.presetsList}>
-            {TRUST_STORE_SAMPLE_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                type="button"
-                className={styles.presetBtn}
-                onClick={() => void handleLoadPreset(preset)}
-              >
-                <span>{t(preset.nameKey, preset.defaultName)}</span>
-                <span className={styles.presetBadge}>
-                  {t(preset.badgeKey, preset.defaultBadge)}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <SamplePresetsBar items={presetItems} />
 
         <input
           ref={fileInputRef}
@@ -224,6 +228,9 @@ export function TrustStoreInspector({ onNavigate }: TrustStoreInspectorProps = {
                       <FmtIcon size={13} aria-hidden="true" />
                       <span className={styles.tabFileName}>{lf.name}</span>
                     </button>
+                    {Boolean(lf.isSample) && (
+                      <span className={styles.sampleTabTag}>{t('common.sample', 'Sample')}</span>
+                    )}
                     <button
                       type="button"
                       className={styles.fileTabRemoveBtn}

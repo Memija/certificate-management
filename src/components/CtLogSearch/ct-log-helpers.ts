@@ -1,4 +1,4 @@
-import type { CtEntry, CtLogPreset, CtLogProvider } from '@/types'
+import type { CtEntry, CtLogProvider } from '@/types'
 import { WebApiUnavailableError } from '@/utils/api-client'
 
 export const CT_PAGE_SIZE = 60
@@ -75,20 +75,4 @@ export function formatCtIssuer(issuer: string): string {
 
 export function isCtEntryExpired(notAfter: string, nowMs: number): boolean {
   return new Date(notAfter).getTime() < nowMs
-}
-
-export function getPresetBadgeClass(badgeType?: CtLogPreset['badgeType']): string {
-  switch (badgeType) {
-    case 'success':
-      return 'badge-success'
-    case 'warning':
-      return 'badge-warning'
-    case 'purple':
-      return 'badge-purple'
-    case 'danger':
-      return 'badge-danger'
-    case 'info':
-    default:
-      return 'badge-info'
-  }
 }

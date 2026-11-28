@@ -1,6 +1,16 @@
 import { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Eye, EyeOff, FileKey, Info, Lock, ShieldAlert, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  FileKey,
+  Info,
+  Lock,
+  ShieldAlert,
+  Sparkles,
+  X,
+} from 'lucide-react'
 
 import type { AppMode, TrustStoreEntry } from '@/types'
 
@@ -108,7 +118,15 @@ export const TrustStoreFileCard = memo(function TrustStoreFileCard({
               <Lock size={20} aria-hidden="true" />
             </div>
             <div>
-              <div className={styles.fileName}>{name}</div>
+              <div className={styles.fileTitleRow}>
+                <div className={styles.fileName}>{name}</div>
+                {Boolean(loadedFile.isSample) && (
+                  <span className="badge badge-info">
+                    <Sparkles size={11} aria-hidden="true" />
+                    <span>{t('common.sample', 'Sample')}</span>
+                  </span>
+                )}
+              </div>
               <div className={`${styles.fileFormatLabel} ${toneClass}`}>
                 {t(fmtInfo.key, fmtInfo.label)}
               </div>
@@ -200,7 +218,15 @@ export const TrustStoreFileCard = memo(function TrustStoreFileCard({
             <FmtIcon size={20} aria-hidden="true" />
           </div>
           <div>
-            <div className={styles.fileName}>{name}</div>
+            <div className={styles.fileTitleRow}>
+              <div className={styles.fileName}>{name}</div>
+              {Boolean(loadedFile.isSample) && (
+                <span className="badge badge-info">
+                  <Sparkles size={11} aria-hidden="true" />
+                  <span>{t('common.sample', 'Sample')}</span>
+                </span>
+              )}
+            </div>
             <div className={`${styles.fileFormatLabel} ${toneClass}`}>
               {t(fmtInfo.key, fmtInfo.label)}
             </div>

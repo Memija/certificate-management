@@ -3,25 +3,9 @@
   max-width: 1100px;
   margin: 0 auto;
 }
-:is(.presetsPanel, .presetsHeader, .presetsList, .presetsTitle, .dateItem, .dateExpiryItem) {
+:is(.dateItem, .dateExpiryItem) {
   display: flex;
   align-items: center;
-}
-.presetsPanel {
-  padding: 0.75rem 1.15rem;
-  margin-bottom: 1.5rem;
-  background: var(--card-bg);
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-.presetsHeader {
-  gap: 0.45rem;
-  font: 600 0.82rem var(--font-sans);
-  color: var(--text-secondary);
-  margin-right: 0.25rem;
-  flex-shrink: 0;
-}
-:is(.presetsTitle, .dateItem, .dateExpiryItem) {
   gap: 0.4rem;
 }
 :is(.accentIcon, .shrinkZero) {
@@ -29,89 +13,6 @@
 }
 .accentIcon {
   color: var(--accent-color);
-}
-.presetsList {
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  flex: 1;
-}
-:is(.presetPill, .presetSpecial, .clearBtn) {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 9999px;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-.presetPill {
-  padding: 0.36rem 0.9rem;
-  font: 500 0.8rem var(--font-sans);
-  background: var(--bg-surface);
-  border: 1px solid var(--glass-border-subtle);
-  color: var(--text-secondary);
-  gap: 0.5rem;
-}
-.presetPill:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border-color: var(--info-border);
-  transform: translateY(-1px);
-}
-.presetPillActive {
-  background: var(--info-bg);
-  border-color: var(--info-color);
-  color: var(--text-primary);
-  font-weight: 600;
-}
-.presetName {
-  white-space: nowrap;
-  font-size: 0.8rem;
-}
-.presetBadge {
-  padding: 0.12rem 0.5rem;
-  font-size: 0.68rem;
-}
-.presetSpecial {
-  gap: 0.45rem;
-  padding: 0.34rem 0.85rem;
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
-  color: var(--success-color);
-  font: 600 0.8rem var(--font-sans);
-}
-.presetSpecial:hover,
-.presetSpecialActive {
-  border-color: var(--success-color);
-  color: var(--text-primary);
-  box-shadow: 0 2px 10px var(--cat-systemcheck-glow);
-}
-.presetSpecialIcon,
-.presetSpecialSparkle {
-  display: inline-flex;
-  align-items: center;
-}
-.presetSpecialSparkle {
-  color: var(--info-color);
-}
-.clearBtn {
-  padding: 0.36rem 0.85rem;
-  font: 500 0.8rem var(--font-sans);
-  background: var(--danger-bg);
-  border: 1px dashed var(--danger-border);
-  color: var(--danger-color);
-  gap: 0.4rem;
-}
-.clearBtn:hover {
-  border-style: solid;
-  border-color: var(--danger-color);
-}
-.clearBtnMobile {
-  display: none;
-}
-.clearBtnDesktop {
-  display: inline-flex;
-  margin-left: auto;
 }
 .queryPanel {
   margin-bottom: 2rem;
@@ -401,37 +302,4 @@
 }
 .loadMoreBtn {
   gap: 0.5rem;
-}
-@media (max-width: 768px) {
-  .presetsPanel {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0.85rem 0.9rem;
-  }
-  .presetsHeader {
-    justify-content: space-between;
-    width: 100%;
-    margin-right: 0;
-  }
-  .clearBtnMobile {
-    display: inline-flex;
-  }
-  .clearBtnDesktop {
-    display: none;
-  }
-  .presetsList {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-  }
-  .presetPill,
-  .presetSpecial {
-    justify-content: space-between;
-    width: 100%;
-    white-space: normal;
-  }
-  .presetName {
-    white-space: normal;
-    text-align: left;
-  }
 }

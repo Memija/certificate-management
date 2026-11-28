@@ -11,12 +11,11 @@ import {
   Search,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
   Upload,
   X,
 } from 'lucide-react'
 
-import { ModuleHeader } from '@/components/shared'
+import { ModuleHeader, type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 import { useAppStore } from '@/store'
 import type { AppMode } from '@/types'
 
@@ -100,6 +99,27 @@ export function CrlInspector({ onNavigate }: CrlInspectorProps = {}) {
   )}`
   const clearLabel = t('common.clear', 'Clear')
 
+  const presetItems = useMemo<SamplePresetItem[]>(
+    () =>
+      CRL_SAMPLE_PRESETS.map((preset) => {
+        const isLoaded = loadedSampleIds.has(preset.id)
+        const isActive = Boolean(
+          activeItem?.isSample &&
+          (activeItem.sampleId === preset.id || activeItem.name === preset.fileName),
+        )
+        return {
+          id: preset.id,
+          label: t(preset.labelKey, preset.defaultLabel),
+          badge: preset.badge,
+          badgeTone: preset.badgeTone,
+          isActive,
+          isLoaded,
+          onSelect: () => loadSampleCrl(preset.id),
+        }
+      }),
+    [activeItem, loadedSampleIds, loadSampleCrl, t],
+  )
+
   return (
     <div
       className={styles.container}
@@ -136,6 +156,8 @@ export function CrlInspector({ onNavigate }: CrlInspectorProps = {}) {
             <span>{t('app.crl.pills.serialLookup', 'Revoked Serial Lookup')}</span>
           </span>
         </ModuleHeader>
+
+        <SamplePresetsBar items={presetItems} />
 
         {localizedError && errorInfo && (
           <div
@@ -231,29 +253,6 @@ export function CrlInspector({ onNavigate }: CrlInspectorProps = {}) {
               )}
             </span>
           </button>
-
-          <div className={styles.dropSampleRow}>
-            {CRL_SAMPLE_PRESETS.map((preset) => {
-              const isLoaded = loadedSampleIds.has(preset.id)
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => loadSampleCrl(preset.id)}
-                  disabled={isLoaded}
-                  className="btn btn-secondary btn-sm"
-                  title={
-                    isLoaded
-                      ? t('app.crl.sampleAlreadyLoaded', 'Sample CRL is already loaded')
-                      : undefined
-                  }
-                >
-                  <Sparkles size={14} className={styles.iconAccent} aria-hidden="true" />
-                  <span>{t(preset.labelKey, preset.defaultLabel)}</span>
-                </button>
-              )
-            })}
-          </div>
         </div>
 
         {loadedCrls.length > 0 && activeItem && (
@@ -301,12 +300,10 @@ export function CrlInspector({ onNavigate }: CrlInspectorProps = {}) {
                       {isActive && <span className={styles.tabActiveDot} />}
                       <ShieldAlert size={13} aria-hidden="true" />
                       <span className={styles.tabIssuerText}>{issuerCn}</span>
-                      {Boolean(item.isSample) && (
-                        <span className={styles.sampleTabTag}>
-                          {t('app.crl.sampleTag', 'Sample')}
-                        </span>
-                      )}
                     </button>
+                    {Boolean(item.isSample) && (
+                      <span className={styles.sampleTabTag}>{t('common.sample', 'Sample')}</span>
+                    )}
                     <button
                       type="button"
                       className={styles.crlTabRemoveBtn}

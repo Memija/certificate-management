@@ -1,7 +1,8 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Activity, FileText, Globe, RefreshCw, Sparkles, Trash2 } from 'lucide-react'
+import { Activity, FileText, Globe, RefreshCw } from 'lucide-react'
 
+import { type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 import { OCSP_SAMPLE_PRESETS } from '@/data/ocsp-samples'
 import type { OcspSamplePreset } from '@/types'
 
@@ -31,49 +32,26 @@ export const OcspPresetsSection = memo(function OcspPresetsSection({
   const { t } = useTranslation()
   const activePresetMeta = activePreset ? getLocalizedPresetMeta(activePreset, t) : null
 
+  const presetItems = useMemo<SamplePresetItem[]>(
+    () =>
+      OCSP_SAMPLE_PRESETS.map((preset) => {
+        const meta = getLocalizedPresetMeta(preset, t)
+        return {
+          id: preset.id,
+          label: meta.name,
+          badge: meta.badge,
+          badgeTone: preset.badgeType,
+          title: meta.description,
+          isActive: activePreset?.id === preset.id,
+          onSelect: () => onSelectPreset(preset),
+        }
+      }),
+    [activePreset?.id, onSelectPreset, t],
+  )
+
   return (
     <>
-      <div className={`glass-panel animate-fade-in ${styles.presetsPanel}`}>
-        <div className={styles.presetsHeader}>
-          <div className={styles.presetsTitle}>
-            <Sparkles size={15} className={styles.accentIcon} aria-hidden="true" />
-            <span>{t('app.ocsp.tryExamples', 'Try Test Examples:')}</span>
-          </div>
-        </div>
-
-        <div className={styles.presetsList}>
-          {OCSP_SAMPLE_PRESETS.map((preset) => {
-            const isActive = activePreset?.id === preset.id
-            const meta = getLocalizedPresetMeta(preset, t)
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                className={`${styles.presetPill} ${isActive ? styles.presetPillActive : ''}`}
-                onClick={() => onSelectPreset(preset)}
-                title={meta.description}
-              >
-                <span>{meta.name}</span>
-                <span className={`${styles.presetBadge} ${styles[`badge_${preset.badgeType}`]}`}>
-                  {meta.badge}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        {hasInput && (
-          <button
-            type="button"
-            className={styles.clearPillBtn}
-            onClick={onClear}
-            title={t('common.clear', 'Clear')}
-          >
-            <Trash2 size={13} aria-hidden="true" />
-            <span>{t('common.clear', 'Clear')}</span>
-          </button>
-        )}
-      </div>
+      <SamplePresetsBar items={presetItems} showClear={hasInput} onClear={onClear} />
 
       {activePreset && activePresetMeta && (
         <div

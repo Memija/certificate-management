@@ -12,6 +12,7 @@ import {
   EyeOff,
   FileKey,
   Key,
+  Sparkles,
   X,
   XCircle,
 } from 'lucide-react'
@@ -32,6 +33,7 @@ import styles from './CsrParsedView.module.css'
 export interface CsrParsedViewProps {
   csr: ParsedCSR
   fileName: string
+  isSample?: boolean
   privateKeyPem?: string
   onRemove: () => void
   onEdit: () => void
@@ -93,6 +95,7 @@ function CopyButton({ value }: { value: string }) {
 export function CsrParsedView({
   csr,
   fileName,
+  isSample,
   privateKeyPem,
   onRemove,
   onEdit,
@@ -146,6 +149,12 @@ export function CsrParsedView({
             <span>
               <span className={styles.cardTitleRow}>
                 <span>{cn}</span>
+                {Boolean(isSample) && (
+                  <span className="badge badge-info">
+                    <Sparkles size={11} aria-hidden="true" />
+                    <span>{t('common.sample', 'Sample')}</span>
+                  </span>
+                )}
                 {privateKeyPem && (
                   <span
                     title={t('app.csr.editor.privateKeyAvailable', 'Private Key Available')}

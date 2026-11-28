@@ -1,10 +1,9 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Sparkles } from 'lucide-react'
+
+import { type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 
 import { KEY_GENERATOR_PRESETS, type KeyGeneratorPreset } from './key-generator-helpers'
-
-import styles from './KeyGeneratorPresetsBar.module.css'
 
 export interface KeyGeneratorPresetsBarProps {
   activePresetId: KeyGeneratorPreset['id'] | null
@@ -17,29 +16,18 @@ export const KeyGeneratorPresetsBar = memo(function KeyGeneratorPresetsBar({
 }: KeyGeneratorPresetsBarProps) {
   const { t } = useTranslation()
 
-  return (
-    <div className={styles.presetsBar}>
-      <span className={styles.presetsLabel}>
-        <Sparkles size={14} className={styles.iconAccent} aria-hidden="true" />
-        <span>{t('app.keyGenerator.tryExamples', 'Try Test Examples:')}</span>
-      </span>
-      <div className={styles.presetsList}>
-        {KEY_GENERATOR_PRESETS.map((preset) => {
-          const isActive = activePresetId === preset.id
-          return (
-            <button
-              key={preset.id}
-              type="button"
-              className={`${styles.presetBtn} ${isActive ? styles.presetBtnActive : ''}`}
-              aria-pressed={isActive}
-              onClick={() => onSelectPreset(preset)}
-            >
-              <span>{t(preset.nameKey, preset.defaultName)}</span>
-              <span className={styles.presetBadge}>{t(preset.badgeKey, preset.defaultBadge)}</span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
+  const items = useMemo<SamplePresetItem[]>(
+    () =>
+      KEY_GENERATOR_PRESETS.map((preset) => ({
+        id: preset.id,
+        label: t(preset.nameKey, preset.defaultName),
+        badge: t(preset.badgeKey, preset.defaultBadge),
+        badgeTone: 'purple',
+        isActive: activePresetId === preset.id,
+        onSelect: () => onSelectPreset(preset),
+      })),
+    [activePresetId, onSelectPreset, t],
   )
+
+  return <SamplePresetsBar items={items} />
 })

@@ -239,6 +239,11 @@ export function FormatConverter({ initialMode = 'pem-der' }: FormatConverterProp
     setActivePfxPreset(null)
   }, [])
 
+  const handlePasswordChange = useCallback((value: string): void => {
+    setPfxPassword(value)
+    setActivePfxPreset(null)
+  }, [])
+
   const activeErrorText = getLocalizedError(error, t)
   const activeMessageText = getLocalizedMessage(message, t)
 
@@ -306,7 +311,7 @@ export function FormatConverter({ initialMode = 'pem-der' }: FormatConverterProp
           activePresetId={activePfxPreset}
           onCertChange={handleCertChange}
           onKeyChange={handleKeyChange}
-          onPasswordChange={setPfxPassword}
+          onPasswordChange={handlePasswordChange}
           onSelectPreset={handleSelectPfxPreset}
           onClear={handleClearPfx}
           onBuildPfx={handlePfxBuild}

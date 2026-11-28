@@ -1522,6 +1522,8 @@
     "remove": "Hapus",
     "cancel": "Batal",
     "loadMore": "Tampilkan Lebih Banyak",
-    "close": "Tutup notifikasi"
+    "close": "Tutup notifikasi",
+    "tryExamples": "Coba Contoh Uji:",
+    "sample": "Contoh"
   }
 }

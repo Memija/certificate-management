@@ -61,7 +61,7 @@ export function useTrustStoreFiles() {
   const processFiles = useCallback(
     async (
       files: File[],
-      meta?: { isSample?: boolean; samplePasswordHint?: string },
+      meta?: { isSample?: boolean; sampleId?: string; samplePasswordHint?: string },
     ): Promise<void> => {
       if (files.length === 0) {
         return
@@ -92,6 +92,7 @@ export function useTrustStoreFiles() {
               pendingFile: result.needsPassword ? file : undefined,
               passwordInput: initialPasswordInput,
               isSample: meta?.isSample,
+              sampleId: meta?.sampleId,
               samplePasswordHint: meta?.samplePasswordHint,
             })
           } catch (err: unknown) {
@@ -121,7 +122,9 @@ export function useTrustStoreFiles() {
 
   const handleLoadPreset = useCallback(
     async (preset: TrustStoreSamplePreset): Promise<void> => {
-      const existing = loadedFiles.find((f) => f.isSample && f.name === preset.fileName)
+      const existing = loadedFiles.find(
+        (f) => f.isSample && (f.sampleId === preset.id || f.name === preset.fileName),
+      )
       if (existing) {
         setActiveFileId(existing.id)
         return
@@ -130,6 +133,7 @@ export function useTrustStoreFiles() {
         const file = preset.createFile()
         await processFiles([file], {
           isSample: true,
+          sampleId: preset.id,
           samplePasswordHint: preset.passwordHint,
         })
       } catch (err: unknown) {

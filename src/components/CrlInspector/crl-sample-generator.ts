@@ -22,6 +22,8 @@ export interface CrlSamplePreset {
   fileName: string
   labelKey: string
   defaultLabel: string
+  badge: string
+  badgeTone: 'info' | 'warning'
 }
 
 export const CRL_SAMPLE_PRESETS: readonly CrlSamplePreset[] = [
@@ -30,18 +32,24 @@ export const CRL_SAMPLE_PRESETS: readonly CrlSamplePreset[] = [
     fileName: SAMPLE_CRL_FILENAME,
     labelKey: 'app.crl.trySampleCrl',
     defaultLabel: 'Try Sample CRL',
+    badge: 'PEM',
+    badgeTone: 'info',
   },
   {
     id: 'active-der',
     fileName: SAMPLE_DER_CRL_FILENAME,
     labelKey: 'app.crl.trySampleDerCrl',
     defaultLabel: 'Sample DER CRL',
+    badge: 'DER',
+    badgeTone: 'info',
   },
   {
     id: 'expired-pem',
     fileName: SAMPLE_EXPIRED_CRL_FILENAME,
     labelKey: 'app.crl.trySampleExpiredCrl',
     defaultLabel: 'Expired CRL',
+    badge: 'PEM',
+    badgeTone: 'warning',
   },
 ]
 

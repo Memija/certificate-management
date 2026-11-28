@@ -1522,6 +1522,8 @@
     "remove": "Entfernen",
     "cancel": "Abbrechen",
     "loadMore": "Mehr anzeigen",
-    "close": "Benachrichtigung schließen"
+    "close": "Benachrichtigung schließen",
+    "tryExamples": "Testbeispiele ausprobieren:",
+    "sample": "Beispiel"
   }
 }

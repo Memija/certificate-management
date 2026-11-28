@@ -23,6 +23,13 @@
   height: 40px;
 }
 
+.fileTitleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .fileName {
   font-family: var(--font-sans);
   font-weight: 700;

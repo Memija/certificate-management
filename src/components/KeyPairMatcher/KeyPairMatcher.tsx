@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckCircle, FileKey, Hash, Key, Shield, Sparkles, Trash2, XCircle } from 'lucide-react'
+import { CheckCircle, FileKey, Hash, Key, Shield, XCircle } from 'lucide-react'
 
-import { ModuleHeader } from '@/components/shared'
+import { ModuleHeader, type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 import { KEY_MATCHER_PRESETS } from '@/data/key-matcher-samples'
 import { useAppStore } from '@/store'
 import type {
@@ -146,6 +146,16 @@ export function KeyPairMatcher({ onNavigate }: KeyPairMatcherProps = {}) {
   const keyHeadingLabel = t('app.keyMatcher.privateKey', 'Private Key (PEM)')
   const hasAnyInput = Boolean(certInput || keyInput)
 
+  const presetItems: SamplePresetItem[] = KEY_MATCHER_PRESETS.map((preset) => ({
+    id: preset.id,
+    label: t(`app.keyMatcher.presets.${preset.id}.name`, preset.name),
+    title: t(`app.keyMatcher.presets.${preset.id}.desc`, preset.description),
+    badge: preset.badge ? t(`app.keyMatcher.presets.${preset.id}.badge`, preset.badge) : undefined,
+    badgeTone: preset.expectedMatch ? 'success' : 'danger',
+    isActive: activePreset === preset.id,
+    onSelect: () => loadPreset(preset),
+  }))
+
   return (
     <div className={styles.container}>
       <ModuleHeader
@@ -160,70 +170,12 @@ export function KeyPairMatcher({ onNavigate }: KeyPairMatcherProps = {}) {
         )}
       />
 
-      <div className={`glass-panel ${styles.presetsPanel}`}>
-        <div className={styles.presetsHeader}>
-          <div className={styles.presetsTitle}>
-            <Sparkles size={15} className={styles.iconAccent} aria-hidden="true" />
-            <span>{t('app.keyMatcher.tryExamples', 'Try Test Examples:')}</span>
-          </div>
-
-          {hasAnyInput && (
-            <button
-              type="button"
-              className={`${styles.clearBtn} ${styles.clearMobile}`}
-              onClick={handleClear}
-              title={t('app.keyMatcher.clearInputs', 'Clear both inputs')}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-              <span>{t('common.clear', 'Clear')}</span>
-            </button>
-          )}
-        </div>
-
-        <div className={styles.presetsList}>
-          {KEY_MATCHER_PRESETS.map((preset) => {
-            const isActive = activePreset === preset.id
-            const presetName = t(`app.keyMatcher.presets.${preset.id}.name`, preset.name)
-            const presetDesc = t(`app.keyMatcher.presets.${preset.id}.desc`, preset.description)
-            const presetBadge = preset.badge
-              ? t(`app.keyMatcher.presets.${preset.id}.badge`, preset.badge)
-              : undefined
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                className={`${styles.presetPill} ${isActive ? styles.presetPillActive : ''}`}
-                onClick={() => loadPreset(preset)}
-                title={presetDesc}
-                aria-pressed={isActive}
-              >
-                <span className={styles.presetName}>{presetName}</span>
-                {presetBadge && (
-                  <span
-                    className={`${styles.presetBadge} ${
-                      preset.expectedMatch ? styles.presetBadgeSuccess : styles.presetBadgeDanger
-                    }`}
-                  >
-                    {presetBadge}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-
-        {hasAnyInput && (
-          <button
-            type="button"
-            className={`${styles.clearBtn} ${styles.clearDesktop}`}
-            onClick={handleClear}
-            title={t('app.keyMatcher.clearInputs', 'Clear both inputs')}
-          >
-            <Trash2 size={13} aria-hidden="true" />
-            <span>{t('common.clear', 'Clear')}</span>
-          </button>
-        )}
-      </div>
+      <SamplePresetsBar
+        items={presetItems}
+        showClear={hasAnyInput}
+        clearTitle={t('app.keyMatcher.clearInputs', 'Clear both inputs')}
+        onClear={handleClear}
+      />
 
       <div className={styles.inputGrid}>
         <div className="glass-panel">

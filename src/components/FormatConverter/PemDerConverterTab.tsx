@@ -1,8 +1,9 @@
 import type React from 'react'
-import { useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Binary, CheckCircle2, Download, FileText, Sparkles, Trash2, Upload, X } from 'lucide-react'
+import { Binary, CheckCircle2, Download, FileText, Upload, X } from 'lucide-react'
 
+import { type SamplePresetItem, SamplePresetsBar } from '@/components/shared'
 import { PEM_DER_PRESETS } from '@/data/format-converter-samples'
 import type { PemDerSamplePreset } from '@/types'
 
@@ -48,21 +49,38 @@ export function PemDerConverterTab({
   const clearLabel = t('common.clear', 'Clear')
   const removeFileLabel = t('app.formatConverter.removeFile', 'Remove file')
 
-  const resetNativeInput = (): void => {
+  const resetNativeInput = useCallback((): void => {
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
-  }
+  }, [])
 
-  const handlePresetClick = (preset: PemDerSamplePreset): void => {
-    resetNativeInput()
-    onSelectPreset(preset)
-  }
+  const handlePresetClick = useCallback(
+    (preset: PemDerSamplePreset): void => {
+      resetNativeInput()
+      onSelectPreset(preset)
+    },
+    [onSelectPreset, resetNativeInput],
+  )
 
-  const handleClearClick = (): void => {
+  const handleClearClick = useCallback((): void => {
     resetNativeInput()
     onClear()
-  }
+  }, [onClear, resetNativeInput])
+
+  const presetItems = useMemo<SamplePresetItem[]>(
+    () =>
+      PEM_DER_PRESETS.map((preset) => ({
+        id: preset.id,
+        label: getLocalizedPemDerPresetName(preset, t),
+        badge: preset.badge,
+        badgeTone: preset.outputFormat === 'der' ? 'info' : 'warning',
+        title: preset.description,
+        isActive: activePresetId === preset.id,
+        onSelect: () => handlePresetClick(preset),
+      })),
+    [activePresetId, handlePresetClick, t],
+  )
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const selected = e.target.files?.[0]
@@ -96,59 +114,13 @@ export function PemDerConverterTab({
 
   return (
     <>
-      <div className={`glass-panel animate-fade-in ${styles.presetsPanel}`}>
-        <div className={styles.presetsHeader}>
-          <div className={styles.presetsTitle}>
-            <Sparkles size={15} className={styles.sparkleIcon} aria-hidden="true" />
-            <span>{t('app.formatConverter.tryExamples', 'Try Test Examples:')}</span>
-          </div>
-
-          {file && (
-            <button
-              type="button"
-              className={`${styles.clearBtn} ${styles.clearBtnMobile}`}
-              onClick={handleClearClick}
-              title={clearTitle}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-              <span>{clearLabel}</span>
-            </button>
-          )}
-        </div>
-
-        <div className={styles.presetsList}>
-          {PEM_DER_PRESETS.map((preset) => {
-            const isActive = activePresetId === preset.id
-            const badgeVariant = preset.outputFormat === 'der' ? 'badge-info' : 'badge-warning'
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                className={`${styles.presetPill} ${isActive ? styles.presetPillActive : ''}`}
-                onClick={() => handlePresetClick(preset)}
-                title={preset.description}
-              >
-                <span className={styles.presetName}>{getLocalizedPemDerPresetName(preset, t)}</span>
-                <span className={`badge ${badgeVariant} ${styles.presetBadge}`}>
-                  {preset.badge}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        {file && (
-          <button
-            type="button"
-            className={`${styles.clearBtn} ${styles.clearBtnDesktop}`}
-            onClick={handleClearClick}
-            title={clearTitle}
-          >
-            <Trash2 size={13} aria-hidden="true" />
-            <span>{clearLabel}</span>
-          </button>
-        )}
-      </div>
+      <SamplePresetsBar
+        items={presetItems}
+        showClear={Boolean(file)}
+        clearLabel={clearLabel}
+        clearTitle={clearTitle}
+        onClear={handleClearClick}
+      />
 
       <div className={`glass-panel animate-fade-in ${styles.pemDerPanel}`}>
         <h2 className={styles.panelTitle}>

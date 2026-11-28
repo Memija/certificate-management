@@ -1530,6 +1530,8 @@
     "remove": "Usuń",
     "cancel": "Anuluj",
     "loadMore": "Pokaż więcej",
-    "close": "Zamknij powiadomienie"
+    "close": "Zamknij powiadomienie",
+    "tryExamples": "Wypróbuj przykłady testowe:",
+    "sample": "Przykład"
   }
 }
